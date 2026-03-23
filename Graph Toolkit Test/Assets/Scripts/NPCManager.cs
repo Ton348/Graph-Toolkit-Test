@@ -42,6 +42,7 @@ public class NPCManager : Interactable
 
             runner = new BusinessQuestGraphRunner(
                 questGraph,
+                bootstrap,
                 bootstrap.RuntimeState,
                 bootstrap.QuestService,
                 bootstrap.PlayerService,

@@ -1,8 +1,10 @@
 using UnityEngine;
+using System.Collections.Generic;
 
 public class BusinessQuestGraphRunner
 {
     private readonly BusinessQuestGraph graph;
+    private readonly GameBootstrap bootstrap;
     private readonly GameRuntimeState runtimeState;
     private readonly QuestService questService;
     private readonly PlayerService playerService;
@@ -18,11 +20,13 @@ public class BusinessQuestGraphRunner
     private WaitForBuildingUpgradedNode waitingUpgradeNode;
     private GoToPointNode waitingGoToNode;
     private WaitForConditionNode waitingConditionNode;
+    private readonly Dictionary<string, GameObject> spawnedObjects = new Dictionary<string, GameObject>();
 
     public bool IsRunning { get; private set; }
 
     public BusinessQuestGraphRunner(
         BusinessQuestGraph graph,
+        GameBootstrap bootstrap,
         GameRuntimeState runtimeState,
         QuestService questService,
         PlayerService playerService,
@@ -34,6 +38,7 @@ public class BusinessQuestGraphRunner
         Transform playerTransform)
     {
         this.graph = graph;
+        this.bootstrap = bootstrap;
         this.runtimeState = runtimeState;
         this.questService = questService;
         this.playerService = playerService;
@@ -195,6 +200,11 @@ public class BusinessQuestGraphRunner
                     currentNode = graph.GetNodeById(addMarkerNode.nextNodeId);
                     continue;
 
+                case SetGameObjectActiveNode setActiveNode:
+                    ApplySetGameObjectActive(setActiveNode);
+                    currentNode = graph.GetNodeById(setActiveNode.nextNodeId);
+                    continue;
+
                 case GoToPointNode goToPointNode:
                     waitingGoToNode = goToPointNode;
                     return;
@@ -318,6 +328,116 @@ public class BusinessQuestGraphRunner
         }
 
         return null;
+    }
+
+    private void ApplySetGameObjectActive(SetGameObjectActiveNode node)
+    {
+        if (node == null || node.targetObject == null)
+        {
+            return;
+        }
+
+        if (node.targetObject.scene.IsValid())
+        {
+            node.targetObject.SetActive(node.isActive);
+            return;
+        }
+
+        if (string.IsNullOrEmpty(node.id))
+        {
+            return;
+        }
+
+        if (node.isActive)
+        {
+            if (!spawnedObjects.TryGetValue(node.id, out GameObject instance) || instance == null)
+            {
+                instance = Object.Instantiate(node.targetObject);
+                AssignBootstrap(instance);
+                spawnedObjects[node.id] = instance;
+            }
+            else
+            {
+                instance.SetActive(true);
+            }
+
+            MarkBuildingOwnedIfNeeded(instance);
+        }
+        else
+        {
+            if (spawnedObjects.TryGetValue(node.id, out GameObject instance) && instance != null)
+            {
+                Object.Destroy(instance);
+            }
+
+            spawnedObjects.Remove(node.id);
+        }
+    }
+
+    private void AssignBootstrap(GameObject instance)
+    {
+        if (instance == null || bootstrap == null)
+        {
+            return;
+        }
+
+        var buildingInteractables = instance.GetComponentsInChildren<BuildingInteractable>(true);
+        if (buildingInteractables != null)
+        {
+            foreach (var interactable in buildingInteractables)
+            {
+                if (interactable != null)
+                {
+                    interactable.bootstrap = bootstrap;
+                }
+            }
+        }
+
+        var npcManagers = instance.GetComponentsInChildren<NPCManager>(true);
+        if (npcManagers != null)
+        {
+            foreach (var npc in npcManagers)
+            {
+                if (npc != null)
+                {
+                    npc.bootstrap = bootstrap;
+                }
+            }
+        }
+    }
+
+    private void MarkBuildingOwnedIfNeeded(GameObject instance)
+    {
+        if (instance == null || bootstrap == null || runtimeState == null)
+        {
+            return;
+        }
+
+        var buildingInteractables = instance.GetComponentsInChildren<BuildingInteractable>(true);
+        if (buildingInteractables == null || buildingInteractables.Length == 0)
+        {
+            return;
+        }
+
+        foreach (var interactable in buildingInteractables)
+        {
+            if (interactable == null || interactable.definition == null)
+            {
+                continue;
+            }
+
+            BuildingState state = bootstrap.GetBuildingState(interactable.definition);
+            if (state == null)
+            {
+                continue;
+            }
+
+            if (!state.IsOwned)
+            {
+                state.IsOwned = true;
+                eventBus?.Publish(new BuildingPurchasedEvent(state));
+            }
+        }
     }
 
     private bool TryShowDialogueWithImmediateChoice(DialogueNode dialogueNode)

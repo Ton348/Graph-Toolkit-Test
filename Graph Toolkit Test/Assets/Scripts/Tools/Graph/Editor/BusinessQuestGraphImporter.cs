@@ -234,6 +234,13 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION)
                 };
                 break;
+            case SetGameObjectActiveNodeModel setActiveNode:
+                runtimeNode = new SetGameObjectActiveNode
+                {
+                    targetObject = GetOptionValue<GameObject>(setActiveNode, SetGameObjectActiveNodeModel.TARGET_OBJECT_OPTION),
+                    isActive = GetOptionValue<bool>(setActiveNode, SetGameObjectActiveNodeModel.IS_ACTIVE_OPTION)
+                };
+                break;
             case EndNodeModel:
                 runtimeNode = new EndNode();
                 break;
