@@ -329,6 +329,9 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
         AddChoice(options,
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_ID),
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_LABEL));
+        AddChoice(options,
+            GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_ID),
+            GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_LABEL));
         return options;
     }
 

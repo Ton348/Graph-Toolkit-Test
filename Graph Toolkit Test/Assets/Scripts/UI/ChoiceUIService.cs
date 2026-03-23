@@ -7,11 +7,10 @@ using UnityEngine.UI;
 public class ChoiceUIService : MonoBehaviour
 {
     public GameObject panel;
-    public Transform optionsRoot;
-    public Button optionButtonPrefab;
+    public Button[] optionButtons = new Button[4];
+    public TMP_Text[] optionTexts = new TMP_Text[4];
 
-    private Action<string> onSelect;
-    private readonly List<Button> spawnedButtons = new List<Button>();
+    private Action<int> onSelected;
 
     private void Awake()
     {
@@ -21,64 +20,87 @@ public class ChoiceUIService : MonoBehaviour
         }
     }
 
-    public void Show(List<ChoiceOption> options, Action<string> onSelectCallback)
+    public void ShowChoices(List<ChoiceOption> options, Action<int> onSelectedCallback)
     {
-        if (optionsRoot == null || optionButtonPrefab == null)
-        {
-            return;
-        }
+        onSelected = onSelectedCallback;
+        ApplyOptions(options);
+    }
 
-        ClearButtons();
-        onSelect = onSelectCallback;
-
-        foreach (ChoiceOption option in options)
-        {
-            if (option == null)
-            {
-                continue;
-            }
-
-            Button btn = Instantiate(optionButtonPrefab, optionsRoot);
-            TMP_Text label = btn.GetComponentInChildren<TMP_Text>();
-            if (label != null)
-            {
-                label.text = option.label;
-            }
-
-            string optionId = option.optionId;
-            btn.onClick.AddListener(() => HandleSelect(optionId));
-            spawnedButtons.Add(btn);
-        }
-
+    private void ApplyOptions(List<ChoiceOption> options)
+    {
         if (panel != null)
         {
             panel.SetActive(true);
         }
+
+        for (int i = 0; i < 4; i++)
+        {
+            Button button = (optionButtons != null && i < optionButtons.Length) ? optionButtons[i] : null;
+            TMP_Text label = (optionTexts != null && i < optionTexts.Length) ? optionTexts[i] : null;
+
+            if (button == null)
+            {
+                continue;
+            }
+
+            button.onClick.RemoveAllListeners();
+
+            ChoiceOption option = (options != null && i < options.Count) ? options[i] : null;
+            if (option == null)
+            {
+                button.gameObject.SetActive(false);
+                continue;
+            }
+
+            button.gameObject.SetActive(true);
+
+            if (label != null)
+            {
+                string text = !string.IsNullOrEmpty(option.label) ? option.label : option.optionId;
+                label.text = text ?? string.Empty;
+            }
+
+            int index = i;
+            button.onClick.AddListener(() => HandleSelect(index));
+        }
     }
 
-    private void HandleSelect(string optionId)
+    private void HandleSelect(int index)
     {
         if (panel != null)
         {
             panel.SetActive(false);
         }
 
-        var callback = onSelect;
-        onSelect = null;
-        ClearButtons();
-        callback?.Invoke(optionId);
+        var callback = onSelected;
+        onSelected = null;
+        callback?.Invoke(index);
     }
 
-    private void ClearButtons()
+    public void HideChoices()
     {
-        foreach (Button btn in spawnedButtons)
+        if (panel != null)
         {
-            if (btn != null)
-            {
-                Destroy(btn.gameObject);
-            }
+            panel.SetActive(false);
         }
 
-        spawnedButtons.Clear();
+        onSelected = null;
+
+        if (optionButtons == null)
+        {
+            return;
+        }
+
+        for (int i = 0; i < optionButtons.Length; i++)
+        {
+            Button button = optionButtons[i];
+            if (button == null)
+            {
+                continue;
+            }
+
+            button.onClick.RemoveAllListeners();
+            button.gameObject.SetActive(false);
+        }
     }
 }

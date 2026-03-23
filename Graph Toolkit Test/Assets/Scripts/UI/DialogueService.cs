@@ -3,12 +3,13 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DialogueService : MonoBehaviour
+public class DialogueUIService : MonoBehaviour
 {
     public GameObject panel;
     public TMP_Text titleText;
     public TMP_Text bodyText;
     public Button continueButton;
+    public bool hidePanelOnContinue = false;
 
     private Action onContinue;
 
@@ -25,7 +26,26 @@ public class DialogueService : MonoBehaviour
         }
     }
 
-    public void Show(string title, string body, Action continueCallback)
+    private void Update()
+    {
+        if (panel == null || !panel.activeSelf || onContinue == null)
+        {
+            return;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetKeyDown(KeyCode.Space))
+        {
+            HandleContinue();
+            return;
+        }
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            HandleContinue();
+        }
+    }
+
+    public void ShowDialogue(string title, string body, Action continueCallback)
     {
         onContinue = continueCallback;
 
@@ -45,9 +65,19 @@ public class DialogueService : MonoBehaviour
         }
     }
 
-    private void HandleContinue()
+    public void HideDialogue()
     {
         if (panel != null)
+        {
+            panel.SetActive(false);
+        }
+
+        onContinue = null;
+    }
+
+    private void HandleContinue()
+    {
+        if (hidePanelOnContinue && panel != null)
         {
             panel.SetActive(false);
         }
@@ -56,4 +86,8 @@ public class DialogueService : MonoBehaviour
         onContinue = null;
         callback?.Invoke();
     }
+}
+
+public class DialogueService : DialogueUIService
+{
 }

@@ -139,7 +139,12 @@ public class BusinessQuestGraphRunner
                 case DialogueNode dialogueNode:
                     if (dialogueService != null)
                     {
-                        dialogueService.Show(dialogueNode.title, dialogueNode.bodyText, () =>
+                        if (TryShowDialogueWithImmediateChoice(dialogueNode))
+                        {
+                            return;
+                        }
+
+                        dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, () =>
                         {
                             currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
                             Advance();
@@ -152,15 +157,15 @@ public class BusinessQuestGraphRunner
                 case ChoiceNode choiceNode:
                     if (choiceUIService != null)
                     {
-                        choiceUIService.Show(choiceNode.options, optionId =>
+                        choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
                         {
-                            string nextId = GetChoiceNextId(choiceNode, optionId);
+                            string nextId = GetChoiceNextId(choiceNode, optionIndex);
                             currentNode = graph.GetNodeById(nextId);
                             Advance();
                         });
                         return;
                     }
-                    currentNode = graph.GetNodeById(GetChoiceNextId(choiceNode, null));
+                    currentNode = graph.GetNodeById(GetChoiceNextId(choiceNode, 0));
                     continue;
 
                 case SkillCheckNode skillCheckNode:
@@ -286,27 +291,65 @@ public class BusinessQuestGraphRunner
         return mapMarkerService != null ? mapMarkerService.GetTarget(node.markerId) : null;
     }
 
-    private string GetChoiceNextId(ChoiceNode node, string optionId)
+    private string GetChoiceNextId(ChoiceNode node, int optionIndex)
     {
         if (node == null || node.options == null || node.options.Count == 0)
         {
             return null;
         }
 
-        if (string.IsNullOrEmpty(optionId))
+        if (optionIndex < 0 || optionIndex >= node.options.Count)
         {
-            return node.options[0].nextNodeId;
+            optionIndex = 0;
+        }
+
+        ChoiceOption selected = node.options[optionIndex];
+        if (selected != null)
+        {
+            return selected.nextNodeId;
         }
 
         foreach (ChoiceOption option in node.options)
         {
-            if (option != null && option.optionId == optionId)
+            if (option != null)
             {
                 return option.nextNodeId;
             }
         }
 
-        return node.options[0].nextNodeId;
+        return null;
+    }
+
+    private bool TryShowDialogueWithImmediateChoice(DialogueNode dialogueNode)
+    {
+        if (dialogueNode == null || dialogueService == null || choiceUIService == null)
+        {
+            return false;
+        }
+
+        if (string.IsNullOrEmpty(dialogueNode.nextNodeId))
+        {
+            return false;
+        }
+
+        if (!(graph.GetNodeById(dialogueNode.nextNodeId) is ChoiceNode choiceNode))
+        {
+            return false;
+        }
+
+        if (choiceNode.options == null || choiceNode.options.Count == 0)
+        {
+            return false;
+        }
+
+        dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, null);
+        choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
+        {
+            string nextId = GetChoiceNextId(choiceNode, optionIndex);
+            currentNode = graph.GetNodeById(nextId);
+            Advance();
+        });
+        return true;
     }
 
     private bool CheckSkill(SkillCheckNode node)
@@ -346,6 +389,8 @@ public class BusinessQuestGraphRunner
             return;
         }
 
+        dialogueService?.HideDialogue();
+        choiceUIService?.HideChoices();
         eventBus?.Unsubscribe<BuildingPurchasedEvent>(OnBuildingPurchased);
         eventBus?.Unsubscribe<BuildingUpgradedEvent>(OnBuildingUpgraded);
         waitingPurchaseNode = null;

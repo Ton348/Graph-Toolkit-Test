@@ -10,6 +10,8 @@ public class ChoiceNodeModel : BusinessQuestEditorNode
     public const string OPTION2_LABEL = "Option2Label";
     public const string OPTION3_ID = "Option3Id";
     public const string OPTION3_LABEL = "Option3Label";
+    public const string OPTION4_ID = "Option4Id";
+    public const string OPTION4_LABEL = "Option4Label";
     protected override string DefaultTitle => "Выбор";
     protected override string DefaultDescription => "Показывает игроку варианты выбора.";
 
@@ -23,6 +25,8 @@ public class ChoiceNodeModel : BusinessQuestEditorNode
         context.AddOption<string>(OPTION2_LABEL).WithDisplayName("Option 2 Label");
         context.AddOption<string>(OPTION3_ID).WithDisplayName("Option 3 Id");
         context.AddOption<string>(OPTION3_LABEL).WithDisplayName("Option 3 Label");
+        context.AddOption<string>(OPTION4_ID).WithDisplayName("Option 4 Id");
+        context.AddOption<string>(OPTION4_LABEL).WithDisplayName("Option 4 Label");
     }
 
     protected override void OnDefinePorts(IPortDefinitionContext context)
@@ -31,5 +35,6 @@ public class ChoiceNodeModel : BusinessQuestEditorNode
         context.AddOutputPort("Option1").WithDisplayName("Option 1").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
         context.AddOutputPort("Option2").WithDisplayName("Option 2").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
         context.AddOutputPort("Option3").WithDisplayName("Option 3").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+        context.AddOutputPort("Option4").WithDisplayName("Option 4").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
     }
 }
