@@ -1,0 +1,12 @@
+# Unity generated folders
+/Graph Toolkit Test/Library/
+/Graph Toolkit Test/Temp/
+/Graph Toolkit Test/Obj/
+/Graph Toolkit Test/Build/
+/Graph Toolkit Test/Builds/
+/Graph Toolkit Test/Logs/
+/Graph Toolkit Test/UserSettings/
+
+# OS / editor
+.DS_Store
+*.swp
