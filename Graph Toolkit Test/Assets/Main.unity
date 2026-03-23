@@ -17331,7 +17331,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  questGraph: {fileID: -8116140793486648412, guid: 27be60105b73242a6b6b3dd7cbb86e8f, type: 3}
+  questGraph: {fileID: -8116140793486648412, guid: 4e143855e31594fc292988cb5d8235fb, type: 3}
   bootstrap: {fileID: 1614953995}
   dialogueService: {fileID: 1233045968}
   choiceUIService: {fileID: 1668601430}

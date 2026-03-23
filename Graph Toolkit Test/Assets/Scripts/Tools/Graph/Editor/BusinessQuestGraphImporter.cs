@@ -75,6 +75,13 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
+        if (runtimeNode is ConditionNode condition)
+        {
+            condition.trueNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            condition.falseNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
         if (runtimeNode is SpendMoneyNode spendMoney)
         {
             spendMoney.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
@@ -205,6 +212,26 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new WaitForBuildingUpgradedNode
                 {
                     buildingId = GetOptionValue<string>(waitUpgradedNode, WaitForBuildingUpgradedNodeModel.BUILDING_ID_OPTION)
+                };
+                break;
+            case ConditionNodeModel conditionNode:
+                runtimeNode = new ConditionNode
+                {
+                    conditionType = GetOptionValue<ConditionType>(conditionNode, ConditionNodeModel.CONDITION_TYPE_OPTION),
+                    targetBuilding = GetOptionValue<BuildingDefinition>(conditionNode, ConditionNodeModel.BUILDING_OPTION),
+                    requiredMoney = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_MONEY_OPTION),
+                    playerStatType = GetOptionValue<PlayerStatType>(conditionNode, ConditionNodeModel.PLAYER_STAT_OPTION),
+                    requiredStatValue = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_STAT_OPTION)
+                };
+                break;
+            case WaitForConditionNodeModel waitConditionNode:
+                runtimeNode = new WaitForConditionNode
+                {
+                    conditionType = GetOptionValue<ConditionType>(waitConditionNode, WaitForConditionNodeModel.CONDITION_TYPE_OPTION),
+                    targetBuilding = GetOptionValue<BuildingDefinition>(waitConditionNode, WaitForConditionNodeModel.BUILDING_OPTION),
+                    requiredMoney = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_MONEY_OPTION),
+                    playerStatType = GetOptionValue<PlayerStatType>(waitConditionNode, WaitForConditionNodeModel.PLAYER_STAT_OPTION),
+                    requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION)
                 };
                 break;
             case EndNodeModel:

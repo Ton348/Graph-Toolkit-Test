@@ -3,6 +3,7 @@ using UnityEngine;
 public class BusinessQuestGraphRunner
 {
     private readonly BusinessQuestGraph graph;
+    private readonly GameRuntimeState runtimeState;
     private readonly QuestService questService;
     private readonly PlayerService playerService;
     private readonly PlayerProfileState playerState;
@@ -16,11 +17,13 @@ public class BusinessQuestGraphRunner
     private WaitForBuildingPurchasedNode waitingPurchaseNode;
     private WaitForBuildingUpgradedNode waitingUpgradeNode;
     private GoToPointNode waitingGoToNode;
+    private WaitForConditionNode waitingConditionNode;
 
     public bool IsRunning { get; private set; }
 
     public BusinessQuestGraphRunner(
         BusinessQuestGraph graph,
+        GameRuntimeState runtimeState,
         QuestService questService,
         PlayerService playerService,
         PlayerProfileState playerState,
@@ -31,6 +34,7 @@ public class BusinessQuestGraphRunner
         Transform playerTransform)
     {
         this.graph = graph;
+        this.runtimeState = runtimeState;
         this.questService = questService;
         this.playerService = playerService;
         this.playerState = playerState;
@@ -55,23 +59,38 @@ public class BusinessQuestGraphRunner
 
     public void Tick()
     {
-        if (!IsRunning || waitingGoToNode == null)
+        if (!IsRunning)
         {
             return;
         }
 
-        Transform target = GetTargetTransform(waitingGoToNode);
-        if (target == null || playerTransform == null)
+        if (waitingConditionNode != null)
         {
+            if (ConditionEvaluator.EvaluateCondition(waitingConditionNode, runtimeState, playerService, questService))
+            {
+                currentNode = graph.GetNodeById(waitingConditionNode.nextNodeId);
+                waitingConditionNode = null;
+                Advance();
+            }
+
             return;
         }
 
-        float distance = Vector3.Distance(playerTransform.position, target.position);
-        if (distance <= waitingGoToNode.arrivalDistance)
+        if (waitingGoToNode != null)
         {
-            currentNode = graph.GetNodeById(waitingGoToNode.nextNodeId);
-            waitingGoToNode = null;
-            Advance();
+            Transform target = GetTargetTransform(waitingGoToNode);
+            if (target == null || playerTransform == null)
+            {
+                return;
+            }
+
+            float distance = Vector3.Distance(playerTransform.position, target.position);
+            if (distance <= waitingGoToNode.arrivalDistance)
+            {
+                currentNode = graph.GetNodeById(waitingGoToNode.nextNodeId);
+                waitingGoToNode = null;
+                Advance();
+            }
         }
     }
 
@@ -149,6 +168,11 @@ public class BusinessQuestGraphRunner
                     currentNode = graph.GetNodeById(success ? skillCheckNode.successNodeId : skillCheckNode.failNodeId);
                     continue;
 
+                case ConditionNode conditionNode:
+                    bool conditionResult = ConditionEvaluator.EvaluateCondition(conditionNode, runtimeState, playerService, questService);
+                    currentNode = graph.GetNodeById(conditionResult ? conditionNode.trueNodeId : conditionNode.falseNodeId);
+                    continue;
+
                 case SpendMoneyNode spendMoneyNode:
                     if (playerService != null && playerService.HasEnoughMoney(spendMoneyNode.amount))
                     {
@@ -178,6 +202,10 @@ public class BusinessQuestGraphRunner
                 case WaitForBuildingUpgradedNode waitUpgrade:
                     waitingUpgradeNode = waitUpgrade;
                     eventBus?.Subscribe<BuildingUpgradedEvent>(OnBuildingUpgraded);
+                    return;
+
+                case WaitForConditionNode waitCondition:
+                    waitingConditionNode = waitCondition;
                     return;
 
                 case EndNode:
@@ -323,6 +351,7 @@ public class BusinessQuestGraphRunner
         waitingPurchaseNode = null;
         waitingUpgradeNode = null;
         waitingGoToNode = null;
+        waitingConditionNode = null;
         currentNode = null;
         IsRunning = false;
     }
