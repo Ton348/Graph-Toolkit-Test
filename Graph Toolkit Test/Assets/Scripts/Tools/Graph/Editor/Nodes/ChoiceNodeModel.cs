@@ -10,9 +10,13 @@ public class ChoiceNodeModel : BusinessQuestEditorNode
     public const string OPTION2_LABEL = "Option2Label";
     public const string OPTION3_ID = "Option3Id";
     public const string OPTION3_LABEL = "Option3Label";
+    protected override string DefaultTitle => "Выбор";
+    protected override string DefaultDescription => "Показывает игроку варианты выбора.";
 
     protected override void OnDefineOptions(IOptionDefinitionContext context)
     {
+        base.OnDefineOptions(context);
+
         context.AddOption<string>(OPTION1_ID).WithDisplayName("Option 1 Id");
         context.AddOption<string>(OPTION1_LABEL).WithDisplayName("Option 1 Label");
         context.AddOption<string>(OPTION2_ID).WithDisplayName("Option 2 Id");

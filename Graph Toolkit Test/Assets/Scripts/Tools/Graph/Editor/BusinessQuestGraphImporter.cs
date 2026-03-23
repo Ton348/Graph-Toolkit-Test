@@ -124,79 +124,138 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
 
     static BusinessQuestNode ConvertNode(INode node)
     {
+        BusinessQuestNode runtimeNode = null;
+
         switch (node)
         {
             case StartNodeModel:
-                return new StartNode();
+                runtimeNode = new StartNode();
+                break;
             case GiveQuestNodeModel giveQuestNode:
-                return new GiveQuestNode
+                runtimeNode = new GiveQuestNode
                 {
                     questDefinition = GetOptionValue<QuestDefinition>(giveQuestNode, GiveQuestNodeModel.QUEST_OPTION)
                 };
+                break;
             case AddQuestNodeModel addQuestNode:
-                return new AddQuestNode
+                runtimeNode = new AddQuestNode
                 {
                     questDefinition = GetOptionValue<QuestDefinition>(addQuestNode, AddQuestNodeModel.QUEST_OPTION)
                 };
+                break;
             case DialogueNodeModel dialogueNode:
-                return new DialogueNode
+                runtimeNode = new DialogueNode
                 {
                     title = GetOptionValue<string>(dialogueNode, DialogueNodeModel.TITLE_OPTION),
                     bodyText = GetOptionValue<string>(dialogueNode, DialogueNodeModel.BODY_OPTION)
                 };
+                break;
             case ChoiceNodeModel choiceNode:
-                return new ChoiceNode
+                runtimeNode = new ChoiceNode
                 {
                     options = BuildChoiceOptions(choiceNode)
                 };
+                break;
             case SkillCheckNodeModel skillCheckNode:
-                return new SkillCheckNode
+                runtimeNode = new SkillCheckNode
                 {
                     skillType = GetOptionValue<SkillType>(skillCheckNode, SkillCheckNodeModel.SKILL_OPTION),
                     requiredValue = GetOptionValue<int>(skillCheckNode, SkillCheckNodeModel.REQUIRED_OPTION)
                 };
+                break;
             case SpendMoneyNodeModel spendMoneyNode:
-                return new SpendMoneyNode
+                runtimeNode = new SpendMoneyNode
                 {
                     amount = GetOptionValue<int>(spendMoneyNode, SpendMoneyNodeModel.AMOUNT_OPTION)
                 };
+                break;
             case AddMapMarkerNodeModel addMarkerNode:
-                return new AddMapMarkerNode
+                runtimeNode = new AddMapMarkerNode
                 {
                     markerId = GetOptionValue<string>(addMarkerNode, AddMapMarkerNodeModel.MARKER_ID_OPTION),
                     title = GetOptionValue<string>(addMarkerNode, AddMapMarkerNodeModel.TITLE_OPTION)
                 };
+                break;
             case GoToPointNodeModel goToPointNode:
-                return new GoToPointNode
+                runtimeNode = new GoToPointNode
                 {
                     markerId = GetOptionValue<string>(goToPointNode, GoToPointNodeModel.MARKER_ID_OPTION),
                     arrivalDistance = GetOptionValue<float>(goToPointNode, GoToPointNodeModel.ARRIVAL_OPTION)
                 };
+                break;
             case WaitForBuildingPurchasedNodeModel waitPurchasedNode:
-                return new WaitForBuildingPurchasedNode
+                runtimeNode = new WaitForBuildingPurchasedNode
                 {
                     buildingId = GetOptionValue<string>(waitPurchasedNode, WaitForBuildingPurchasedNodeModel.BUILDING_ID_OPTION)
                 };
+                break;
             case CompleteQuestNodeModel completeQuestNode:
-                return new CompleteQuestNode
+                runtimeNode = new CompleteQuestNode
                 {
                     questId = GetOptionValue<string>(completeQuestNode, CompleteQuestNodeModel.QUEST_ID_OPTION)
                 };
+                break;
             case FailQuestNodeModel failQuestNode:
-                return new FailQuestNode
+                runtimeNode = new FailQuestNode
                 {
                     questId = GetOptionValue<string>(failQuestNode, FailQuestNodeModel.QUEST_ID_OPTION)
                 };
+                break;
             case WaitForBuildingUpgradedNodeModel waitUpgradedNode:
-                return new WaitForBuildingUpgradedNode
+                runtimeNode = new WaitForBuildingUpgradedNode
                 {
                     buildingId = GetOptionValue<string>(waitUpgradedNode, WaitForBuildingUpgradedNodeModel.BUILDING_ID_OPTION)
                 };
+                break;
             case EndNodeModel:
-                return new EndNode();
+                runtimeNode = new EndNode();
+                break;
             default:
-                return new EndNode();
+                runtimeNode = new EndNode();
+                break;
         }
+
+        ApplyNodeMetadata(node, runtimeNode);
+        return runtimeNode;
+    }
+
+    static void ApplyNodeMetadata(INode editorNode, BusinessQuestNode runtimeNode)
+    {
+        if (editorNode is not Node node || runtimeNode == null)
+        {
+            return;
+        }
+
+        if (TryGetOptionValue(node, BusinessQuestEditorNode.TITLE_OPTION, out string title))
+        {
+            runtimeNode.Title = string.IsNullOrWhiteSpace(title) ? runtimeNode.GetType().Name : title;
+        }
+        else if (string.IsNullOrWhiteSpace(runtimeNode.Title))
+        {
+            runtimeNode.Title = runtimeNode.GetType().Name;
+        }
+
+        if (TryGetOptionValue(node, BusinessQuestEditorNode.DESCRIPTION_OPTION, out string description))
+        {
+            runtimeNode.Description = description;
+        }
+
+        if (TryGetOptionValue(node, BusinessQuestEditorNode.COMMENT_OPTION, out string comment))
+        {
+            runtimeNode.Comment = comment;
+        }
+    }
+
+    static bool TryGetOptionValue<T>(Node node, string optionName, out T value)
+    {
+        var option = node.GetNodeOptionByName(optionName);
+        if (option != null && option.TryGetValue(out value))
+        {
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     static string GetConnectedNodeIdByOutputIndex(INode node, int outputIndex, Dictionary<INode, string> idMap)

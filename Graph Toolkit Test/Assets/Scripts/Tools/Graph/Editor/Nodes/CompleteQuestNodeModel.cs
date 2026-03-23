@@ -7,6 +7,8 @@ public class CompleteQuestNodeModel : BusinessQuestEditorNode
 
     protected override void OnDefineOptions(IOptionDefinitionContext context)
     {
+        base.OnDefineOptions(context);
+
         context.AddOption<string>(QUEST_ID_OPTION)
             .WithDisplayName("Quest Id");
     }
@@ -16,4 +18,7 @@ public class CompleteQuestNodeModel : BusinessQuestEditorNode
         AddInputExecutionPort(context);
         AddOutputExecutionPort(context);
     }
+
+    protected override string DefaultTitle => "Завершить квест";
+    protected override string DefaultDescription => "Завершает указанный квест.";
 }

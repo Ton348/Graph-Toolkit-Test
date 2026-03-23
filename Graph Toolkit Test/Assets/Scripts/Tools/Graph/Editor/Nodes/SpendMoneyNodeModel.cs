@@ -5,9 +5,13 @@ using Unity.GraphToolkit.Editor;
 public class SpendMoneyNodeModel : BusinessQuestEditorNode
 {
     public const string AMOUNT_OPTION = "Amount";
+    protected override string DefaultTitle => "Потратить деньги";
+    protected override string DefaultDescription => "Пытается списать сумму и ведет по успеху/провалу.";
 
     protected override void OnDefineOptions(IOptionDefinitionContext context)
     {
+        base.OnDefineOptions(context);
+
         context.AddOption<int>(AMOUNT_OPTION).WithDisplayName("Amount");
     }
 

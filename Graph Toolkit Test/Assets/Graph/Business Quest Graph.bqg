@@ -216,8 +216,14 @@ MonoBehaviour:
           rid: -2
         m_State: 0
         m_InputConstantsById:
-          m_KeyList: []
-          m_ValueList: []
+          m_KeyList:
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
+          m_ValueList:
+          - rid: 6060223847305576565
+          - rid: 6060223847305576566
+          - rid: 6060223847305576567
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -255,8 +261,14 @@ MonoBehaviour:
         m_InputConstantsById:
           m_KeyList:
           - __option_Quest
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060223781918474318
+          - rid: 6060223847305576568
+          - rid: 6060223847305576569
+          - rid: 6060223847305576570
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -298,8 +310,14 @@ MonoBehaviour:
         m_InputConstantsById:
           m_KeyList:
           - __option_BuildingId
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060223781918474321
+          - rid: 6060223847305576571
+          - rid: 6060223847305576572
+          - rid: 6060223847305576573
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -341,8 +359,14 @@ MonoBehaviour:
         m_InputConstantsById:
           m_KeyList:
           - __option_BuildingId
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060223781918474324
+          - rid: 6060223847305576574
+          - rid: 6060223847305576575
+          - rid: 6060223847305576576
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -384,8 +408,14 @@ MonoBehaviour:
         m_InputConstantsById:
           m_KeyList:
           - __option_QuestId
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060223781918474327
+          - rid: 6060223847305576577
+          - rid: 6060223847305576578
+          - rid: 6060223847305576579
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -425,8 +455,14 @@ MonoBehaviour:
           rid: -2
         m_State: 0
         m_InputConstantsById:
-          m_KeyList: []
-          m_ValueList: []
+          m_KeyList:
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
+          m_ValueList:
+          - rid: 6060223847305576580
+          - rid: 6060223847305576581
+          - rid: 6060223847305576582
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -560,8 +596,14 @@ MonoBehaviour:
         m_InputConstantsById:
           m_KeyList:
           - __option_Quest
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060223781918474337
+          - rid: 6060223847305576583
+          - rid: 6060223847305576584
+          - rid: 6060223847305576585
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -667,8 +709,14 @@ MonoBehaviour:
         m_InputConstantsById:
           m_KeyList:
           - __option_QuestId
+          - __option_NodeTitle
+          - __option_NodeDescription
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060223781918474342
+          - rid: 6060223847305576586
+          - rid: 6060223847305576587
+          - rid: 6060223847305576588
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -755,3 +803,111 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: 
+    - rid: 6060223847305576565
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0421\u0442\u0430\u0440\u0442"
+    - rid: 6060223847305576566
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041D\u0430\u0447\u0430\u043B\u044C\u043D\u0430\u044F \u0442\u043E\u0447\u043A\u0430
+          \u0433\u0440\u0430\u0444\u0430."
+    - rid: 6060223847305576567
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576568
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0412\u044B\u0434\u0430\u0442\u044C \u043A\u0432\u0435\u0441\u0442"
+    - rid: 6060223847305576569
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0412\u044B\u0434\u0430\u0435\u0442 \u0438\u0433\u0440\u043E\u043A\u0443
+          \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u044B\u0439 \u043A\u0432\u0435\u0441\u0442."
+    - rid: 6060223847305576570
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576571
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u043F\u043E\u043A\u0443\u043F\u043A\u0438
+          \u0437\u0434\u0430\u043D\u0438\u044F"
+    - rid: 6060223847305576572
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041E\u0436\u0438\u0434\u0430\u0435\u0442, \u043F\u043E\u043A\u0430
+          \u0438\u0433\u0440\u043E\u043A \u043A\u0443\u043F\u0438\u0442 \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u043E\u0435
+          \u0437\u0434\u0430\u043D\u0438\u0435."
+    - rid: 6060223847305576573
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576574
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041E\u0436\u0438\u0434\u0430\u043D\u0438\u0435 \u0443\u043B\u0443\u0447\u0448\u0435\u043D\u0438\u044F
+          \u0437\u0434\u0430\u043D\u0438\u044F"
+    - rid: 6060223847305576575
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041E\u0436\u0438\u0434\u0430\u0435\u0442, \u043F\u043E\u043A\u0430
+          \u0438\u0433\u0440\u043E\u043A \u0443\u043B\u0443\u0447\u0448\u0438\u0442
+          \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u043E\u0435 \u0437\u0434\u0430\u043D\u0438\u0435."
+    - rid: 6060223847305576576
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576577
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u043A\u0432\u0435\u0441\u0442"
+    - rid: 6060223847305576578
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u044B\u0439
+          \u043A\u0432\u0435\u0441\u0442."
+    - rid: 6060223847305576579
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576580
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041A\u043E\u043D\u0435\u0446"
+    - rid: 6060223847305576581
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
+          \u0433\u0440\u0430\u0444\u0430."
+    - rid: 6060223847305576582
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576583
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0412\u044B\u0434\u0430\u0442\u044C \u043A\u0432\u0435\u0441\u0442"
+    - rid: 6060223847305576584
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0412\u044B\u0434\u0430\u0435\u0442 \u0438\u0433\u0440\u043E\u043A\u0443
+          \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u044B\u0439 \u043A\u0432\u0435\u0441\u0442."
+    - rid: 6060223847305576585
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 6060223847305576586
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0438\u0442\u044C \u043A\u0432\u0435\u0441\u0442"
+    - rid: 6060223847305576587
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u044B\u0439
+          \u043A\u0432\u0435\u0441\u0442."
+    - rid: 6060223847305576588
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
