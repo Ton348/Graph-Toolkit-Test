@@ -3331,8 +3331,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -303, y: 0}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: -317, y: 0}
+  m_SizeDelta: {x: 400, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &141927749
 MonoBehaviour:
@@ -50916,13 +50916,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 2
-  dialogueGraph: {fileID: 0}
+  dialogueGraph: {fileID: -8116140793486648412, guid: 3fecb6d2f69754ad49b9e4445e3fa413, type: 3}
   stealGraph: {fileID: -8116140793486648412, guid: 16d21ea886a084eabaf6627abc9748c4, type: 3}
   allowSteal: 1
   lookForwardReference: {fileID: 2005810001}
   stealDistance: 1.5
   stealBackAngle: 180
-  stealMinBackAngle: 40
+  stealMinBackAngle: 120
   bootstrap: {fileID: 1614953995}
   dialogueService: {fileID: 1233045968}
   choiceUIService: {fileID: 1668601430}

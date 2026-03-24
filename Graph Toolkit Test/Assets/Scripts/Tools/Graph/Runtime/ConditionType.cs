@@ -2,5 +2,7 @@ public enum ConditionType
 {
     BuildingOwned,
     HasEnoughMoney,
-    PlayerStatAtLeast
+    PlayerStatAtLeast,
+    QuestActive,
+    QuestCompleted
 }

@@ -8,6 +8,7 @@ public class ConditionNode : BusinessQuestNode
     public int requiredMoney;
     public PlayerStatType playerStatType;
     public int requiredStatValue;
+    public string questId;
     public string trueNodeId;
     public string falseNodeId;
 

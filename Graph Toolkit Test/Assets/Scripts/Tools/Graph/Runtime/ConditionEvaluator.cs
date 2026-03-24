@@ -15,7 +15,7 @@ public static class ConditionEvaluator
         PlayerStatType playerStatType,
         int requiredStatValue)
     {
-        return EvaluateCondition(conditionType, runtimeState, playerService, questService, targetBuilding, requiredMoney, playerStatType, requiredStatValue, out _);
+        return EvaluateCondition(conditionType, runtimeState, playerService, questService, targetBuilding, requiredMoney, playerStatType, requiredStatValue, null, out _);
     }
 
     static bool EvaluateCondition(
@@ -27,6 +27,7 @@ public static class ConditionEvaluator
         int requiredMoney,
         PlayerStatType playerStatType,
         int requiredStatValue,
+        string questId,
         out string reason)
     {
         reason = string.Empty;
@@ -39,6 +40,10 @@ public static class ConditionEvaluator
                 return HasEnoughMoney(runtimeState, playerService, requiredMoney, out reason);
             case ConditionType.PlayerStatAtLeast:
                 return IsPlayerStatAtLeast(runtimeState, playerStatType, requiredStatValue, out reason);
+            case ConditionType.QuestActive:
+                return IsQuestStatus(runtimeState, questService, questId, QuestStatus.Active, out reason);
+            case ConditionType.QuestCompleted:
+                return IsQuestStatus(runtimeState, questService, questId, QuestStatus.Completed, out reason);
         }
 
         reason = $"Unknown condition type: {conditionType}";
@@ -52,7 +57,7 @@ public static class ConditionEvaluator
             return false;
         }
 
-        bool result = EvaluateCondition(node.conditionType, runtimeState, playerService, questService, node.targetBuilding, node.requiredMoney, node.playerStatType, node.requiredStatValue, out string reason);
+        bool result = EvaluateCondition(node.conditionType, runtimeState, playerService, questService, node.targetBuilding, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, out string reason);
         LogIfFalse(node, result, reason);
         return result;
     }
@@ -64,7 +69,7 @@ public static class ConditionEvaluator
             return false;
         }
 
-        bool result = EvaluateCondition(node.conditionType, runtimeState, playerService, questService, node.targetBuilding, node.requiredMoney, node.playerStatType, node.requiredStatValue, out string reason);
+        bool result = EvaluateCondition(node.conditionType, runtimeState, playerService, questService, node.targetBuilding, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, out string reason);
         LogIfFalse(node, result, reason);
         return result;
     }
@@ -155,6 +160,49 @@ public static class ConditionEvaluator
 
         reason = $"Stat {statType} value {value} < required {requiredStatValue}.";
         return false;
+    }
+
+    static bool IsQuestStatus(GameRuntimeState runtimeState, QuestService questService, string questId, QuestStatus status, out string reason)
+    {
+        if (string.IsNullOrEmpty(questId))
+        {
+            reason = "Quest id is not assigned.";
+            return false;
+        }
+
+        QuestState quest = questService != null ? questService.GetQuestById(questId) : GetQuestFromRuntime(runtimeState, questId);
+        if (quest == null)
+        {
+            reason = $"Quest '{questId}' not found.";
+            return false;
+        }
+
+        if (quest.Status == status)
+        {
+            reason = string.Empty;
+            return true;
+        }
+
+        reason = $"Quest '{questId}' status is {quest.Status}, expected {status}.";
+        return false;
+    }
+
+    static QuestState GetQuestFromRuntime(GameRuntimeState runtimeState, string questId)
+    {
+        if (runtimeState == null || runtimeState.Quests == null || string.IsNullOrEmpty(questId))
+        {
+            return null;
+        }
+
+        foreach (QuestState quest in runtimeState.Quests)
+        {
+            if (quest != null && quest.Definition != null && quest.Definition.questId == questId)
+            {
+                return quest;
+            }
+        }
+
+        return null;
     }
 
     static int GetPlayerStat(GameRuntimeState runtimeState, PlayerStatType statType)

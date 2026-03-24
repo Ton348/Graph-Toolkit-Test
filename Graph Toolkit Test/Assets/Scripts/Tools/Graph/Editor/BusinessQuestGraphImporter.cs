@@ -235,7 +235,8 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     targetBuilding = GetOptionValue<BuildingDefinition>(conditionNode, ConditionNodeModel.BUILDING_OPTION),
                     requiredMoney = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_MONEY_OPTION),
                     playerStatType = GetOptionValue<PlayerStatType>(conditionNode, ConditionNodeModel.PLAYER_STAT_OPTION),
-                    requiredStatValue = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_STAT_OPTION)
+                    requiredStatValue = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_STAT_OPTION),
+                    questId = GetOptionValue<string>(conditionNode, ConditionNodeModel.QUEST_ID_OPTION)
                 };
                 break;
             case WaitForConditionNodeModel waitConditionNode:
@@ -245,7 +246,8 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     targetBuilding = GetOptionValue<BuildingDefinition>(waitConditionNode, WaitForConditionNodeModel.BUILDING_OPTION),
                     requiredMoney = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_MONEY_OPTION),
                     playerStatType = GetOptionValue<PlayerStatType>(waitConditionNode, WaitForConditionNodeModel.PLAYER_STAT_OPTION),
-                    requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION)
+                    requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION),
+                    questId = GetOptionValue<string>(waitConditionNode, WaitForConditionNodeModel.QUEST_ID_OPTION)
                 };
                 break;
             case StealActionNodeModel stealActionNode:

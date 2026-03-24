@@ -101,11 +101,13 @@ internal static class ConditionNodeViewDecorator
         bool showBuilding = conditionType == ConditionType.BuildingOwned;
         bool showMoney = conditionType == ConditionType.HasEnoughMoney;
         bool showStat = conditionType == ConditionType.PlayerStatAtLeast;
+        bool showQuest = conditionType == ConditionType.QuestActive || conditionType == ConditionType.QuestCompleted;
 
         SetOptionVisible(root, ConditionNodeModel.BUILDING_LABEL, showBuilding);
         SetOptionVisible(root, ConditionNodeModel.REQUIRED_MONEY_LABEL, showMoney);
         SetOptionVisible(root, ConditionNodeModel.PLAYER_STAT_LABEL, showStat);
         SetOptionVisible(root, ConditionNodeModel.REQUIRED_STAT_LABEL, showStat);
+        SetOptionVisible(root, ConditionNodeModel.QUEST_ID_LABEL, showQuest);
     }
 
     static void SetOptionVisible(VisualElement root, string labelText, bool visible)
