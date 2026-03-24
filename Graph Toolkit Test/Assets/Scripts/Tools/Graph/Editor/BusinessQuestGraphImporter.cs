@@ -89,6 +89,20 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
+        if (runtimeNode is StealActionNode stealAction)
+        {
+            stealAction.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            stealAction.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is BranchByInteractionContextNode branch)
+        {
+            branch.normalNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            branch.stealNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
         string nextId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
         runtimeNode.nextNodeId = nextId;
         if (runtimeNode is DialogueNode dialogue)
@@ -234,6 +248,23 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION)
                 };
                 break;
+            case StealActionNodeModel stealActionNode:
+                runtimeNode = new StealActionNode
+                {
+                    stealAmount = GetOptionValue<int>(stealActionNode, StealActionNodeModel.STEAL_AMOUNT_OPTION),
+                    canFail = GetOptionValue<bool>(stealActionNode, StealActionNodeModel.CAN_FAIL_OPTION),
+                    requiredSpeech = GetOptionValue<int>(stealActionNode, StealActionNodeModel.REQUIRED_SPEECH_OPTION)
+                };
+                break;
+            case RaiseAlertNodeModel raiseAlertNode:
+                runtimeNode = new RaiseAlertNode
+                {
+                    alertMessage = GetOptionValue<string>(raiseAlertNode, RaiseAlertNodeModel.ALERT_MESSAGE_OPTION)
+                };
+                break;
+            case BranchByInteractionContextNodeModel:
+                runtimeNode = new BranchByInteractionContextNode();
+                break;
             case SetGameObjectActiveNodeModel setActiveNode:
                 runtimeNode = new SetGameObjectActiveNode
                 {
@@ -319,6 +350,11 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
 
         for (int i = 0; i < choice.options.Count; i++)
         {
+            if (choice.options[i] == null)
+            {
+                continue;
+            }
+
             string nextId = GetConnectedNodeIdByOutputIndex(node, i, idMap);
             choice.options[i].nextNodeId = nextId;
         }
@@ -326,35 +362,40 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
 
     static List<ChoiceOption> BuildChoiceOptions(ChoiceNodeModel node)
     {
-        var options = new List<ChoiceOption>();
-        AddChoice(options,
+        var options = new List<ChoiceOption> { null, null, null, null };
+        SetChoice(options, 0,
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION1_ID),
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION1_LABEL));
-        AddChoice(options,
+        SetChoice(options, 1,
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION2_ID),
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION2_LABEL));
-        AddChoice(options,
+        SetChoice(options, 2,
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_ID),
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_LABEL));
-        AddChoice(options,
+        SetChoice(options, 3,
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_ID),
             GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_LABEL));
         return options;
     }
 
-    static void AddChoice(List<ChoiceOption> options, string optionId, string label)
+    static void SetChoice(List<ChoiceOption> options, int index, string optionId, string label)
     {
-        if (string.IsNullOrEmpty(optionId) && string.IsNullOrEmpty(label))
+        if (options == null || index < 0 || index >= options.Count)
         {
             return;
         }
 
-        var option = new ChoiceOption
+        if (string.IsNullOrEmpty(optionId) && string.IsNullOrEmpty(label))
+        {
+            options[index] = null;
+            return;
+        }
+
+        options[index] = new ChoiceOption
         {
             optionId = string.IsNullOrEmpty(optionId) ? label : optionId,
             label = string.IsNullOrEmpty(label) ? optionId : label
         };
-        options.Add(option);
     }
 
     static T GetOptionValue<T>(Node node, string optionName)

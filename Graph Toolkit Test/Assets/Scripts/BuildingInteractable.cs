@@ -20,7 +20,7 @@ public class BuildingInteractable : Interactable
         }
     }
 
-    public override void Interact()
+    public override void Interact(Transform player)
     {
         if (definition == null)
         {
@@ -79,5 +79,10 @@ public class BuildingInteractable : Interactable
         {
             Debug.Log("Сначала купите здание");
         }
+    }
+
+    public override void Interact()
+    {
+        Interact(null);
     }
 }

@@ -17603,7 +17603,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  questGraph: {fileID: -8116140793486648412, guid: 4e143855e31594fc292988cb5d8235fb, type: 3}
+  dialogueGraph: {fileID: -8116140793486648412, guid: 4e143855e31594fc292988cb5d8235fb, type: 3}
+  stealGraph: {fileID: 0}
+  allowSteal: 1
+  lookForwardReference: {fileID: 0}
+  stealDistance: 1.5
+  stealBackAngle: 180
+  stealMinBackAngle: 40
   bootstrap: {fileID: 1614953995}
   dialogueService: {fileID: 1233045968}
   choiceUIService: {fileID: 1668601430}
@@ -49395,8 +49401,16 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5388624719327353857, guid: 49121edd22c328c47a8918cf7e48e4ee, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2005810002}
   m_SourcePrefab: {fileID: 100100000, guid: 49121edd22c328c47a8918cf7e48e4ee, type: 3}
+--- !u!1 &1962221005 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5388624719327353857, guid: 49121edd22c328c47a8918cf7e48e4ee, type: 3}
+  m_PrefabInstance: {fileID: 1962221004}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1962334765 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: b82e76f4092b7d24aaeecddf36fe8d3b, type: 3}
@@ -50889,6 +50903,31 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5388624719327353983, guid: 49121edd22c328c47a8918cf7e48e4ee, type: 3}
   m_PrefabInstance: {fileID: 1962221004}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2005810002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1962221005}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97b14f704cbea4b6aa93a41157969d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NPCManager
+  interactionDistance: 2
+  dialogueGraph: {fileID: 0}
+  stealGraph: {fileID: -8116140793486648412, guid: 16d21ea886a084eabaf6627abc9748c4, type: 3}
+  allowSteal: 1
+  lookForwardReference: {fileID: 2005810001}
+  stealDistance: 1.5
+  stealBackAngle: 180
+  stealMinBackAngle: 40
+  bootstrap: {fileID: 1614953995}
+  dialogueService: {fileID: 1233045968}
+  choiceUIService: {fileID: 1668601430}
+  mapMarkerService: {fileID: 904529085}
+  playerTransform: {fileID: 1248676882}
 --- !u!4 &2007034569 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: d4cfcf659200d7548b90a5580c3ab18f, type: 3}

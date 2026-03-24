@@ -21,6 +21,7 @@ public class BusinessQuestGraphRunner
     private GoToPointNode waitingGoToNode;
     private WaitForConditionNode waitingConditionNode;
     private readonly Dictionary<string, GameObject> spawnedObjects = new Dictionary<string, GameObject>();
+    private InteractionContext currentContext = new InteractionContext { contextType = InteractionContextType.Normal };
 
     public bool IsRunning { get; private set; }
 
@@ -52,11 +53,17 @@ public class BusinessQuestGraphRunner
 
     public void Start()
     {
+        Start(new InteractionContext { contextType = InteractionContextType.Normal });
+    }
+
+    public void Start(InteractionContext context)
+    {
         if (IsRunning || graph == null)
         {
             return;
         }
 
+        currentContext = context ?? new InteractionContext { contextType = InteractionContextType.Normal };
         IsRunning = true;
         currentNode = graph.GetStartNode();
         Advance();
@@ -174,13 +181,30 @@ public class BusinessQuestGraphRunner
                     continue;
 
                 case SkillCheckNode skillCheckNode:
-                    bool success = CheckSkill(skillCheckNode);
-                    currentNode = graph.GetNodeById(success ? skillCheckNode.successNodeId : skillCheckNode.failNodeId);
+                    bool skillSuccess = CheckSkill(skillCheckNode);
+                    currentNode = graph.GetNodeById(skillSuccess ? skillCheckNode.successNodeId : skillCheckNode.failNodeId);
                     continue;
 
                 case ConditionNode conditionNode:
                     bool conditionResult = ConditionEvaluator.EvaluateCondition(conditionNode, runtimeState, playerService, questService);
                     currentNode = graph.GetNodeById(conditionResult ? conditionNode.trueNodeId : conditionNode.falseNodeId);
+                    continue;
+
+                case BranchByInteractionContextNode branchNode:
+                    currentNode = graph.GetNodeById(IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
+                    continue;
+
+                case StealActionNode stealActionNode:
+                    bool stealSuccess = ExecuteSteal(stealActionNode);
+                    currentNode = graph.GetNodeById(stealSuccess ? stealActionNode.successNodeId : stealActionNode.failNodeId);
+                    continue;
+
+                case RaiseAlertNode raiseAlertNode:
+                    if (!string.IsNullOrEmpty(raiseAlertNode.alertMessage))
+                    {
+                        Debug.Log(raiseAlertNode.alertMessage);
+                    }
+                    currentNode = graph.GetNodeById(raiseAlertNode.nextNodeId);
                     continue;
 
                 case SpendMoneyNode spendMoneyNode:
@@ -438,6 +462,35 @@ public class BusinessQuestGraphRunner
                 eventBus?.Publish(new BuildingPurchasedEvent(state));
             }
         }
+    }
+
+    private bool IsStealContext()
+    {
+        return currentContext != null && currentContext.contextType == InteractionContextType.Steal;
+    }
+
+    private bool ExecuteSteal(StealActionNode node)
+    {
+        if (node == null)
+        {
+            return false;
+        }
+
+        if (!node.canFail)
+        {
+            playerService?.AddMoney(node.stealAmount);
+            return true;
+        }
+
+        int chance = 70;
+        int roll = Random.Range(0, 100);
+        bool success = roll < chance;
+        if (success)
+        {
+            playerService?.AddMoney(node.stealAmount);
+        }
+
+        return success;
     }
 
     private bool TryShowDialogueWithImmediateChoice(DialogueNode dialogueNode)

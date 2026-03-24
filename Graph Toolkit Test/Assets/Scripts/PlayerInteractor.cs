@@ -30,7 +30,7 @@ public class PlayerInteractor : MonoBehaviour
 
         if (nearest != null)
         {
-            nearest.Interact();
+            nearest.Interact(transform);
         }
     }
 }
