@@ -14,6 +14,7 @@ public class BusinessQuestGraphRunner
     private readonly ChoiceUIService choiceUIService;
     private readonly MapMarkerService mapMarkerService;
     private readonly Transform playerTransform;
+    private readonly GraphProgressService graphProgressService;
 
     private BusinessQuestNode currentNode;
     private WaitForBuildingPurchasedNode waitingPurchaseNode;
@@ -36,7 +37,8 @@ public class BusinessQuestGraphRunner
         DialogueService dialogueService,
         ChoiceUIService choiceUIService,
         MapMarkerService mapMarkerService,
-        Transform playerTransform)
+        Transform playerTransform,
+        GraphProgressService graphProgressService)
     {
         this.graph = graph;
         this.bootstrap = bootstrap;
@@ -49,6 +51,7 @@ public class BusinessQuestGraphRunner
         this.choiceUIService = choiceUIService;
         this.mapMarkerService = mapMarkerService;
         this.playerTransform = playerTransform;
+        this.graphProgressService = graphProgressService;
     }
 
     public void Start()
@@ -65,7 +68,7 @@ public class BusinessQuestGraphRunner
 
         currentContext = context ?? new InteractionContext { contextType = InteractionContextType.Normal };
         IsRunning = true;
-        currentNode = graph.GetStartNode();
+        currentNode = ResolveStartNode();
         Advance();
     }
 
@@ -190,6 +193,11 @@ public class BusinessQuestGraphRunner
                     currentNode = graph.GetNodeById(conditionResult ? conditionNode.trueNodeId : conditionNode.falseNodeId);
                     continue;
 
+                case CheckpointNode checkpointNode:
+                    SaveCheckpoint(checkpointNode);
+                    currentNode = graph.GetNodeById(checkpointNode.nextNodeId);
+                    continue;
+
                 case BranchByInteractionContextNode branchNode:
                     currentNode = graph.GetNodeById(IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
                     continue;
@@ -248,6 +256,10 @@ public class BusinessQuestGraphRunner
                     return;
 
                 case EndNode:
+                    if (currentNode is EndNode endNode && endNode.clearCheckpoint)
+                    {
+                        ClearCheckpoint();
+                    }
                     Stop();
                     return;
             }
@@ -493,6 +505,84 @@ public class BusinessQuestGraphRunner
         return success;
     }
 
+    private BusinessQuestNode ResolveStartNode()
+    {
+        if (graphProgressService == null)
+        {
+            Debug.Log("[Checkpoint] No progress service, starting from StartNode.");
+            return graph.GetStartNode();
+        }
+
+        string ownerId = GetOwnerId();
+        string graphId = GetGraphId();
+        if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
+        {
+            Debug.Log("[Checkpoint] Missing owner or graph id, starting from StartNode.");
+            return graph.GetStartNode();
+        }
+
+        if (!graphProgressService.TryGetCheckpoint(ownerId, graphId, out string checkpointId) || string.IsNullOrEmpty(checkpointId))
+        {
+            Debug.Log($"[Checkpoint] No checkpoint for owner='{ownerId}', graph='{graphId}'. Start from StartNode.");
+            return graph.GetStartNode();
+        }
+
+        CheckpointNode checkpoint = graph.GetCheckpointNodeById(checkpointId);
+        if (checkpoint == null)
+        {
+            Debug.LogWarning($"[Checkpoint] Checkpoint '{checkpointId}' not found in graph '{graphId}'. Start from StartNode.");
+            return graph.GetStartNode();
+        }
+
+        Debug.Log($"[Checkpoint] Resume from checkpoint '{checkpointId}' for owner='{ownerId}', graph='{graphId}'.");
+        return graph.GetNodeById(checkpoint.nextNodeId) ?? checkpoint;
+    }
+
+    private void SaveCheckpoint(CheckpointNode node)
+    {
+        if (node == null || graphProgressService == null)
+        {
+            return;
+        }
+
+        if (string.IsNullOrEmpty(node.checkpointId))
+        {
+            Debug.LogWarning("[Checkpoint] checkpointId is empty, not saved.");
+            return;
+        }
+
+        string ownerId = GetOwnerId();
+        string graphId = GetGraphId();
+        if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
+        {
+            Debug.LogWarning("[Checkpoint] Missing owner or graph id, not saved.");
+            return;
+        }
+
+        graphProgressService.SetCheckpoint(ownerId, graphId, node.checkpointId);
+        Debug.Log($"[Checkpoint] Saved '{node.checkpointId}' for owner='{ownerId}', graph='{graphId}'.");
+    }
+
+    private string GetOwnerId()
+    {
+        if (currentContext != null && currentContext.sourceNpc != null)
+        {
+            if (!string.IsNullOrEmpty(currentContext.sourceNpc.ownerId))
+            {
+                return currentContext.sourceNpc.ownerId;
+            }
+
+            return currentContext.sourceNpc.name;
+        }
+
+        return "Global";
+    }
+
+    private string GetGraphId()
+    {
+        return graph != null ? graph.name : string.Empty;
+    }
+
     private bool TryShowDialogueWithImmediateChoice(DialogueNode dialogueNode)
     {
         if (dialogueNode == null || dialogueService == null || choiceUIService == null)
@@ -572,5 +662,23 @@ public class BusinessQuestGraphRunner
         waitingConditionNode = null;
         currentNode = null;
         IsRunning = false;
+    }
+
+    private void ClearCheckpoint()
+    {
+        if (graphProgressService == null)
+        {
+            return;
+        }
+
+        string ownerId = GetOwnerId();
+        string graphId = GetGraphId();
+        if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
+        {
+            return;
+        }
+
+        graphProgressService.ClearCheckpoint(ownerId, graphId);
+        Debug.Log($"[Checkpoint] Cleared for owner='{ownerId}', graph='{graphId}'.");
     }
 }

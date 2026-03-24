@@ -924,10 +924,12 @@ MonoBehaviour:
           - __option_NodeTitle
           - __option_NodeDescription
           - __option_NodeComment
+          - __option_ClearCheckpoint
           m_ValueList:
           - rid: 6060223847305576624
           - rid: 6060223847305576625
           - rid: 6060223847305576626
+          - rid: 6060223869034692934
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1549,3 +1551,7 @@ MonoBehaviour:
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
         m_Value: 
+    - rid: 6060223869034692934
+      type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 1

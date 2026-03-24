@@ -3,8 +3,16 @@ using System;
 [Serializable]
 public class EndNodeModel : BusinessQuestEditorNode
 {
+    public const string CLEAR_CHECKPOINT_OPTION = "ClearCheckpoint";
+
     protected override string DefaultTitle => "Конец";
     protected override string DefaultDescription => "Завершает выполнение графа.";
+
+    protected override void OnDefineOptions(IOptionDefinitionContext context)
+    {
+        base.OnDefineOptions(context);
+        context.AddOption<bool>(CLEAR_CHECKPOINT_OPTION).WithDisplayName("Сбросить чекпоинт").WithDefaultValue(true);
+    }
 
     protected override void OnDefinePorts(IPortDefinitionContext context)
     {

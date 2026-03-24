@@ -11,6 +11,7 @@ public class NPCManager : Interactable
     public float stealDistance = 1.5f;
     public float stealBackAngle = 120f;
     public float stealMinBackAngle = 40f;
+    public string ownerId;
     public GameBootstrap bootstrap;
     public DialogueService dialogueService;
     public ChoiceUIService choiceUIService;
@@ -71,7 +72,8 @@ public class NPCManager : Interactable
                 dialogueService,
                 choiceUIService,
                 mapMarkerService,
-                playerTransform
+                playerTransform,
+                bootstrap.GraphProgressService
             );
             currentGraph = selectedGraph;
         }

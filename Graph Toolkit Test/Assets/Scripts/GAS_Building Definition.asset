@@ -13,11 +13,11 @@ MonoBehaviour:
   m_Name: GAS_Building Definition
   m_EditorClassIdentifier: Assembly-CSharp::BuildingDefinition
   buildingId: car_wash_01
-  displayName: 
+  displayName: "\u0413\u0430\u0437\u043F\u0440\u043E\u043C\u043D\u0435\u0444\u0442\u044C"
   purchaseCost: 100
   rentPerMonth: 0
-  incomePerDay: 0
-  expensesPerDay: 0
+  incomePerDay: 100
+  expensesPerDay: 50
   netProfit: 0
   upgradeCost: 700
   upgradeIncomeBonus: 0

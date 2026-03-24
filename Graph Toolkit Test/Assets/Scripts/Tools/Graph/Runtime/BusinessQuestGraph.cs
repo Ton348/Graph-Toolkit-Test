@@ -40,4 +40,22 @@ public class BusinessQuestGraph : ScriptableObject
 
         return GetNodeById(node.nextNodeId);
     }
+
+    public CheckpointNode GetCheckpointNodeById(string checkpointId)
+    {
+        if (string.IsNullOrEmpty(checkpointId))
+        {
+            return null;
+        }
+
+        foreach (BusinessQuestNode node in nodes)
+        {
+            if (node is CheckpointNode checkpoint && checkpoint.checkpointId == checkpointId)
+            {
+                return checkpoint;
+            }
+        }
+
+        return null;
+    }
 }

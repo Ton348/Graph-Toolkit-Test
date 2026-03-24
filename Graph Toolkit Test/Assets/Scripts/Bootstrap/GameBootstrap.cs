@@ -12,6 +12,7 @@ public class GameBootstrap : MonoBehaviour
     public PlayerService PlayerService { get; private set; }
     public BuildingService BuildingService { get; private set; }
     public QuestService QuestService { get; private set; }
+    public GraphProgressService GraphProgressService { get; private set; }
 
     private void Awake()
     {
@@ -35,6 +36,7 @@ public class GameBootstrap : MonoBehaviour
         PlayerService = new PlayerService(RuntimeState.Player);
         BuildingService = new BuildingService(EventBus);
         QuestService = new QuestService(RuntimeState, EventBus);
+        GraphProgressService = new GraphProgressService();
     }
 
     public BuildingState GetBuildingState(BuildingDefinition definition)

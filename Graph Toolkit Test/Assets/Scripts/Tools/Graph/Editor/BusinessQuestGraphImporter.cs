@@ -267,6 +267,12 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             case BranchByInteractionContextNodeModel:
                 runtimeNode = new BranchByInteractionContextNode();
                 break;
+            case CheckpointNodeModel checkpointNode:
+                runtimeNode = new CheckpointNode
+                {
+                    checkpointId = GetOptionValue<string>(checkpointNode, CheckpointNodeModel.CHECKPOINT_ID_OPTION)
+                };
+                break;
             case SetGameObjectActiveNodeModel setActiveNode:
                 runtimeNode = new SetGameObjectActiveNode
                 {
@@ -275,7 +281,15 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 };
                 break;
             case EndNodeModel:
-                runtimeNode = new EndNode();
+                bool clearCheckpoint = true;
+                if (node is Node endNode && TryGetOptionValue(endNode, EndNodeModel.CLEAR_CHECKPOINT_OPTION, out bool clearValue))
+                {
+                    clearCheckpoint = clearValue;
+                }
+                runtimeNode = new EndNode
+                {
+                    clearCheckpoint = clearCheckpoint
+                };
                 break;
             default:
                 runtimeNode = new EndNode();
