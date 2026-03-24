@@ -370,43 +370,53 @@ public class BusinessQuestGraphRunner
     {
         if (node == null || node.targetObject == null)
         {
+            Debug.Log("[SetGameObjectActive] Skipped: node or targetObject is null.");
             return;
         }
+
+        string targetName = node.targetObject != null ? node.targetObject.name : "<null>";
+        Debug.Log($"[SetGameObjectActive] Called: target='{targetName}', isActive={node.isActive}.");
 
         if (node.targetObject.scene.IsValid())
         {
             node.targetObject.SetActive(node.isActive);
+            Debug.Log($"[SetGameObjectActive] Scene object '{targetName}' set active={node.isActive} (activeSelf={node.targetObject.activeSelf}).");
             return;
         }
 
-        if (string.IsNullOrEmpty(node.id))
+        string key = !string.IsNullOrEmpty(node.spawnKey) ? node.spawnKey : node.id;
+        if (string.IsNullOrEmpty(key))
         {
+            Debug.Log($"[SetGameObjectActive] Skipped: empty spawnKey for prefab target='{targetName}'.");
             return;
         }
 
         if (node.isActive)
         {
-            if (!spawnedObjects.TryGetValue(node.id, out GameObject instance) || instance == null)
+            if (!spawnedObjects.TryGetValue(key, out GameObject instance) || instance == null)
             {
                 instance = Object.Instantiate(node.targetObject);
                 AssignBootstrap(instance);
-                spawnedObjects[node.id] = instance;
+                spawnedObjects[key] = instance;
+                Debug.Log($"[SetGameObjectActive] Instantiated prefab '{targetName}' with key='{key}'.");
             }
             else
             {
                 instance.SetActive(true);
+                Debug.Log($"[SetGameObjectActive] Re-activated prefab instance '{targetName}' with key='{key}'.");
             }
 
             MarkBuildingOwnedIfNeeded(instance);
         }
         else
         {
-            if (spawnedObjects.TryGetValue(node.id, out GameObject instance) && instance != null)
+            if (spawnedObjects.TryGetValue(key, out GameObject instance) && instance != null)
             {
                 Object.Destroy(instance);
+                Debug.Log($"[SetGameObjectActive] Destroyed prefab instance '{targetName}' with key='{key}'.");
             }
 
-            spawnedObjects.Remove(node.id);
+            spawnedObjects.Remove(key);
         }
     }
 
@@ -590,12 +600,7 @@ public class BusinessQuestGraphRunner
             return false;
         }
 
-        if (string.IsNullOrEmpty(dialogueNode.nextNodeId))
-        {
-            return false;
-        }
-
-        if (!(graph.GetNodeById(dialogueNode.nextNodeId) is ChoiceNode choiceNode))
+        if (!TryFindImmediateChoice(dialogueNode, out ChoiceNode choiceNode))
         {
             return false;
         }
@@ -613,6 +618,60 @@ public class BusinessQuestGraphRunner
             Advance();
         });
         return true;
+    }
+
+    private bool TryFindImmediateChoice(DialogueNode dialogueNode, out ChoiceNode choiceNode)
+    {
+        choiceNode = null;
+        if (dialogueNode == null || string.IsNullOrEmpty(dialogueNode.nextNodeId))
+        {
+            return false;
+        }
+
+        BusinessQuestNode current = graph.GetNodeById(dialogueNode.nextNodeId);
+        int safety = 0;
+        while (current != null && safety < 20)
+        {
+            if (current is ChoiceNode foundChoice)
+            {
+                choiceNode = foundChoice;
+                return true;
+            }
+
+            if (current is GiveQuestNode or AddQuestNode or CheckpointNode)
+            {
+                ExecuteImmediateNode(current);
+                current = graph.GetNodeById(current.nextNodeId);
+                safety++;
+                continue;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    private void ExecuteImmediateNode(BusinessQuestNode node)
+    {
+        switch (node)
+        {
+            case GiveQuestNode giveQuestNode:
+                if (giveQuestNode.questDefinition != null)
+                {
+                    questService?.AcceptQuest(giveQuestNode.questDefinition);
+                }
+                break;
+            case AddQuestNode addQuestNode:
+                if (addQuestNode.questDefinition != null)
+                {
+                    questService?.AcceptQuest(addQuestNode.questDefinition);
+                }
+                break;
+            case CheckpointNode checkpointNode:
+                SaveCheckpoint(checkpointNode);
+                break;
+        }
     }
 
     private bool CheckSkill(SkillCheckNode node)

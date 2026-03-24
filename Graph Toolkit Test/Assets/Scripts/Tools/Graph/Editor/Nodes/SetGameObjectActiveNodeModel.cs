@@ -7,6 +7,7 @@ public class SetGameObjectActiveNodeModel : BusinessQuestEditorNode
 {
     public const string TARGET_OBJECT_OPTION = "TargetObject";
     public const string IS_ACTIVE_OPTION = "IsActive";
+    public const string SPAWN_KEY_OPTION = "SpawnKey";
 
     protected override string DefaultTitle => "Включить/выключить объект";
     protected override string DefaultDescription => "Включает или выключает указанный объект";
@@ -21,6 +22,9 @@ public class SetGameObjectActiveNodeModel : BusinessQuestEditorNode
         context.AddOption<bool>(IS_ACTIVE_OPTION)
             .WithDisplayName("Включить")
             .WithDefaultValue(true);
+
+        context.AddOption<string>(SPAWN_KEY_OPTION)
+            .WithDisplayName("Spawn Key");
     }
 
     protected override void OnDefinePorts(IPortDefinitionContext context)

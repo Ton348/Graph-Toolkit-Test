@@ -277,7 +277,8 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new SetGameObjectActiveNode
                 {
                     targetObject = GetOptionValue<GameObject>(setActiveNode, SetGameObjectActiveNodeModel.TARGET_OBJECT_OPTION),
-                    isActive = GetOptionValue<bool>(setActiveNode, SetGameObjectActiveNodeModel.IS_ACTIVE_OPTION)
+                    isActive = GetOptionValue<bool>(setActiveNode, SetGameObjectActiveNodeModel.IS_ACTIVE_OPTION),
+                    spawnKey = GetOptionValue<string>(setActiveNode, SetGameObjectActiveNodeModel.SPAWN_KEY_OPTION)
                 };
                 break;
             case EndNodeModel:
