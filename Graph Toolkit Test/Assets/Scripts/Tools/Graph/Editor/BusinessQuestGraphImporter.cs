@@ -168,7 +168,8 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new DialogueNode
                 {
                     title = GetOptionValue<string>(dialogueNode, DialogueNodeModel.TITLE_OPTION),
-                    bodyText = GetOptionValue<string>(dialogueNode, DialogueNodeModel.BODY_OPTION)
+                    bodyText = GetOptionValue<string>(dialogueNode, DialogueNodeModel.BODY_OPTION),
+                    screenshot = GetOptionValue<Sprite>(dialogueNode, DialogueNodeModel.SCREENSHOT_OPTION)
                 };
                 break;
             case ChoiceNodeModel choiceNode:
@@ -281,7 +282,7 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     spawnKey = GetOptionValue<string>(setActiveNode, SetGameObjectActiveNodeModel.SPAWN_KEY_OPTION)
                 };
                 break;
-            case EndNodeModel:
+            case EndNodeModel endNodeModel:
                 bool clearCheckpoint = true;
                 if (node is Node endNode && TryGetOptionValue(endNode, EndNodeModel.CLEAR_CHECKPOINT_OPTION, out bool clearValue))
                 {
@@ -289,7 +290,8 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 }
                 runtimeNode = new EndNode
                 {
-                    clearCheckpoint = clearCheckpoint
+                    clearCheckpoint = clearCheckpoint,
+                    completeQuestId = GetOptionValue<string>(endNodeModel, EndNodeModel.COMPLETE_QUEST_ID_OPTION)
                 };
                 break;
             default:
@@ -380,29 +382,21 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
     static List<ChoiceOption> BuildChoiceOptions(ChoiceNodeModel node)
     {
         var options = new List<ChoiceOption> { null, null, null, null };
-        SetChoice(options, 0,
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION1_ID),
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION1_LABEL));
-        SetChoice(options, 1,
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION2_ID),
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION2_LABEL));
-        SetChoice(options, 2,
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_ID),
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_LABEL));
-        SetChoice(options, 3,
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_ID),
-            GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_LABEL));
+        SetChoice(options, 0, GetOptionValue<string>(node, ChoiceNodeModel.OPTION1_LABEL));
+        SetChoice(options, 1, GetOptionValue<string>(node, ChoiceNodeModel.OPTION2_LABEL));
+        SetChoice(options, 2, GetOptionValue<string>(node, ChoiceNodeModel.OPTION3_LABEL));
+        SetChoice(options, 3, GetOptionValue<string>(node, ChoiceNodeModel.OPTION4_LABEL));
         return options;
     }
 
-    static void SetChoice(List<ChoiceOption> options, int index, string optionId, string label)
+    static void SetChoice(List<ChoiceOption> options, int index, string label)
     {
         if (options == null || index < 0 || index >= options.Count)
         {
             return;
         }
 
-        if (string.IsNullOrEmpty(optionId) && string.IsNullOrEmpty(label))
+        if (string.IsNullOrEmpty(label))
         {
             options[index] = null;
             return;
@@ -410,8 +404,7 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
 
         options[index] = new ChoiceOption
         {
-            optionId = string.IsNullOrEmpty(optionId) ? label : optionId,
-            label = string.IsNullOrEmpty(label) ? optionId : label
+            label = label
         };
     }
 

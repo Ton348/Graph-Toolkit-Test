@@ -8,6 +8,7 @@ public class DialogueUIService : MonoBehaviour
     public GameObject panel;
     public TMP_Text titleText;
     public TMP_Text bodyText;
+    public Image screenshotImage;
     public Button continueButton;
     public bool hidePanelOnContinue = false;
 
@@ -45,7 +46,7 @@ public class DialogueUIService : MonoBehaviour
         }
     }
 
-    public void ShowDialogue(string title, string body, Action continueCallback)
+    public void ShowDialogue(string title, string body, Action continueCallback, Sprite screenshot = null)
     {
         onContinue = continueCallback;
 
@@ -57,6 +58,16 @@ public class DialogueUIService : MonoBehaviour
         if (bodyText != null)
         {
             bodyText.text = body;
+        }
+
+        if (screenshotImage != null)
+        {
+            screenshotImage.sprite = screenshot;
+            screenshotImage.gameObject.SetActive(screenshot != null);
+            if (screenshot != null)
+            {
+                screenshotImage.SetNativeSize();
+            }
         }
 
         if (panel != null)

@@ -46,7 +46,7 @@ public class ChoiceUIService : MonoBehaviour
             button.onClick.RemoveAllListeners();
 
             ChoiceOption option = (options != null && i < options.Count) ? options[i] : null;
-            if (option == null)
+            if (option == null || string.IsNullOrWhiteSpace(option.label))
             {
                 button.gameObject.SetActive(false);
                 continue;
@@ -56,8 +56,7 @@ public class ChoiceUIService : MonoBehaviour
 
             if (label != null)
             {
-                string text = !string.IsNullOrEmpty(option.label) ? option.label : option.optionId;
-                label.text = text ?? string.Empty;
+                label.text = option.label ?? string.Empty;
             }
 
             int index = i;

@@ -163,7 +163,7 @@ public class BusinessQuestGraphRunner
                         {
                             currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
                             Advance();
-                        });
+                        }, dialogueNode.screenshot);
                         return;
                     }
                     currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
@@ -255,8 +255,12 @@ public class BusinessQuestGraphRunner
                     waitingConditionNode = waitCondition;
                     return;
 
-                case EndNode:
-                    if (currentNode is EndNode endNode && endNode.clearCheckpoint)
+                case EndNode endNode:
+                    if (!string.IsNullOrWhiteSpace(endNode.completeQuestId))
+                    {
+                        questService?.CompleteQuest(endNode.completeQuestId);
+                    }
+                    if (endNode.clearCheckpoint)
                     {
                         ClearCheckpoint();
                     }
@@ -610,7 +614,7 @@ public class BusinessQuestGraphRunner
             return false;
         }
 
-        dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, null);
+        dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, null, dialogueNode.screenshot);
         choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
         {
             string nextId = GetChoiceNextId(choiceNode, optionIndex);

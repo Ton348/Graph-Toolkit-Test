@@ -4,6 +4,7 @@ using System;
 public class EndNode : BusinessQuestNode
 {
     public bool clearCheckpoint = true;
+    public string completeQuestId;
 
     public EndNode()
     {

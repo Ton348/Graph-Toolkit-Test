@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Quest_buy_building
   m_EditorClassIdentifier: Assembly-CSharp::QuestDefinition
   questId: buy_building
-  title: "\u041A\u0443\u043F\u0438 \u0437\u0434\u0430\u043D\u0438\u0435"
+  title: "\u041F\u043E\u0441\u0442\u0440\u043E\u0438\u0442\u044C \u0437\u0434\u0430\u043D\u0438\u0435"
   description: "\u041A\u0443\u043F\u0438 \u0413\u0430\u0437\u043F\u0440\u043E\u043C."
   rewardMoney: 200
