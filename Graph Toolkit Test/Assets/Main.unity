@@ -4111,7 +4111,10 @@ MonoBehaviour:
   compassBar: {fileID: 170037760}
   markersContainer: {fileID: 1976714188}
   markerPrefab: {fileID: -6503408261323146138, guid: daba8b8b8ae814f9c997e986845d7526, type: 3}
+  ticksContainer: {fileID: 4132352428834177480, guid: 01ac0d41f588a4df4a962b341881c4ed, type: 3}
+  tickPrefab: {fileID: 2182091308671812915, guid: 01ac0d41f588a4df4a962b341881c4ed, type: 3}
   maxVisibleAngle: 90
+  tickDefinitions: []
 --- !u!4 &170414306 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: b8ee657c6800ab849bb30b4375d02323, type: 3}
@@ -48866,7 +48869,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: -12, y: 62}
-  m_SizeDelta: {x: 400, y: 50}
+  m_SizeDelta: {x: 400, y: 10}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!4 &1930998805 stripped
 Transform:

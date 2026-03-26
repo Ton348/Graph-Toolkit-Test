@@ -8,15 +8,32 @@ public class CompassUIController : MonoBehaviour
     [SerializeField] private RectTransform compassBar;
     [SerializeField] private Transform markersContainer;
     [SerializeField] private CompassMarkerView markerPrefab;
+    [SerializeField] private Transform ticksContainer;
+    [SerializeField] private CompassTickView tickPrefab;
 
     [Header("Settings")]
     [SerializeField] private float maxVisibleAngle = 90f;
+    [SerializeField] private List<TickDefinition> tickDefinitions = new List<TickDefinition>();
 
     private readonly Dictionary<string, CompassMarkerView> _markers = new Dictionary<string, CompassMarkerView>();
     private readonly HashSet<string> _activeIds = new HashSet<string>();
     private readonly List<string> _toRemove = new List<string>();
+    private readonly List<TickRuntime> _ticks = new List<TickRuntime>();
 
     private float _halfWidth;
+
+    [System.Serializable]
+    public struct TickDefinition
+    {
+        public string label;
+        [Range(-180f, 180f)] public float worldYaw;
+    }
+
+    private class TickRuntime
+    {
+        public TickDefinition def;
+        public CompassTickView view;
+    }
 
     private void Awake()
     {
@@ -35,6 +52,17 @@ public class CompassUIController : MonoBehaviour
             markersContainer = compassBar;
         }
 
+        if (ticksContainer == null && compassBar != null)
+        {
+            ticksContainer = compassBar;
+        }
+
+        if (!IsSceneTransform(ticksContainer))
+        {
+            ticksContainer = IsSceneTransform(compassBar) ? compassBar : transform;
+        }
+
+        EnsureDefaultTicks();
         CacheHalfWidth();
     }
 
@@ -45,6 +73,7 @@ public class CompassUIController : MonoBehaviour
             compassManager.ActiveTargetsChanged += SyncMarkers;
         }
 
+        EnsureTicks();
         SyncMarkers();
     }
 
@@ -59,6 +88,7 @@ public class CompassUIController : MonoBehaviour
     private void LateUpdate()
     {
         UpdateMarkers();
+        UpdateTicks();
     }
 
     private void OnRectTransformDimensionsChange()
@@ -116,6 +146,44 @@ public class CompassUIController : MonoBehaviour
         }
     }
 
+    private void EnsureDefaultTicks()
+    {
+        if (tickDefinitions != null && tickDefinitions.Count > 0) return;
+
+        tickDefinitions = new List<TickDefinition>
+        {
+            new TickDefinition { label = "N", worldYaw = 0f },
+            new TickDefinition { label = "E", worldYaw = 90f },
+            new TickDefinition { label = "S", worldYaw = 180f },
+            new TickDefinition { label = "W", worldYaw = -90f }
+        };
+    }
+
+    private void EnsureTicks()
+    {
+        if (tickPrefab == null || ticksContainer == null) return;
+        if (_ticks.Count > 0) return;
+
+        if (!IsSceneTransform(ticksContainer))
+        {
+            ticksContainer = IsSceneTransform(compassBar) ? compassBar : transform;
+        }
+
+        EnsureDefaultTicks();
+
+        for (int i = 0; i < tickDefinitions.Count; i++)
+        {
+            var instance = Instantiate(tickPrefab, ticksContainer);
+            instance.SetLabel(tickDefinitions[i].label);
+            _ticks.Add(new TickRuntime { def = tickDefinitions[i], view = instance });
+        }
+    }
+
+    private static bool IsSceneTransform(Transform t)
+    {
+        return t != null && t.gameObject.scene.IsValid();
+    }
+
     private void UpdateMarkers()
     {
         if (compassManager == null || compassManager.Player == null) return;
@@ -160,6 +228,40 @@ public class CompassUIController : MonoBehaviour
 
             view.SetVisible(true);
             view.SetPositionX(x);
+        }
+    }
+
+    private void UpdateTicks()
+    {
+        if (compassManager == null || compassManager.Player == null) return;
+        if (_ticks.Count == 0) return;
+
+        Vector3 forward = compassManager.Player.forward;
+        forward.y = 0f;
+        if (forward.sqrMagnitude < 0.0001f)
+        {
+            forward = Vector3.forward;
+        }
+
+        float playerYaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
+
+        for (int i = 0; i < _ticks.Count; i++)
+        {
+            var tick = _ticks[i];
+            if (tick.view == null) continue;
+
+            float angle = Mathf.DeltaAngle(playerYaw, tick.def.worldYaw);
+            if (Mathf.Abs(angle) > maxVisibleAngle)
+            {
+                tick.view.SetVisible(false);
+                continue;
+            }
+
+            float normalized = Mathf.Clamp(angle / maxVisibleAngle, -1f, 1f);
+            float x = normalized * _halfWidth;
+
+            tick.view.SetVisible(true);
+            tick.view.SetPositionX(x);
         }
     }
 }
