@@ -27,7 +27,6 @@ public class QuestService
         quest.Status = QuestStatus.Active;
         runtime.Quests.Add(quest);
 
-        UnityEngine.Debug.Log($"Quest accepted: {definition.questId}");
         eventBus?.Publish(new QuestAcceptedEvent(quest));
     }
 
@@ -45,7 +44,6 @@ public class QuestService
         }
 
         quest.Status = QuestStatus.Completed;
-        UnityEngine.Debug.Log($"Quest completed: {questId}");
         eventBus?.Publish(new QuestCompletedEvent(quest));
     }
 
@@ -63,7 +61,6 @@ public class QuestService
         }
 
         quest.Status = QuestStatus.Failed;
-        UnityEngine.Debug.Log($"Quest failed: {questId}");
     }
 
     public bool HasActiveQuest(string questId)

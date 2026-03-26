@@ -208,10 +208,6 @@ public class BusinessQuestGraphRunner
                     continue;
 
                 case RaiseAlertNode raiseAlertNode:
-                    if (!string.IsNullOrEmpty(raiseAlertNode.alertMessage))
-                    {
-                        Debug.Log(raiseAlertNode.alertMessage);
-                    }
                     currentNode = graph.GetNodeById(raiseAlertNode.nextNodeId);
                     continue;
 
@@ -242,6 +238,11 @@ public class BusinessQuestGraphRunner
 
                 case AddMapMarkerNode addMarkerNode:
                     mapMarkerService?.ShowMarker(addMarkerNode.markerId, addMarkerNode.targetTransform, addMarkerNode.title);
+                    if (CompassManager.Instance != null)
+                    {
+                        CompassManager.Instance.ShowTarget(addMarkerNode.markerId);
+                    }
+                    Debug.Log($"[Marker] Node issued markerId='{addMarkerNode.markerId}' title='{addMarkerNode.title}'");
                     currentNode = graph.GetNodeById(addMarkerNode.nextNodeId);
                     continue;
 
@@ -387,24 +388,18 @@ public class BusinessQuestGraphRunner
     {
         if (node == null || node.targetObject == null)
         {
-            Debug.Log("[SetGameObjectActive] Skipped: node or targetObject is null.");
             return;
         }
-
-        string targetName = node.targetObject != null ? node.targetObject.name : "<null>";
-        Debug.Log($"[SetGameObjectActive] Called: target='{targetName}', isActive={node.isActive}.");
 
         if (node.targetObject.scene.IsValid())
         {
             node.targetObject.SetActive(node.isActive);
-            Debug.Log($"[SetGameObjectActive] Scene object '{targetName}' set active={node.isActive} (activeSelf={node.targetObject.activeSelf}).");
             return;
         }
 
         string key = !string.IsNullOrEmpty(node.spawnKey) ? node.spawnKey : node.id;
         if (string.IsNullOrEmpty(key))
         {
-            Debug.Log($"[SetGameObjectActive] Skipped: empty spawnKey for prefab target='{targetName}'.");
             return;
         }
 
@@ -415,12 +410,10 @@ public class BusinessQuestGraphRunner
                 instance = Object.Instantiate(node.targetObject);
                 AssignBootstrap(instance);
                 spawnedObjects[key] = instance;
-                Debug.Log($"[SetGameObjectActive] Instantiated prefab '{targetName}' with key='{key}'.");
             }
             else
             {
                 instance.SetActive(true);
-                Debug.Log($"[SetGameObjectActive] Re-activated prefab instance '{targetName}' with key='{key}'.");
             }
 
             MarkBuildingOwnedIfNeeded(instance);
@@ -430,7 +423,6 @@ public class BusinessQuestGraphRunner
             if (spawnedObjects.TryGetValue(key, out GameObject instance) && instance != null)
             {
                 Object.Destroy(instance);
-                Debug.Log($"[SetGameObjectActive] Destroyed prefab instance '{targetName}' with key='{key}'.");
             }
 
             spawnedObjects.Remove(key);
@@ -536,7 +528,6 @@ public class BusinessQuestGraphRunner
     {
         if (graphProgressService == null)
         {
-            Debug.Log("[Checkpoint] No progress service, starting from StartNode.");
             return graph.GetStartNode();
         }
 
@@ -544,24 +535,20 @@ public class BusinessQuestGraphRunner
         string graphId = GetGraphId();
         if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
         {
-            Debug.Log("[Checkpoint] Missing owner or graph id, starting from StartNode.");
             return graph.GetStartNode();
         }
 
         if (!graphProgressService.TryGetCheckpoint(ownerId, graphId, out string checkpointId) || string.IsNullOrEmpty(checkpointId))
         {
-            Debug.Log($"[Checkpoint] No checkpoint for owner='{ownerId}', graph='{graphId}'. Start from StartNode.");
             return graph.GetStartNode();
         }
 
         CheckpointNode checkpoint = graph.GetCheckpointNodeById(checkpointId);
         if (checkpoint == null)
         {
-            Debug.LogWarning($"[Checkpoint] Checkpoint '{checkpointId}' not found in graph '{graphId}'. Start from StartNode.");
             return graph.GetStartNode();
         }
 
-        Debug.Log($"[Checkpoint] Resume from checkpoint '{checkpointId}' for owner='{ownerId}', graph='{graphId}'.");
         return graph.GetNodeById(checkpoint.nextNodeId) ?? checkpoint;
     }
 
@@ -574,7 +561,6 @@ public class BusinessQuestGraphRunner
 
         if (string.IsNullOrEmpty(node.checkpointId))
         {
-            Debug.LogWarning("[Checkpoint] checkpointId is empty, not saved.");
             return;
         }
 
@@ -582,12 +568,10 @@ public class BusinessQuestGraphRunner
         string graphId = GetGraphId();
         if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
         {
-            Debug.LogWarning("[Checkpoint] Missing owner or graph id, not saved.");
             return;
         }
 
         graphProgressService.SetCheckpoint(ownerId, graphId, node.checkpointId);
-        Debug.Log($"[Checkpoint] Saved '{node.checkpointId}' for owner='{ownerId}', graph='{graphId}'.");
     }
 
     private string GetOwnerId()
@@ -755,6 +739,5 @@ public class BusinessQuestGraphRunner
         }
 
         graphProgressService.ClearCheckpoint(ownerId, graphId);
-        Debug.Log($"[Checkpoint] Cleared for owner='{ownerId}', graph='{graphId}'.");
     }
 }

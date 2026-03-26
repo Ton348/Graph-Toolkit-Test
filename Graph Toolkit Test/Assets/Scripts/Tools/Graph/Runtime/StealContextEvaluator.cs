@@ -39,7 +39,6 @@ public static class StealContextEvaluator
         }
 
         bool inside = angle >= minAngle && angle <= maxAngle;
-        Debug.Log($"[StealContext] angle={angle:0.0}° distance={distance:0.00} range=[{minAngle:0.0},{maxAngle:0.0}]");
         return inside;
     }
 }

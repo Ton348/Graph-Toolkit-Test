@@ -248,13 +248,9 @@ public static class ConditionEvaluator
 
         if (string.IsNullOrEmpty(node.id))
         {
-            Debug.LogWarning($"[ConditionEvaluator] Condition failed (no node id). {reason}");
             return;
         }
 
-        if (LoggedFalseNodes.Add(node.id))
-        {
-            Debug.LogWarning($"[ConditionEvaluator] {node.GetType().Name} failed: {reason}");
-        }
+        LoggedFalseNodes.Add(node.id);
     }
 }

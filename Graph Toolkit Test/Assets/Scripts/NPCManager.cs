@@ -25,7 +25,6 @@ public class NPCManager : Interactable
         var selectedGraph = SelectGraph(player);
         if (selectedGraph == null)
         {
-            Debug.LogWarning("BusinessQuestGraph не назначен");
             return;
         }
 
@@ -36,7 +35,6 @@ public class NPCManager : Interactable
 
         if (bootstrap == null || bootstrap.QuestService == null || bootstrap.EventBus == null)
         {
-            Debug.LogWarning("GameBootstrap не готов");
             return;
         }
 
@@ -89,7 +87,6 @@ public class NPCManager : Interactable
     private BusinessQuestGraph SelectGraph(Transform player)
     {
         bool canSteal = allowSteal && stealGraph != null && StealContextEvaluator.CanStealFromNpc(player, this);
-        Debug.Log($"[NPCManager] {name} canSteal={canSteal} allowSteal={allowSteal} stealGraph={(stealGraph != null)} dialogueGraph={(dialogueGraph != null)}");
 
         if (canSteal)
         {

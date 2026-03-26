@@ -24,13 +24,11 @@ public class BuildingInteractable : Interactable
     {
         if (definition == null)
         {
-            Debug.LogWarning("BuildingDefinition не назначен");
             return;
         }
 
         if (bootstrap == null)
         {
-            Debug.LogWarning("GameBootstrap не найден");
             return;
         }
 
@@ -41,7 +39,6 @@ public class BuildingInteractable : Interactable
 
         if (state == null)
         {
-            Debug.LogWarning("BuildingState не найден");
             return;
         }
 
@@ -49,36 +46,14 @@ public class BuildingInteractable : Interactable
         {
             if (!bootstrap.PlayerService.HasEnoughMoney(definition.purchaseCost))
             {
-                Debug.Log("Недостаточно денег");
                 return;
             }
 
-            bool success = bootstrap.BuildingService.TryBuyBuilding(state, bootstrap.RuntimeState.Player);
-            if (success)
-            {
-                Debug.Log("Здание куплено");
-            }
-            else
-            {
-                Debug.Log("Здание уже куплено");
-            }
-
+            bootstrap.BuildingService.TryBuyBuilding(state, bootstrap.RuntimeState.Player);
             return;
         }
 
-        UpgradeResult upgradeResult = bootstrap.BuildingService.TryUpgradeBuilding(state, bootstrap.RuntimeState.Player);
-        if (upgradeResult == UpgradeResult.Success)
-        {
-            Debug.Log("Здание улучшено");
-        }
-        else if (upgradeResult == UpgradeResult.NotEnoughMoney)
-        {
-            Debug.Log("Недостаточно денег для улучшения");
-        }
-        else
-        {
-            Debug.Log("Сначала купите здание");
-        }
+        bootstrap.BuildingService.TryUpgradeBuilding(state, bootstrap.RuntimeState.Player);
     }
 
     public override void Interact()

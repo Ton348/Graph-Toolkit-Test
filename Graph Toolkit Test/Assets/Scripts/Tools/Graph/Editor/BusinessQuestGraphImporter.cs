@@ -13,7 +13,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
         var graph = GraphDatabase.LoadGraphForImporter<BusinessQuestEditorGraph>(ctx.assetPath);
         if (graph == null)
         {
-            Debug.LogError($"Failed to load Business Quest graph asset: {ctx.assetPath}");
             return;
         }
 
