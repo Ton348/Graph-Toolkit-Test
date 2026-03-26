@@ -1508,11 +1508,13 @@ MonoBehaviour:
           - __option_NodeDescription
           - __option_NodeComment
           - __option_Amount
+          - __option_Operation
           m_ValueList:
           - rid: 6060223869034692851
           - rid: 6060223869034692852
           - rid: 6060223869034692853
           - rid: 6060223869034692854
+          - rid: 6060223891384041729
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2116,11 +2118,13 @@ MonoBehaviour:
           - __option_NodeDescription
           - __option_NodeComment
           - __option_Amount
+          - __option_Operation
           m_ValueList:
           - rid: 6060223891384041613
           - rid: 6060223891384041614
           - rid: 6060223891384041615
           - rid: 6060223891384041616
+          - rid: 6060223891384041730
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -3167,3 +3171,25 @@ MonoBehaviour:
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
         m_Value: 
+    - rid: 6060223891384041729
+      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_EnumType:
+            m_Identification: MoneyOperation, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+              PublicKeyToken=null
+          m_Value: 0
+        m_EnumType:
+          m_Identification: MoneyOperation, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+            PublicKeyToken=null
+    - rid: 6060223891384041730
+      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_EnumType:
+            m_Identification: MoneyOperation, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+              PublicKeyToken=null
+          m_Value: 0
+        m_EnumType:
+          m_Identification: MoneyOperation, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+            PublicKeyToken=null

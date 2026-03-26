@@ -188,6 +188,7 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             case SpendMoneyNodeModel spendMoneyNode:
                 runtimeNode = new SpendMoneyNode
                 {
+                    operation = GetOptionValue<MoneyOperation>(spendMoneyNode, SpendMoneyNodeModel.OPERATION_OPTION),
                     amount = GetOptionValue<int>(spendMoneyNode, SpendMoneyNodeModel.AMOUNT_OPTION)
                 };
                 break;

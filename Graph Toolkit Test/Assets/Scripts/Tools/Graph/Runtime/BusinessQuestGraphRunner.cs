@@ -216,7 +216,20 @@ public class BusinessQuestGraphRunner
                     continue;
 
                 case SpendMoneyNode spendMoneyNode:
-                    if (playerService != null && playerService.HasEnoughMoney(spendMoneyNode.amount))
+                    if (playerService == null)
+                    {
+                        currentNode = graph.GetNodeById(spendMoneyNode.failNodeId);
+                        continue;
+                    }
+
+                    if (spendMoneyNode.operation == MoneyOperation.Give)
+                    {
+                        playerService.AddMoney(spendMoneyNode.amount);
+                        currentNode = graph.GetNodeById(spendMoneyNode.successNodeId);
+                        continue;
+                    }
+
+                    if (playerService.HasEnoughMoney(spendMoneyNode.amount))
                     {
                         playerService.SpendMoney(spendMoneyNode.amount);
                         currentNode = graph.GetNodeById(spendMoneyNode.successNodeId);

@@ -533,11 +533,13 @@ MonoBehaviour:
           - __option_NodeTitle
           - __option_NodeDescription
           - __option_NodeComment
+          - __option_Operation
           m_ValueList:
           - rid: 6060223781918474370
           - rid: 6060223847305576603
           - rid: 6060223847305576604
           - rid: 6060223847305576605
+          - rid: 6060223891384041727
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1549,3 +1551,14 @@ MonoBehaviour:
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
         m_Value: 
+    - rid: 6060223891384041727
+      type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value:
+          m_EnumType:
+            m_Identification: MoneyOperation, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+              PublicKeyToken=null
+          m_Value: 0
+        m_EnumType:
+          m_Identification: MoneyOperation, Assembly-CSharp, Version=0.0.0.0, Culture=neutral,
+            PublicKeyToken=null
