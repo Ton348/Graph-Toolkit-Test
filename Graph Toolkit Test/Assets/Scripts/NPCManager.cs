@@ -66,6 +66,7 @@ public class NPCManager : Interactable
                 bootstrap.QuestService,
                 bootstrap.PlayerService,
                 bootstrap.RuntimeState.Player,
+                bootstrap.GameServer,
                 bootstrap.EventBus,
                 dialogueService,
                 choiceUIService,

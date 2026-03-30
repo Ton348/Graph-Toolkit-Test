@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class BusinessQuestGraphRunner
 {
@@ -9,6 +10,10 @@ public class BusinessQuestGraphRunner
     private readonly QuestService questService;
     private readonly PlayerService playerService;
     private readonly PlayerProfileState playerState;
+    private readonly IGameServer gameServer;
+    private readonly ProfileSyncService profileSync;
+    private readonly RequestManager requestManager;
+    private readonly GraphDebugService debugService;
     private readonly EventBus eventBus;
     private readonly DialogueService dialogueService;
     private readonly ChoiceUIService choiceUIService;
@@ -17,6 +22,11 @@ public class BusinessQuestGraphRunner
     private readonly GraphProgressService graphProgressService;
 
     private BusinessQuestNode currentNode;
+    private GraphExecutionContext executionContext;
+    private Task<ServerActionResult> pendingServerTask;
+    private string pendingSuccessNodeId;
+    private string pendingFailNodeId;
+    private string pendingRequestLabel;
     private WaitForBuildingPurchasedNode waitingPurchaseNode;
     private WaitForBuildingUpgradedNode waitingUpgradeNode;
     private GoToPointNode waitingGoToNode;
@@ -33,6 +43,7 @@ public class BusinessQuestGraphRunner
         QuestService questService,
         PlayerService playerService,
         PlayerProfileState playerState,
+        IGameServer gameServer,
         EventBus eventBus,
         DialogueService dialogueService,
         ChoiceUIService choiceUIService,
@@ -46,6 +57,10 @@ public class BusinessQuestGraphRunner
         this.questService = questService;
         this.playerService = playerService;
         this.playerState = playerState;
+        this.gameServer = gameServer;
+        this.profileSync = bootstrap != null ? bootstrap.ProfileSyncService : null;
+        this.requestManager = bootstrap != null ? bootstrap.RequestManager : null;
+        this.debugService = bootstrap != null ? bootstrap.GraphDebugService : null;
         this.eventBus = eventBus;
         this.dialogueService = dialogueService;
         this.choiceUIService = choiceUIService;
@@ -67,6 +82,8 @@ public class BusinessQuestGraphRunner
         }
 
         currentContext = context ?? new InteractionContext { contextType = InteractionContextType.Normal };
+        executionContext = new GraphExecutionContext();
+        debugService?.Clear();
         IsRunning = true;
         currentNode = ResolveStartNode();
         Advance();
@@ -79,13 +96,75 @@ public class BusinessQuestGraphRunner
             return;
         }
 
+        if (pendingServerTask != null)
+        {
+            if (!pendingServerTask.IsCompleted)
+            {
+                return;
+            }
+
+            ServerActionResult result = null;
+            try
+            {
+                result = pendingServerTask.Result;
+            }
+            catch
+            {
+                Debug.Log($"[{pendingRequestLabel}] Result: Fail - Exception");
+            }
+
+            if (result == null)
+            {
+                debugService?.LogNodeFail(GetGraphId(), currentNode, executionContext, "ServerResultNull", null, pendingFailNodeId);
+                currentNode = graph.GetNodeById(pendingFailNodeId);
+            }
+            else
+            {
+                executionContext?.Set(GraphContextKeys.ServerLastResult, result);
+
+                if (result.ProfileSnapshot != null && profileSync != null)
+                {
+                    profileSync.ApplySnapshot(result.ProfileSnapshot);
+                    Debug.Log($"[{pendingRequestLabel}] Profile snapshot applied");
+                }
+
+                if (result.Success)
+                {
+                    Debug.Log($"[{pendingRequestLabel}] Result: Success");
+                    debugService?.LogNodeSuccess(GetGraphId(), currentNode, executionContext, "Success", result, pendingSuccessNodeId);
+                }
+                else
+                {
+                    Debug.Log($"[{pendingRequestLabel}] Result: {result.Type} - {result.ErrorCode}");
+                    debugService?.LogNodeFail(GetGraphId(), currentNode, executionContext, $"{result.Type} - {result.ErrorCode}", result, pendingFailNodeId);
+                }
+
+                currentNode = graph.GetNodeById(result.Success ? pendingSuccessNodeId : pendingFailNodeId);
+            }
+
+            requestManager?.FinishRequest();
+            pendingServerTask = null;
+            pendingSuccessNodeId = null;
+            pendingFailNodeId = null;
+            pendingRequestLabel = null;
+
+            Advance();
+            return;
+        }
+
         if (waitingConditionNode != null)
         {
             if (ConditionEvaluator.EvaluateCondition(waitingConditionNode, runtimeState, playerService, questService))
             {
+                executionContext?.Set(GraphContextKeys.ConditionLastResult, true);
+                debugService?.LogNodeSuccess(GetGraphId(), waitingConditionNode, executionContext, "True", null, waitingConditionNode.nextNodeId);
                 currentNode = graph.GetNodeById(waitingConditionNode.nextNodeId);
                 waitingConditionNode = null;
                 Advance();
+            }
+            else
+            {
+                executionContext?.Set(GraphContextKeys.ConditionLastResult, false);
             }
 
             return;
@@ -102,6 +181,7 @@ public class BusinessQuestGraphRunner
             float distance = Vector3.Distance(playerTransform.position, target.position);
             if (distance <= waitingGoToNode.arrivalDistance)
             {
+                debugService?.LogNodeSuccess(GetGraphId(), waitingGoToNode, executionContext, "Arrived", null, waitingGoToNode.nextNodeId);
                 currentNode = graph.GetNodeById(waitingGoToNode.nextNodeId);
                 waitingGoToNode = null;
                 Advance();
@@ -111,11 +191,18 @@ public class BusinessQuestGraphRunner
 
     private void Advance()
     {
+        if (pendingServerTask != null)
+        {
+            return;
+        }
+
         while (IsRunning && currentNode != null)
         {
+            debugService?.LogNodeStart(GetGraphId(), currentNode, executionContext);
             switch (currentNode)
             {
                 case StartNode:
+                    debugService?.LogNodeSuccess(GetGraphId(), currentNode, executionContext, null, null, currentNode.nextNodeId);
                     currentNode = graph.GetNodeById(currentNode.nextNodeId);
                     continue;
 
@@ -124,6 +211,7 @@ public class BusinessQuestGraphRunner
                     {
                         questService?.AcceptQuest(giveQuestNode.questDefinition);
                     }
+                    debugService?.LogNodeSuccess(GetGraphId(), giveQuestNode, executionContext, null, null, giveQuestNode.nextNodeId);
                     currentNode = graph.GetNodeById(giveQuestNode.nextNodeId);
                     continue;
 
@@ -132,6 +220,7 @@ public class BusinessQuestGraphRunner
                     {
                         questService?.AcceptQuest(addQuestNode.questDefinition);
                     }
+                    debugService?.LogNodeSuccess(GetGraphId(), addQuestNode, executionContext, null, null, addQuestNode.nextNodeId);
                     currentNode = graph.GetNodeById(addQuestNode.nextNodeId);
                     continue;
 
@@ -140,6 +229,7 @@ public class BusinessQuestGraphRunner
                     {
                         questService?.CompleteQuest(completeQuestNode.questId);
                     }
+                    debugService?.LogNodeSuccess(GetGraphId(), completeQuestNode, executionContext, null, null, completeQuestNode.nextNodeId);
                     currentNode = graph.GetNodeById(completeQuestNode.nextNodeId);
                     continue;
 
@@ -148,6 +238,7 @@ public class BusinessQuestGraphRunner
                     {
                         questService?.FailQuest(failQuestNode.questId);
                     }
+                    debugService?.LogNodeSuccess(GetGraphId(), failQuestNode, executionContext, null, null, failQuestNode.nextNodeId);
                     currentNode = graph.GetNodeById(failQuestNode.nextNodeId);
                     continue;
 
@@ -161,11 +252,13 @@ public class BusinessQuestGraphRunner
 
                         dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, () =>
                         {
+                            debugService?.LogNodeSuccess(GetGraphId(), dialogueNode, executionContext, "Closed", null, dialogueNode.nextNodeId);
                             currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
                             Advance();
                         }, dialogueNode.screenshot);
                         return;
                     }
+                    debugService?.LogNodeSuccess(GetGraphId(), dialogueNode, executionContext, "Skipped", null, dialogueNode.nextNodeId);
                     currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
                     continue;
 
@@ -174,46 +267,79 @@ public class BusinessQuestGraphRunner
                     {
                         choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
                         {
+                            StoreChoiceContext(choiceNode, optionIndex);
+                            debugService?.LogNodeSuccess(GetGraphId(), choiceNode, executionContext, $"Choice {optionIndex}", null, GetChoiceNextId(choiceNode, optionIndex));
                             string nextId = GetChoiceNextId(choiceNode, optionIndex);
                             currentNode = graph.GetNodeById(nextId);
                             Advance();
                         });
                         return;
                     }
+                    StoreChoiceContext(choiceNode, 0);
+                    debugService?.LogNodeSuccess(GetGraphId(), choiceNode, executionContext, "DefaultChoice 0", null, GetChoiceNextId(choiceNode, 0));
                     currentNode = graph.GetNodeById(GetChoiceNextId(choiceNode, 0));
                     continue;
 
                 case SkillCheckNode skillCheckNode:
                     bool skillSuccess = CheckSkill(skillCheckNode);
+                    if (skillSuccess)
+                    {
+                        debugService?.LogNodeSuccess(GetGraphId(), skillCheckNode, executionContext, "Success", null, skillCheckNode.successNodeId);
+                    }
+                    else
+                    {
+                        debugService?.LogNodeFail(GetGraphId(), skillCheckNode, executionContext, "Fail", null, skillCheckNode.failNodeId);
+                    }
                     currentNode = graph.GetNodeById(skillSuccess ? skillCheckNode.successNodeId : skillCheckNode.failNodeId);
                     continue;
 
                 case ConditionNode conditionNode:
                     bool conditionResult = ConditionEvaluator.EvaluateCondition(conditionNode, runtimeState, playerService, questService);
+                    executionContext?.Set(GraphContextKeys.ConditionLastResult, conditionResult);
+                    if (conditionResult)
+                    {
+                        debugService?.LogNodeSuccess(GetGraphId(), conditionNode, executionContext, "True", null, conditionNode.trueNodeId);
+                    }
+                    else
+                    {
+                        debugService?.LogNodeFail(GetGraphId(), conditionNode, executionContext, "False", null, conditionNode.falseNodeId);
+                    }
                     currentNode = graph.GetNodeById(conditionResult ? conditionNode.trueNodeId : conditionNode.falseNodeId);
                     continue;
 
                 case CheckpointNode checkpointNode:
                     SaveCheckpoint(checkpointNode);
+                    debugService?.LogNodeSuccess(GetGraphId(), checkpointNode, executionContext, null, null, checkpointNode.nextNodeId);
                     currentNode = graph.GetNodeById(checkpointNode.nextNodeId);
                     continue;
 
                 case BranchByInteractionContextNode branchNode:
+                    debugService?.LogNodeSuccess(GetGraphId(), branchNode, executionContext, IsStealContext() ? "Steal" : "Normal", null, IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
                     currentNode = graph.GetNodeById(IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
                     continue;
 
                 case StealActionNode stealActionNode:
                     bool stealSuccess = ExecuteSteal(stealActionNode);
+                    if (stealSuccess)
+                    {
+                        debugService?.LogNodeSuccess(GetGraphId(), stealActionNode, executionContext, "Success", null, stealActionNode.successNodeId);
+                    }
+                    else
+                    {
+                        debugService?.LogNodeFail(GetGraphId(), stealActionNode, executionContext, "Fail", null, stealActionNode.failNodeId);
+                    }
                     currentNode = graph.GetNodeById(stealSuccess ? stealActionNode.successNodeId : stealActionNode.failNodeId);
                     continue;
 
                 case RaiseAlertNode raiseAlertNode:
+                    debugService?.LogNodeSuccess(GetGraphId(), raiseAlertNode, executionContext, null, null, raiseAlertNode.nextNodeId);
                     currentNode = graph.GetNodeById(raiseAlertNode.nextNodeId);
                     continue;
 
                 case SpendMoneyNode spendMoneyNode:
                     if (playerService == null)
                     {
+                        debugService?.LogNodeFail(GetGraphId(), spendMoneyNode, executionContext, "PlayerServiceMissing", null, spendMoneyNode.failNodeId);
                         currentNode = graph.GetNodeById(spendMoneyNode.failNodeId);
                         continue;
                     }
@@ -221,6 +347,7 @@ public class BusinessQuestGraphRunner
                     if (spendMoneyNode.operation == MoneyOperation.Give)
                     {
                         playerService.AddMoney(spendMoneyNode.amount);
+                        debugService?.LogNodeSuccess(GetGraphId(), spendMoneyNode, executionContext, "Give", null, spendMoneyNode.successNodeId);
                         currentNode = graph.GetNodeById(spendMoneyNode.successNodeId);
                         continue;
                     }
@@ -228,13 +355,96 @@ public class BusinessQuestGraphRunner
                     if (playerService.HasEnoughMoney(spendMoneyNode.amount))
                     {
                         playerService.SpendMoney(spendMoneyNode.amount);
+                        debugService?.LogNodeSuccess(GetGraphId(), spendMoneyNode, executionContext, "Spend", null, spendMoneyNode.successNodeId);
                         currentNode = graph.GetNodeById(spendMoneyNode.successNodeId);
                     }
                     else
                     {
+                        debugService?.LogNodeFail(GetGraphId(), spendMoneyNode, executionContext, "NotEnoughMoney", null, spendMoneyNode.failNodeId);
                         currentNode = graph.GetNodeById(spendMoneyNode.failNodeId);
                     }
                     continue;
+
+                case RequestBuyBuildingNode requestBuyBuildingNode:
+                    {
+                        Debug.Log($"[RequestBuyBuilding] START buildingId='{requestBuyBuildingNode.buildingId}'");
+                        executionContext?.Set(GraphContextKeys.BuildingLastRequestedId, requestBuyBuildingNode.buildingId);
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestBuyBuilding"))
+                        {
+                            debugService?.LogNodeFail(GetGraphId(), requestBuyBuildingNode, executionContext, "RequestBlocked", null, requestBuyBuildingNode.failNodeId);
+                            currentNode = graph.GetNodeById(requestBuyBuildingNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[RequestBuyBuilding] Result: Fail - ServerMissing");
+                            debugService?.LogNodeFail(GetGraphId(), requestBuyBuildingNode, executionContext, "ServerMissing", null, requestBuyBuildingNode.failNodeId);
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestBuyBuildingNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryBuyBuildingAsync(requestBuyBuildingNode.buildingId);
+                        pendingSuccessNodeId = requestBuyBuildingNode.successNodeId;
+                        pendingFailNodeId = requestBuyBuildingNode.failNodeId;
+                        pendingRequestLabel = "RequestBuyBuilding";
+                        return;
+                    }
+
+                case RequestStartQuestNode requestStartQuestNode:
+                    {
+                        Debug.Log($"[RequestStartQuest] START questId='{requestStartQuestNode.questId}'");
+                        executionContext?.Set(GraphContextKeys.QuestLastRequestedId, requestStartQuestNode.questId);
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestStartQuest"))
+                        {
+                            debugService?.LogNodeFail(GetGraphId(), requestStartQuestNode, executionContext, "RequestBlocked", null, requestStartQuestNode.failNodeId);
+                            currentNode = graph.GetNodeById(requestStartQuestNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[RequestStartQuest] Result: Fail - ServerMissing");
+                            debugService?.LogNodeFail(GetGraphId(), requestStartQuestNode, executionContext, "ServerMissing", null, requestStartQuestNode.failNodeId);
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestStartQuestNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryStartQuestAsync(requestStartQuestNode.questId);
+                        pendingSuccessNodeId = requestStartQuestNode.successNodeId;
+                        pendingFailNodeId = requestStartQuestNode.failNodeId;
+                        pendingRequestLabel = "RequestStartQuest";
+                        return;
+                    }
+
+                case RequestCompleteQuestNode requestCompleteQuestNode:
+                    {
+                        Debug.Log($"[RequestCompleteQuest] START questId='{requestCompleteQuestNode.questId}'");
+                        executionContext?.Set(GraphContextKeys.QuestLastRequestedId, requestCompleteQuestNode.questId);
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestCompleteQuest"))
+                        {
+                            debugService?.LogNodeFail(GetGraphId(), requestCompleteQuestNode, executionContext, "RequestBlocked", null, requestCompleteQuestNode.failNodeId);
+                            currentNode = graph.GetNodeById(requestCompleteQuestNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[RequestCompleteQuest] Result: Fail - ServerMissing");
+                            debugService?.LogNodeFail(GetGraphId(), requestCompleteQuestNode, executionContext, "ServerMissing", null, requestCompleteQuestNode.failNodeId);
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestCompleteQuestNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryCompleteQuestAsync(requestCompleteQuestNode.questId);
+                        pendingSuccessNodeId = requestCompleteQuestNode.successNodeId;
+                        pendingFailNodeId = requestCompleteQuestNode.failNodeId;
+                        pendingRequestLabel = "RequestCompleteQuest";
+                        return;
+                    }
 
                 case AddMapMarkerNode addMarkerNode:
                     mapMarkerService?.ShowMarker(addMarkerNode.markerId, addMarkerNode.targetTransform, addMarkerNode.title);
@@ -243,11 +453,13 @@ public class BusinessQuestGraphRunner
                         CompassManager.Instance.ShowTarget(addMarkerNode.markerId);
                     }
                     Debug.Log($"[Marker] Node issued markerId='{addMarkerNode.markerId}' title='{addMarkerNode.title}'");
+                    debugService?.LogNodeSuccess(GetGraphId(), addMarkerNode, executionContext, null, null, addMarkerNode.nextNodeId);
                     currentNode = graph.GetNodeById(addMarkerNode.nextNodeId);
                     continue;
 
                 case SetGameObjectActiveNode setActiveNode:
                     ApplySetGameObjectActive(setActiveNode);
+                    debugService?.LogNodeSuccess(GetGraphId(), setActiveNode, executionContext, null, null, setActiveNode.nextNodeId);
                     currentNode = graph.GetNodeById(setActiveNode.nextNodeId);
                     continue;
 
@@ -278,6 +490,7 @@ public class BusinessQuestGraphRunner
                     {
                         ClearCheckpoint();
                     }
+                    debugService?.LogNodeSuccess(GetGraphId(), endNode, executionContext, "End", null, null);
                     Stop();
                     return;
             }
@@ -302,6 +515,7 @@ public class BusinessQuestGraphRunner
         }
 
         eventBus?.Unsubscribe<BuildingPurchasedEvent>(OnBuildingPurchased);
+        debugService?.LogNodeSuccess(GetGraphId(), waitingPurchaseNode, executionContext, "Purchased", null, waitingPurchaseNode.nextNodeId);
         currentNode = graph.GetNodeById(waitingPurchaseNode.nextNodeId);
         waitingPurchaseNode = null;
         Advance();
@@ -320,6 +534,7 @@ public class BusinessQuestGraphRunner
         }
 
         eventBus?.Unsubscribe<BuildingUpgradedEvent>(OnBuildingUpgraded);
+        debugService?.LogNodeSuccess(GetGraphId(), waitingUpgradeNode, executionContext, "Upgraded", null, waitingUpgradeNode.nextNodeId);
         currentNode = graph.GetNodeById(waitingUpgradeNode.nextNodeId);
         waitingUpgradeNode = null;
         Advance();
@@ -615,6 +830,7 @@ public class BusinessQuestGraphRunner
         choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
         {
             string nextId = GetChoiceNextId(choiceNode, optionIndex);
+            debugService?.LogNodeSuccess(GetGraphId(), choiceNode, executionContext, $"Choice {optionIndex}", null, nextId);
             currentNode = graph.GetNodeById(nextId);
             Advance();
         });
@@ -651,6 +867,24 @@ public class BusinessQuestGraphRunner
         }
 
         return false;
+    }
+
+    private void StoreChoiceContext(ChoiceNode choiceNode, int optionIndex)
+    {
+        if (executionContext == null || choiceNode == null)
+        {
+            return;
+        }
+
+        executionContext.Set(GraphContextKeys.ChoiceLastIndex, optionIndex);
+
+        string label = string.Empty;
+        if (choiceNode.options != null && optionIndex >= 0 && optionIndex < choiceNode.options.Count)
+        {
+            label = choiceNode.options[optionIndex]?.label ?? string.Empty;
+        }
+
+        executionContext.Set(GraphContextKeys.ChoiceLastLabel, label);
     }
 
     private void ExecuteImmediateNode(BusinessQuestNode node)
@@ -712,6 +946,13 @@ public class BusinessQuestGraphRunner
             return;
         }
 
+        requestManager?.FinishRequest();
+        pendingServerTask = null;
+        pendingSuccessNodeId = null;
+        pendingFailNodeId = null;
+        pendingRequestLabel = null;
+        executionContext?.Clear();
+        executionContext = null;
         dialogueService?.HideDialogue();
         choiceUIService?.HideChoices();
         eventBus?.Unsubscribe<BuildingPurchasedEvent>(OnBuildingPurchased);

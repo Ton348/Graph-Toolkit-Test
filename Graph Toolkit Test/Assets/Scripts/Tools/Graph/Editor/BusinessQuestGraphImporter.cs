@@ -88,6 +88,27 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
+        if (runtimeNode is RequestBuyBuildingNode requestBuy)
+        {
+            requestBuy.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestBuy.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestStartQuestNode requestStartQuest)
+        {
+            requestStartQuest.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestStartQuest.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestCompleteQuestNode requestCompleteQuest)
+        {
+            requestCompleteQuest.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestCompleteQuest.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
         if (runtimeNode is StealActionNode stealAction)
         {
             stealAction.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
@@ -189,6 +210,24 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 {
                     operation = GetOptionValue<MoneyOperation>(spendMoneyNode, SpendMoneyNodeModel.OPERATION_OPTION),
                     amount = GetOptionValue<int>(spendMoneyNode, SpendMoneyNodeModel.AMOUNT_OPTION)
+                };
+                break;
+            case RequestBuyBuildingNodeModel requestBuyBuildingNode:
+                runtimeNode = new RequestBuyBuildingNode
+                {
+                    buildingId = GetOptionValue<string>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.BUILDING_ID_OPTION)
+                };
+                break;
+            case RequestStartQuestNodeModel requestStartQuestNode:
+                runtimeNode = new RequestStartQuestNode
+                {
+                    questId = GetOptionValue<string>(requestStartQuestNode, RequestStartQuestNodeModel.QUEST_ID_OPTION)
+                };
+                break;
+            case RequestCompleteQuestNodeModel requestCompleteQuestNode:
+                runtimeNode = new RequestCompleteQuestNode
+                {
+                    questId = GetOptionValue<string>(requestCompleteQuestNode, RequestCompleteQuestNodeModel.QUEST_ID_OPTION)
                 };
                 break;
             case AddMapMarkerNodeModel addMarkerNode:
