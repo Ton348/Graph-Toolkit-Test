@@ -47,18 +47,6 @@ public static class ConditionEvaluator
         return result;
     }
 
-    public static bool EvaluateCondition(WaitForConditionNode node, PlayerStateSync playerStateSync)
-    {
-        if (node == null)
-        {
-            return false;
-        }
-
-        bool result = EvaluateCondition(node.conditionType, node.buildingId, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, playerStateSync, out string reason);
-        LogIfFalse(node, result, reason);
-        return result;
-    }
-
     static bool IsBuildingOwned(string buildingId, PlayerStateSync playerStateSync, out string reason)
     {
         if (string.IsNullOrEmpty(buildingId))

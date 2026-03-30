@@ -24,11 +24,8 @@ public class BusinessQuestGraphRunner
     private string pendingSuccessNodeId;
     private string pendingFailNodeId;
     private string pendingRequestLabel;
-    private WaitForBuildingPurchasedNode waitingPurchaseNode;
-    private WaitForBuildingUpgradedNode waitingUpgradeNode;
     private int waitingUpgradeStartLevel = -1;
     private GoToPointNode waitingGoToNode;
-    private WaitForConditionNode waitingConditionNode;
     private readonly Dictionary<string, GameObject> spawnedObjects = new Dictionary<string, GameObject>();
     private InteractionContext currentContext = new InteractionContext { contextType = InteractionContextType.Normal };
 
@@ -76,6 +73,20 @@ public class BusinessQuestGraphRunner
         debugService?.Clear();
         IsRunning = true;
         currentNode = ResolveStartNode();
+        if (gameServer != null && currentNode != null)
+        {
+            bool canStart = requestManager == null || requestManager.TryStartRequest("RefreshProfile");
+            if (canStart)
+            {
+                pendingServerTask = gameServer.TryGetProfileAsync();
+                pendingSuccessNodeId = currentNode.id;
+                pendingFailNodeId = currentNode.id;
+                pendingRequestLabel = "RefreshProfile";
+                Advance();
+                return;
+            }
+        }
+
         Advance();
     }
 
@@ -139,54 +150,6 @@ public class BusinessQuestGraphRunner
             pendingRequestLabel = null;
 
             Advance();
-            return;
-        }
-
-        if (waitingPurchaseNode != null)
-        {
-            if (playerStateSync != null && playerStateSync.IsBuildingOwned(waitingPurchaseNode.buildingId))
-            {
-                debugService?.LogNodeSuccess(GetGraphId(), waitingPurchaseNode, executionContext, "Purchased", null, waitingPurchaseNode.nextNodeId);
-                currentNode = graph.GetNodeById(waitingPurchaseNode.nextNodeId);
-                waitingPurchaseNode = null;
-                Advance();
-            }
-
-            return;
-        }
-
-        if (waitingUpgradeNode != null)
-        {
-            if (playerStateSync != null && playerStateSync.TryGetBuildingState(waitingUpgradeNode.buildingId, out var state))
-            {
-                if (state.level > waitingUpgradeStartLevel)
-                {
-                    debugService?.LogNodeSuccess(GetGraphId(), waitingUpgradeNode, executionContext, "Upgraded", null, waitingUpgradeNode.nextNodeId);
-                    currentNode = graph.GetNodeById(waitingUpgradeNode.nextNodeId);
-                    waitingUpgradeNode = null;
-                    waitingUpgradeStartLevel = -1;
-                    Advance();
-                }
-            }
-
-            return;
-        }
-
-        if (waitingConditionNode != null)
-        {
-            if (ConditionEvaluator.EvaluateCondition(waitingConditionNode, playerStateSync))
-            {
-                executionContext?.Set(GraphContextKeys.ConditionLastResult, true);
-                debugService?.LogNodeSuccess(GetGraphId(), waitingConditionNode, executionContext, "True", null, waitingConditionNode.nextNodeId);
-                currentNode = graph.GetNodeById(waitingConditionNode.nextNodeId);
-                waitingConditionNode = null;
-                Advance();
-            }
-            else
-            {
-                executionContext?.Set(GraphContextKeys.ConditionLastResult, false);
-            }
-
             return;
         }
 
@@ -264,19 +227,6 @@ public class BusinessQuestGraphRunner
                     currentNode = graph.GetNodeById(GetChoiceNextId(choiceNode, 0));
                     continue;
 
-                case SkillCheckNode skillCheckNode:
-                    bool skillSuccess = CheckSkill(skillCheckNode);
-                    if (skillSuccess)
-                    {
-                        debugService?.LogNodeSuccess(GetGraphId(), skillCheckNode, executionContext, "Success", null, skillCheckNode.successNodeId);
-                    }
-                    else
-                    {
-                        debugService?.LogNodeFail(GetGraphId(), skillCheckNode, executionContext, "Fail", null, skillCheckNode.failNodeId);
-                    }
-                    currentNode = graph.GetNodeById(skillSuccess ? skillCheckNode.successNodeId : skillCheckNode.failNodeId);
-                    continue;
-
                 case ConditionNode conditionNode:
                     bool conditionResult = ConditionEvaluator.EvaluateCondition(conditionNode, playerStateSync);
                     executionContext?.Set(GraphContextKeys.ConditionLastResult, conditionResult);
@@ -295,16 +245,6 @@ public class BusinessQuestGraphRunner
                     SaveCheckpoint(checkpointNode);
                     debugService?.LogNodeSuccess(GetGraphId(), checkpointNode, executionContext, null, null, checkpointNode.nextNodeId);
                     currentNode = graph.GetNodeById(checkpointNode.nextNodeId);
-                    continue;
-
-                case BranchByInteractionContextNode branchNode:
-                    debugService?.LogNodeSuccess(GetGraphId(), branchNode, executionContext, IsStealContext() ? "Steal" : "Normal", null, IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
-                    currentNode = graph.GetNodeById(IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
-                    continue;
-
-                case RaiseAlertNode raiseAlertNode:
-                    debugService?.LogNodeSuccess(GetGraphId(), raiseAlertNode, executionContext, null, null, raiseAlertNode.nextNodeId);
-                    currentNode = graph.GetNodeById(raiseAlertNode.nextNodeId);
                     continue;
 
                 case RequestBuyBuildingNode requestBuyBuildingNode:
@@ -407,23 +347,6 @@ public class BusinessQuestGraphRunner
 
                 case GoToPointNode goToPointNode:
                     waitingGoToNode = goToPointNode;
-                    return;
-
-                case WaitForBuildingPurchasedNode waitPurchase:
-                    waitingPurchaseNode = waitPurchase;
-                    return;
-
-                case WaitForBuildingUpgradedNode waitUpgrade:
-                    waitingUpgradeNode = waitUpgrade;
-                    waitingUpgradeStartLevel = 0;
-                    if (playerStateSync != null && playerStateSync.TryGetBuildingState(waitUpgrade.buildingId, out var state))
-                    {
-                        waitingUpgradeStartLevel = state.level;
-                    }
-                    return;
-
-                case WaitForConditionNode waitCondition:
-                    waitingConditionNode = waitCondition;
                     return;
 
                 case EndNode endNode:
@@ -752,38 +675,6 @@ public class BusinessQuestGraphRunner
         }
     }
 
-    private bool CheckSkill(SkillCheckNode node)
-    {
-        if (node == null)
-        {
-            return false;
-        }
-
-        int value = 0;
-        if (playerStateSync != null)
-        {
-            switch (node.skillType)
-            {
-                case SkillType.Bargaining:
-                    value = playerStateSync.Bargaining;
-                    break;
-                case SkillType.Speech:
-                    value = playerStateSync.Speech;
-                    break;
-                case SkillType.Speed:
-                    value = playerStateSync.Speed;
-                    break;
-                case SkillType.Damage:
-                    value = playerStateSync.Damage;
-                    break;
-                case SkillType.Health:
-                    value = playerStateSync.Health;
-                    break;
-            }
-        }
-        return value >= node.requiredValue;
-    }
-
     public void Stop()
     {
         if (!IsRunning)
@@ -800,11 +691,8 @@ public class BusinessQuestGraphRunner
         executionContext = null;
         dialogueService?.HideDialogue();
         choiceUIService?.HideChoices();
-        waitingPurchaseNode = null;
-        waitingUpgradeNode = null;
         waitingUpgradeStartLevel = -1;
         waitingGoToNode = null;
-        waitingConditionNode = null;
         currentNode = null;
         IsRunning = false;
     }

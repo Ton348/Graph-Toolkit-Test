@@ -18,6 +18,26 @@ public class LocalGameServer : IGameServer
         this.dataRepository = dataRepository;
     }
 
+    public async Task<ServerActionResult> TryGetProfileAsync()
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (runtime == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
+        }
+
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Profile fetch success.");
+    }
+
     public async Task<ServerActionResult> TryBuyBuildingAsync(string buildingId)
     {
         int delayMs = NextDelayMs();

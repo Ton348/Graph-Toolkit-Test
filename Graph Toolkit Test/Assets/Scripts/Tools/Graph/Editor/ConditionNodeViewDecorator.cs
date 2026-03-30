@@ -79,10 +79,6 @@ internal static class ConditionNodeViewDecorator
             return;
         }
 
-        if (userNode is WaitForConditionNodeModel waitNode)
-        {
-            ApplyVisibility(nodeElement, GetConditionType(waitNode));
-        }
     }
 
     static ConditionType GetConditionType(Node node)

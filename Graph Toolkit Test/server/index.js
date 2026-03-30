@@ -326,6 +326,15 @@ function handleSteal(req, res, payload) {
   return success(res, 'Steal success.', profile);
 }
 
+function handleGetProfile(req, res, payload) {
+  const playerId = payload.playerId || 'player';
+  console.log(`[server] action=get_profile playerId=${playerId}`);
+  const profile = loadPlayerProfile(playerId);
+  ensureBuildingStates(profile);
+  savePlayerProfile(profile);
+  return success(res, 'Profile fetch success.', profile);
+}
+
 function handleAction(req, res, payload) {
   if (!payload || typeof payload !== 'object') {
     return fail(res, 'InvalidPayload', 'Invalid JSON payload.');
@@ -346,6 +355,8 @@ function handleAction(req, res, payload) {
       return handleSpendMoney(req, res, payload);
     case 'steal':
       return handleSteal(req, res, payload);
+    case 'get_profile':
+      return handleGetProfile(req, res, payload);
     default:
       return fail(res, 'UnknownAction', `Unknown action: ${payload.action}`);
   }

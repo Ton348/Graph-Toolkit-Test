@@ -67,13 +67,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
-        if (runtimeNode is SkillCheckNode skillCheck)
-        {
-            skillCheck.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
-            skillCheck.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
-            return;
-        }
-
         if (runtimeNode is ConditionNode condition)
         {
             condition.trueNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
@@ -104,12 +97,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
         }
 
 
-        if (runtimeNode is BranchByInteractionContextNode branch)
-        {
-            branch.normalNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
-            branch.stealNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
-            return;
-        }
 
         string nextId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
         runtimeNode.nextNodeId = nextId;
@@ -124,14 +111,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
         if (runtimeNode is GoToPointNode goToPoint)
         {
             goToPoint.nextNodeId = nextId;
-        }
-        if (runtimeNode is WaitForBuildingPurchasedNode waitPurchase)
-        {
-            waitPurchase.nextNodeId = nextId;
-        }
-        if (runtimeNode is WaitForBuildingUpgradedNode waitUpgrade)
-        {
-            waitUpgrade.nextNodeId = nextId;
         }
     }
 
@@ -156,13 +135,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new ChoiceNode
                 {
                     options = BuildChoiceOptions(choiceNode)
-                };
-                break;
-            case SkillCheckNodeModel skillCheckNode:
-                runtimeNode = new SkillCheckNode
-                {
-                    skillType = GetOptionValue<SkillType>(skillCheckNode, SkillCheckNodeModel.SKILL_OPTION),
-                    requiredValue = GetOptionValue<int>(skillCheckNode, SkillCheckNodeModel.REQUIRED_OPTION)
                 };
                 break;
             case RequestBuyBuildingNodeModel requestBuyBuildingNode:
@@ -197,18 +169,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     arrivalDistance = GetOptionValue<float>(goToPointNode, GoToPointNodeModel.ARRIVAL_OPTION)
                 };
                 break;
-            case WaitForBuildingPurchasedNodeModel waitPurchasedNode:
-                runtimeNode = new WaitForBuildingPurchasedNode
-                {
-                    buildingId = GetOptionValue<string>(waitPurchasedNode, WaitForBuildingPurchasedNodeModel.BUILDING_ID_OPTION)
-                };
-                break;
-            case WaitForBuildingUpgradedNodeModel waitUpgradedNode:
-                runtimeNode = new WaitForBuildingUpgradedNode
-                {
-                    buildingId = GetOptionValue<string>(waitUpgradedNode, WaitForBuildingUpgradedNodeModel.BUILDING_ID_OPTION)
-                };
-                break;
             case ConditionNodeModel conditionNode:
                 runtimeNode = new ConditionNode
                 {
@@ -219,26 +179,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     requiredStatValue = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_STAT_OPTION),
                     questId = GetOptionValue<string>(conditionNode, ConditionNodeModel.QUEST_ID_OPTION)
                 };
-                break;
-            case WaitForConditionNodeModel waitConditionNode:
-                runtimeNode = new WaitForConditionNode
-                {
-                    conditionType = GetOptionValue<ConditionType>(waitConditionNode, WaitForConditionNodeModel.CONDITION_TYPE_OPTION),
-                    buildingId = GetOptionValue<string>(waitConditionNode, WaitForConditionNodeModel.BUILDING_OPTION),
-                    requiredMoney = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_MONEY_OPTION),
-                    playerStatType = GetOptionValue<PlayerStatType>(waitConditionNode, WaitForConditionNodeModel.PLAYER_STAT_OPTION),
-                    requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION),
-                    questId = GetOptionValue<string>(waitConditionNode, WaitForConditionNodeModel.QUEST_ID_OPTION)
-                };
-                break;
-            case RaiseAlertNodeModel raiseAlertNode:
-                runtimeNode = new RaiseAlertNode
-                {
-                    alertMessage = GetOptionValue<string>(raiseAlertNode, RaiseAlertNodeModel.ALERT_MESSAGE_OPTION)
-                };
-                break;
-            case BranchByInteractionContextNodeModel:
-                runtimeNode = new BranchByInteractionContextNode();
                 break;
             case CheckpointNodeModel checkpointNode:
                 runtimeNode = new CheckpointNode

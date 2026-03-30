@@ -19,6 +19,17 @@ public class RemoteGameServer : IGameServer
         this.debugLog = debugLog;
     }
 
+    public Task<ServerActionResult> TryGetProfileAsync()
+    {
+        var request = new RemoteProfileRequest
+        {
+            action = "get_profile",
+            playerId = playerId
+        };
+
+        return SendRequestAsync(request);
+    }
+
     public Task<ServerActionResult> TryBuyBuildingAsync(string buildingId)
     {
         var request = new RemoteBuyBuildingRequest
@@ -239,6 +250,13 @@ public class RemoteGameServer : IGameServer
         }
 
         return snapshot;
+    }
+
+    [Serializable]
+    private class RemoteProfileRequest
+    {
+        public string action;
+        public string playerId;
     }
 
     [Serializable]
