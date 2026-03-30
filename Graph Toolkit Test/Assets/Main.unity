@@ -17838,7 +17838,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  dialogueGraph: {fileID: -8116140793486648412, guid: 4e143855e31594fc292988cb5d8235fb, type: 3}
+  dialogueGraph: {fileID: -8116140793486648412, guid: 1122274328ac5453788e18a79d14df1f, type: 3}
   stealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 0}
@@ -40958,9 +40958,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80f09913e237e4dc0b17acb894773d12, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameBootstrap
-  playerDefinition: {fileID: 11400000, guid: f912f6286974047168fad95fd5ee1ca2, type: 2}
-  buildingDefinitions:
-  - {fileID: 11400000, guid: 7cf98789e267f4b87b01cdef485862a4, type: 2}
+  gameDataFolder: GameData
+  useRemoteServer: 1
+  remoteBaseUrl: http://localhost:3000
+  remotePlayerId: player
+  remoteTimeoutSeconds: 8
+  remoteDebugLog: 1
+  enableGraphDebug: 1
+  graphDebugFilter: 0
+  graphDebugMaxEvents: 200
+  graphDebugLogToConsole: 1
+  graphDebugIncludeContext: 1
 --- !u!4 &1614953996
 Transform:
   m_ObjectHideFlags: 0
@@ -45155,7 +45163,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingStatusUI
   bootstrap: {fileID: 1614953995}
-  buildingDefinition: {fileID: 11400000, guid: 7cf98789e267f4b87b01cdef485862a4, type: 2}
+  buildingId: 
   statusText: {fileID: 1787252251}
 --- !u!1001 &1787442336
 PrefabInstance:

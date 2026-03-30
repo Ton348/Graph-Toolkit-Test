@@ -4,7 +4,7 @@ using System;
 public class WaitForConditionNode : BusinessQuestNode
 {
     public ConditionType conditionType;
-    public BuildingDefinition targetBuilding;
+    public string buildingId;
     public int requiredMoney;
     public PlayerStatType playerStatType;
     public int requiredStatValue;

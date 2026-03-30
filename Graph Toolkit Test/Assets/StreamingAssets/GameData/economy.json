@@ -1,0 +1,8 @@
+{
+  "startMoney": 1000,
+  "baseBargaining": 1,
+  "baseSpeech": 1,
+  "baseSpeed": 1,
+  "baseDamage": 1,
+  "baseHealth": 100
+}

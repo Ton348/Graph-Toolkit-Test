@@ -33,7 +33,7 @@ public class NPCManager : Interactable
             bootstrap = FindObjectOfType<GameBootstrap>();
         }
 
-        if (bootstrap == null || bootstrap.QuestService == null || bootstrap.EventBus == null)
+        if (bootstrap == null)
         {
             return;
         }
@@ -62,12 +62,7 @@ public class NPCManager : Interactable
             runner = new BusinessQuestGraphRunner(
                 selectedGraph,
                 bootstrap,
-                bootstrap.RuntimeState,
-                bootstrap.QuestService,
-                bootstrap.PlayerService,
-                bootstrap.RuntimeState.Player,
                 bootstrap.GameServer,
-                bootstrap.EventBus,
                 dialogueService,
                 choiceUIService,
                 mapMarkerService,

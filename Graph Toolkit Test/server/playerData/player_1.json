@@ -1,0 +1,13 @@
+{
+  "playerId": "player_1",
+  "money": 1000,
+  "bargaining": 1,
+  "speech": 1,
+  "speed": 1,
+  "damage": 1,
+  "health": 100,
+  "activeQuests": [],
+  "completedQuests": [],
+  "ownedBuildings": [],
+  "buildingStates": []
+}

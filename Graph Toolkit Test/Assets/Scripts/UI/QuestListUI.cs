@@ -14,23 +14,21 @@ public class QuestListUI : MonoBehaviour
             bootstrap = FindObjectOfType<GameBootstrap>();
         }
 
-        if (questsText == null || bootstrap == null || bootstrap.RuntimeState == null || bootstrap.RuntimeState.Quests == null)
+        if (questsText == null || bootstrap == null || bootstrap.PlayerStateSync == null || bootstrap.GameDataRepository == null)
         {
             return;
         }
 
         StringBuilder sb = new StringBuilder();
-        foreach (QuestState quest in bootstrap.RuntimeState.Quests)
+        foreach (string questId in bootstrap.PlayerStateSync.ActiveQuests)
         {
-            if (quest == null || quest.Definition == null)
+            if (string.IsNullOrEmpty(questId))
             {
                 continue;
             }
 
-            if (quest.Status == QuestStatus.Active)
-            {
-                sb.AppendLine(quest.Definition.title);
-            }
+            QuestDefinitionData def = bootstrap.GameDataRepository.GetQuestById(questId);
+            sb.AppendLine(def != null ? def.title : questId);
         }
 
         questsText.text = sb.Length > 0 ? sb.ToString() : "No active quests";

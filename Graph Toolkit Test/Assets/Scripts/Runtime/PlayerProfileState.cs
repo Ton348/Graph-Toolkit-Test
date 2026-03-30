@@ -7,18 +7,19 @@ public class PlayerProfileState
     public int Damage;
     public int Health;
 
-    public PlayerProfileState(PlayerProfileDefinition definition)
+    public PlayerProfileState(EconomyConfigData config)
     {
-        if (definition == null)
+        if (config == null)
         {
             return;
         }
 
-        Money = definition.startMoney;
-        Bargaining = definition.baseBargaining;
-        Speech = definition.baseSpeech;
-        Speed = definition.baseSpeed;
-        Damage = definition.baseDamage;
-        Health = definition.baseHealth;
+        Money = config.startMoney;
+        Bargaining = config.baseBargaining;
+        Speech = config.baseSpeech;
+        Speed = config.baseSpeed;
+        Damage = config.baseDamage;
+        Health = config.baseHealth;
     }
+
 }

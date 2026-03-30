@@ -55,6 +55,54 @@ public class RemoteGameServer : IGameServer
         return SendRequestAsync(request);
     }
 
+    public Task<ServerActionResult> TryFailQuestAsync(string questId)
+    {
+        var request = new RemoteQuestRequest
+        {
+            action = "fail_quest",
+            playerId = playerId,
+            data = new RemoteQuestData { questId = questId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryAddMoneyAsync(int amount)
+    {
+        var request = new RemoteMoneyRequest
+        {
+            action = "add_money",
+            playerId = playerId,
+            data = new RemoteMoneyData { amount = amount }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TrySpendMoneyAsync(int amount)
+    {
+        var request = new RemoteMoneyRequest
+        {
+            action = "spend_money",
+            playerId = playerId,
+            data = new RemoteMoneyData { amount = amount }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance)
+    {
+        var request = new RemoteStealRequest
+        {
+            action = "steal",
+            playerId = playerId,
+            data = new RemoteStealData { amount = amount, canFail = canFail, successChance = successChance }
+        };
+
+        return SendRequestAsync(request);
+    }
+
     private async Task<ServerActionResult> SendRequestAsync<T>(T requestPayload)
     {
         string url = $"{baseUrl}/api/action";
@@ -147,7 +195,12 @@ public class RemoteGameServer : IGameServer
     {
         var snapshot = new ProfileSnapshot
         {
-            Money = profile.money
+            Money = profile.money,
+            Bargaining = profile.bargaining,
+            Speech = profile.speech,
+            Speed = profile.speed,
+            Damage = profile.damage,
+            Health = profile.health
         };
 
         if (profile.activeQuests != null)
@@ -163,6 +216,26 @@ public class RemoteGameServer : IGameServer
         if (profile.buildings != null)
         {
             snapshot.OwnedBuildingIds.AddRange(profile.buildings);
+        }
+
+        if (profile.buildingStates != null)
+        {
+            foreach (var state in profile.buildingStates)
+            {
+                if (state == null || string.IsNullOrEmpty(state.id))
+                {
+                    continue;
+                }
+
+                snapshot.BuildingStates.Add(new BuildingStateSnapshot
+                {
+                    id = state.id,
+                    owned = state.owned,
+                    level = state.level,
+                    currentIncome = state.currentIncome,
+                    currentExpenses = state.currentExpenses
+                });
+            }
         }
 
         return snapshot;
@@ -197,6 +270,36 @@ public class RemoteGameServer : IGameServer
     }
 
     [Serializable]
+    private class RemoteMoneyRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteMoneyData data;
+    }
+
+    [Serializable]
+    private class RemoteMoneyData
+    {
+        public int amount;
+    }
+
+    [Serializable]
+    private class RemoteStealRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteStealData data;
+    }
+
+    [Serializable]
+    private class RemoteStealData
+    {
+        public int amount;
+        public bool canFail;
+        public int successChance;
+    }
+
+    [Serializable]
     private class RemoteActionResponse
     {
         public bool success;
@@ -212,5 +315,21 @@ public class RemoteGameServer : IGameServer
         public string[] activeQuests;
         public string[] completedQuests;
         public string[] buildings;
+        public int bargaining;
+        public int speech;
+        public int speed;
+        public int damage;
+        public int health;
+        public RemoteBuildingStateDto[] buildingStates;
+    }
+
+    [Serializable]
+    private class RemoteBuildingStateDto
+    {
+        public string id;
+        public bool owned;
+        public int level;
+        public int currentIncome;
+        public int currentExpenses;
     }
 }

@@ -6,15 +6,12 @@ public class BusinessQuestGraphRunner
 {
     private readonly BusinessQuestGraph graph;
     private readonly GameBootstrap bootstrap;
-    private readonly GameRuntimeState runtimeState;
-    private readonly QuestService questService;
-    private readonly PlayerService playerService;
-    private readonly PlayerProfileState playerState;
     private readonly IGameServer gameServer;
     private readonly ProfileSyncService profileSync;
     private readonly RequestManager requestManager;
     private readonly GraphDebugService debugService;
-    private readonly EventBus eventBus;
+    private readonly GameDataRepository dataRepository;
+    private readonly PlayerStateSync playerStateSync;
     private readonly DialogueService dialogueService;
     private readonly ChoiceUIService choiceUIService;
     private readonly MapMarkerService mapMarkerService;
@@ -29,6 +26,7 @@ public class BusinessQuestGraphRunner
     private string pendingRequestLabel;
     private WaitForBuildingPurchasedNode waitingPurchaseNode;
     private WaitForBuildingUpgradedNode waitingUpgradeNode;
+    private int waitingUpgradeStartLevel = -1;
     private GoToPointNode waitingGoToNode;
     private WaitForConditionNode waitingConditionNode;
     private readonly Dictionary<string, GameObject> spawnedObjects = new Dictionary<string, GameObject>();
@@ -39,12 +37,7 @@ public class BusinessQuestGraphRunner
     public BusinessQuestGraphRunner(
         BusinessQuestGraph graph,
         GameBootstrap bootstrap,
-        GameRuntimeState runtimeState,
-        QuestService questService,
-        PlayerService playerService,
-        PlayerProfileState playerState,
         IGameServer gameServer,
-        EventBus eventBus,
         DialogueService dialogueService,
         ChoiceUIService choiceUIService,
         MapMarkerService mapMarkerService,
@@ -53,15 +46,12 @@ public class BusinessQuestGraphRunner
     {
         this.graph = graph;
         this.bootstrap = bootstrap;
-        this.runtimeState = runtimeState;
-        this.questService = questService;
-        this.playerService = playerService;
-        this.playerState = playerState;
         this.gameServer = gameServer;
         this.profileSync = bootstrap != null ? bootstrap.ProfileSyncService : null;
         this.requestManager = bootstrap != null ? bootstrap.RequestManager : null;
         this.debugService = bootstrap != null ? bootstrap.GraphDebugService : null;
-        this.eventBus = eventBus;
+        this.dataRepository = bootstrap != null ? bootstrap.GameDataRepository : null;
+        this.playerStateSync = bootstrap != null ? bootstrap.PlayerStateSync : null;
         this.dialogueService = dialogueService;
         this.choiceUIService = choiceUIService;
         this.mapMarkerService = mapMarkerService;
@@ -152,9 +142,39 @@ public class BusinessQuestGraphRunner
             return;
         }
 
+        if (waitingPurchaseNode != null)
+        {
+            if (playerStateSync != null && playerStateSync.IsBuildingOwned(waitingPurchaseNode.buildingId))
+            {
+                debugService?.LogNodeSuccess(GetGraphId(), waitingPurchaseNode, executionContext, "Purchased", null, waitingPurchaseNode.nextNodeId);
+                currentNode = graph.GetNodeById(waitingPurchaseNode.nextNodeId);
+                waitingPurchaseNode = null;
+                Advance();
+            }
+
+            return;
+        }
+
+        if (waitingUpgradeNode != null)
+        {
+            if (playerStateSync != null && playerStateSync.TryGetBuildingState(waitingUpgradeNode.buildingId, out var state))
+            {
+                if (state.level > waitingUpgradeStartLevel)
+                {
+                    debugService?.LogNodeSuccess(GetGraphId(), waitingUpgradeNode, executionContext, "Upgraded", null, waitingUpgradeNode.nextNodeId);
+                    currentNode = graph.GetNodeById(waitingUpgradeNode.nextNodeId);
+                    waitingUpgradeNode = null;
+                    waitingUpgradeStartLevel = -1;
+                    Advance();
+                }
+            }
+
+            return;
+        }
+
         if (waitingConditionNode != null)
         {
-            if (ConditionEvaluator.EvaluateCondition(waitingConditionNode, runtimeState, playerService, questService))
+            if (ConditionEvaluator.EvaluateCondition(waitingConditionNode, playerStateSync))
             {
                 executionContext?.Set(GraphContextKeys.ConditionLastResult, true);
                 debugService?.LogNodeSuccess(GetGraphId(), waitingConditionNode, executionContext, "True", null, waitingConditionNode.nextNodeId);
@@ -204,42 +224,6 @@ public class BusinessQuestGraphRunner
                 case StartNode:
                     debugService?.LogNodeSuccess(GetGraphId(), currentNode, executionContext, null, null, currentNode.nextNodeId);
                     currentNode = graph.GetNodeById(currentNode.nextNodeId);
-                    continue;
-
-                case GiveQuestNode giveQuestNode:
-                    if (giveQuestNode.questDefinition != null)
-                    {
-                        questService?.AcceptQuest(giveQuestNode.questDefinition);
-                    }
-                    debugService?.LogNodeSuccess(GetGraphId(), giveQuestNode, executionContext, null, null, giveQuestNode.nextNodeId);
-                    currentNode = graph.GetNodeById(giveQuestNode.nextNodeId);
-                    continue;
-
-                case AddQuestNode addQuestNode:
-                    if (addQuestNode.questDefinition != null)
-                    {
-                        questService?.AcceptQuest(addQuestNode.questDefinition);
-                    }
-                    debugService?.LogNodeSuccess(GetGraphId(), addQuestNode, executionContext, null, null, addQuestNode.nextNodeId);
-                    currentNode = graph.GetNodeById(addQuestNode.nextNodeId);
-                    continue;
-
-                case CompleteQuestNode completeQuestNode:
-                    if (!string.IsNullOrEmpty(completeQuestNode.questId))
-                    {
-                        questService?.CompleteQuest(completeQuestNode.questId);
-                    }
-                    debugService?.LogNodeSuccess(GetGraphId(), completeQuestNode, executionContext, null, null, completeQuestNode.nextNodeId);
-                    currentNode = graph.GetNodeById(completeQuestNode.nextNodeId);
-                    continue;
-
-                case FailQuestNode failQuestNode:
-                    if (!string.IsNullOrEmpty(failQuestNode.questId))
-                    {
-                        questService?.FailQuest(failQuestNode.questId);
-                    }
-                    debugService?.LogNodeSuccess(GetGraphId(), failQuestNode, executionContext, null, null, failQuestNode.nextNodeId);
-                    currentNode = graph.GetNodeById(failQuestNode.nextNodeId);
                     continue;
 
                 case DialogueNode dialogueNode:
@@ -294,7 +278,7 @@ public class BusinessQuestGraphRunner
                     continue;
 
                 case ConditionNode conditionNode:
-                    bool conditionResult = ConditionEvaluator.EvaluateCondition(conditionNode, runtimeState, playerService, questService);
+                    bool conditionResult = ConditionEvaluator.EvaluateCondition(conditionNode, playerStateSync);
                     executionContext?.Set(GraphContextKeys.ConditionLastResult, conditionResult);
                     if (conditionResult)
                     {
@@ -318,51 +302,9 @@ public class BusinessQuestGraphRunner
                     currentNode = graph.GetNodeById(IsStealContext() ? branchNode.stealNodeId : branchNode.normalNodeId);
                     continue;
 
-                case StealActionNode stealActionNode:
-                    bool stealSuccess = ExecuteSteal(stealActionNode);
-                    if (stealSuccess)
-                    {
-                        debugService?.LogNodeSuccess(GetGraphId(), stealActionNode, executionContext, "Success", null, stealActionNode.successNodeId);
-                    }
-                    else
-                    {
-                        debugService?.LogNodeFail(GetGraphId(), stealActionNode, executionContext, "Fail", null, stealActionNode.failNodeId);
-                    }
-                    currentNode = graph.GetNodeById(stealSuccess ? stealActionNode.successNodeId : stealActionNode.failNodeId);
-                    continue;
-
                 case RaiseAlertNode raiseAlertNode:
                     debugService?.LogNodeSuccess(GetGraphId(), raiseAlertNode, executionContext, null, null, raiseAlertNode.nextNodeId);
                     currentNode = graph.GetNodeById(raiseAlertNode.nextNodeId);
-                    continue;
-
-                case SpendMoneyNode spendMoneyNode:
-                    if (playerService == null)
-                    {
-                        debugService?.LogNodeFail(GetGraphId(), spendMoneyNode, executionContext, "PlayerServiceMissing", null, spendMoneyNode.failNodeId);
-                        currentNode = graph.GetNodeById(spendMoneyNode.failNodeId);
-                        continue;
-                    }
-
-                    if (spendMoneyNode.operation == MoneyOperation.Give)
-                    {
-                        playerService.AddMoney(spendMoneyNode.amount);
-                        debugService?.LogNodeSuccess(GetGraphId(), spendMoneyNode, executionContext, "Give", null, spendMoneyNode.successNodeId);
-                        currentNode = graph.GetNodeById(spendMoneyNode.successNodeId);
-                        continue;
-                    }
-
-                    if (playerService.HasEnoughMoney(spendMoneyNode.amount))
-                    {
-                        playerService.SpendMoney(spendMoneyNode.amount);
-                        debugService?.LogNodeSuccess(GetGraphId(), spendMoneyNode, executionContext, "Spend", null, spendMoneyNode.successNodeId);
-                        currentNode = graph.GetNodeById(spendMoneyNode.successNodeId);
-                    }
-                    else
-                    {
-                        debugService?.LogNodeFail(GetGraphId(), spendMoneyNode, executionContext, "NotEnoughMoney", null, spendMoneyNode.failNodeId);
-                        currentNode = graph.GetNodeById(spendMoneyNode.failNodeId);
-                    }
                     continue;
 
                 case RequestBuyBuildingNode requestBuyBuildingNode:
@@ -469,12 +411,15 @@ public class BusinessQuestGraphRunner
 
                 case WaitForBuildingPurchasedNode waitPurchase:
                     waitingPurchaseNode = waitPurchase;
-                    eventBus?.Subscribe<BuildingPurchasedEvent>(OnBuildingPurchased);
                     return;
 
                 case WaitForBuildingUpgradedNode waitUpgrade:
                     waitingUpgradeNode = waitUpgrade;
-                    eventBus?.Subscribe<BuildingUpgradedEvent>(OnBuildingUpgraded);
+                    waitingUpgradeStartLevel = 0;
+                    if (playerStateSync != null && playerStateSync.TryGetBuildingState(waitUpgrade.buildingId, out var state))
+                    {
+                        waitingUpgradeStartLevel = state.level;
+                    }
                     return;
 
                 case WaitForConditionNode waitCondition:
@@ -484,7 +429,28 @@ public class BusinessQuestGraphRunner
                 case EndNode endNode:
                     if (!string.IsNullOrWhiteSpace(endNode.completeQuestId))
                     {
-                        questService?.CompleteQuest(endNode.completeQuestId);
+                        Debug.Log($"[EndNode] START completeQuestId='{endNode.completeQuestId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("EndCompleteQuest"))
+                        {
+                            debugService?.LogNodeFail(GetGraphId(), endNode, executionContext, "RequestBlocked", null, null);
+                            Stop();
+                            return;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[EndNode] Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            debugService?.LogNodeFail(GetGraphId(), endNode, executionContext, "ServerMissing", null, null);
+                            Stop();
+                            return;
+                        }
+
+                        pendingServerTask = gameServer.TryCompleteQuestAsync(endNode.completeQuestId);
+                        pendingSuccessNodeId = null;
+                        pendingFailNodeId = null;
+                        pendingRequestLabel = "EndCompleteQuest";
+                        return;
                     }
                     if (endNode.clearCheckpoint)
                     {
@@ -500,59 +466,6 @@ public class BusinessQuestGraphRunner
         }
 
         Stop();
-    }
-
-    private void OnBuildingPurchased(BuildingPurchasedEvent evt)
-    {
-        if (waitingPurchaseNode == null)
-        {
-            return;
-        }
-
-        if (!IsBuildingMatch(evt.Building, waitingPurchaseNode.buildingId))
-        {
-            return;
-        }
-
-        eventBus?.Unsubscribe<BuildingPurchasedEvent>(OnBuildingPurchased);
-        debugService?.LogNodeSuccess(GetGraphId(), waitingPurchaseNode, executionContext, "Purchased", null, waitingPurchaseNode.nextNodeId);
-        currentNode = graph.GetNodeById(waitingPurchaseNode.nextNodeId);
-        waitingPurchaseNode = null;
-        Advance();
-    }
-
-    private void OnBuildingUpgraded(BuildingUpgradedEvent evt)
-    {
-        if (waitingUpgradeNode == null)
-        {
-            return;
-        }
-
-        if (!IsBuildingMatch(evt.Building, waitingUpgradeNode.buildingId))
-        {
-            return;
-        }
-
-        eventBus?.Unsubscribe<BuildingUpgradedEvent>(OnBuildingUpgraded);
-        debugService?.LogNodeSuccess(GetGraphId(), waitingUpgradeNode, executionContext, "Upgraded", null, waitingUpgradeNode.nextNodeId);
-        currentNode = graph.GetNodeById(waitingUpgradeNode.nextNodeId);
-        waitingUpgradeNode = null;
-        Advance();
-    }
-
-    private bool IsBuildingMatch(BuildingState building, string buildingId)
-    {
-        if (building == null || building.Definition == null)
-        {
-            return false;
-        }
-
-        if (string.IsNullOrEmpty(buildingId))
-        {
-            return true;
-        }
-
-        return building.Definition.buildingId == buildingId;
     }
 
     private Transform GetTargetTransform(GoToPointNode node)
@@ -631,7 +544,7 @@ public class BusinessQuestGraphRunner
                 instance.SetActive(true);
             }
 
-            MarkBuildingOwnedIfNeeded(instance);
+            // Ownership is server-authoritative. Do not mutate local runtime state here.
         }
         else
         {
@@ -676,67 +589,9 @@ public class BusinessQuestGraphRunner
         }
     }
 
-    private void MarkBuildingOwnedIfNeeded(GameObject instance)
-    {
-        if (instance == null || bootstrap == null || runtimeState == null)
-        {
-            return;
-        }
-
-        var buildingInteractables = instance.GetComponentsInChildren<BuildingInteractable>(true);
-        if (buildingInteractables == null || buildingInteractables.Length == 0)
-        {
-            return;
-        }
-
-        foreach (var interactable in buildingInteractables)
-        {
-            if (interactable == null || interactable.definition == null)
-            {
-                continue;
-            }
-
-            BuildingState state = bootstrap.GetBuildingState(interactable.definition);
-            if (state == null)
-            {
-                continue;
-            }
-
-            if (!state.IsOwned)
-            {
-                state.IsOwned = true;
-                eventBus?.Publish(new BuildingPurchasedEvent(state));
-            }
-        }
-    }
-
     private bool IsStealContext()
     {
         return currentContext != null && currentContext.contextType == InteractionContextType.Steal;
-    }
-
-    private bool ExecuteSteal(StealActionNode node)
-    {
-        if (node == null)
-        {
-            return false;
-        }
-
-        if (!node.canFail)
-        {
-            playerService?.AddMoney(node.stealAmount);
-            return true;
-        }
-
-        int chance = 70;
-        int roll = Random.Range(0, 100);
-        bool success = roll < chance;
-        if (success)
-        {
-            playerService?.AddMoney(node.stealAmount);
-        }
-
-        return success;
     }
 
     private BusinessQuestNode ResolveStartNode()
@@ -855,7 +710,7 @@ public class BusinessQuestGraphRunner
                 return true;
             }
 
-            if (current is GiveQuestNode or AddQuestNode or CheckpointNode)
+            if (current is CheckpointNode)
             {
                 ExecuteImmediateNode(current);
                 current = graph.GetNodeById(current.nextNodeId);
@@ -891,18 +746,6 @@ public class BusinessQuestGraphRunner
     {
         switch (node)
         {
-            case GiveQuestNode giveQuestNode:
-                if (giveQuestNode.questDefinition != null)
-                {
-                    questService?.AcceptQuest(giveQuestNode.questDefinition);
-                }
-                break;
-            case AddQuestNode addQuestNode:
-                if (addQuestNode.questDefinition != null)
-                {
-                    questService?.AcceptQuest(addQuestNode.questDefinition);
-                }
-                break;
             case CheckpointNode checkpointNode:
                 SaveCheckpoint(checkpointNode);
                 break;
@@ -911,31 +754,33 @@ public class BusinessQuestGraphRunner
 
     private bool CheckSkill(SkillCheckNode node)
     {
-        if (node == null || playerState == null)
+        if (node == null)
         {
             return false;
         }
 
         int value = 0;
-        switch (node.skillType)
+        if (playerStateSync != null)
         {
-            case SkillType.Bargaining:
-                value = playerState.Bargaining;
-                break;
-            case SkillType.Speech:
-                value = playerState.Speech;
-                break;
-            case SkillType.Speed:
-                value = playerState.Speed;
-                break;
-            case SkillType.Damage:
-                value = playerState.Damage;
-                break;
-            case SkillType.Health:
-                value = playerState.Health;
-                break;
+            switch (node.skillType)
+            {
+                case SkillType.Bargaining:
+                    value = playerStateSync.Bargaining;
+                    break;
+                case SkillType.Speech:
+                    value = playerStateSync.Speech;
+                    break;
+                case SkillType.Speed:
+                    value = playerStateSync.Speed;
+                    break;
+                case SkillType.Damage:
+                    value = playerStateSync.Damage;
+                    break;
+                case SkillType.Health:
+                    value = playerStateSync.Health;
+                    break;
+            }
         }
-
         return value >= node.requiredValue;
     }
 
@@ -955,10 +800,9 @@ public class BusinessQuestGraphRunner
         executionContext = null;
         dialogueService?.HideDialogue();
         choiceUIService?.HideChoices();
-        eventBus?.Unsubscribe<BuildingPurchasedEvent>(OnBuildingPurchased);
-        eventBus?.Unsubscribe<BuildingUpgradedEvent>(OnBuildingUpgraded);
         waitingPurchaseNode = null;
         waitingUpgradeNode = null;
+        waitingUpgradeStartLevel = -1;
         waitingGoToNode = null;
         waitingConditionNode = null;
         currentNode = null;

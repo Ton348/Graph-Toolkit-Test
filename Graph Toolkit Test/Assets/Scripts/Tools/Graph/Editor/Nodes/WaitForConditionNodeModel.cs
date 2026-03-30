@@ -26,7 +26,7 @@ public class WaitForConditionNodeModel : BusinessQuestEditorNode
         base.OnDefineOptions(context);
 
         context.AddOption<ConditionType>(CONDITION_TYPE_OPTION).WithDisplayName(CONDITION_TYPE_LABEL);
-        context.AddOption<BuildingDefinition>(BUILDING_OPTION).WithDisplayName(BUILDING_LABEL);
+        context.AddOption<string>(BUILDING_OPTION).WithDisplayName("Building Id");
         context.AddOption<int>(REQUIRED_MONEY_OPTION).WithDisplayName(REQUIRED_MONEY_LABEL);
         context.AddOption<PlayerStatType>(PLAYER_STAT_OPTION).WithDisplayName(PLAYER_STAT_LABEL);
         context.AddOption<int>(REQUIRED_STAT_OPTION).WithDisplayName(REQUIRED_STAT_LABEL);

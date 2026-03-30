@@ -13,11 +13,11 @@ public class MoneyUI : MonoBehaviour
             bootstrap = FindObjectOfType<GameBootstrap>();
         }
 
-        if (moneyText == null || bootstrap == null || bootstrap.RuntimeState == null || bootstrap.RuntimeState.Player == null)
+        if (moneyText == null || bootstrap == null || bootstrap.PlayerStateSync == null)
         {
             return;
         }
 
-        moneyText.text = $"Money: {bootstrap.RuntimeState.Player.Money}";
+        moneyText.text = $"Money: {bootstrap.PlayerStateSync.Money}";
     }
 }

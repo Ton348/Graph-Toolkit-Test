@@ -1,10 +1,8 @@
+[System.Obsolete("Legacy client runtime. Only LocalGameServer uses this service.")]
 public class BuildingService
 {
-    private readonly EventBus eventBus;
-
-    public BuildingService(EventBus eventBus)
+    public BuildingService()
     {
-        this.eventBus = eventBus;
     }
 
     public bool TryBuyBuilding(BuildingState building, PlayerProfileState player)
@@ -27,7 +25,6 @@ public class BuildingService
 
         player.Money -= cost;
         building.IsOwned = true;
-        eventBus?.Publish(new BuildingPurchasedEvent(building));
         return true;
     }
 
@@ -53,7 +50,6 @@ public class BuildingService
         building.Level += 1;
         building.CurrentIncome += building.Definition.upgradeIncomeBonus;
 
-        eventBus?.Publish(new BuildingUpgradedEvent(building));
         return UpgradeResult.Success;
     }
 }

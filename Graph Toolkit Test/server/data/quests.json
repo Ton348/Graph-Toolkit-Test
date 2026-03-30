@@ -1,0 +1,28 @@
+{
+  "quests": [
+    {
+      "id": "buy_building",
+      "title": "Построить здание",
+      "description": "Купи Газпром.",
+      "rewardMoney": 200
+    },
+    {
+      "id": "upgrade_building",
+      "title": "Улучшение",
+      "description": "Улучшить здание, получишь больше доход.",
+      "rewardMoney": 500
+    },
+    {
+      "id": "Gas_worker",
+      "title": "Персонал",
+      "description": "Найди бензозаправщика.",
+      "rewardMoney": 0
+    },
+    {
+      "id": "provider",
+      "title": "Поставщик",
+      "description": "Найти поставщика",
+      "rewardMoney": 0
+    }
+  ]
+}

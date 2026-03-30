@@ -1,3 +1,4 @@
+[System.Obsolete("Legacy client runtime. Only LocalGameServer uses this service.")]
 public class PlayerService
 {
     private readonly PlayerProfileState player;

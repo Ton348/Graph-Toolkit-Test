@@ -1,9 +1,9 @@
 public class QuestState
 {
-    public QuestDefinition Definition;
+    public QuestDefinitionData Definition;
     public QuestStatus Status;
 
-    public QuestState(QuestDefinition definition)
+    public QuestState(QuestDefinitionData definition)
     {
         Definition = definition;
         Status = QuestStatus.Inactive;

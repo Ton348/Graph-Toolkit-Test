@@ -1,0 +1,15 @@
+{
+  "buildings": [
+    {
+      "id": "car_wash_01",
+      "displayName": "Газпромнефть",
+      "purchaseCost": 100,
+      "rentPerMonth": 0,
+      "incomePerDay": 100,
+      "expensesPerDay": 50,
+      "netProfit": 0,
+      "upgradeCost": 700,
+      "upgradeIncomeBonus": 0
+    }
+  ]
+}

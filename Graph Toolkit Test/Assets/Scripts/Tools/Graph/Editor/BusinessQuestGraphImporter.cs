@@ -81,12 +81,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
-        if (runtimeNode is SpendMoneyNode spendMoney)
-        {
-            spendMoney.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
-            spendMoney.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
-            return;
-        }
 
         if (runtimeNode is RequestBuyBuildingNode requestBuy)
         {
@@ -109,12 +103,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
-        if (runtimeNode is StealActionNode stealAction)
-        {
-            stealAction.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
-            stealAction.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
-            return;
-        }
 
         if (runtimeNode is BranchByInteractionContextNode branch)
         {
@@ -128,22 +116,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
         if (runtimeNode is DialogueNode dialogue)
         {
             dialogue.nextNodeId = nextId;
-        }
-        if (runtimeNode is AddQuestNode addQuest)
-        {
-            addQuest.nextNodeId = nextId;
-        }
-        if (runtimeNode is GiveQuestNode giveQuest)
-        {
-            giveQuest.nextNodeId = nextId;
-        }
-        if (runtimeNode is CompleteQuestNode completeQuest)
-        {
-            completeQuest.nextNodeId = nextId;
-        }
-        if (runtimeNode is FailQuestNode failQuest)
-        {
-            failQuest.nextNodeId = nextId;
         }
         if (runtimeNode is AddMapMarkerNode addMarker)
         {
@@ -172,18 +144,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             case StartNodeModel:
                 runtimeNode = new StartNode();
                 break;
-            case GiveQuestNodeModel giveQuestNode:
-                runtimeNode = new GiveQuestNode
-                {
-                    questDefinition = GetOptionValue<QuestDefinition>(giveQuestNode, GiveQuestNodeModel.QUEST_OPTION)
-                };
-                break;
-            case AddQuestNodeModel addQuestNode:
-                runtimeNode = new AddQuestNode
-                {
-                    questDefinition = GetOptionValue<QuestDefinition>(addQuestNode, AddQuestNodeModel.QUEST_OPTION)
-                };
-                break;
             case DialogueNodeModel dialogueNode:
                 runtimeNode = new DialogueNode
                 {
@@ -203,13 +163,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 {
                     skillType = GetOptionValue<SkillType>(skillCheckNode, SkillCheckNodeModel.SKILL_OPTION),
                     requiredValue = GetOptionValue<int>(skillCheckNode, SkillCheckNodeModel.REQUIRED_OPTION)
-                };
-                break;
-            case SpendMoneyNodeModel spendMoneyNode:
-                runtimeNode = new SpendMoneyNode
-                {
-                    operation = GetOptionValue<MoneyOperation>(spendMoneyNode, SpendMoneyNodeModel.OPERATION_OPTION),
-                    amount = GetOptionValue<int>(spendMoneyNode, SpendMoneyNodeModel.AMOUNT_OPTION)
                 };
                 break;
             case RequestBuyBuildingNodeModel requestBuyBuildingNode:
@@ -250,18 +203,6 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     buildingId = GetOptionValue<string>(waitPurchasedNode, WaitForBuildingPurchasedNodeModel.BUILDING_ID_OPTION)
                 };
                 break;
-            case CompleteQuestNodeModel completeQuestNode:
-                runtimeNode = new CompleteQuestNode
-                {
-                    questId = GetOptionValue<string>(completeQuestNode, CompleteQuestNodeModel.QUEST_ID_OPTION)
-                };
-                break;
-            case FailQuestNodeModel failQuestNode:
-                runtimeNode = new FailQuestNode
-                {
-                    questId = GetOptionValue<string>(failQuestNode, FailQuestNodeModel.QUEST_ID_OPTION)
-                };
-                break;
             case WaitForBuildingUpgradedNodeModel waitUpgradedNode:
                 runtimeNode = new WaitForBuildingUpgradedNode
                 {
@@ -272,7 +213,7 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new ConditionNode
                 {
                     conditionType = GetOptionValue<ConditionType>(conditionNode, ConditionNodeModel.CONDITION_TYPE_OPTION),
-                    targetBuilding = GetOptionValue<BuildingDefinition>(conditionNode, ConditionNodeModel.BUILDING_OPTION),
+                    buildingId = GetOptionValue<string>(conditionNode, ConditionNodeModel.BUILDING_OPTION),
                     requiredMoney = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_MONEY_OPTION),
                     playerStatType = GetOptionValue<PlayerStatType>(conditionNode, ConditionNodeModel.PLAYER_STAT_OPTION),
                     requiredStatValue = GetOptionValue<int>(conditionNode, ConditionNodeModel.REQUIRED_STAT_OPTION),
@@ -283,19 +224,11 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new WaitForConditionNode
                 {
                     conditionType = GetOptionValue<ConditionType>(waitConditionNode, WaitForConditionNodeModel.CONDITION_TYPE_OPTION),
-                    targetBuilding = GetOptionValue<BuildingDefinition>(waitConditionNode, WaitForConditionNodeModel.BUILDING_OPTION),
+                    buildingId = GetOptionValue<string>(waitConditionNode, WaitForConditionNodeModel.BUILDING_OPTION),
                     requiredMoney = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_MONEY_OPTION),
                     playerStatType = GetOptionValue<PlayerStatType>(waitConditionNode, WaitForConditionNodeModel.PLAYER_STAT_OPTION),
                     requiredStatValue = GetOptionValue<int>(waitConditionNode, WaitForConditionNodeModel.REQUIRED_STAT_OPTION),
                     questId = GetOptionValue<string>(waitConditionNode, WaitForConditionNodeModel.QUEST_ID_OPTION)
-                };
-                break;
-            case StealActionNodeModel stealActionNode:
-                runtimeNode = new StealActionNode
-                {
-                    stealAmount = GetOptionValue<int>(stealActionNode, StealActionNodeModel.STEAL_AMOUNT_OPTION),
-                    canFail = GetOptionValue<bool>(stealActionNode, StealActionNodeModel.CAN_FAIL_OPTION),
-                    requiredSpeech = GetOptionValue<int>(stealActionNode, StealActionNodeModel.REQUIRED_SPEECH_OPTION)
                 };
                 break;
             case RaiseAlertNodeModel raiseAlertNode:

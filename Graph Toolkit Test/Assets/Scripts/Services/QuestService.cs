@@ -1,24 +1,23 @@
 using System.Collections.Generic;
 
+[System.Obsolete("Legacy client runtime. Only LocalGameServer uses this service.")]
 public class QuestService
 {
     private readonly GameRuntimeState runtime;
-    private readonly EventBus eventBus;
 
-    public QuestService(GameRuntimeState runtime, EventBus eventBus)
+    public QuestService(GameRuntimeState runtime)
     {
         this.runtime = runtime;
-        this.eventBus = eventBus;
     }
 
-    public void AcceptQuest(QuestDefinition definition)
+    public void AcceptQuest(QuestDefinitionData definition)
     {
         if (runtime == null || runtime.Quests == null || definition == null)
         {
             return;
         }
 
-        if (HasActiveQuest(definition.questId))
+        if (HasActiveQuest(definition.id))
         {
             return;
         }
@@ -27,7 +26,6 @@ public class QuestService
         quest.Status = QuestStatus.Active;
         runtime.Quests.Add(quest);
 
-        eventBus?.Publish(new QuestAcceptedEvent(quest));
     }
 
     public void CompleteQuest(string questId)
@@ -44,7 +42,6 @@ public class QuestService
         }
 
         quest.Status = QuestStatus.Completed;
-        eventBus?.Publish(new QuestCompletedEvent(quest));
     }
 
     public void FailQuest(string questId)
@@ -78,7 +75,7 @@ public class QuestService
 
         foreach (QuestState quest in runtime.Quests)
         {
-            if (quest.Definition != null && quest.Definition.questId == questId)
+            if (quest.Definition != null && quest.Definition.id == questId)
             {
                 return quest;
             }

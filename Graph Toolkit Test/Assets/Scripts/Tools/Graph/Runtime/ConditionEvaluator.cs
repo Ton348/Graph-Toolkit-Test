@@ -5,29 +5,14 @@ public static class ConditionEvaluator
 {
     static readonly HashSet<string> LoggedFalseNodes = new HashSet<string>();
 
-    public static bool EvaluateCondition(
-        ConditionType conditionType,
-        GameRuntimeState runtimeState,
-        PlayerService playerService,
-        QuestService questService,
-        BuildingDefinition targetBuilding,
-        int requiredMoney,
-        PlayerStatType playerStatType,
-        int requiredStatValue)
-    {
-        return EvaluateCondition(conditionType, runtimeState, playerService, questService, targetBuilding, requiredMoney, playerStatType, requiredStatValue, null, out _);
-    }
-
     static bool EvaluateCondition(
         ConditionType conditionType,
-        GameRuntimeState runtimeState,
-        PlayerService playerService,
-        QuestService questService,
-        BuildingDefinition targetBuilding,
+        string buildingId,
         int requiredMoney,
         PlayerStatType playerStatType,
         int requiredStatValue,
         string questId,
+        PlayerStateSync playerStateSync,
         out string reason)
     {
         reason = string.Empty;
@@ -35,123 +20,80 @@ public static class ConditionEvaluator
         switch (conditionType)
         {
             case ConditionType.BuildingOwned:
-                return IsBuildingOwned(runtimeState, targetBuilding, out reason);
+                return IsBuildingOwned(buildingId, playerStateSync, out reason);
             case ConditionType.HasEnoughMoney:
-                return HasEnoughMoney(runtimeState, playerService, requiredMoney, out reason);
+                return HasEnoughMoney(playerStateSync, requiredMoney, out reason);
             case ConditionType.PlayerStatAtLeast:
-                return IsPlayerStatAtLeast(runtimeState, playerStatType, requiredStatValue, out reason);
+                return IsPlayerStatAtLeast(playerStateSync, playerStatType, requiredStatValue, out reason);
             case ConditionType.QuestActive:
-                return IsQuestStatus(runtimeState, questService, questId, QuestStatus.Active, out reason);
+                return IsQuestStatus(playerStateSync, questId, QuestStatus.Active, out reason);
             case ConditionType.QuestCompleted:
-                return IsQuestStatus(runtimeState, questService, questId, QuestStatus.Completed, out reason);
+                return IsQuestStatus(playerStateSync, questId, QuestStatus.Completed, out reason);
         }
 
         reason = $"Unknown condition type: {conditionType}";
         return false;
     }
 
-    public static bool EvaluateCondition(ConditionNode node, GameRuntimeState runtimeState, PlayerService playerService, QuestService questService)
+    public static bool EvaluateCondition(ConditionNode node, PlayerStateSync playerStateSync)
     {
         if (node == null)
         {
             return false;
         }
 
-        bool result = EvaluateCondition(node.conditionType, runtimeState, playerService, questService, node.targetBuilding, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, out string reason);
+        bool result = EvaluateCondition(node.conditionType, node.buildingId, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, playerStateSync, out string reason);
         LogIfFalse(node, result, reason);
         return result;
     }
 
-    public static bool EvaluateCondition(WaitForConditionNode node, GameRuntimeState runtimeState, PlayerService playerService, QuestService questService)
+    public static bool EvaluateCondition(WaitForConditionNode node, PlayerStateSync playerStateSync)
     {
         if (node == null)
         {
             return false;
         }
 
-        bool result = EvaluateCondition(node.conditionType, runtimeState, playerService, questService, node.targetBuilding, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, out string reason);
+        bool result = EvaluateCondition(node.conditionType, node.buildingId, node.requiredMoney, node.playerStatType, node.requiredStatValue, node.questId, playerStateSync, out string reason);
         LogIfFalse(node, result, reason);
         return result;
     }
 
-    static bool IsBuildingOwned(GameRuntimeState runtimeState, BuildingDefinition targetBuilding, out string reason)
+    static bool IsBuildingOwned(string buildingId, PlayerStateSync playerStateSync, out string reason)
     {
-        if (runtimeState == null)
+        if (string.IsNullOrEmpty(buildingId))
         {
-            reason = "RuntimeState is null.";
+            reason = "Target building id is empty.";
             return false;
         }
 
-        if (runtimeState.Buildings == null)
+        if (playerStateSync == null)
         {
-            reason = "RuntimeState.Buildings is null.";
+            reason = "PlayerStateSync is null.";
             return false;
         }
 
-        if (targetBuilding == null)
-        {
-            reason = "Target building is not assigned.";
-            return false;
-        }
-
-        foreach (var building in runtimeState.Buildings)
-        {
-            if (building == null || building.Definition == null)
-            {
-                continue;
-            }
-
-            if (building.Definition == targetBuilding)
-            {
-                if (building.IsOwned)
-                {
-                    reason = string.Empty;
-                    return true;
-                }
-
-                reason = $"Building '{targetBuilding.name}' is found but not owned.";
-                return false;
-            }
-        }
-
-        reason = $"Building '{targetBuilding.name}' not found in runtime state.";
-        return false;
+        bool owned = playerStateSync.IsBuildingOwned(buildingId);
+        reason = owned ? string.Empty : $"Building '{buildingId}' is not owned.";
+        return owned;
     }
 
-    static bool HasEnoughMoney(GameRuntimeState runtimeState, PlayerService playerService, int requiredMoney, out string reason)
+    static bool HasEnoughMoney(PlayerStateSync playerStateSync, int requiredMoney, out string reason)
     {
-        bool hasEnough;
-        if (playerService != null)
+        if (playerStateSync == null)
         {
-            hasEnough = playerService.HasEnoughMoney(requiredMoney);
-            int currentMoney = runtimeState != null && runtimeState.Player != null ? runtimeState.Player.Money : -1;
-            if (!hasEnough)
-            {
-                reason = currentMoney >= 0
-                    ? $"Money {currentMoney} < required {requiredMoney}."
-                    : $"PlayerService.HasEnoughMoney({requiredMoney}) returned false.";
-            }
-            else
-            {
-                reason = string.Empty;
-            }
-            return hasEnough;
+            reason = "PlayerStateSync is null.";
+            return false;
         }
 
-        int money = runtimeState != null && runtimeState.Player != null ? runtimeState.Player.Money : 0;
-        if (money >= requiredMoney)
-        {
-            reason = string.Empty;
-            return true;
-        }
-
-        reason = $"Money {money} < required {requiredMoney}.";
-        return false;
+        bool ok = playerStateSync.Money >= requiredMoney;
+        reason = ok ? string.Empty : $"Money {playerStateSync.Money} < required {requiredMoney}.";
+        return ok;
     }
 
-    static bool IsPlayerStatAtLeast(GameRuntimeState runtimeState, PlayerStatType statType, int requiredStatValue, out string reason)
+    static bool IsPlayerStatAtLeast(PlayerStateSync playerStateSync, PlayerStatType statType, int requiredStatValue, out string reason)
     {
-        int value = GetPlayerStat(runtimeState, statType);
+        int value = GetPlayerStat(playerStateSync, statType);
         if (value >= requiredStatValue)
         {
             reason = string.Empty;
@@ -162,7 +104,7 @@ public static class ConditionEvaluator
         return false;
     }
 
-    static bool IsQuestStatus(GameRuntimeState runtimeState, QuestService questService, string questId, QuestStatus status, out string reason)
+    static bool IsQuestStatus(PlayerStateSync playerStateSync, string questId, QuestStatus status, out string reason)
     {
         if (string.IsNullOrEmpty(questId))
         {
@@ -170,61 +112,33 @@ public static class ConditionEvaluator
             return false;
         }
 
-        QuestState quest = questService != null ? questService.GetQuestById(questId) : GetQuestFromRuntime(runtimeState, questId);
-        if (quest == null)
+        if (playerStateSync == null)
         {
-            reason = $"Quest '{questId}' not found.";
+            reason = "PlayerStateSync is null.";
             return false;
         }
 
-        if (quest.Status == status)
-        {
-            reason = string.Empty;
-            return true;
-        }
-
-        reason = $"Quest '{questId}' status is {quest.Status}, expected {status}.";
-        return false;
+        bool ok = status == QuestStatus.Active
+            ? playerStateSync.IsQuestActive(questId)
+            : playerStateSync.IsQuestCompleted(questId);
+        reason = ok ? string.Empty : $"Quest '{questId}' is not {status}.";
+        return ok;
     }
 
-    static QuestState GetQuestFromRuntime(GameRuntimeState runtimeState, string questId)
+    static int GetPlayerStat(PlayerStateSync playerStateSync, PlayerStatType statType)
     {
-        if (runtimeState == null || runtimeState.Quests == null || string.IsNullOrEmpty(questId))
-        {
-            return null;
-        }
-
-        foreach (QuestState quest in runtimeState.Quests)
-        {
-            if (quest != null && quest.Definition != null && quest.Definition.questId == questId)
-            {
-                return quest;
-            }
-        }
-
-        return null;
-    }
-
-    static int GetPlayerStat(GameRuntimeState runtimeState, PlayerStatType statType)
-    {
-        if (runtimeState == null || runtimeState.Player == null)
-        {
-            return 0;
-        }
-
-        var player = runtimeState.Player;
         switch (statType)
         {
             case PlayerStatType.Bargaining:
-                return player.Bargaining;
+                return playerStateSync != null ? playerStateSync.Bargaining : 0;
             case PlayerStatType.Speech:
-                return player.Speech;
+                return playerStateSync != null ? playerStateSync.Speech : 0;
             case PlayerStatType.Speed:
-                return player.Speed;
+                return playerStateSync != null ? playerStateSync.Speed : 0;
             case PlayerStatType.Damage:
-                return player.Damage;
+                return playerStateSync != null ? playerStateSync.Damage : 0;
             case PlayerStatType.Health:
-                return player.Health;
+                return playerStateSync != null ? playerStateSync.Health : 0;
         }
 
         return 0;

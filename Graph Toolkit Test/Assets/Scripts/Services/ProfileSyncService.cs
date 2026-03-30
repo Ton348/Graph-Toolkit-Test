@@ -1,42 +1,39 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class ProfileSyncService
 {
     private readonly GameRuntimeState runtime;
-    private readonly List<QuestDefinition> questDefinitions;
-    private readonly List<BuildingDefinition> buildingDefinitions;
+    private readonly GameDataRepository dataRepository;
+    private readonly PlayerStateSync playerStateSync;
 
     public event Action<ProfileSnapshot> Synced;
 
-    public ProfileSyncService(GameRuntimeState runtime, List<QuestDefinition> questDefinitions, List<BuildingDefinition> buildingDefinitions)
+    public ProfileSyncService(GameRuntimeState runtime, GameDataRepository dataRepository, PlayerStateSync playerStateSync)
     {
         this.runtime = runtime;
-        this.questDefinitions = questDefinitions;
-        this.buildingDefinitions = buildingDefinitions;
+        this.dataRepository = dataRepository;
+        this.playerStateSync = playerStateSync;
     }
 
     public void ApplySnapshot(ProfileSnapshot snapshot)
     {
-        if (snapshot == null || runtime == null)
+        if (snapshot == null)
         {
             return;
         }
 
-        if (runtime.Player != null)
-        {
-            runtime.Player.Money = snapshot.Money;
-        }
+        playerStateSync?.ApplySnapshot(snapshot);
 
-        ApplyQuests(snapshot);
-        ApplyBuildings(snapshot);
+        Debug.Log($"[ProfileSync] Applied snapshot: money={snapshot.Money}, active={snapshot.ActiveQuestIds?.Count ?? 0}, completed={snapshot.CompletedQuestIds?.Count ?? 0}, owned={snapshot.OwnedBuildingIds?.Count ?? 0}");
 
         Synced?.Invoke(snapshot);
     }
 
     private void ApplyQuests(ProfileSnapshot snapshot)
     {
-        if (runtime.Quests == null || questDefinitions == null)
+        if (runtime.Quests == null || dataRepository == null)
         {
             return;
         }
@@ -51,7 +48,7 @@ public class ProfileSyncService
                 continue;
             }
 
-            string id = quest.Definition.questId;
+            string id = quest.Definition.id;
             if (completedSet.Contains(id))
             {
                 quest.Status = QuestStatus.Completed;
@@ -75,7 +72,7 @@ public class ProfileSyncService
 
     private void EnsureQuestStates(HashSet<string> ids, QuestStatus status)
     {
-        if (ids == null || questDefinitions == null || runtime.Quests == null)
+        if (ids == null || dataRepository == null || runtime.Quests == null)
         {
             return;
         }
@@ -94,7 +91,7 @@ public class ProfileSyncService
                 continue;
             }
 
-            QuestDefinition def = FindQuestDefinition(id, questDefinitions);
+            QuestDefinitionData def = dataRepository.GetQuestById(id);
             if (def == null)
             {
                 continue;
@@ -124,7 +121,20 @@ public class ProfileSyncService
                 continue;
             }
 
-            string id = building.Definition.buildingId;
+            string id = building.Definition.id;
+            if (snapshot.BuildingStates != null && snapshot.BuildingStates.Count > 0)
+            {
+                var stateSnapshot = snapshot.BuildingStates.Find(s => s != null && s.id == id);
+                if (stateSnapshot != null)
+                {
+                    building.IsOwned = stateSnapshot.owned;
+                    building.Level = stateSnapshot.level;
+                    building.CurrentIncome = stateSnapshot.currentIncome;
+                    building.CurrentExpenses = stateSnapshot.currentExpenses;
+                    continue;
+                }
+            }
+
             building.IsOwned = ownedSet.Contains(id);
         }
     }
@@ -135,24 +145,9 @@ public class ProfileSyncService
 
         foreach (QuestState quest in quests)
         {
-            if (quest != null && quest.Definition != null && quest.Definition.questId == questId)
+            if (quest != null && quest.Definition != null && quest.Definition.id == questId)
             {
                 return quest;
-            }
-        }
-
-        return null;
-    }
-
-    private static QuestDefinition FindQuestDefinition(string questId, List<QuestDefinition> quests)
-    {
-        if (quests == null) return null;
-
-        foreach (QuestDefinition def in quests)
-        {
-            if (def != null && def.questId == questId)
-            {
-                return def;
             }
         }
 
