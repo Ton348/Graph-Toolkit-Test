@@ -329,18 +329,17 @@ public class LocalGameServer : IGameServer
                     continue;
                 }
 
-                var buildingSnapshot = new BuildingStateSnapshot
-                {
-                    id = building.Definition.id,
-                    owned = building.IsOwned,
-                    level = building.Level,
-                    currentIncome = building.CurrentIncome,
-                    currentExpenses = building.CurrentExpenses
-                };
-                snapshot.BuildingStates.Add(buildingSnapshot);
-
                 if (building.IsOwned)
                 {
+                    var buildingSnapshot = new BuildingStateSnapshot
+                    {
+                        id = building.Definition.id,
+                        owned = true,
+                        level = building.Level,
+                        currentIncome = building.CurrentIncome,
+                        currentExpenses = building.CurrentExpenses
+                    };
+                    snapshot.BuildingStates.Add(buildingSnapshot);
                     snapshot.OwnedBuildingIds.Add(building.Definition.id);
                 }
             }

@@ -11,13 +11,5 @@
   ],
   "completedQuests": [],
   "ownedBuildings": [],
-  "buildingStates": [
-    {
-      "id": "car_wash_01",
-      "owned": false,
-      "level": 0,
-      "currentIncome": 100,
-      "currentExpenses": 50
-    }
-  ]
+  "buildingStates": []
 }

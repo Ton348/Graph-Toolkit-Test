@@ -71,17 +71,18 @@ function ensureBuildingStates(profile) {
   });
 
   profile.buildingStates = [];
-
-  defs.buildingById.forEach((def, id) => {
+  const ownedIds = profile.ownedBuildings || [];
+  ownedIds.forEach(id => {
+    const def = defs.buildingById.get(id);
+    if (!def) return;
     const state = existing.get(id);
-    const owned = (profile.ownedBuildings || []).includes(id);
     const level = state && Number.isFinite(state.level) ? state.level : 0;
     const currentIncome = state && Number.isFinite(state.currentIncome) ? state.currentIncome : (def.incomePerDay || 0);
     const currentExpenses = state && Number.isFinite(state.currentExpenses) ? state.currentExpenses : (def.expensesPerDay || 0);
 
     profile.buildingStates.push({
       id,
-      owned,
+      owned: true,
       level,
       currentIncome,
       currentExpenses
@@ -123,6 +124,11 @@ function loadPlayerProfile(playerId) {
   if (!Number.isFinite(profile.damage)) profile.damage = defs.economy?.baseDamage ?? 0;
   if (!Number.isFinite(profile.health)) profile.health = defs.economy?.baseHealth ?? 0;
   ensureBuildingStates(profile);
+  const ownedCount = (profile.ownedBuildings || []).length;
+  if ((profile.buildingStates || []).length !== ownedCount)
+  {
+    savePlayerProfile(profile);
+  }
   return profile;
 }
 

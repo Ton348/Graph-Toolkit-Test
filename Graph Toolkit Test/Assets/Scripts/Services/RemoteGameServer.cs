@@ -8,14 +8,21 @@ public class RemoteGameServer : IGameServer
 {
     private readonly string baseUrl;
     private readonly string playerId;
-    private readonly int timeoutSeconds;
+    private readonly float timeoutSeconds;
     private readonly bool debugLog;
 
     public RemoteGameServer(string baseUrl, string playerId, float timeoutSeconds, bool debugLog)
     {
         this.baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:3000" : baseUrl.TrimEnd('/');
         this.playerId = string.IsNullOrEmpty(playerId) ? "player" : playerId;
-        this.timeoutSeconds = Mathf.Clamp(Mathf.CeilToInt(timeoutSeconds), 1, 120);
+        if (timeoutSeconds <= 0f)
+        {
+            this.timeoutSeconds = 0f;
+        }
+        else
+        {
+            this.timeoutSeconds = Mathf.Clamp(timeoutSeconds, 0.1f, 120f);
+        }
         this.debugLog = debugLog;
     }
 
@@ -129,11 +136,22 @@ public class RemoteGameServer : IGameServer
         request.uploadHandler = new UploadHandlerRaw(body);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        request.timeout = timeoutSeconds;
+        if (timeoutSeconds >= 1f)
+        {
+            request.timeout = Mathf.CeilToInt(timeoutSeconds);
+        }
 
+        bool manualTimeout = false;
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var op = request.SendWebRequest();
         while (!op.isDone)
         {
+            if (timeoutSeconds > 0f && timeoutSeconds < 1f && stopwatch.Elapsed.TotalSeconds >= timeoutSeconds)
+            {
+                manualTimeout = true;
+                request.Abort();
+                break;
+            }
             await Task.Yield();
         }
 
@@ -141,6 +159,16 @@ public class RemoteGameServer : IGameServer
         if (debugLog)
         {
             Debug.Log($"[RemoteGameServer] Response ({request.responseCode}): {responseText}");
+            if (manualTimeout || request.result != UnityWebRequest.Result.Success)
+            {
+                string timeoutLabel = timeoutSeconds > 0f ? $"{timeoutSeconds:0.###}s" : "disabled";
+                Debug.LogWarning($"[RemoteGameServer] Network error: result={request.result}, error='{request.error}', url={url}, timeout={timeoutLabel}");
+            }
+        }
+
+        if (manualTimeout)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.Timeout, "Timeout", "Request timeout.");
         }
 
         if (request.result != UnityWebRequest.Result.Success)

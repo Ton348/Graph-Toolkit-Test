@@ -24,6 +24,7 @@ public class BusinessQuestGraphRunner
     private string pendingSuccessNodeId;
     private string pendingFailNodeId;
     private string pendingRequestLabel;
+    private bool pendingEndClearCheckpoint;
     private int waitingUpgradeStartLevel = -1;
     private GoToPointNode waitingGoToNode;
     private readonly Dictionary<string, GameObject> spawnedObjects = new Dictionary<string, GameObject>();
@@ -114,10 +115,15 @@ public class BusinessQuestGraphRunner
                 Debug.Log($"[{pendingRequestLabel}] Result: Fail - Exception");
             }
 
+            bool isEndComplete = pendingRequestLabel == "EndCompleteQuest";
+
             if (result == null)
             {
                 debugService?.LogNodeFail(GetGraphId(), currentNode, executionContext, "ServerResultNull", null, pendingFailNodeId);
-                currentNode = graph.GetNodeById(pendingFailNodeId);
+                if (!isEndComplete)
+                {
+                    currentNode = graph.GetNodeById(pendingFailNodeId);
+                }
             }
             else
             {
@@ -140,7 +146,10 @@ public class BusinessQuestGraphRunner
                     debugService?.LogNodeFail(GetGraphId(), currentNode, executionContext, $"{result.Type} - {result.ErrorCode}", result, pendingFailNodeId);
                 }
 
-                currentNode = graph.GetNodeById(result.Success ? pendingSuccessNodeId : pendingFailNodeId);
+                if (!isEndComplete)
+                {
+                    currentNode = graph.GetNodeById(result.Success ? pendingSuccessNodeId : pendingFailNodeId);
+                }
             }
 
             requestManager?.FinishRequest();
@@ -148,6 +157,17 @@ public class BusinessQuestGraphRunner
             pendingSuccessNodeId = null;
             pendingFailNodeId = null;
             pendingRequestLabel = null;
+
+            if (isEndComplete)
+            {
+                if (pendingEndClearCheckpoint)
+                {
+                    ClearCheckpoint();
+                }
+                pendingEndClearCheckpoint = false;
+                Stop();
+                return;
+            }
 
             Advance();
             return;
@@ -372,6 +392,7 @@ public class BusinessQuestGraphRunner
                         pendingServerTask = gameServer.TryCompleteQuestAsync(endNode.completeQuestId);
                         pendingSuccessNodeId = null;
                         pendingFailNodeId = null;
+                        pendingEndClearCheckpoint = endNode.clearCheckpoint;
                         pendingRequestLabel = "EndCompleteQuest";
                         return;
                     }
