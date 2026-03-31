@@ -12,6 +12,7 @@ public class LocalGameServer : IGameServer
     private readonly int maxDelayMs;
     private readonly float networkErrorChance;
     private readonly float timeoutChance;
+    private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
     private static readonly System.Random Random = new System.Random();
 
     public LocalGameServer(
@@ -338,6 +339,33 @@ public class LocalGameServer : IGameServer
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Steal success.");
     }
 
+    public async Task<ServerActionResult> TrySaveCheckpointAsync(string graphId, string checkpointId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrEmpty(graphId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "GraphIdEmpty", "Graph id is empty.");
+        }
+
+        if (string.IsNullOrEmpty(checkpointId))
+        {
+            graphCheckpoints.Remove(graphId);
+            return ServerActionResult.SuccessResult(BuildSnapshot(), "Checkpoint cleared.");
+        }
+
+        graphCheckpoints[graphId] = checkpointId;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Checkpoint saved.");
+    }
+
     private static BuildingState FindBuilding(string buildingId, List<BuildingState> buildings)
     {
         if (buildings == null) return null;
@@ -411,6 +439,18 @@ public class LocalGameServer : IGameServer
                     snapshot.BuildingStates.Add(buildingSnapshot);
                     snapshot.OwnedBuildingIds.Add(building.Definition.id);
                 }
+            }
+        }
+
+        if (graphCheckpoints.Count > 0)
+        {
+            foreach (var pair in graphCheckpoints)
+            {
+                snapshot.GraphCheckpoints.Add(new GraphCheckpointSnapshot
+                {
+                    graphId = pair.Key,
+                    checkpointId = pair.Value
+                });
             }
         }
 

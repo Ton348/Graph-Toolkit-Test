@@ -190,6 +190,26 @@ public class RemoteGameServer : IGameServer
         return SendRequestAsync(request);
     }
 
+    public Task<ServerActionResult> TrySaveCheckpointAsync(string graphId, string checkpointId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=save_checkpoint graphId='{graphId}' checkpointId='{checkpointId}'");
+        }
+        var request = new RemoteCheckpointRequest
+        {
+            action = "save_checkpoint",
+            playerId = playerId,
+            data = new RemoteCheckpointData
+            {
+                graphId = graphId,
+                checkpointId = checkpointId
+            }
+        };
+
+        return SendRequestAsync(request);
+    }
+
     private async Task<ServerActionResult> SendRequestAsync<T>(T requestPayload)
     {
         string url = $"{baseUrl}/api/action";
@@ -361,6 +381,23 @@ public class RemoteGameServer : IGameServer
             }
         }
 
+        if (profile.graphCheckpoints != null)
+        {
+            foreach (var checkpoint in profile.graphCheckpoints)
+            {
+                if (checkpoint == null || string.IsNullOrEmpty(checkpoint.graphId))
+                {
+                    continue;
+                }
+
+                snapshot.GraphCheckpoints.Add(new GraphCheckpointSnapshot
+                {
+                    graphId = checkpoint.graphId,
+                    checkpointId = checkpoint.checkpointId
+                });
+            }
+        }
+
         return snapshot;
     }
 
@@ -432,6 +469,21 @@ public class RemoteGameServer : IGameServer
     }
 
     [Serializable]
+    private class RemoteCheckpointRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteCheckpointData data;
+    }
+
+    [Serializable]
+    private class RemoteCheckpointData
+    {
+        public string graphId;
+        public string checkpointId;
+    }
+
+    [Serializable]
     private class RemoteActionResponse
     {
         public bool success;
@@ -453,6 +505,7 @@ public class RemoteGameServer : IGameServer
         public int damage;
         public int health;
         public RemoteBuildingStateDto[] buildingStates;
+        public RemoteGraphCheckpointDto[] graphCheckpoints;
     }
 
     [Serializable]
@@ -463,6 +516,13 @@ public class RemoteGameServer : IGameServer
         public int level;
         public int currentIncome;
         public int currentExpenses;
+    }
+
+    [Serializable]
+    private class RemoteGraphCheckpointDto
+    {
+        public string graphId;
+        public string checkpointId;
     }
 
     private static string MapQuestAction(QuestActionType action)

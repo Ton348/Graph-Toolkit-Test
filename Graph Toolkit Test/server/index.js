@@ -173,7 +173,8 @@ function loadPlayerProfile(playerId) {
       activeQuests: [],
       completedQuests: [],
       ownedBuildings: [],
-      buildingStates: []
+      buildingStates: [],
+      graphCheckpoints: {}
     };
     ensureBuildingStates(profile);
     writeJson(filePath, profile);
@@ -185,6 +186,7 @@ function loadPlayerProfile(playerId) {
   if (!profile.completedQuests) profile.completedQuests = [];
   if (!profile.ownedBuildings) profile.ownedBuildings = [];
   if (!profile.buildingStates) profile.buildingStates = [];
+  if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   if (!Number.isFinite(profile.bargaining)) profile.bargaining = defs.economy?.baseBargaining ?? 0;
   if (!Number.isFinite(profile.speech)) profile.speech = defs.economy?.baseSpeech ?? 0;
   if (!Number.isFinite(profile.speed)) profile.speed = defs.economy?.baseSpeed ?? 0;
@@ -203,7 +205,20 @@ function savePlayerProfile(profile) {
   const id = safePlayerId(profile.playerId);
   const filePath = path.join(PLAYER_DIR, `${id}.json`);
   ensureBuildingStates(profile);
+  if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   writeJson(filePath, profile);
+}
+
+function toGraphCheckpointList(profile) {
+  const map = profile && profile.graphCheckpoints ? profile.graphCheckpoints : {};
+  const list = [];
+  if (!map || typeof map !== 'object') return list;
+  Object.keys(map).forEach(graphId => {
+    const checkpointId = map[graphId];
+    if (!graphId || !checkpointId) return;
+    list.push({ graphId, checkpointId });
+  });
+  return list;
 }
 
 function toResponseProfile(profile) {
@@ -217,7 +232,8 @@ function toResponseProfile(profile) {
     activeQuests: profile.activeQuests || [],
     completedQuests: profile.completedQuests || [],
     buildings: profile.ownedBuildings || [],
-    buildingStates: profile.buildingStates || []
+    buildingStates: profile.buildingStates || [],
+    graphCheckpoints: toGraphCheckpointList(profile)
   };
 }
 
@@ -454,6 +470,30 @@ function handleGetProfile(req, res, payload) {
   return success(res, 'Profile fetch success.', profile);
 }
 
+function handleSaveCheckpoint(req, res, payload) {
+  const playerId = payload.playerId || 'player';
+  const graphId = payload.data && payload.data.graphId;
+  const checkpointId = payload.data && payload.data.checkpointId;
+  console.log(`[server] action=save_checkpoint playerId=${playerId} graphId=${graphId} checkpointId=${checkpointId}`);
+
+  if (!graphId) return fail(res, 'GraphIdEmpty', 'graphId is required.');
+
+  const profile = loadPlayerProfile(playerId);
+  if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') {
+    profile.graphCheckpoints = {};
+  }
+
+  if (!checkpointId) {
+    delete profile.graphCheckpoints[graphId];
+    savePlayerProfile(profile);
+    return success(res, 'Checkpoint cleared.', profile);
+  }
+
+  profile.graphCheckpoints[graphId] = checkpointId;
+  savePlayerProfile(profile);
+  return success(res, 'Checkpoint saved.', profile);
+}
+
 function handleAction(req, res, payload) {
   if (!payload || typeof payload !== 'object') {
     return fail(res, 'InvalidPayload', 'Invalid JSON payload.');
@@ -477,6 +517,8 @@ function handleAction(req, res, payload) {
       return handleSteal(req, res, payload);
     case 'get_profile':
       return handleGetProfile(req, res, payload);
+    case 'save_checkpoint':
+      return handleSaveCheckpoint(req, res, payload);
     default:
       return fail(res, 'UnknownAction', `Unknown action: ${payload.action}`);
   }

@@ -7,6 +7,7 @@ public class PlayerStateSync
     private readonly HashSet<string> completedQuests = new HashSet<string>();
     private readonly HashSet<string> ownedBuildings = new HashSet<string>();
     private readonly Dictionary<string, BuildingStateSnapshot> buildingStates = new Dictionary<string, BuildingStateSnapshot>();
+    private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
 
     public int Money { get; private set; }
     public int Bargaining { get; private set; }
@@ -18,6 +19,7 @@ public class PlayerStateSync
     public IReadOnlyCollection<string> CompletedQuests => completedQuests;
     public IReadOnlyCollection<string> OwnedBuildings => ownedBuildings;
     public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => buildingStates;
+    public IReadOnlyDictionary<string, string> GraphCheckpoints => graphCheckpoints;
 
     public event Action<ProfileSnapshot> SnapshotApplied;
 
@@ -89,6 +91,20 @@ public class PlayerStateSync
             }
         }
 
+        graphCheckpoints.Clear();
+        if (snapshot.GraphCheckpoints != null && snapshot.GraphCheckpoints.Count > 0)
+        {
+            foreach (var checkpoint in snapshot.GraphCheckpoints)
+            {
+                if (checkpoint == null || string.IsNullOrEmpty(checkpoint.graphId))
+                {
+                    continue;
+                }
+
+                graphCheckpoints[checkpoint.graphId] = checkpoint.checkpointId;
+            }
+        }
+
         SnapshotApplied?.Invoke(snapshot);
     }
 
@@ -104,6 +120,7 @@ public class PlayerStateSync
         completedQuests.Clear();
         ownedBuildings.Clear();
         buildingStates.Clear();
+        graphCheckpoints.Clear();
         SnapshotApplied?.Invoke(null);
     }
 
@@ -131,5 +148,16 @@ public class PlayerStateSync
         }
 
         return buildingStates.TryGetValue(buildingId, out state);
+    }
+
+    public bool TryGetGraphCheckpoint(string graphId, out string checkpointId)
+    {
+        checkpointId = null;
+        if (string.IsNullOrEmpty(graphId))
+        {
+            return false;
+        }
+
+        return graphCheckpoints.TryGetValue(graphId, out checkpointId);
     }
 }

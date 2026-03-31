@@ -14,6 +14,7 @@ public class ProfileSnapshot
     public List<string> CompletedQuestIds = new List<string>();
     public List<string> OwnedBuildingIds = new List<string>();
     public List<BuildingStateSnapshot> BuildingStates = new List<BuildingStateSnapshot>();
+    public List<GraphCheckpointSnapshot> GraphCheckpoints = new List<GraphCheckpointSnapshot>();
 }
 
 [Serializable]
@@ -24,4 +25,11 @@ public class BuildingStateSnapshot
     public int level;
     public int currentIncome;
     public int currentExpenses;
+}
+
+[Serializable]
+public class GraphCheckpointSnapshot
+{
+    public string graphId;
+    public string checkpointId;
 }

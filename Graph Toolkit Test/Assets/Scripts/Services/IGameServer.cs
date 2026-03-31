@@ -8,4 +8,5 @@ public interface IGameServer
     System.Threading.Tasks.Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance);
     System.Threading.Tasks.Task<ServerActionResult> TryAddMoneyAsync(int amount);
     System.Threading.Tasks.Task<ServerActionResult> TrySpendMoneyAsync(int amount);
+    System.Threading.Tasks.Task<ServerActionResult> TrySaveCheckpointAsync(string graphId, string checkpointId);
 }

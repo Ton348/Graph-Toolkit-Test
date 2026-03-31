@@ -248,10 +248,17 @@ public class BusinessQuestGraphRunner
                     continue;
 
                 case CheckpointNode checkpointNode:
-                    SaveCheckpoint(checkpointNode);
-                    debugService?.LogNodeSuccess(GetGraphId(), checkpointNode, executionContext, null, null, checkpointNode.nextNodeId);
-                    currentNode = graph.GetNodeById(checkpointNode.nextNodeId);
-                    continue;
+                    {
+                        Debug.Log($"[Checkpoint] START checkpointId='{checkpointNode.checkpointId}'");
+                        SaveCheckpoint(checkpointNode);
+                        if (pendingServerTask != null)
+                        {
+                            return;
+                        }
+                        debugService?.LogNodeSuccess(GetGraphId(), checkpointNode, executionContext, "Skipped", null, checkpointNode.nextNodeId);
+                        currentNode = graph.GetNodeById(checkpointNode.nextNodeId);
+                        continue;
+                    }
 
                 case RequestBuyBuildingNode requestBuyBuildingNode:
                     {
@@ -555,19 +562,23 @@ public class BusinessQuestGraphRunner
 
     private BusinessQuestNode ResolveStartNode()
     {
-        if (graphProgressService == null)
-        {
-            return graph.GetStartNode();
-        }
-
-        string ownerId = GetOwnerId();
         string graphId = GetGraphId();
-        if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
+        if (string.IsNullOrEmpty(graphId))
         {
             return graph.GetStartNode();
         }
 
-        if (!graphProgressService.TryGetCheckpoint(ownerId, graphId, out string checkpointId) || string.IsNullOrEmpty(checkpointId))
+        string checkpointId = null;
+        if (playerStateSync != null && playerStateSync.TryGetGraphCheckpoint(graphId, out string syncedCheckpoint))
+        {
+            checkpointId = syncedCheckpoint;
+        }
+        else if (graphProgressService != null)
+        {
+            graphProgressService.TryGetCheckpoint(GetOwnerId(), graphId, out checkpointId);
+        }
+
+        if (string.IsNullOrEmpty(checkpointId))
         {
             return graph.GetStartNode();
         }
@@ -583,7 +594,7 @@ public class BusinessQuestGraphRunner
 
     private void SaveCheckpoint(CheckpointNode node)
     {
-        if (node == null || graphProgressService == null)
+        if (node == null)
         {
             return;
         }
@@ -593,14 +604,28 @@ public class BusinessQuestGraphRunner
             return;
         }
 
-        string ownerId = GetOwnerId();
         string graphId = GetGraphId();
-        if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
+        if (string.IsNullOrEmpty(graphId))
         {
             return;
         }
 
-        graphProgressService.SetCheckpoint(ownerId, graphId, node.checkpointId);
+        if (gameServer == null)
+        {
+            Debug.Log("[Checkpoint] Result: Fail - ServerMissing");
+            return;
+        }
+
+        if (requestManager != null && !requestManager.TryStartRequest("SaveCheckpoint"))
+        {
+            Debug.Log("[Checkpoint] Result: Fail - RequestBlocked");
+            return;
+        }
+
+        pendingServerTask = gameServer.TrySaveCheckpointAsync(graphId, node.checkpointId);
+        pendingSuccessNodeId = node.nextNodeId;
+        pendingFailNodeId = node.nextNodeId;
+        pendingRequestLabel = "SaveCheckpoint";
     }
 
     private string GetOwnerId()
@@ -706,7 +731,7 @@ public class BusinessQuestGraphRunner
         switch (node)
         {
             case CheckpointNode checkpointNode:
-                SaveCheckpoint(checkpointNode);
+                FireAndForgetCheckpoint(checkpointNode);
                 break;
         }
     }
@@ -735,18 +760,38 @@ public class BusinessQuestGraphRunner
 
     private void ClearCheckpoint()
     {
-        if (graphProgressService == null)
-        {
-            return;
-        }
-
-        string ownerId = GetOwnerId();
         string graphId = GetGraphId();
-        if (string.IsNullOrEmpty(ownerId) || string.IsNullOrEmpty(graphId))
+        if (string.IsNullOrEmpty(graphId))
         {
             return;
         }
 
-        graphProgressService.ClearCheckpoint(ownerId, graphId);
+        if (gameServer == null)
+        {
+            return;
+        }
+
+        _ = gameServer.TrySaveCheckpointAsync(graphId, null);
+    }
+
+    private void FireAndForgetCheckpoint(CheckpointNode node)
+    {
+        if (node == null)
+        {
+            return;
+        }
+
+        string graphId = GetGraphId();
+        if (string.IsNullOrEmpty(graphId))
+        {
+            return;
+        }
+
+        if (gameServer == null)
+        {
+            return;
+        }
+
+        _ = gameServer.TrySaveCheckpointAsync(graphId, node.checkpointId);
     }
 }
