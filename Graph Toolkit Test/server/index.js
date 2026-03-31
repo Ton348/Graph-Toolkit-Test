@@ -6,6 +6,14 @@ const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const DATA_DIR = path.join(__dirname, 'data');
 const PLAYER_DIR = path.join(__dirname, 'playerData');
 
+process.on('uncaughtException', err => {
+  console.error('[server] UncaughtException:', err && err.stack ? err.stack : err);
+});
+
+process.on('unhandledRejection', err => {
+  console.error('[server] UnhandledRejection:', err && err.stack ? err.stack : err);
+});
+
 function readJson(filePath) {
   if (!fs.existsSync(filePath)) {
     throw new Error(`File not found: ${filePath}`);
@@ -374,7 +382,16 @@ const server = http.createServer((req, res) => {
   req.on('end', () => {
     try {
       const payload = JSON.parse(body || '{}');
-      handleAction(req, res, payload);
+      try {
+        handleAction(req, res, payload);
+      } catch (err) {
+        console.error('[server] Action handler error:', err && err.stack ? err.stack : err);
+        respondJson(res, 200, {
+          success: false,
+          errorCode: 'ServerError',
+          message: err && err.message ? err.message : 'Server error.'
+        });
+      }
     } catch (err) {
       respondJson(res, 200, {
         success: false,

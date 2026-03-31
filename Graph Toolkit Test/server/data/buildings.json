@@ -3,7 +3,7 @@
     {
       "id": "car_wash_01",
       "displayName": "Газпромнефть",
-      "purchaseCost": 100,
+      "purchaseCost": 1000,
       "rentPerMonth": 0,
       "incomePerDay": 100,
       "expensesPerDay": 50,

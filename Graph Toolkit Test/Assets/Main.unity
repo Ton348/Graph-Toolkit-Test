@@ -40962,7 +40962,7 @@ MonoBehaviour:
   useRemoteServer: 1
   remoteBaseUrl: http://localhost:3000
   remotePlayerId: player
-  remoteTimeoutSeconds: 8
+  remoteTimeoutSeconds: 0
   remoteDebugLog: 1
   enableGraphDebug: 1
   graphDebugFilter: 0
