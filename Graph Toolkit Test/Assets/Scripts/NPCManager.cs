@@ -45,7 +45,8 @@ public class NPCManager : Interactable
 
         if (runner != null && runner.IsRunning)
         {
-            runner.Stop();
+            Debug.Log($"[NPCManager] Interact ignored because graph is already running on '{name}'.");
+            return;
         }
 
         if (runner == null || currentGraph != selectedGraph)

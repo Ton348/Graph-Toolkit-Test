@@ -40962,8 +40962,12 @@ MonoBehaviour:
   useRemoteServer: 1
   remoteBaseUrl: http://127.0.0.1:3000
   remotePlayerId: player
-  remoteTimeoutSeconds: 8
+  remoteTimeoutSeconds: 2
   remoteDebugLog: 1
+  localMinDelayMs: 100
+  localMaxDelayMs: 500
+  localNetworkErrorChance: 0.05
+  localTimeoutChance: 0.03
   enableGraphDebug: 1
   graphDebugFilter: 0
   graphDebugMaxEvents: 200

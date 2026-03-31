@@ -7,6 +7,9 @@ const HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = path.join(__dirname, 'data');
 const PLAYER_DIR = path.join(__dirname, 'playerData');
 
+fs.mkdirSync(DATA_DIR, { recursive: true });
+fs.mkdirSync(PLAYER_DIR, { recursive: true });
+
 process.on('uncaughtException', err => {
   console.error('[server] UncaughtException:', err && err.stack ? err.stack : err);
 });
@@ -41,6 +44,8 @@ function loadDefinitions() {
   const buildings = readJson(path.join(DATA_DIR, 'buildings.json'));
   const economy = readJson(path.join(DATA_DIR, 'economy.json'));
 
+  validateDefinitions(quests, buildings, economy);
+
   const questById = new Map();
   (quests.quests || []).forEach(q => {
     if (q && q.id && !questById.has(q.id)) questById.set(q.id, q);
@@ -52,6 +57,67 @@ function loadDefinitions() {
   });
 
   return { questById, buildingById, economy };
+}
+
+function validateDefinitions(quests, buildings, economy) {
+  let errors = 0;
+  let warnings = 0;
+
+  if (!quests || !Array.isArray(quests.quests)) {
+    console.error('[server][validate] quests.json missing "quests" array');
+    errors++;
+  } else {
+    const ids = new Set();
+    quests.quests.forEach((q, i) => {
+      if (!q || !q.id || typeof q.id !== 'string' || !q.id.trim()) {
+        console.error(`[server][validate] quest at index ${i} missing id`);
+        errors++;
+        return;
+      }
+      if (ids.has(q.id)) {
+        console.error(`[server][validate] duplicate quest id: ${q.id}`);
+        errors++;
+      }
+      ids.add(q.id);
+      if (Number.isFinite(q.rewardMoney) && q.rewardMoney < 0) {
+        console.warn(`[server][validate] quest ${q.id} rewardMoney < 0`);
+        warnings++;
+      }
+    });
+  }
+
+  if (!buildings || !Array.isArray(buildings.buildings)) {
+    console.error('[server][validate] buildings.json missing "buildings" array');
+    errors++;
+  } else {
+    const ids = new Set();
+    buildings.buildings.forEach((b, i) => {
+      if (!b || !b.id || typeof b.id !== 'string' || !b.id.trim()) {
+        console.error(`[server][validate] building at index ${i} missing id`);
+        errors++;
+        return;
+      }
+      if (ids.has(b.id)) {
+        console.error(`[server][validate] duplicate building id: ${b.id}`);
+        errors++;
+      }
+      ids.add(b.id);
+      if (Number.isFinite(b.purchaseCost) && b.purchaseCost < 0) {
+        console.warn(`[server][validate] building ${b.id} purchaseCost < 0`);
+        warnings++;
+      }
+    });
+  }
+
+  if (!economy || typeof economy !== 'object') {
+    console.error('[server][validate] economy.json missing or invalid');
+    errors++;
+  } else if (Number.isFinite(economy.startMoney) && economy.startMoney < 0) {
+    console.warn('[server][validate] economy.startMoney < 0');
+    warnings++;
+  }
+
+  console.log(`[server][validate] completed with ${errors} error(s), ${warnings} warning(s)`);
 }
 
 const defs = (() => {
@@ -109,8 +175,8 @@ function loadPlayerProfile(playerId) {
       ownedBuildings: [],
       buildingStates: []
     };
-    writeJson(filePath, profile);
     ensureBuildingStates(profile);
+    writeJson(filePath, profile);
     return profile;
   }
 
@@ -188,6 +254,7 @@ function handleBuyBuilding(req, res, payload) {
   if (!buildingId) return fail(res, 'BuildingIdEmpty', 'buildingId is required.');
 
   const building = defs.buildingById.get(buildingId);
+  console.log(`[server] buy_building buildingId=${buildingId} def=${building ? building.id : 'null'}`);
   if (!building) return fail(res, 'BuildingNotFound', 'Building not found.');
 
   const profile = loadPlayerProfile(playerId);
@@ -221,6 +288,7 @@ function handleBuyBuilding(req, res, payload) {
   }
 
   const cost = Number(building.purchaseCost) || 0;
+  console.log(`[server] purchaseCost=${cost}`);
   if (profile.money < cost) {
     return fail(res, 'NotEnoughMoney', 'Not enough money.', profile);
   }
@@ -391,6 +459,7 @@ function handleAction(req, res, payload) {
     return fail(res, 'InvalidPayload', 'Invalid JSON payload.');
   }
 
+  console.log('[server] action payload:', payload);
   switch (payload.action) {
     case 'buy_building':
       return handleBuyBuilding(req, res, payload);
@@ -414,9 +483,15 @@ function handleAction(req, res, payload) {
 }
 
 const server = http.createServer((req, res) => {
-  if (req.method !== 'POST' || req.url !== '/api/action') {
-    res.writeHead(404);
-    res.end('Not found');
+  console.log('[server] incoming', req.method, req.url);
+  if (req.method !== 'POST' || !req.url || !req.url.startsWith('/api/action')) {
+    console.warn('[server] 404:', req.method, req.url);
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+      success: false,
+      errorCode: 'NotFound',
+      message: 'Route not found'
+    }));
     return;
   }
 
@@ -424,6 +499,10 @@ const server = http.createServer((req, res) => {
   req.on('data', chunk => (body += chunk));
   req.on('end', () => {
     try {
+      console.log('[server] raw body:', body);
+      if (!body || !body.trim()) {
+        console.warn('[server] empty body');
+      }
       const payload = JSON.parse(body || '{}');
       try {
         handleAction(req, res, payload);
