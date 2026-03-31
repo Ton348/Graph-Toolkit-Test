@@ -1,13 +1,26 @@
 {
   "playerId": "player",
-  "money": 1000,
+  "money": 200,
   "bargaining": 1,
   "speech": 1,
   "speed": 1,
   "damage": 1,
   "health": 100,
   "activeQuests": [],
-  "completedQuests": [],
-  "ownedBuildings": [],
-  "buildingStates": []
+  "completedQuests": [
+    "buy_building",
+    "Gas_worker"
+  ],
+  "ownedBuildings": [
+    "car_wash_01"
+  ],
+  "buildingStates": [
+    {
+      "id": "car_wash_01",
+      "owned": true,
+      "level": 0,
+      "currentIncome": 100,
+      "currentExpenses": 50
+    }
+  ]
 }

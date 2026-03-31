@@ -74,20 +74,6 @@ public class BusinessQuestGraphRunner
         debugService?.Clear();
         IsRunning = true;
         currentNode = ResolveStartNode();
-        if (gameServer != null && currentNode != null)
-        {
-            bool canStart = requestManager == null || requestManager.TryStartRequest("RefreshProfile");
-            if (canStart)
-            {
-                pendingServerTask = gameServer.TryGetProfileAsync();
-                pendingSuccessNodeId = currentNode.id;
-                pendingFailNodeId = currentNode.id;
-                pendingRequestLabel = "RefreshProfile";
-                Advance();
-                return;
-            }
-        }
-
         Advance();
     }
 
@@ -348,6 +334,32 @@ public class BusinessQuestGraphRunner
                         pendingSuccessNodeId = requestCompleteQuestNode.successNodeId;
                         pendingFailNodeId = requestCompleteQuestNode.failNodeId;
                         pendingRequestLabel = "RequestCompleteQuest";
+                        return;
+                    }
+
+                case RefreshProfileNode refreshProfileNode:
+                    {
+                        Debug.Log("[RefreshProfile] START");
+                        if (requestManager != null && !requestManager.TryStartRequest("RefreshProfile"))
+                        {
+                            debugService?.LogNodeFail(GetGraphId(), refreshProfileNode, executionContext, "RequestBlocked", null, refreshProfileNode.failNodeId);
+                            currentNode = graph.GetNodeById(refreshProfileNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[RefreshProfile] Result: Fail - ServerMissing");
+                            debugService?.LogNodeFail(GetGraphId(), refreshProfileNode, executionContext, "ServerMissing", null, refreshProfileNode.failNodeId);
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(refreshProfileNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryGetProfileAsync();
+                        pendingSuccessNodeId = refreshProfileNode.successNodeId;
+                        pendingFailNodeId = refreshProfileNode.failNodeId;
+                        pendingRequestLabel = "RefreshProfile";
                         return;
                     }
 

@@ -74,6 +74,13 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
+        if (runtimeNode is RefreshProfileNode refreshProfile)
+        {
+            refreshProfile.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            refreshProfile.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
 
         if (runtimeNode is RequestBuyBuildingNode requestBuy)
         {
@@ -156,6 +163,9 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 {
                     questId = GetOptionValue<string>(requestCompleteQuestNode, RequestCompleteQuestNodeModel.QUEST_ID_OPTION)
                 };
+                break;
+            case INode refreshProfileNode when refreshProfileNode.GetType().Name == "RefreshProfileNodeModel":
+                runtimeNode = new RefreshProfileNode();
                 break;
             case AddMapMarkerNodeModel addMarkerNode:
                 runtimeNode = new AddMapMarkerNode

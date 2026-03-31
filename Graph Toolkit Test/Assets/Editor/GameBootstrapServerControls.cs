@@ -230,28 +230,14 @@ internal static class ServerProcessManager
         {
             FileName = nodePath,
             Arguments = $"\"{ServerScriptPath}\"",
-            WorkingDirectory = ProjectRoot,
+            WorkingDirectory = ServerRootPath,
             UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
             CreateNoWindow = true
         };
 
         process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-        process.OutputDataReceived += (_, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                UnityEngine.Debug.Log($"[server] {e.Data}");
-            }
-        };
-        process.ErrorDataReceived += (_, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                UnityEngine.Debug.LogError($"[server] {e.Data}");
-            }
-        };
         process.Exited += (_, __) =>
         {
             UnityEngine.Debug.Log("[ServerLauncher] Server process exited.");
@@ -261,8 +247,6 @@ internal static class ServerProcessManager
         try
         {
             process.Start();
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
             EditorPrefs.SetInt(PrefPid, process.Id);
             UnityEngine.Debug.Log($"[ServerLauncher] Server started (pid {process.Id}).");
         }

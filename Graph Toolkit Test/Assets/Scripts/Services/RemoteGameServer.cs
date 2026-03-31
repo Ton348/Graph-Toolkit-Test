@@ -60,6 +60,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryGetProfileAsync()
     {
+        if (debugLog)
+        {
+            Debug.Log("[RemoteGameServer] action=get_profile");
+        }
         var request = new RemoteProfileRequest
         {
             action = "get_profile",
@@ -71,6 +75,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryBuyBuildingAsync(string buildingId, QuestActionType questAction = QuestActionType.None, string questId = null)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=buy_building buildingId='{buildingId}' questAction='{questAction}' questId='{questId}'");
+        }
         var request = new RemoteBuyBuildingRequest
         {
             action = "buy_building",
@@ -88,6 +96,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryStartQuestAsync(string questId)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=start_quest questId='{questId}'");
+        }
         var request = new RemoteQuestRequest
         {
             action = "start_quest",
@@ -100,6 +112,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryCompleteQuestAsync(string questId)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=complete_quest questId='{questId}'");
+        }
         var request = new RemoteQuestRequest
         {
             action = "complete_quest",
@@ -112,6 +128,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryFailQuestAsync(string questId)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=fail_quest questId='{questId}'");
+        }
         var request = new RemoteQuestRequest
         {
             action = "fail_quest",
@@ -124,6 +144,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryAddMoneyAsync(int amount)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=add_money amount={amount}");
+        }
         var request = new RemoteMoneyRequest
         {
             action = "add_money",
@@ -136,6 +160,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TrySpendMoneyAsync(int amount)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=spend_money amount={amount}");
+        }
         var request = new RemoteMoneyRequest
         {
             action = "spend_money",
@@ -148,6 +176,10 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance)
     {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=steal amount={amount} canFail={canFail} successChance={successChance}");
+        }
         var request = new RemoteStealRequest
         {
             action = "steal",
@@ -247,9 +279,17 @@ public class RemoteGameServer : IGameServer
 
         if (!response.success)
         {
+            if (debugLog)
+            {
+                Debug.Log($"[RemoteGameServer] Result: success=false errorCode={response.errorCode} message={response.message}");
+            }
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, response.errorCode ?? "ServerError", response.message);
         }
 
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] Result: success=true message={response.message}");
+        }
         return ServerActionResult.SuccessResult(snapshot, response.message);
     }
 

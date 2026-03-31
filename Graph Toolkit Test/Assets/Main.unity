@@ -40962,8 +40962,9 @@ MonoBehaviour:
   useRemoteServer: 1
   remoteBaseUrl: http://127.0.0.1:3000
   remotePlayerId: player
-  remoteTimeoutSeconds: 2
+  remoteTimeoutSeconds: 5
   remoteDebugLog: 1
+  refreshProfileOnGameStart: 1
   localMinDelayMs: 100
   localMaxDelayMs: 500
   localNetworkErrorChance: 0.05

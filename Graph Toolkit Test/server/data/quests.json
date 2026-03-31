@@ -16,7 +16,7 @@
       "id": "Gas_worker",
       "title": "Персонал",
       "description": "Найди бензозаправщика.",
-      "rewardMoney": 0
+      "rewardMoney": 100
     },
     {
       "id": "provider",

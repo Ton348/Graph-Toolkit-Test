@@ -22,10 +22,11 @@ public class GameBootstrap : MonoBehaviour
 
     [Header("Server")]
     public bool useRemoteServer = false;
-    public string remoteBaseUrl = "http://localhost:3000";
+    public string remoteBaseUrl = "http://127.0.0.1:3000";
     public string remotePlayerId = "player";
     public float remoteTimeoutSeconds = 8f;
     public bool remoteDebugLog = true;
+    public bool refreshProfileOnGameStart = true;
 
     [Header("Local Server (Fake Network)")]
     public int localMinDelayMs = 100;
@@ -47,7 +48,7 @@ public class GameBootstrap : MonoBehaviour
 
     private async void Start()
     {
-        if (useRemoteServer)
+        if (useRemoteServer && refreshProfileOnGameStart)
         {
             await FetchRemoteProfile();
         }
