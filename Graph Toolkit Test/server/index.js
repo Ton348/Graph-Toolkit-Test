@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
+const HOST = process.env.HOST || '127.0.0.1';
 const DATA_DIR = path.join(__dirname, 'data');
 const PLAYER_DIR = path.join(__dirname, 'playerData');
 
@@ -181,6 +182,8 @@ function success(res, message, profile) {
 function handleBuyBuilding(req, res, payload) {
   const playerId = payload.playerId || 'player';
   const buildingId = payload.data && payload.data.buildingId;
+  const questAction = payload.data && payload.data.questAction;
+  const questId = payload.data && payload.data.questId;
   console.log(`[server] action=buy_building playerId=${playerId} buildingId=${buildingId}`);
   if (!buildingId) return fail(res, 'BuildingIdEmpty', 'buildingId is required.');
 
@@ -188,6 +191,30 @@ function handleBuyBuilding(req, res, payload) {
   if (!building) return fail(res, 'BuildingNotFound', 'Building not found.');
 
   const profile = loadPlayerProfile(playerId);
+
+  let quest = null;
+  if (questAction) {
+    if (!questId) return fail(res, 'QuestIdEmpty', 'questId is required.');
+    quest = defs.questById.get(questId);
+    if (!quest) return fail(res, 'QuestNotFound', 'Quest not found.');
+    if (questAction === 'start') {
+      if ((profile.activeQuests || []).includes(questId)) {
+        return fail(res, 'QuestAlreadyActive', 'Quest already active.', profile);
+      }
+      if ((profile.completedQuests || []).includes(questId)) {
+        return fail(res, 'QuestAlreadyCompleted', 'Quest already completed.', profile);
+      }
+    } else if (questAction === 'complete') {
+      if ((profile.completedQuests || []).includes(questId)) {
+        return fail(res, 'QuestAlreadyCompleted', 'Quest already completed.', profile);
+      }
+      if (!(profile.activeQuests || []).includes(questId)) {
+        return fail(res, 'QuestNotActive', 'Quest is not active.', profile);
+      }
+    } else {
+      return fail(res, 'InvalidQuestAction', `Unknown questAction: ${questAction}`);
+    }
+  }
 
   if ((profile.ownedBuildings || []).includes(buildingId)) {
     return fail(res, 'BuildingAlreadyOwned', 'Building already owned.', profile);
@@ -200,6 +227,16 @@ function handleBuyBuilding(req, res, payload) {
 
   profile.money -= cost;
   profile.ownedBuildings.push(buildingId);
+
+  if (questAction === 'start') {
+    profile.activeQuests.push(questId);
+  } else if (questAction === 'complete') {
+    const reward = Number(quest.rewardMoney) || 0;
+    profile.money += reward;
+    profile.activeQuests = (profile.activeQuests || []).filter(q => q !== questId);
+    profile.completedQuests.push(questId);
+  }
+
   ensureBuildingStates(profile);
   savePlayerProfile(profile);
   return success(res, 'Buy building success.', profile);
@@ -408,6 +445,6 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`[server] Listening on http://localhost:${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`[server] Listening on http://${HOST}:${PORT}`);
 });

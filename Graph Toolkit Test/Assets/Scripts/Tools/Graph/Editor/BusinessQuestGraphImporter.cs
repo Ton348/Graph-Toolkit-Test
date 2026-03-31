@@ -140,7 +140,9 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             case RequestBuyBuildingNodeModel requestBuyBuildingNode:
                 runtimeNode = new RequestBuyBuildingNode
                 {
-                    buildingId = GetOptionValue<string>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.BUILDING_ID_OPTION)
+                    buildingId = GetOptionValue<string>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.BUILDING_ID_OPTION),
+                    questAction = GetOptionValue<QuestActionType>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.QUEST_ACTION_OPTION),
+                    questId = GetOptionValue<string>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.QUEST_ID_OPTION)
                 };
                 break;
             case RequestStartQuestNodeModel requestStartQuestNode:

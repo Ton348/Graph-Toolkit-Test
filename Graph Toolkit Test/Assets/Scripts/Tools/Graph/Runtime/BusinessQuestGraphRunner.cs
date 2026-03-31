@@ -287,7 +287,10 @@ public class BusinessQuestGraphRunner
                             continue;
                         }
 
-                        pendingServerTask = gameServer.TryBuyBuildingAsync(requestBuyBuildingNode.buildingId);
+                        pendingServerTask = gameServer.TryBuyBuildingAsync(
+                            requestBuyBuildingNode.buildingId,
+                            requestBuyBuildingNode.questAction,
+                            requestBuyBuildingNode.questId);
                         pendingSuccessNodeId = requestBuyBuildingNode.successNodeId;
                         pendingFailNodeId = requestBuyBuildingNode.failNodeId;
                         pendingRequestLabel = "RequestBuyBuilding";

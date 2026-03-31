@@ -13,7 +13,7 @@ public class RemoteGameServer : IGameServer
 
     public RemoteGameServer(string baseUrl, string playerId, float timeoutSeconds, bool debugLog)
     {
-        this.baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:3000" : baseUrl.TrimEnd('/');
+        this.baseUrl = NormalizeBaseUrl(string.IsNullOrEmpty(baseUrl) ? "http://localhost:3000" : baseUrl);
         this.playerId = string.IsNullOrEmpty(playerId) ? "player" : playerId;
         if (timeoutSeconds <= 0f)
         {
@@ -24,6 +24,38 @@ public class RemoteGameServer : IGameServer
             this.timeoutSeconds = Mathf.Clamp(timeoutSeconds, 0.1f, 120f);
         }
         this.debugLog = debugLog;
+    }
+
+    private string NormalizeBaseUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return "http://127.0.0.1:3000";
+        }
+
+        string trimmed = url.TrimEnd('/');
+        try
+        {
+            var uri = new Uri(trimmed);
+            if (string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                var builder = new UriBuilder(uri)
+                {
+                    Host = "127.0.0.1"
+                };
+                string normalized = builder.Uri.ToString().TrimEnd('/');
+                if (debugLog)
+                {
+                    Debug.Log($"[RemoteGameServer] Normalized baseUrl '{trimmed}' -> '{normalized}'");
+                }
+                return normalized;
+            }
+        }
+        catch
+        {
+        }
+
+        return trimmed;
     }
 
     public Task<ServerActionResult> TryGetProfileAsync()
@@ -37,13 +69,18 @@ public class RemoteGameServer : IGameServer
         return SendRequestAsync(request);
     }
 
-    public Task<ServerActionResult> TryBuyBuildingAsync(string buildingId)
+    public Task<ServerActionResult> TryBuyBuildingAsync(string buildingId, QuestActionType questAction = QuestActionType.None, string questId = null)
     {
         var request = new RemoteBuyBuildingRequest
         {
             action = "buy_building",
             playerId = playerId,
-            data = new RemoteBuyBuildingData { buildingId = buildingId }
+            data = new RemoteBuyBuildingData
+            {
+                buildingId = buildingId,
+                questAction = MapQuestAction(questAction),
+                questId = questId
+            }
         };
 
         return SendRequestAsync(request);
@@ -155,20 +192,27 @@ public class RemoteGameServer : IGameServer
             await Task.Yield();
         }
 
-        string responseText = request.downloadHandler != null ? request.downloadHandler.text : null;
-        if (debugLog)
-        {
-            Debug.Log($"[RemoteGameServer] Response ({request.responseCode}): {responseText}");
-            if (manualTimeout || request.result != UnityWebRequest.Result.Success)
-            {
-                string timeoutLabel = timeoutSeconds > 0f ? $"{timeoutSeconds:0.###}s" : "disabled";
-                Debug.LogWarning($"[RemoteGameServer] Network error: result={request.result}, error='{request.error}', url={url}, timeout={timeoutLabel}");
-            }
-        }
+        double elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
 
         if (manualTimeout)
         {
+            if (debugLog)
+            {
+                string timeoutLabel = timeoutSeconds > 0f ? $"{timeoutSeconds:0.###}s" : "disabled";
+                Debug.LogWarning($"[RemoteGameServer] Network error: result=Timeout, error='Request timeout', url={url}, timeout={timeoutLabel}, elapsed={elapsedMs:0.0}ms");
+            }
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.Timeout, "Timeout", "Request timeout.");
+        }
+
+        string responseText = request.downloadHandler != null ? request.downloadHandler.text : null;
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] Response ({request.responseCode}) in {elapsedMs:0.0}ms: {responseText}");
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                string timeoutLabel = timeoutSeconds > 0f ? $"{timeoutSeconds:0.###}s" : "disabled";
+                Debug.LogWarning($"[RemoteGameServer] Network error: result={request.result}, error='{request.error}', url={url}, timeout={timeoutLabel}, elapsed={elapsedMs:0.0}ms");
+            }
         }
 
         if (request.result != UnityWebRequest.Result.Success)
@@ -299,6 +343,8 @@ public class RemoteGameServer : IGameServer
     private class RemoteBuyBuildingData
     {
         public string buildingId;
+        public string questAction;
+        public string questId;
     }
 
     [Serializable]
@@ -377,5 +423,15 @@ public class RemoteGameServer : IGameServer
         public int level;
         public int currentIncome;
         public int currentExpenses;
+    }
+
+    private static string MapQuestAction(QuestActionType action)
+    {
+        return action switch
+        {
+            QuestActionType.StartQuest => "start",
+            QuestActionType.CompleteQuest => "complete",
+            _ => null
+        };
     }
 }

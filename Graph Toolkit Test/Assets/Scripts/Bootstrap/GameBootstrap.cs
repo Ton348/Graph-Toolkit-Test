@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class GameBootstrap : MonoBehaviour
@@ -26,6 +27,12 @@ public class GameBootstrap : MonoBehaviour
     public float remoteTimeoutSeconds = 8f;
     public bool remoteDebugLog = true;
 
+    [Header("Local Server (Fake Network)")]
+    public int localMinDelayMs = 100;
+    public int localMaxDelayMs = 500;
+    [Range(0f, 1f)] public float localNetworkErrorChance = 0.05f;
+    [Range(0f, 1f)] public float localTimeoutChance = 0.03f;
+
     [Header("Graph Debug")]
     public bool enableGraphDebug = true;
     public GraphDebugFilterMode graphDebugFilter = GraphDebugFilterMode.All;
@@ -36,6 +43,14 @@ public class GameBootstrap : MonoBehaviour
     private void Awake()
     {
         InitializeRuntime();
+    }
+
+    private async void Start()
+    {
+        if (useRemoteServer)
+        {
+            await FetchRemoteProfile();
+        }
     }
 
     private void InitializeRuntime()
@@ -89,7 +104,7 @@ public class GameBootstrap : MonoBehaviour
         GraphProgressService = new GraphProgressService();
         GameServer = useRemoteServer
             ? new RemoteGameServer(remoteBaseUrl, remotePlayerId, remoteTimeoutSeconds, remoteDebugLog)
-            : new LocalGameServer(RuntimeState, BuildingService, QuestService, GameDataRepository);
+            : new LocalGameServer(RuntimeState, BuildingService, QuestService, GameDataRepository, localMinDelayMs, localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
         PlayerStateSync = new PlayerStateSync();
         ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync);
         RequestManager = new RequestManager();
@@ -154,20 +169,57 @@ public class GameBootstrap : MonoBehaviour
                 if (building.IsOwned)
                 {
                     snapshot.OwnedBuildingIds.Add(building.Definition.id);
+                    snapshot.BuildingStates.Add(new BuildingStateSnapshot
+                    {
+                        id = building.Definition.id,
+                        owned = true,
+                        level = building.Level,
+                        currentIncome = building.CurrentIncome,
+                        currentExpenses = building.CurrentExpenses
+                    });
                 }
-
-                snapshot.BuildingStates.Add(new BuildingStateSnapshot
-                {
-                    id = building.Definition.id,
-                    owned = building.IsOwned,
-                    level = building.Level,
-                    currentIncome = building.CurrentIncome,
-                    currentExpenses = building.CurrentExpenses
-                });
             }
         }
 
         PlayerStateSync.ApplySnapshot(snapshot);
+    }
+
+    private async Task FetchRemoteProfile()
+    {
+        if (GameServer == null || ProfileSyncService == null)
+        {
+            return;
+        }
+
+        Debug.Log("[GameBootstrap] Fetching remote profile...");
+        ServerActionResult result = null;
+        try
+        {
+            result = await GameServer.TryGetProfileAsync();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[GameBootstrap] Remote profile fetch failed: {ex.Message}");
+            return;
+        }
+
+        if (result == null)
+        {
+            Debug.LogWarning("[GameBootstrap] Remote profile fetch returned null.");
+            return;
+        }
+
+        if (!result.Success)
+        {
+            Debug.LogWarning($"[GameBootstrap] Remote profile fetch failed: {result.Type} - {result.ErrorCode}");
+            return;
+        }
+
+        if (result.ProfileSnapshot != null)
+        {
+            ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+            Debug.Log("[GameBootstrap] Remote profile applied.");
+        }
     }
 
 }

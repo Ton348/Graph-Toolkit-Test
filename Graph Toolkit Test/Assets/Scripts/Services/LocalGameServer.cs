@@ -8,14 +8,30 @@ public class LocalGameServer : IGameServer
     private readonly BuildingService buildingService;
     private readonly QuestService questService;
     private readonly GameDataRepository dataRepository;
+    private readonly int minDelayMs;
+    private readonly int maxDelayMs;
+    private readonly float networkErrorChance;
+    private readonly float timeoutChance;
     private static readonly System.Random Random = new System.Random();
 
-    public LocalGameServer(GameRuntimeState runtime, BuildingService buildingService, QuestService questService, GameDataRepository dataRepository)
+    public LocalGameServer(
+        GameRuntimeState runtime,
+        BuildingService buildingService,
+        QuestService questService,
+        GameDataRepository dataRepository,
+        int minDelayMs = 100,
+        int maxDelayMs = 500,
+        float networkErrorChance = 0.05f,
+        float timeoutChance = 0.03f)
     {
         this.runtime = runtime;
         this.buildingService = buildingService;
         this.questService = questService;
         this.dataRepository = dataRepository;
+        this.minDelayMs = Mathf.Clamp(minDelayMs, 0, 60000);
+        this.maxDelayMs = Mathf.Max(this.minDelayMs, Mathf.Clamp(maxDelayMs, 0, 60000));
+        this.networkErrorChance = Mathf.Clamp01(networkErrorChance);
+        this.timeoutChance = Mathf.Clamp01(timeoutChance);
     }
 
     public async Task<ServerActionResult> TryGetProfileAsync()
@@ -38,7 +54,7 @@ public class LocalGameServer : IGameServer
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Profile fetch success.");
     }
 
-    public async Task<ServerActionResult> TryBuyBuildingAsync(string buildingId)
+    public async Task<ServerActionResult> TryBuyBuildingAsync(string buildingId, QuestActionType questAction = QuestActionType.None, string questId = null)
     {
         int delayMs = NextDelayMs();
         var networkIssue = SampleNetworkIssue();
@@ -71,6 +87,43 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingAlreadyOwned", "Building already owned.");
         }
 
+        QuestDefinitionData questDefinition = null;
+        QuestState questState = null;
+        if (questAction != QuestActionType.None)
+        {
+            if (string.IsNullOrWhiteSpace(questId))
+            {
+                return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestIdEmpty", "Quest id is empty.");
+            }
+
+            questDefinition = dataRepository != null ? dataRepository.GetQuestById(questId) : null;
+            if (questDefinition == null)
+            {
+                return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotFound", "Quest definition not found.");
+            }
+
+            questState = questService != null ? questService.GetQuestById(questId) : null;
+
+            if (questAction == QuestActionType.StartQuest)
+            {
+                if (questState != null && questState.Status == QuestStatus.Active)
+                {
+                    return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestAlreadyActive", "Quest already active.");
+                }
+                if (questState != null && questState.Status == QuestStatus.Completed)
+                {
+                    return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestAlreadyCompleted", "Quest already completed.");
+                }
+            }
+            else if (questAction == QuestActionType.CompleteQuest)
+            {
+                if (questState == null || questState.Status != QuestStatus.Active)
+                {
+                    return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest is not active.");
+                }
+            }
+        }
+
         int cost = building.Definition.purchaseCost;
         if (runtime.Player.Money < cost)
         {
@@ -78,9 +131,25 @@ public class LocalGameServer : IGameServer
         }
 
         bool ok = buildingService != null && buildingService.TryBuyBuilding(building, runtime.Player);
-        return ok
-            ? ServerActionResult.SuccessResult(BuildSnapshot(), "Buy building success.")
-            : ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuyFailed", "Buy building failed.");
+        if (!ok)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuyFailed", "Buy building failed.");
+        }
+
+        if (questAction == QuestActionType.StartQuest)
+        {
+            questService?.AcceptQuest(questDefinition);
+        }
+        else if (questAction == QuestActionType.CompleteQuest)
+        {
+            if (questDefinition != null && runtime != null && runtime.Player != null)
+            {
+                runtime.Player.Money += questDefinition.rewardMoney;
+            }
+            questService?.CompleteQuest(questId);
+        }
+
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Buy building success.");
     }
 
     public async Task<ServerActionResult> TryStartQuestAsync(string questId)
@@ -370,15 +439,15 @@ public class LocalGameServer : IGameServer
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Start quest success.");
     }
 
-    private static int NextDelayMs()
+    private int NextDelayMs()
     {
         lock (Random)
         {
-            return Random.Next(100, 501);
+            return Random.Next(minDelayMs, maxDelayMs + 1);
         }
     }
 
-    private static ServerActionResult.ErrorType SampleNetworkIssue()
+    private ServerActionResult.ErrorType SampleNetworkIssue()
     {
         double roll;
         lock (Random)
@@ -386,12 +455,12 @@ public class LocalGameServer : IGameServer
             roll = Random.NextDouble();
         }
 
-        if (roll < 0.05)
+        if (roll < networkErrorChance)
         {
             return ServerActionResult.ErrorType.NetworkError;
         }
 
-        if (roll < 0.08)
+        if (roll < networkErrorChance + timeoutChance)
         {
             return ServerActionResult.ErrorType.Timeout;
         }

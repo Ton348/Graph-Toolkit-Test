@@ -5,6 +5,8 @@ using Unity.GraphToolkit.Editor;
 public class RequestBuyBuildingNodeModel : BusinessQuestEditorNode
 {
     public const string BUILDING_ID_OPTION = "BuildingId";
+    public const string QUEST_ACTION_OPTION = "QuestAction";
+    public const string QUEST_ID_OPTION = "QuestId";
 
     protected override string DefaultTitle => "Запрос покупки здания";
     protected override string DefaultDescription => "Отправляет запрос на покупку здания через IGameServer.";
@@ -15,6 +17,11 @@ public class RequestBuyBuildingNodeModel : BusinessQuestEditorNode
 
         context.AddOption<string>(BUILDING_ID_OPTION)
             .WithDisplayName("Building Id");
+        context.AddOption<QuestActionType>(QUEST_ACTION_OPTION)
+            .WithDisplayName("Quest Action")
+            .WithDefaultValue(QuestActionType.None);
+        context.AddOption<string>(QUEST_ID_OPTION)
+            .WithDisplayName("Quest Id");
     }
 
     protected override void OnDefinePorts(IPortDefinitionContext context)
