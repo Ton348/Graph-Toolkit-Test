@@ -366,6 +366,75 @@ public class LocalGameServer : IGameServer
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Checkpoint saved.");
     }
 
+    public async Task<ServerActionResult> TrySubmitTradeOfferAsync(string buildingId, int offeredAmount)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrEmpty(buildingId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingIdEmpty", "Building id is empty.");
+        }
+
+        if (offeredAmount < 1)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidOffer", "Offer must be >= 1.");
+        }
+
+        if (runtime == null || runtime.Buildings == null || runtime.Player == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
+        }
+
+        BuildingState building = FindBuilding(buildingId, runtime.Buildings);
+        if (building == null || building.Definition == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingNotFound", "Building not found.");
+        }
+
+        if (building.IsOwned)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingAlreadyOwned", "Building already owned.");
+        }
+
+        int fullPrice = building.Definition.purchaseCost;
+        if (offeredAmount > fullPrice)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "OfferTooHigh", "Offer exceeds full price.");
+        }
+
+        if (runtime.Player.Money < offeredAmount)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
+        }
+
+        int baseChance = GetBaseTradeChance(offeredAmount, fullPrice);
+        int tradingBonus = runtime.Player.Trading;
+        int finalChance = Mathf.Clamp(baseChance + tradingBonus, 0, 95);
+
+        int roll;
+        lock (Random)
+        {
+            roll = Random.Next(0, 100);
+        }
+
+        if (roll >= finalChance)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "TradeRejected", "Trade offer rejected.");
+        }
+
+        runtime.Player.Money -= offeredAmount;
+        building.IsOwned = true;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Trade offer accepted.");
+    }
+
     private static BuildingState FindBuilding(string buildingId, List<BuildingState> buildings)
     {
         if (buildings == null) return null;
@@ -391,6 +460,7 @@ public class LocalGameServer : IGameServer
             snapshot.Money = runtime.Player.Money;
             snapshot.Bargaining = runtime.Player.Bargaining;
             snapshot.Speech = runtime.Player.Speech;
+            snapshot.Trading = runtime.Player.Trading;
             snapshot.Speed = runtime.Player.Speed;
             snapshot.Damage = runtime.Player.Damage;
             snapshot.Health = runtime.Player.Health;
@@ -485,6 +555,27 @@ public class LocalGameServer : IGameServer
         {
             return Random.Next(minDelayMs, maxDelayMs + 1);
         }
+    }
+
+    private int GetBaseTradeChance(int offeredAmount, int fullPrice)
+    {
+        if (fullPrice <= 0)
+        {
+            return 0;
+        }
+
+        float percent = (offeredAmount / (float)fullPrice) * 100f;
+        if (percent < 10f)
+        {
+            return 10;
+        }
+
+        if (percent < 50f)
+        {
+            return 40;
+        }
+
+        return 50;
     }
 
     private ServerActionResult.ErrorType SampleNetworkIssue()

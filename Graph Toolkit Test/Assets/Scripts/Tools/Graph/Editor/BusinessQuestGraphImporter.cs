@@ -89,6 +89,13 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
+        if (runtimeNode is RequestTradeOfferNode requestTrade)
+        {
+            requestTrade.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestTrade.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
         if (runtimeNode is RequestStartQuestNode requestStartQuest)
         {
             requestStartQuest.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
@@ -150,6 +157,12 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                     buildingId = GetOptionValue<string>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.BUILDING_ID_OPTION),
                     questAction = GetOptionValue<QuestActionType>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.QUEST_ACTION_OPTION),
                     questId = GetOptionValue<string>(requestBuyBuildingNode, RequestBuyBuildingNodeModel.QUEST_ID_OPTION)
+                };
+                break;
+            case RequestTradeOfferNodeModel requestTradeOfferNode:
+                runtimeNode = new RequestTradeOfferNode
+                {
+                    buildingId = GetOptionValue<string>(requestTradeOfferNode, RequestTradeOfferNodeModel.BUILDING_ID_OPTION)
                 };
                 break;
             case RequestStartQuestNodeModel requestStartQuestNode:

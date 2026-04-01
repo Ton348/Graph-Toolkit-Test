@@ -12,6 +12,7 @@ public class PlayerStateSync
     public int Money { get; private set; }
     public int Bargaining { get; private set; }
     public int Speech { get; private set; }
+    public int Trading { get; private set; }
     public int Speed { get; private set; }
     public int Damage { get; private set; }
     public int Health { get; private set; }
@@ -33,6 +34,7 @@ public class PlayerStateSync
         Money = snapshot.Money;
         Bargaining = snapshot.Bargaining;
         Speech = snapshot.Speech;
+        Trading = snapshot.Trading;
         Speed = snapshot.Speed;
         Damage = snapshot.Damage;
         Health = snapshot.Health;
@@ -113,6 +115,7 @@ public class PlayerStateSync
         Money = 0;
         Bargaining = 0;
         Speech = 0;
+        Trading = 0;
         Speed = 0;
         Damage = 0;
         Health = 0;

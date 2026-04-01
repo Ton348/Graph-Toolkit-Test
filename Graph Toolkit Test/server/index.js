@@ -43,8 +43,9 @@ function loadDefinitions() {
   const quests = readJson(path.join(DATA_DIR, 'quests.json'));
   const buildings = readJson(path.join(DATA_DIR, 'buildings.json'));
   const economy = readJson(path.join(DATA_DIR, 'economy.json'));
+  const tradeConfig = readJson(path.join(DATA_DIR, 'tradeConfig.json'));
 
-  validateDefinitions(quests, buildings, economy);
+  validateDefinitions(quests, buildings, economy, tradeConfig);
 
   const questById = new Map();
   (quests.quests || []).forEach(q => {
@@ -56,10 +57,10 @@ function loadDefinitions() {
     if (b && b.id && !buildingById.has(b.id)) buildingById.set(b.id, b);
   });
 
-  return { questById, buildingById, economy };
+  return { questById, buildingById, economy, tradeConfig };
 }
 
-function validateDefinitions(quests, buildings, economy) {
+function validateDefinitions(quests, buildings, economy, tradeConfig) {
   let errors = 0;
   let warnings = 0;
 
@@ -117,6 +118,14 @@ function validateDefinitions(quests, buildings, economy) {
     warnings++;
   }
 
+  if (!tradeConfig || typeof tradeConfig !== 'object') {
+    console.error('[server][validate] tradeConfig.json missing or invalid');
+    errors++;
+  } else if (!Array.isArray(tradeConfig.ranges) || tradeConfig.ranges.length === 0) {
+    console.error('[server][validate] tradeConfig.json missing "ranges" array');
+    errors++;
+  }
+
   console.log(`[server][validate] completed with ${errors} error(s), ${warnings} warning(s)`);
 }
 
@@ -167,6 +176,7 @@ function loadPlayerProfile(playerId) {
       money: defs.economy && Number.isFinite(defs.economy.startMoney) ? defs.economy.startMoney : 0,
       bargaining: defs.economy && Number.isFinite(defs.economy.baseBargaining) ? defs.economy.baseBargaining : 0,
       speech: defs.economy && Number.isFinite(defs.economy.baseSpeech) ? defs.economy.baseSpeech : 0,
+      trading: defs.economy && Number.isFinite(defs.economy.baseTrading) ? defs.economy.baseTrading : 0,
       speed: defs.economy && Number.isFinite(defs.economy.baseSpeed) ? defs.economy.baseSpeed : 0,
       damage: defs.economy && Number.isFinite(defs.economy.baseDamage) ? defs.economy.baseDamage : 0,
       health: defs.economy && Number.isFinite(defs.economy.baseHealth) ? defs.economy.baseHealth : 0,
@@ -189,6 +199,7 @@ function loadPlayerProfile(playerId) {
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   if (!Number.isFinite(profile.bargaining)) profile.bargaining = defs.economy?.baseBargaining ?? 0;
   if (!Number.isFinite(profile.speech)) profile.speech = defs.economy?.baseSpeech ?? 0;
+  if (!Number.isFinite(profile.trading)) profile.trading = defs.economy?.baseTrading ?? 0;
   if (!Number.isFinite(profile.speed)) profile.speed = defs.economy?.baseSpeed ?? 0;
   if (!Number.isFinite(profile.damage)) profile.damage = defs.economy?.baseDamage ?? 0;
   if (!Number.isFinite(profile.health)) profile.health = defs.economy?.baseHealth ?? 0;
@@ -226,6 +237,7 @@ function toResponseProfile(profile) {
     money: profile.money,
     bargaining: profile.bargaining,
     speech: profile.speech,
+    trading: profile.trading,
     speed: profile.speed,
     damage: profile.damage,
     health: profile.health,
@@ -434,6 +446,67 @@ function handleSpendMoney(req, res, payload) {
   return success(res, 'Spend money success.', profile);
 }
 
+function getBaseTradeChance(percent) {
+  const ranges = defs.tradeConfig && Array.isArray(defs.tradeConfig.ranges) ? defs.tradeConfig.ranges : [];
+  for (const range of ranges) {
+    const min = Number(range.minPercent);
+    const max = Number(range.maxPercent);
+    const base = Number(range.baseChance);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || !Number.isFinite(base)) continue;
+    if (percent >= min && percent <= max) return base;
+  }
+  return 0;
+}
+
+function handleSubmitTradeOffer(req, res, payload) {
+  const playerId = payload.playerId || 'player';
+  const buildingId = payload.data && payload.data.buildingId;
+  const offeredAmount = payload.data && Number(payload.data.offeredAmount);
+  console.log(`[server] action=submit_trade_offer playerId=${playerId} buildingId=${buildingId} offeredAmount=${offeredAmount}`);
+
+  if (!buildingId) return fail(res, 'BuildingIdEmpty', 'buildingId is required.');
+  if (!Number.isFinite(offeredAmount) || offeredAmount < 1) {
+    return fail(res, 'InvalidOffer', 'offeredAmount must be >= 1.');
+  }
+
+  const building = defs.buildingById.get(buildingId);
+  if (!building) return fail(res, 'BuildingNotFound', 'Building not found.');
+
+  const fullPrice = Number(building.purchaseCost) || 0;
+  if (offeredAmount > fullPrice) {
+    return fail(res, 'OfferTooHigh', 'offeredAmount exceeds full price.');
+  }
+
+  const profile = loadPlayerProfile(playerId);
+
+  if ((profile.ownedBuildings || []).includes(buildingId)) {
+    return fail(res, 'BuildingAlreadyOwned', 'Building already owned.', profile);
+  }
+
+  if (profile.money < offeredAmount) {
+    return fail(res, 'NotEnoughMoney', 'Not enough money.', profile);
+  }
+
+  const percent = fullPrice > 0 ? (offeredAmount / fullPrice) * 100 : 0;
+  const baseChance = getBaseTradeChance(percent);
+  const tradingBonus = Number(profile.trading) || 0;
+  const maxChance = Number(defs.tradeConfig && defs.tradeConfig.maxFinalChance) || 95;
+  let finalChance = baseChance + tradingBonus;
+  finalChance = Math.max(0, Math.min(maxChance, finalChance));
+
+  const roll = Math.floor(Math.random() * 100);
+  const successRoll = roll < finalChance;
+
+  if (!successRoll) {
+    return fail(res, 'TradeRejected', 'Trade offer rejected.', profile);
+  }
+
+  profile.money -= offeredAmount;
+  profile.ownedBuildings.push(buildingId);
+  ensureBuildingStates(profile);
+  savePlayerProfile(profile);
+  return success(res, 'Trade offer accepted.', profile);
+}
 function handleSteal(req, res, payload) {
   const playerId = payload.playerId || 'player';
   const data = payload.data || {};
@@ -519,6 +592,8 @@ function handleAction(req, res, payload) {
       return handleGetProfile(req, res, payload);
     case 'save_checkpoint':
       return handleSaveCheckpoint(req, res, payload);
+    case 'submit_trade_offer':
+      return handleSubmitTradeOffer(req, res, payload);
     default:
       return fail(res, 'UnknownAction', `Unknown action: ${payload.action}`);
   }

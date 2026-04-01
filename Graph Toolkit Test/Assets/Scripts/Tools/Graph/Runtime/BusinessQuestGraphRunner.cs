@@ -9,11 +9,11 @@ public class BusinessQuestGraphRunner
     private readonly IGameServer gameServer;
     private readonly ProfileSyncService profileSync;
     private readonly RequestManager requestManager;
-    private readonly GraphDebugService debugService;
     private readonly GameDataRepository dataRepository;
     private readonly PlayerStateSync playerStateSync;
     private readonly DialogueService dialogueService;
     private readonly ChoiceUIService choiceUIService;
+    private readonly TradeOfferUIService tradeOfferUIService;
     private readonly MapMarkerService mapMarkerService;
     private readonly Transform playerTransform;
     private readonly GraphProgressService graphProgressService;
@@ -31,6 +31,7 @@ public class BusinessQuestGraphRunner
     private InteractionContext currentContext = new InteractionContext { contextType = InteractionContextType.Normal };
 
     public bool IsRunning { get; private set; }
+    public bool HasTradeOfferUI => tradeOfferUIService != null;
 
     public BusinessQuestGraphRunner(
         BusinessQuestGraph graph,
@@ -38,6 +39,7 @@ public class BusinessQuestGraphRunner
         IGameServer gameServer,
         DialogueService dialogueService,
         ChoiceUIService choiceUIService,
+        TradeOfferUIService tradeOfferUIService,
         MapMarkerService mapMarkerService,
         Transform playerTransform,
         GraphProgressService graphProgressService)
@@ -47,11 +49,11 @@ public class BusinessQuestGraphRunner
         this.gameServer = gameServer;
         this.profileSync = bootstrap != null ? bootstrap.ProfileSyncService : null;
         this.requestManager = bootstrap != null ? bootstrap.RequestManager : null;
-        this.debugService = bootstrap != null ? bootstrap.GraphDebugService : null;
         this.dataRepository = bootstrap != null ? bootstrap.GameDataRepository : null;
         this.playerStateSync = bootstrap != null ? bootstrap.PlayerStateSync : null;
         this.dialogueService = dialogueService;
         this.choiceUIService = choiceUIService;
+        this.tradeOfferUIService = tradeOfferUIService;
         this.mapMarkerService = mapMarkerService;
         this.playerTransform = playerTransform;
         this.graphProgressService = graphProgressService;
@@ -71,7 +73,6 @@ public class BusinessQuestGraphRunner
 
         currentContext = context ?? new InteractionContext { contextType = InteractionContextType.Normal };
         executionContext = new GraphExecutionContext();
-        debugService?.Clear();
         IsRunning = true;
         currentNode = ResolveStartNode();
         Advance();
@@ -105,7 +106,6 @@ public class BusinessQuestGraphRunner
 
             if (result == null)
             {
-                debugService?.LogNodeFail(GetGraphId(), currentNode, executionContext, "ServerResultNull", null, pendingFailNodeId);
                 if (!isEndComplete)
                 {
                     currentNode = graph.GetNodeById(pendingFailNodeId);
@@ -124,12 +124,10 @@ public class BusinessQuestGraphRunner
                 if (result.Success)
                 {
                     Debug.Log($"[{pendingRequestLabel}] Result: Success");
-                    debugService?.LogNodeSuccess(GetGraphId(), currentNode, executionContext, "Success", result, pendingSuccessNodeId);
                 }
                 else
                 {
                     Debug.Log($"[{pendingRequestLabel}] Result: {result.Type} - {result.ErrorCode}");
-                    debugService?.LogNodeFail(GetGraphId(), currentNode, executionContext, $"{result.Type} - {result.ErrorCode}", result, pendingFailNodeId);
                 }
 
                 if (!isEndComplete)
@@ -170,7 +168,6 @@ public class BusinessQuestGraphRunner
             float distance = Vector3.Distance(playerTransform.position, target.position);
             if (distance <= waitingGoToNode.arrivalDistance)
             {
-                debugService?.LogNodeSuccess(GetGraphId(), waitingGoToNode, executionContext, "Arrived", null, waitingGoToNode.nextNodeId);
                 currentNode = graph.GetNodeById(waitingGoToNode.nextNodeId);
                 waitingGoToNode = null;
                 Advance();
@@ -187,11 +184,9 @@ public class BusinessQuestGraphRunner
 
         while (IsRunning && currentNode != null)
         {
-            debugService?.LogNodeStart(GetGraphId(), currentNode, executionContext);
             switch (currentNode)
             {
                 case StartNode:
-                    debugService?.LogNodeSuccess(GetGraphId(), currentNode, executionContext, null, null, currentNode.nextNodeId);
                     currentNode = graph.GetNodeById(currentNode.nextNodeId);
                     continue;
 
@@ -205,13 +200,11 @@ public class BusinessQuestGraphRunner
 
                         dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, () =>
                         {
-                            debugService?.LogNodeSuccess(GetGraphId(), dialogueNode, executionContext, "Closed", null, dialogueNode.nextNodeId);
                             currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
                             Advance();
                         }, dialogueNode.screenshot);
                         return;
                     }
-                    debugService?.LogNodeSuccess(GetGraphId(), dialogueNode, executionContext, "Skipped", null, dialogueNode.nextNodeId);
                     currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
                     continue;
 
@@ -221,7 +214,6 @@ public class BusinessQuestGraphRunner
                         choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
                         {
                             StoreChoiceContext(choiceNode, optionIndex);
-                            debugService?.LogNodeSuccess(GetGraphId(), choiceNode, executionContext, $"Choice {optionIndex}", null, GetChoiceNextId(choiceNode, optionIndex));
                             string nextId = GetChoiceNextId(choiceNode, optionIndex);
                             currentNode = graph.GetNodeById(nextId);
                             Advance();
@@ -229,7 +221,6 @@ public class BusinessQuestGraphRunner
                         return;
                     }
                     StoreChoiceContext(choiceNode, 0);
-                    debugService?.LogNodeSuccess(GetGraphId(), choiceNode, executionContext, "DefaultChoice 0", null, GetChoiceNextId(choiceNode, 0));
                     currentNode = graph.GetNodeById(GetChoiceNextId(choiceNode, 0));
                     continue;
 
@@ -238,11 +229,9 @@ public class BusinessQuestGraphRunner
                     executionContext?.Set(GraphContextKeys.ConditionLastResult, conditionResult);
                     if (conditionResult)
                     {
-                        debugService?.LogNodeSuccess(GetGraphId(), conditionNode, executionContext, "True", null, conditionNode.trueNodeId);
                     }
                     else
                     {
-                        debugService?.LogNodeFail(GetGraphId(), conditionNode, executionContext, "False", null, conditionNode.falseNodeId);
                     }
                     currentNode = graph.GetNodeById(conditionResult ? conditionNode.trueNodeId : conditionNode.falseNodeId);
                     continue;
@@ -255,7 +244,6 @@ public class BusinessQuestGraphRunner
                         {
                             return;
                         }
-                        debugService?.LogNodeSuccess(GetGraphId(), checkpointNode, executionContext, "Skipped", null, checkpointNode.nextNodeId);
                         currentNode = graph.GetNodeById(checkpointNode.nextNodeId);
                         continue;
                     }
@@ -266,7 +254,6 @@ public class BusinessQuestGraphRunner
                         executionContext?.Set(GraphContextKeys.BuildingLastRequestedId, requestBuyBuildingNode.buildingId);
                         if (requestManager != null && !requestManager.TryStartRequest("RequestBuyBuilding"))
                         {
-                            debugService?.LogNodeFail(GetGraphId(), requestBuyBuildingNode, executionContext, "RequestBlocked", null, requestBuyBuildingNode.failNodeId);
                             currentNode = graph.GetNodeById(requestBuyBuildingNode.failNodeId);
                             continue;
                         }
@@ -274,7 +261,6 @@ public class BusinessQuestGraphRunner
                         if (gameServer == null)
                         {
                             Debug.Log("[RequestBuyBuilding] Result: Fail - ServerMissing");
-                            debugService?.LogNodeFail(GetGraphId(), requestBuyBuildingNode, executionContext, "ServerMissing", null, requestBuyBuildingNode.failNodeId);
                             requestManager?.FinishRequest();
                             currentNode = graph.GetNodeById(requestBuyBuildingNode.failNodeId);
                             continue;
@@ -290,13 +276,73 @@ public class BusinessQuestGraphRunner
                         return;
                     }
 
+                case RequestTradeOfferNode requestTradeOfferNode:
+                    {
+                        if (tradeOfferUIService == null)
+                        {
+                            Debug.Log("[RequestTradeOffer] Result: Fail - UI missing");
+                            currentNode = graph.GetNodeById(requestTradeOfferNode.failNodeId);
+                            continue;
+                        }
+
+                        if (tradeOfferUIService.IsOpen)
+                        {
+                            return;
+                        }
+
+                        string buildingId = requestTradeOfferNode.buildingId;
+                        if (string.IsNullOrEmpty(buildingId))
+                        {
+                            Debug.Log("[RequestTradeOffer] Result: Fail - BuildingIdEmpty");
+                            currentNode = graph.GetNodeById(requestTradeOfferNode.failNodeId);
+                            continue;
+                        }
+
+                        var buildingDef = dataRepository != null ? dataRepository.GetBuildingById(buildingId) : null;
+                        if (buildingDef == null)
+                        {
+                            Debug.Log("[RequestTradeOffer] Result: Fail - BuildingNotFound");
+                            currentNode = graph.GetNodeById(requestTradeOfferNode.failNodeId);
+                            continue;
+                        }
+
+                        string label = !string.IsNullOrEmpty(buildingDef.displayName) ? buildingDef.displayName : buildingDef.id;
+                        int fullPrice = Mathf.Max(1, buildingDef.purchaseCost);
+                        tradeOfferUIService.ShowOffer(label, fullPrice, offeredAmount =>
+                        {
+                            if (requestManager != null && !requestManager.TryStartRequest("RequestTradeOffer"))
+                            {
+                                Debug.Log("[RequestTradeOffer] Result: Fail - RequestBlocked");
+                                currentNode = graph.GetNodeById(requestTradeOfferNode.failNodeId);
+                                Advance();
+                                return;
+                            }
+
+                            if (gameServer == null)
+                            {
+                                Debug.Log("[RequestTradeOffer] Result: Fail - ServerMissing");
+                                requestManager?.FinishRequest();
+                                currentNode = graph.GetNodeById(requestTradeOfferNode.failNodeId);
+                                Advance();
+                                return;
+                            }
+
+                            Debug.Log($"[RequestTradeOffer] START buildingId='{buildingId}' offeredAmount='{offeredAmount}'");
+                            executionContext?.Set(GraphContextKeys.BuildingLastRequestedId, buildingId);
+                            pendingServerTask = gameServer.TrySubmitTradeOfferAsync(buildingId, offeredAmount);
+                            pendingSuccessNodeId = requestTradeOfferNode.successNodeId;
+                            pendingFailNodeId = requestTradeOfferNode.failNodeId;
+                            pendingRequestLabel = "RequestTradeOffer";
+                        });
+                        return;
+                    }
+
                 case RequestStartQuestNode requestStartQuestNode:
                     {
                         Debug.Log($"[RequestStartQuest] START questId='{requestStartQuestNode.questId}'");
                         executionContext?.Set(GraphContextKeys.QuestLastRequestedId, requestStartQuestNode.questId);
                         if (requestManager != null && !requestManager.TryStartRequest("RequestStartQuest"))
                         {
-                            debugService?.LogNodeFail(GetGraphId(), requestStartQuestNode, executionContext, "RequestBlocked", null, requestStartQuestNode.failNodeId);
                             currentNode = graph.GetNodeById(requestStartQuestNode.failNodeId);
                             continue;
                         }
@@ -304,7 +350,6 @@ public class BusinessQuestGraphRunner
                         if (gameServer == null)
                         {
                             Debug.Log("[RequestStartQuest] Result: Fail - ServerMissing");
-                            debugService?.LogNodeFail(GetGraphId(), requestStartQuestNode, executionContext, "ServerMissing", null, requestStartQuestNode.failNodeId);
                             requestManager?.FinishRequest();
                             currentNode = graph.GetNodeById(requestStartQuestNode.failNodeId);
                             continue;
@@ -323,7 +368,6 @@ public class BusinessQuestGraphRunner
                         executionContext?.Set(GraphContextKeys.QuestLastRequestedId, requestCompleteQuestNode.questId);
                         if (requestManager != null && !requestManager.TryStartRequest("RequestCompleteQuest"))
                         {
-                            debugService?.LogNodeFail(GetGraphId(), requestCompleteQuestNode, executionContext, "RequestBlocked", null, requestCompleteQuestNode.failNodeId);
                             currentNode = graph.GetNodeById(requestCompleteQuestNode.failNodeId);
                             continue;
                         }
@@ -331,7 +375,6 @@ public class BusinessQuestGraphRunner
                         if (gameServer == null)
                         {
                             Debug.Log("[RequestCompleteQuest] Result: Fail - ServerMissing");
-                            debugService?.LogNodeFail(GetGraphId(), requestCompleteQuestNode, executionContext, "ServerMissing", null, requestCompleteQuestNode.failNodeId);
                             requestManager?.FinishRequest();
                             currentNode = graph.GetNodeById(requestCompleteQuestNode.failNodeId);
                             continue;
@@ -349,7 +392,6 @@ public class BusinessQuestGraphRunner
                         Debug.Log("[RefreshProfile] START");
                         if (requestManager != null && !requestManager.TryStartRequest("RefreshProfile"))
                         {
-                            debugService?.LogNodeFail(GetGraphId(), refreshProfileNode, executionContext, "RequestBlocked", null, refreshProfileNode.failNodeId);
                             currentNode = graph.GetNodeById(refreshProfileNode.failNodeId);
                             continue;
                         }
@@ -357,7 +399,6 @@ public class BusinessQuestGraphRunner
                         if (gameServer == null)
                         {
                             Debug.Log("[RefreshProfile] Result: Fail - ServerMissing");
-                            debugService?.LogNodeFail(GetGraphId(), refreshProfileNode, executionContext, "ServerMissing", null, refreshProfileNode.failNodeId);
                             requestManager?.FinishRequest();
                             currentNode = graph.GetNodeById(refreshProfileNode.failNodeId);
                             continue;
@@ -377,13 +418,11 @@ public class BusinessQuestGraphRunner
                         CompassManager.Instance.ShowTarget(addMarkerNode.markerId);
                     }
                     Debug.Log($"[Marker] Node issued markerId='{addMarkerNode.markerId}' title='{addMarkerNode.title}'");
-                    debugService?.LogNodeSuccess(GetGraphId(), addMarkerNode, executionContext, null, null, addMarkerNode.nextNodeId);
                     currentNode = graph.GetNodeById(addMarkerNode.nextNodeId);
                     continue;
 
                 case SetGameObjectActiveNode setActiveNode:
                     ApplySetGameObjectActive(setActiveNode);
-                    debugService?.LogNodeSuccess(GetGraphId(), setActiveNode, executionContext, null, null, setActiveNode.nextNodeId);
                     currentNode = graph.GetNodeById(setActiveNode.nextNodeId);
                     continue;
 
@@ -397,7 +436,6 @@ public class BusinessQuestGraphRunner
                         Debug.Log($"[EndNode] START completeQuestId='{endNode.completeQuestId}'");
                         if (requestManager != null && !requestManager.TryStartRequest("EndCompleteQuest"))
                         {
-                            debugService?.LogNodeFail(GetGraphId(), endNode, executionContext, "RequestBlocked", null, null);
                             Stop();
                             return;
                         }
@@ -406,7 +444,6 @@ public class BusinessQuestGraphRunner
                         {
                             Debug.Log("[EndNode] Result: Fail - ServerMissing");
                             requestManager?.FinishRequest();
-                            debugService?.LogNodeFail(GetGraphId(), endNode, executionContext, "ServerMissing", null, null);
                             Stop();
                             return;
                         }
@@ -422,7 +459,6 @@ public class BusinessQuestGraphRunner
                     {
                         ClearCheckpoint();
                     }
-                    debugService?.LogNodeSuccess(GetGraphId(), endNode, executionContext, "End", null, null);
                     Stop();
                     return;
             }
@@ -565,31 +601,38 @@ public class BusinessQuestGraphRunner
         string graphId = GetGraphId();
         if (string.IsNullOrEmpty(graphId))
         {
+            Debug.Log("[GraphRunner] Start from beginning (graphId missing)");
             return graph.GetStartNode();
         }
 
-        string checkpointId = null;
-        if (playerStateSync != null && playerStateSync.TryGetGraphCheckpoint(graphId, out string syncedCheckpoint))
+        if (playerStateSync == null || !playerStateSync.TryGetGraphCheckpoint(graphId, out string checkpointId))
         {
-            checkpointId = syncedCheckpoint;
-        }
-        else if (graphProgressService != null)
-        {
-            graphProgressService.TryGetCheckpoint(GetOwnerId(), graphId, out checkpointId);
+            Debug.Log($"[GraphRunner] Start from beginning graphId='{graphId}'");
+            return graph.GetStartNode();
         }
 
         if (string.IsNullOrEmpty(checkpointId))
         {
+            Debug.Log($"[GraphRunner] Start from beginning graphId='{graphId}'");
             return graph.GetStartNode();
         }
 
         CheckpointNode checkpoint = graph.GetCheckpointNodeById(checkpointId);
         if (checkpoint == null)
         {
+            Debug.Log($"[GraphRunner] Checkpoint not found graphId='{graphId}' checkpointId='{checkpointId}'");
             return graph.GetStartNode();
         }
 
-        return graph.GetNodeById(checkpoint.nextNodeId) ?? checkpoint;
+        var nextNode = graph.GetNodeById(checkpoint.nextNodeId);
+        if (nextNode == null)
+        {
+            Debug.Log($"[GraphRunner] Checkpoint has no next node graphId='{graphId}' checkpointId='{checkpointId}', start from beginning");
+            return graph.GetStartNode();
+        }
+
+        Debug.Log($"[GraphRunner] Resume from checkpoint graphId='{graphId}' checkpointId='{checkpointId}'");
+        return nextNode;
     }
 
     private void SaveCheckpoint(CheckpointNode node)
@@ -669,7 +712,6 @@ public class BusinessQuestGraphRunner
         choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
         {
             string nextId = GetChoiceNextId(choiceNode, optionIndex);
-            debugService?.LogNodeSuccess(GetGraphId(), choiceNode, executionContext, $"Choice {optionIndex}", null, nextId);
             currentNode = graph.GetNodeById(nextId);
             Advance();
         });
@@ -731,7 +773,7 @@ public class BusinessQuestGraphRunner
         switch (node)
         {
             case CheckpointNode checkpointNode:
-                FireAndForgetCheckpoint(checkpointNode);
+                _ = FireAndForgetCheckpointAsync(checkpointNode);
                 break;
         }
     }
@@ -771,10 +813,27 @@ public class BusinessQuestGraphRunner
             return;
         }
 
-        _ = gameServer.TrySaveCheckpointAsync(graphId, null);
+        _ = ClearCheckpointAsync(graphId);
     }
 
-    private void FireAndForgetCheckpoint(CheckpointNode node)
+    private async Task ClearCheckpointAsync(string graphId)
+    {
+        try
+        {
+            var result = await gameServer.TrySaveCheckpointAsync(graphId, null);
+            if (result?.ProfileSnapshot != null && profileSync != null)
+            {
+                profileSync.ApplySnapshot(result.ProfileSnapshot);
+                Debug.Log("[Checkpoint] Cleared and snapshot applied.");
+            }
+        }
+        catch
+        {
+            Debug.Log("[Checkpoint] Clear failed - Exception");
+        }
+    }
+
+    private async Task FireAndForgetCheckpointAsync(CheckpointNode node)
     {
         if (node == null)
         {
@@ -792,6 +851,18 @@ public class BusinessQuestGraphRunner
             return;
         }
 
-        _ = gameServer.TrySaveCheckpointAsync(graphId, node.checkpointId);
+        try
+        {
+            var result = await gameServer.TrySaveCheckpointAsync(graphId, node.checkpointId);
+            if (result?.ProfileSnapshot != null && profileSync != null)
+            {
+                profileSync.ApplySnapshot(result.ProfileSnapshot);
+                Debug.Log("[Checkpoint] Saved and snapshot applied.");
+            }
+        }
+        catch
+        {
+            Debug.Log("[Checkpoint] Save failed - Exception");
+        }
     }
 }

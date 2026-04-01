@@ -210,6 +210,26 @@ public class RemoteGameServer : IGameServer
         return SendRequestAsync(request);
     }
 
+    public Task<ServerActionResult> TrySubmitTradeOfferAsync(string buildingId, int offeredAmount)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=submit_trade_offer buildingId='{buildingId}' offeredAmount={offeredAmount}");
+        }
+        var request = new RemoteTradeOfferRequest
+        {
+            action = "submit_trade_offer",
+            playerId = playerId,
+            data = new RemoteTradeOfferData
+            {
+                buildingId = buildingId,
+                offeredAmount = offeredAmount
+            }
+        };
+
+        return SendRequestAsync(request);
+    }
+
     private async Task<ServerActionResult> SendRequestAsync<T>(T requestPayload)
     {
         string url = $"{baseUrl}/api/action";
@@ -341,6 +361,7 @@ public class RemoteGameServer : IGameServer
             Money = profile.money,
             Bargaining = profile.bargaining,
             Speech = profile.speech,
+            Trading = profile.trading,
             Speed = profile.speed,
             Damage = profile.damage,
             Health = profile.health
@@ -484,6 +505,21 @@ public class RemoteGameServer : IGameServer
     }
 
     [Serializable]
+    private class RemoteTradeOfferRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteTradeOfferData data;
+    }
+
+    [Serializable]
+    private class RemoteTradeOfferData
+    {
+        public string buildingId;
+        public int offeredAmount;
+    }
+
+    [Serializable]
     private class RemoteActionResponse
     {
         public bool success;
@@ -501,6 +537,7 @@ public class RemoteGameServer : IGameServer
         public string[] buildings;
         public int bargaining;
         public int speech;
+        public int trading;
         public int speed;
         public int damage;
         public int health;

@@ -9,4 +9,5 @@ public interface IGameServer
     System.Threading.Tasks.Task<ServerActionResult> TryAddMoneyAsync(int amount);
     System.Threading.Tasks.Task<ServerActionResult> TrySpendMoneyAsync(int amount);
     System.Threading.Tasks.Task<ServerActionResult> TrySaveCheckpointAsync(string graphId, string checkpointId);
+    System.Threading.Tasks.Task<ServerActionResult> TrySubmitTradeOfferAsync(string buildingId, int offeredAmount);
 }

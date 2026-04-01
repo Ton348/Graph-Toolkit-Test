@@ -15,6 +15,7 @@ public class NPCManager : Interactable
     public GameBootstrap bootstrap;
     public DialogueService dialogueService;
     public ChoiceUIService choiceUIService;
+    public TradeOfferUIService tradeOfferUIService;
     public MapMarkerService mapMarkerService;
     public Transform playerTransform;
     private BusinessQuestGraphRunner runner;
@@ -43,13 +44,20 @@ public class NPCManager : Interactable
             playerTransform = player;
         }
 
+        if (tradeOfferUIService == null)
+        {
+            tradeOfferUIService = FindObjectOfType<TradeOfferUIService>();
+        }
+
         if (runner != null && runner.IsRunning)
         {
             Debug.Log($"[NPCManager] Interact ignored because graph is already running on '{name}'.");
             return;
         }
 
-        if (runner == null || currentGraph != selectedGraph)
+        bool shouldRecreateRunner = runner == null || currentGraph != selectedGraph || (tradeOfferUIService != null && !runner.HasTradeOfferUI);
+
+        if (shouldRecreateRunner)
         {
             if (playerTransform == null)
             {
@@ -66,6 +74,7 @@ public class NPCManager : Interactable
                 bootstrap.GameServer,
                 dialogueService,
                 choiceUIService,
+                tradeOfferUIService,
                 mapMarkerService,
                 playerTransform,
                 bootstrap.GraphProgressService

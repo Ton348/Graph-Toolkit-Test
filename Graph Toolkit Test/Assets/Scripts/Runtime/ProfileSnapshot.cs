@@ -7,6 +7,7 @@ public class ProfileSnapshot
     public int Money;
     public int Bargaining;
     public int Speech;
+    public int Trading;
     public int Speed;
     public int Damage;
     public int Health;

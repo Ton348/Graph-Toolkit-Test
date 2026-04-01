@@ -13,7 +13,6 @@ public class GameBootstrap : MonoBehaviour
     public IGameServer GameServer { get; private set; }
     public ProfileSyncService ProfileSyncService { get; private set; }
     public RequestManager RequestManager { get; private set; }
-    public GraphDebugService GraphDebugService { get; private set; }
     public GameDataRepository GameDataRepository { get; private set; }
     public PlayerStateSync PlayerStateSync { get; private set; }
 
@@ -34,12 +33,6 @@ public class GameBootstrap : MonoBehaviour
     [Range(0f, 1f)] public float localNetworkErrorChance = 0.05f;
     [Range(0f, 1f)] public float localTimeoutChance = 0.03f;
 
-    [Header("Graph Debug")]
-    public bool enableGraphDebug = true;
-    public GraphDebugFilterMode graphDebugFilter = GraphDebugFilterMode.All;
-    public int graphDebugMaxEvents = 200;
-    public bool graphDebugLogToConsole = true;
-    public bool graphDebugIncludeContext = true;
 
     private void Awake()
     {
@@ -109,14 +102,6 @@ public class GameBootstrap : MonoBehaviour
         PlayerStateSync = new PlayerStateSync();
         ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync);
         RequestManager = new RequestManager();
-        GraphDebugService = new GraphDebugService
-        {
-            Enabled = enableGraphDebug,
-            FilterMode = graphDebugFilter,
-            MaxEvents = graphDebugMaxEvents,
-            LogToConsole = graphDebugLogToConsole,
-            IncludeContextSnapshots = graphDebugIncludeContext
-        };
 
         SeedInitialSnapshot();
     }
@@ -133,6 +118,7 @@ public class GameBootstrap : MonoBehaviour
             Money = RuntimeState.Player != null ? RuntimeState.Player.Money : 0,
             Bargaining = RuntimeState.Player != null ? RuntimeState.Player.Bargaining : 0,
             Speech = RuntimeState.Player != null ? RuntimeState.Player.Speech : 0,
+            Trading = RuntimeState.Player != null ? RuntimeState.Player.Trading : 0,
             Speed = RuntimeState.Player != null ? RuntimeState.Player.Speed : 0,
             Damage = RuntimeState.Player != null ? RuntimeState.Player.Damage : 0,
             Health = RuntimeState.Player != null ? RuntimeState.Player.Health : 0
