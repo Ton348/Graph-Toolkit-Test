@@ -15,6 +15,7 @@ public class GameBootstrap : MonoBehaviour
     public RequestManager RequestManager { get; private set; }
     public GameDataRepository GameDataRepository { get; private set; }
     public PlayerStateSync PlayerStateSync { get; private set; }
+    public QuestCompassSync QuestCompassSync { get; private set; }
 
     [Header("Game Data (JSON)")]
     public string gameDataFolder = "GameData";
@@ -100,6 +101,7 @@ public class GameBootstrap : MonoBehaviour
             ? new RemoteGameServer(remoteBaseUrl, remotePlayerId, remoteTimeoutSeconds, remoteDebugLog)
             : new LocalGameServer(RuntimeState, BuildingService, QuestService, GameDataRepository, localMinDelayMs, localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
         PlayerStateSync = new PlayerStateSync();
+        QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
         ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync);
         RequestManager = new RequestManager();
 

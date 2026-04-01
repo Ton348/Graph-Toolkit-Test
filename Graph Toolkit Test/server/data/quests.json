@@ -4,25 +4,29 @@
       "id": "buy_building",
       "title": "Построить здание",
       "description": "Купи Газпром.",
-      "rewardMoney": 200
+      "rewardMoney": 200,
+      "markerId": "Target1"
     },
     {
       "id": "upgrade_building",
       "title": "Улучшение",
       "description": "Улучшить здание, получишь больше доход.",
-      "rewardMoney": 500
+      "rewardMoney": 500,
+      "markerId": ""
     },
     {
       "id": "Gas_worker",
       "title": "Персонал",
       "description": "Найди бензозаправщика.",
-      "rewardMoney": 100
+      "rewardMoney": 100,
+      "markerId": "Target1"
     },
     {
       "id": "provider",
       "title": "Поставщик",
       "description": "Найти поставщика",
-      "rewardMoney": 0
+      "rewardMoney": 0,
+      "markerId": ""
     }
   ]
 }

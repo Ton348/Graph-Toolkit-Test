@@ -7,4 +7,5 @@ public class QuestDefinitionData
     public string title;
     public string description;
     public int rewardMoney;
+    public string markerId;
 }

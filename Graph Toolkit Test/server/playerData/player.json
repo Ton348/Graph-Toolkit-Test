@@ -1,19 +1,27 @@
 {
   "playerId": "player",
-  "money": 1000,
+  "money": 599,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
   "speed": 1,
   "damage": 1,
   "health": 100,
-  "activeQuests": [
+  "activeQuests": [],
+  "completedQuests": [
     "buy_building"
   ],
-  "completedQuests": [],
-  "ownedBuildings": [],
-  "buildingStates": [],
-  "graphCheckpoints": {
-    "Gas_worker_Graph": "Checkpoint_2"
-  }
+  "ownedBuildings": [
+    "car_wash_01"
+  ],
+  "buildingStates": [
+    {
+      "id": "car_wash_01",
+      "owned": true,
+      "level": 0,
+      "currentIncome": 100,
+      "currentExpenses": 50
+    }
+  ],
+  "graphCheckpoints": {}
 }

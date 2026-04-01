@@ -72,7 +72,7 @@ MonoBehaviour:
           serializedVersion: 2
           x: -538.5
           y: 18.5
-          width: 2706
+          width: 2688
           height: 894
         m_GraphElementMetaData:
         - m_Guid:
@@ -556,7 +556,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: be4a77dec9ac6a3414906d8fd6969972
         m_Version: 2
-        m_Position: {x: 807.37427, y: 113.032394}
+        m_Position: {x: 760.33453, y: 83.414764}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -684,7 +684,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 84a47e31e49a570bcd812bd4c83c7154
         m_Version: 2
-        m_Position: {x: 1172.7491, y: 108.482124}
+        m_Position: {x: 1197.1401, y: 77.12228}
         m_Title: DialogueNodeModel
         m_Tooltip: 
         m_NodePreviewModel:

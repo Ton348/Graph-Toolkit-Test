@@ -211,6 +211,20 @@ public static class JsonContractValidator
             {
                 LogWarn($"[JSON VALIDATION][WARN] quest {quest.id} rewardMoney mismatch client={quest.rewardMoney} server={serverQuest.rewardMoney}", ref warn);
             }
+
+            if (!HasFieldForId(clientRaw, quest.id, "markerId"))
+            {
+                LogWarn($"[JSON VALIDATION][WARN] client quest {quest.id} missing field markerId", ref warn);
+            }
+            if (!HasFieldForId(serverRaw, quest.id, "markerId"))
+            {
+                LogWarn($"[JSON VALIDATION][WARN] server quest {quest.id} missing field markerId", ref warn);
+            }
+
+            if (quest.markerId != serverQuest.markerId)
+            {
+                LogWarn($"[JSON VALIDATION][WARN] quest {quest.id} markerId mismatch client='{quest.markerId}' server='{serverQuest.markerId}'", ref warn);
+            }
         }
 
         LogOk($"[JSON VALIDATION][OK] quest fields compared", ref ok);

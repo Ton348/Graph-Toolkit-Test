@@ -2,7 +2,7 @@
   "ranges": [
     { "minPercent": 0, "maxPercent": 9.999, "baseChance": 10 },
     { "minPercent": 10, "maxPercent": 49.999, "baseChance": 40 },
-    { "minPercent": 50, "maxPercent": 100, "baseChance": 50 }
+    { "minPercent": 50, "maxPercent": 100, "baseChance": 95 }
   ],
   "maxFinalChance": 95
 }
