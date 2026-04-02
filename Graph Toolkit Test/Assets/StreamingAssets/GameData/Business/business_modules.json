@@ -1,0 +1,8 @@
+{
+  "modules": [
+    { "id": "storage", "displayName": "Склад", "installCost": 1500 },
+    { "id": "shelves", "displayName": "Полки", "installCost": 800 },
+    { "id": "cash_register", "displayName": "Касса", "installCost": 1200 },
+    { "id": "renovation", "displayName": "Ремонт", "installCost": 2000 }
+  ]
+}

@@ -11,6 +11,7 @@ public class BusinessQuestGraphRunner
     private readonly RequestManager requestManager;
     private readonly GameDataRepository dataRepository;
     private readonly PlayerStateSync playerStateSync;
+    private readonly BusinessStateSyncService businessStateSync;
     private readonly DialogueService dialogueService;
     private readonly ChoiceUIService choiceUIService;
     private readonly TradeOfferUIService tradeOfferUIService;
@@ -51,6 +52,7 @@ public class BusinessQuestGraphRunner
         this.requestManager = bootstrap != null ? bootstrap.RequestManager : null;
         this.dataRepository = bootstrap != null ? bootstrap.GameDataRepository : null;
         this.playerStateSync = bootstrap != null ? bootstrap.PlayerStateSync : null;
+        this.businessStateSync = bootstrap != null ? bootstrap.BusinessStateSyncService : null;
         this.dialogueService = dialogueService;
         this.choiceUIService = choiceUIService;
         this.tradeOfferUIService = tradeOfferUIService;
@@ -236,6 +238,38 @@ public class BusinessQuestGraphRunner
                     currentNode = graph.GetNodeById(conditionResult ? conditionNode.trueNodeId : conditionNode.falseNodeId);
                     continue;
 
+                case CheckBusinessExistsNode checkBusinessExistsNode:
+                    {
+                        bool result = businessStateSync != null && businessStateSync.HasBusiness(checkBusinessExistsNode.lotId);
+                        Debug.Log($"[BusinessGraph] CheckBusinessExists lotId='{checkBusinessExistsNode.lotId}' -> {result}");
+                        currentNode = graph.GetNodeById(result ? checkBusinessExistsNode.trueNodeId : checkBusinessExistsNode.falseNodeId);
+                        continue;
+                    }
+
+                case CheckBusinessOpenNode checkBusinessOpenNode:
+                    {
+                        bool result = businessStateSync != null && businessStateSync.IsBusinessOpen(checkBusinessOpenNode.lotId);
+                        Debug.Log($"[BusinessGraph] CheckBusinessOpen lotId='{checkBusinessOpenNode.lotId}' -> {result}");
+                        currentNode = graph.GetNodeById(result ? checkBusinessOpenNode.trueNodeId : checkBusinessOpenNode.falseNodeId);
+                        continue;
+                    }
+
+                case CheckBusinessModuleInstalledNode checkBusinessModuleInstalledNode:
+                    {
+                        bool result = businessStateSync != null && businessStateSync.HasModule(checkBusinessModuleInstalledNode.lotId, checkBusinessModuleInstalledNode.moduleId);
+                        Debug.Log($"[BusinessGraph] CheckBusinessModuleInstalled lotId='{checkBusinessModuleInstalledNode.lotId}' moduleId='{checkBusinessModuleInstalledNode.moduleId}' -> {result}");
+                        currentNode = graph.GetNodeById(result ? checkBusinessModuleInstalledNode.trueNodeId : checkBusinessModuleInstalledNode.falseNodeId);
+                        continue;
+                    }
+
+                case CheckContactKnownNode checkContactKnownNode:
+                    {
+                        bool result = businessStateSync != null && businessStateSync.HasKnownContact(checkContactKnownNode.contactId);
+                        Debug.Log($"[BusinessGraph] CheckContactKnown contactId='{checkContactKnownNode.contactId}' -> {result}");
+                        currentNode = graph.GetNodeById(result ? checkContactKnownNode.trueNodeId : checkContactKnownNode.falseNodeId);
+                        continue;
+                    }
+
                 case CheckpointNode checkpointNode:
                     {
                         Debug.Log($"[Checkpoint] START checkpointId='{checkpointNode.checkpointId}'");
@@ -384,6 +418,249 @@ public class BusinessQuestGraphRunner
                         pendingSuccessNodeId = requestCompleteQuestNode.successNodeId;
                         pendingFailNodeId = requestCompleteQuestNode.failNodeId;
                         pendingRequestLabel = "RequestCompleteQuest";
+                        return;
+                    }
+
+                case RequestRentBusinessNode requestRentBusinessNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestRentBusiness START lotId='{requestRentBusinessNode.lotId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestRentBusiness"))
+                        {
+                            currentNode = graph.GetNodeById(requestRentBusinessNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestRentBusiness Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestRentBusinessNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryRentBusinessAsync(requestRentBusinessNode.lotId);
+                        pendingSuccessNodeId = requestRentBusinessNode.successNodeId;
+                        pendingFailNodeId = requestRentBusinessNode.failNodeId;
+                        pendingRequestLabel = "RequestRentBusiness";
+                        return;
+                    }
+
+                case RequestAssignBusinessTypeNode requestAssignBusinessTypeNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestAssignBusinessType START lotId='{requestAssignBusinessTypeNode.lotId}' businessTypeId='{requestAssignBusinessTypeNode.businessTypeId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestAssignBusinessType"))
+                        {
+                            currentNode = graph.GetNodeById(requestAssignBusinessTypeNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestAssignBusinessType Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestAssignBusinessTypeNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryAssignBusinessTypeAsync(requestAssignBusinessTypeNode.lotId, requestAssignBusinessTypeNode.businessTypeId);
+                        pendingSuccessNodeId = requestAssignBusinessTypeNode.successNodeId;
+                        pendingFailNodeId = requestAssignBusinessTypeNode.failNodeId;
+                        pendingRequestLabel = "RequestAssignBusinessType";
+                        return;
+                    }
+
+                case RequestInstallBusinessModuleNode requestInstallBusinessModuleNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestInstallBusinessModule START lotId='{requestInstallBusinessModuleNode.lotId}' moduleId='{requestInstallBusinessModuleNode.moduleId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestInstallBusinessModule"))
+                        {
+                            currentNode = graph.GetNodeById(requestInstallBusinessModuleNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestInstallBusinessModule Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestInstallBusinessModuleNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryInstallBusinessModuleAsync(requestInstallBusinessModuleNode.lotId, requestInstallBusinessModuleNode.moduleId);
+                        pendingSuccessNodeId = requestInstallBusinessModuleNode.successNodeId;
+                        pendingFailNodeId = requestInstallBusinessModuleNode.failNodeId;
+                        pendingRequestLabel = "RequestInstallBusinessModule";
+                        return;
+                    }
+
+                case RequestAssignSupplierNode requestAssignSupplierNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestAssignSupplier START lotId='{requestAssignSupplierNode.lotId}' supplierId='{requestAssignSupplierNode.supplierId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestAssignSupplier"))
+                        {
+                            currentNode = graph.GetNodeById(requestAssignSupplierNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestAssignSupplier Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestAssignSupplierNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryAssignSupplierAsync(requestAssignSupplierNode.lotId, requestAssignSupplierNode.supplierId);
+                        pendingSuccessNodeId = requestAssignSupplierNode.successNodeId;
+                        pendingFailNodeId = requestAssignSupplierNode.failNodeId;
+                        pendingRequestLabel = "RequestAssignSupplier";
+                        return;
+                    }
+
+                case RequestHireBusinessWorkerNode requestHireBusinessWorkerNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestHireBusinessWorker START lotId='{requestHireBusinessWorkerNode.lotId}' roleId='{requestHireBusinessWorkerNode.roleId}' contactId='{requestHireBusinessWorkerNode.contactId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestHireBusinessWorker"))
+                        {
+                            currentNode = graph.GetNodeById(requestHireBusinessWorkerNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestHireBusinessWorker Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestHireBusinessWorkerNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryHireBusinessWorkerAsync(requestHireBusinessWorkerNode.lotId, requestHireBusinessWorkerNode.roleId, requestHireBusinessWorkerNode.contactId);
+                        pendingSuccessNodeId = requestHireBusinessWorkerNode.successNodeId;
+                        pendingFailNodeId = requestHireBusinessWorkerNode.failNodeId;
+                        pendingRequestLabel = "RequestHireBusinessWorker";
+                        return;
+                    }
+
+                case RequestSetBusinessOpenNode requestSetBusinessOpenNode:
+                    {
+                        var actionLabel = requestSetBusinessOpenNode.open ? "Open" : "Close";
+                        Debug.Log($"[BusinessGraph] RequestSetBusinessOpen START action='{actionLabel}' lotId='{requestSetBusinessOpenNode.lotId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestSetBusinessOpen"))
+                        {
+                            currentNode = graph.GetNodeById(requestSetBusinessOpenNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestSetBusinessOpen Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestSetBusinessOpenNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = requestSetBusinessOpenNode.open
+                            ? gameServer.TryOpenBusinessAsync(requestSetBusinessOpenNode.lotId)
+                            : gameServer.TryCloseBusinessAsync(requestSetBusinessOpenNode.lotId);
+                        pendingSuccessNodeId = requestSetBusinessOpenNode.successNodeId;
+                        pendingFailNodeId = requestSetBusinessOpenNode.failNodeId;
+                        pendingRequestLabel = "RequestSetBusinessOpen";
+                        return;
+                    }
+
+                case RequestOpenBusinessNode requestOpenBusinessNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestOpenBusiness START lotId='{requestOpenBusinessNode.lotId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestOpenBusiness"))
+                        {
+                            currentNode = graph.GetNodeById(requestOpenBusinessNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestOpenBusiness Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestOpenBusinessNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryOpenBusinessAsync(requestOpenBusinessNode.lotId);
+                        pendingSuccessNodeId = requestOpenBusinessNode.successNodeId;
+                        pendingFailNodeId = requestOpenBusinessNode.failNodeId;
+                        pendingRequestLabel = "RequestOpenBusiness";
+                        return;
+                    }
+
+                case RequestCloseBusinessNode requestCloseBusinessNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestCloseBusiness START lotId='{requestCloseBusinessNode.lotId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestCloseBusiness"))
+                        {
+                            currentNode = graph.GetNodeById(requestCloseBusinessNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestCloseBusiness Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestCloseBusinessNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryCloseBusinessAsync(requestCloseBusinessNode.lotId);
+                        pendingSuccessNodeId = requestCloseBusinessNode.successNodeId;
+                        pendingFailNodeId = requestCloseBusinessNode.failNodeId;
+                        pendingRequestLabel = "RequestCloseBusiness";
+                        return;
+                    }
+
+                case RequestSetBusinessMarkupNode requestSetBusinessMarkupNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestSetBusinessMarkup START lotId='{requestSetBusinessMarkupNode.lotId}' markupPercent='{requestSetBusinessMarkupNode.markupPercent}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestSetBusinessMarkup"))
+                        {
+                            currentNode = graph.GetNodeById(requestSetBusinessMarkupNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestSetBusinessMarkup Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestSetBusinessMarkupNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TrySetBusinessMarkupAsync(requestSetBusinessMarkupNode.lotId, requestSetBusinessMarkupNode.markupPercent);
+                        pendingSuccessNodeId = requestSetBusinessMarkupNode.successNodeId;
+                        pendingFailNodeId = requestSetBusinessMarkupNode.failNodeId;
+                        pendingRequestLabel = "RequestSetBusinessMarkup";
+                        return;
+                    }
+
+                case RequestUnlockContactNode requestUnlockContactNode:
+                    {
+                        Debug.Log($"[BusinessGraph] RequestUnlockContact START contactId='{requestUnlockContactNode.contactId}'");
+                        if (requestManager != null && !requestManager.TryStartRequest("RequestUnlockContact"))
+                        {
+                            currentNode = graph.GetNodeById(requestUnlockContactNode.failNodeId);
+                            continue;
+                        }
+
+                        if (gameServer == null)
+                        {
+                            Debug.Log("[BusinessGraph] RequestUnlockContact Result: Fail - ServerMissing");
+                            requestManager?.FinishRequest();
+                            currentNode = graph.GetNodeById(requestUnlockContactNode.failNodeId);
+                            continue;
+                        }
+
+                        pendingServerTask = gameServer.TryUnlockContactAsync(requestUnlockContactNode.contactId);
+                        pendingSuccessNodeId = requestUnlockContactNode.successNodeId;
+                        pendingFailNodeId = requestUnlockContactNode.failNodeId;
+                        pendingRequestLabel = "RequestUnlockContact";
                         return;
                     }
 

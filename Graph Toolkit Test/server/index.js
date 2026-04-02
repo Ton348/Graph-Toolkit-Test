@@ -1,6 +1,10 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const { loadBusinessDefinitions } = require('./business/businessDefinitions');
+const { loadLotDefinitions } = require('./business/lotDefinitions');
+const { normalizeBusinessProfile, sanitizeBusinessProfile } = require('./business/businessState');
+const businessActions = require('./business/businessActions');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const HOST = process.env.HOST || '127.0.0.1';
@@ -138,6 +142,24 @@ const defs = (() => {
   }
 })();
 
+const businessDefs = (() => {
+  try {
+    return loadBusinessDefinitions();
+  } catch (err) {
+    console.error('[server] Failed to load business definitions:', err.message);
+    process.exit(1);
+  }
+})();
+
+const lotDefs = (() => {
+  try {
+    return loadLotDefinitions(businessDefs);
+  } catch (err) {
+    console.error('[server] Failed to load lot definitions:', err.message);
+    process.exit(1);
+  }
+})();
+
 function ensureBuildingStates(profile) {
   if (!profile || !defs || !defs.buildingById) return;
 
@@ -184,9 +206,13 @@ function loadPlayerProfile(playerId) {
       completedQuests: [],
       ownedBuildings: [],
       buildingStates: [],
-      graphCheckpoints: {}
+      graphCheckpoints: {},
+      businesses: [],
+      knownContacts: []
     };
     ensureBuildingStates(profile);
+    normalizeBusinessProfile(profile);
+    sanitizeBusinessProfile(profile, businessDefs);
     writeJson(filePath, profile);
     return profile;
   }
@@ -197,6 +223,8 @@ function loadPlayerProfile(playerId) {
   if (!profile.ownedBuildings) profile.ownedBuildings = [];
   if (!profile.buildingStates) profile.buildingStates = [];
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
+  if (!profile.businesses) profile.businesses = [];
+  if (!profile.knownContacts) profile.knownContacts = [];
   if (!Number.isFinite(profile.bargaining)) profile.bargaining = defs.economy?.baseBargaining ?? 0;
   if (!Number.isFinite(profile.speech)) profile.speech = defs.economy?.baseSpeech ?? 0;
   if (!Number.isFinite(profile.trading)) profile.trading = defs.economy?.baseTrading ?? 0;
@@ -204,6 +232,8 @@ function loadPlayerProfile(playerId) {
   if (!Number.isFinite(profile.damage)) profile.damage = defs.economy?.baseDamage ?? 0;
   if (!Number.isFinite(profile.health)) profile.health = defs.economy?.baseHealth ?? 0;
   ensureBuildingStates(profile);
+  normalizeBusinessProfile(profile);
+  sanitizeBusinessProfile(profile, businessDefs);
   const ownedCount = (profile.ownedBuildings || []).length;
   if ((profile.buildingStates || []).length !== ownedCount)
   {
@@ -217,6 +247,8 @@ function savePlayerProfile(profile) {
   const filePath = path.join(PLAYER_DIR, `${id}.json`);
   ensureBuildingStates(profile);
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
+  normalizeBusinessProfile(profile);
+  sanitizeBusinessProfile(profile, businessDefs);
   writeJson(filePath, profile);
 }
 
@@ -245,7 +277,9 @@ function toResponseProfile(profile) {
     completedQuests: profile.completedQuests || [],
     buildings: profile.ownedBuildings || [],
     buildingStates: profile.buildingStates || [],
-    graphCheckpoints: toGraphCheckpointList(profile)
+    graphCheckpoints: toGraphCheckpointList(profile),
+    businesses: profile.businesses || [],
+    knownContacts: profile.knownContacts || []
   };
 }
 
@@ -594,6 +628,110 @@ function handleAction(req, res, payload) {
       return handleSaveCheckpoint(req, res, payload);
     case 'submit_trade_offer':
       return handleSubmitTradeOffer(req, res, payload);
+    case 'rent_business': {
+      console.log('[BusinessServer] action=rent_business');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.rentBusiness(profile, payload.data, lotDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'assign_business_type': {
+      console.log('[BusinessServer] action=assign_business_type');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.assignBusinessType(profile, payload.data, businessDefs, lotDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'install_business_module': {
+      console.log('[BusinessServer] action=install_business_module');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.installBusinessModule(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'assign_supplier': {
+      console.log('[BusinessServer] action=assign_supplier');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.assignSupplier(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'hire_business_worker': {
+      console.log('[BusinessServer] action=hire_business_worker');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.hireBusinessWorker(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'open_business': {
+      console.log('[BusinessServer] action=open_business');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.openBusiness(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'close_business': {
+      console.log('[BusinessServer] action=close_business');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.closeBusiness(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'set_business_markup': {
+      console.log('[BusinessServer] action=set_business_markup');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.setBusinessMarkup(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'unlock_contact': {
+      console.log('[BusinessServer] action=unlock_contact');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.unlockContact(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'add_business_stock': {
+      console.log('[BusinessServer] action=add_business_stock');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.addBusinessStock(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'add_business_shelf_stock': {
+      console.log('[BusinessServer] action=add_business_shelf_stock');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.addBusinessShelfStock(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'clear_business_stock': {
+      console.log('[BusinessServer] action=clear_business_stock');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.clearBusinessStock(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'reset_businesses': {
+      console.log('[BusinessServer] action=reset_businesses');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.resetBusinesses(profile);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     default:
       return fail(res, 'UnknownAction', `Unknown action: ${payload.action}`);
   }

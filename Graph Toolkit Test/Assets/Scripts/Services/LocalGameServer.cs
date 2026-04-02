@@ -8,11 +8,14 @@ public class LocalGameServer : IGameServer
     private readonly BuildingService buildingService;
     private readonly QuestService questService;
     private readonly GameDataRepository dataRepository;
+    private readonly BusinessDefinitionsRepository businessRepository;
     private readonly int minDelayMs;
     private readonly int maxDelayMs;
     private readonly float networkErrorChance;
     private readonly float timeoutChance;
     private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
+    private readonly List<BusinessInstanceSnapshot> businesses = new List<BusinessInstanceSnapshot>();
+    private readonly HashSet<string> knownContacts = new HashSet<string>();
     private static readonly System.Random Random = new System.Random();
 
     public LocalGameServer(
@@ -20,6 +23,7 @@ public class LocalGameServer : IGameServer
         BuildingService buildingService,
         QuestService questService,
         GameDataRepository dataRepository,
+        BusinessDefinitionsRepository businessRepository,
         int minDelayMs = 100,
         int maxDelayMs = 500,
         float networkErrorChance = 0.05f,
@@ -29,6 +33,7 @@ public class LocalGameServer : IGameServer
         this.buildingService = buildingService;
         this.questService = questService;
         this.dataRepository = dataRepository;
+        this.businessRepository = businessRepository;
         this.minDelayMs = Mathf.Clamp(minDelayMs, 0, 60000);
         this.maxDelayMs = Mathf.Max(this.minDelayMs, Mathf.Clamp(maxDelayMs, 0, 60000));
         this.networkErrorChance = Mathf.Clamp01(networkErrorChance);
@@ -435,6 +440,533 @@ public class LocalGameServer : IGameServer
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Trade offer accepted.");
     }
 
+    public async Task<ServerActionResult> TryRentBusinessAsync(string lotId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (FindBusinessByLotId(lotId) != null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessAlreadyRented", "Business already rented for this lot.");
+        }
+
+        var lotDef = dataRepository?.GetLotById(lotId);
+        if (lotDef == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotNotFound", "Lot not found.");
+        }
+
+        var business = new BusinessInstanceSnapshot
+        {
+            instanceId = $"local_{System.Guid.NewGuid():N}",
+            lotId = lotId,
+            businessTypeId = null,
+            isRented = true,
+            isOpen = false,
+            rentPerDay = lotDef.rentPerDay < 0 ? 0 : lotDef.rentPerDay,
+            installedModules = new List<string>(),
+            storageCapacity = 0,
+            shelfCapacity = 0,
+            storageStock = 0,
+            shelfStock = 0,
+            selectedSupplierId = null,
+            autoDeliveryPerDay = 0,
+            markupPercent = 0,
+            hiredCashierContactId = null,
+            hiredMerchContactId = null
+        };
+
+        businesses.Add(business);
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Rent business success.");
+    }
+
+    public async Task<ServerActionResult> TryAssignBusinessTypeAsync(string lotId, string businessTypeId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(businessTypeId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeIdEmpty", "businessTypeId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        var lotDef = dataRepository?.GetLotById(lotId);
+        if (lotDef == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotNotFound", "Lot not found.");
+        }
+
+        if (lotDef.allowedBusinessTypes != null && lotDef.allowedBusinessTypes.Count > 0 &&
+            !lotDef.allowedBusinessTypes.Contains(businessTypeId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeNotAllowedForLot", "Business type not allowed for this lot.");
+        }
+
+        var typeDef = businessRepository?.GetBusinessType(businessTypeId);
+        if (typeDef == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeNotFound", "Business type not found.");
+        }
+
+        business.businessTypeId = businessTypeId;
+        business.storageCapacity = typeDef.defaultStorageCapacity;
+        business.shelfCapacity = typeDef.defaultShelfCapacity;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign business type success.");
+    }
+
+    public async Task<ServerActionResult> TryInstallBusinessModuleAsync(string lotId, string moduleId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(moduleId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleIdEmpty", "moduleId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        var moduleDef = businessRepository?.GetModule(moduleId);
+        if (moduleDef == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleNotFound", "Module not found.");
+        }
+
+        if (business.installedModules.Contains(moduleId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleAlreadyInstalled", "Module already installed.");
+        }
+
+        if (runtime == null || runtime.Player == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
+        }
+
+        if (runtime.Player.Money < moduleDef.installCost)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
+        }
+
+        runtime.Player.Money -= moduleDef.installCost;
+        business.installedModules.Add(moduleId);
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Install module success.");
+    }
+
+    public async Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(supplierId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "SupplierIdEmpty", "supplierId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        var supplier = businessRepository?.GetSupplier(supplierId);
+        if (supplier == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "SupplierNotFound", "Supplier not found.");
+        }
+
+        if (!knownContacts.Contains(supplierId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactNotKnown", "Supplier contact not unlocked.");
+        }
+
+        business.selectedSupplierId = supplierId;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign supplier success.");
+    }
+
+    public async Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(roleId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RoleIdEmpty", "roleId is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(contactId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactIdEmpty", "contactId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        var role = businessRepository?.GetStaffRole(roleId);
+        if (role == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidWorkerRole", "Worker role not found.");
+        }
+
+        if (!knownContacts.Contains(contactId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactNotKnown", "Contact not unlocked.");
+        }
+
+        if (roleId == "cashier")
+        {
+            business.hiredCashierContactId = contactId;
+        }
+        else if (roleId == "merchandiser")
+        {
+            business.hiredMerchContactId = contactId;
+        }
+        else
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidWorkerRole", "Unsupported worker role.");
+        }
+
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Hire worker success.");
+    }
+
+    public async Task<ServerActionResult> TryOpenBusinessAsync(string lotId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        if (!business.isRented)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotRented", "Business is not rented.");
+        }
+
+        if (string.IsNullOrWhiteSpace(business.businessTypeId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeMissing", "Business type not assigned.");
+        }
+
+        var typeDef = businessRepository?.GetBusinessType(business.businessTypeId);
+        if (typeDef == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeNotFound", "Business type not found.");
+        }
+
+        var required = typeDef.requiredModules ?? new List<string>();
+        foreach (var moduleId in required)
+        {
+            if (!business.installedModules.Contains(moduleId))
+            {
+                return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "MissingRequiredModules", "Missing required modules.");
+            }
+        }
+
+        business.isOpen = true;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Open business success.");
+    }
+
+    public async Task<ServerActionResult> TryCloseBusinessAsync(string lotId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        business.isOpen = false;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Close business success.");
+    }
+
+    public async Task<ServerActionResult> TrySetBusinessMarkupAsync(string lotId, int markupPercent)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (markupPercent < 0 || markupPercent > 100)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidMarkup", "markupPercent must be between 0 and 100.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        business.markupPercent = markupPercent;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Set markup success.");
+    }
+
+    public async Task<ServerActionResult> TryUnlockContactAsync(string contactId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(contactId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactIdEmpty", "contactId is required.");
+        }
+
+        knownContacts.Add(contactId);
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Unlock contact success.");
+    }
+
+    public async Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (amount <= 0)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "AmountInvalid", "amount must be positive.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        if (business.installedModules == null || !business.installedModules.Contains("storage"))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StorageNotInstalled", "Storage module not installed.");
+        }
+
+        int capacity = business.storageCapacity;
+        int space = capacity > 0 ? capacity - business.storageStock : 0;
+        if (space <= 0)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StorageFull", "Storage is full.");
+        }
+
+        int added = amount > space ? space : amount;
+        business.storageStock += added;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), $"Added stock: {added}.");
+    }
+
+    public async Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        if (amount <= 0)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "AmountInvalid", "amount must be positive.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        if (business.installedModules == null || !business.installedModules.Contains("shelves"))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ShelvesNotInstalled", "Shelves module not installed.");
+        }
+
+        int capacity = business.shelfCapacity;
+        int space = capacity > 0 ? capacity - business.shelfStock : 0;
+        if (space <= 0)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ShelvesFull", "Shelves are full.");
+        }
+
+        int added = amount > space ? space : amount;
+        business.shelfStock += added;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), $"Added shelf stock: {added}.");
+    }
+
+    public async Task<ServerActionResult> TryClearBusinessStockAsync(string lotId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(lotId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty", "lotId is required.");
+        }
+
+        var business = FindBusinessByLotId(lotId);
+        if (business == null)
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
+        }
+
+        business.storageStock = 0;
+        business.shelfStock = 0;
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Cleared business stock.");
+    }
+
+    public async Task<ServerActionResult> TryResetBusinessesAsync()
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        businesses.Clear();
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Businesses reset.");
+    }
+
     private static BuildingState FindBuilding(string buildingId, List<BuildingState> buildings)
     {
         if (buildings == null) return null;
@@ -445,6 +977,22 @@ public class LocalGameServer : IGameServer
             if (state != null && state.Definition != null && state.Definition.id == buildingId)
             {
                 return state;
+            }
+        }
+
+        return null;
+    }
+
+    private BusinessInstanceSnapshot FindBusinessByLotId(string lotId)
+    {
+        if (string.IsNullOrWhiteSpace(lotId)) return null;
+
+        for (int i = 0; i < businesses.Count; i++)
+        {
+            var business = businesses[i];
+            if (business != null && business.lotId == lotId)
+            {
+                return business;
             }
         }
 
@@ -522,6 +1070,48 @@ public class LocalGameServer : IGameServer
                     checkpointId = pair.Value
                 });
             }
+        }
+
+        if (businesses.Count > 0)
+        {
+            foreach (var business in businesses)
+            {
+                if (business == null || string.IsNullOrEmpty(business.instanceId))
+                {
+                    continue;
+                }
+
+                var businessSnapshot = new BusinessInstanceSnapshot
+                {
+                    instanceId = business.instanceId,
+                    lotId = business.lotId,
+                    businessTypeId = business.businessTypeId,
+                    isRented = business.isRented,
+                    isOpen = business.isOpen,
+                    rentPerDay = business.rentPerDay,
+                    storageCapacity = business.storageCapacity,
+                    shelfCapacity = business.shelfCapacity,
+                    storageStock = business.storageStock,
+                    shelfStock = business.shelfStock,
+                    selectedSupplierId = business.selectedSupplierId,
+                    autoDeliveryPerDay = business.autoDeliveryPerDay,
+                    markupPercent = business.markupPercent,
+                    hiredCashierContactId = business.hiredCashierContactId,
+                    hiredMerchContactId = business.hiredMerchContactId
+                };
+
+                if (business.installedModules != null)
+                {
+                    businessSnapshot.installedModules.AddRange(business.installedModules);
+                }
+
+                snapshot.Businesses.Add(businessSnapshot);
+            }
+        }
+
+        if (knownContacts.Count > 0)
+        {
+            snapshot.KnownContacts.AddRange(knownContacts);
         }
 
         return snapshot;

@@ -1,0 +1,13 @@
+{
+  "behaviors": [
+    {
+      "businessTypeId": "grocery_store",
+      "arrivalRatePerHour": 30,
+      "markupRules": [
+        { "minMarkup": 0, "maxMarkup": 10, "buyChance": 100, "buyMin": 10, "buyMax": 20 },
+        { "minMarkup": 10, "maxMarkup": 20, "buyChance": 70, "buyMin": 1, "buyMax": 10 },
+        { "minMarkup": 20, "maxMarkup": 100, "buyChance": 0, "buyMin": 0, "buyMax": 0 }
+      ]
+    }
+  ]
+}

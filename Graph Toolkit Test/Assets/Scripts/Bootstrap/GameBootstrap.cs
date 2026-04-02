@@ -14,8 +14,13 @@ public class GameBootstrap : MonoBehaviour
     public ProfileSyncService ProfileSyncService { get; private set; }
     public RequestManager RequestManager { get; private set; }
     public GameDataRepository GameDataRepository { get; private set; }
+    public BusinessDefinitionsRepository BusinessDefinitionsRepository { get; private set; }
     public PlayerStateSync PlayerStateSync { get; private set; }
     public QuestCompassSync QuestCompassSync { get; private set; }
+    public BusinessStateSyncService BusinessStateSyncService { get; private set; }
+    public BusinessRuntimeService BusinessRuntimeService { get; private set; }
+    public BusinessActionFacade BusinessActionFacade { get; private set; }
+    public BusinessSimulationService BusinessSimulationService { get; private set; }
 
     [Header("Game Data (JSON)")]
     public string gameDataFolder = "GameData";
@@ -55,6 +60,7 @@ public class GameBootstrap : MonoBehaviour
         QuestDatabaseData questDb = null;
         BuildingDatabaseData buildingDb = null;
         EconomyConfigData economy = null;
+        LotDatabaseData lotDb = null;
 
         string rootPath = Path.Combine(Application.streamingAssetsPath, gameDataFolder);
         Debug.Log($"[GameBootstrap] Loading JSON definitions from: {rootPath}");
@@ -62,6 +68,7 @@ public class GameBootstrap : MonoBehaviour
         questDb = loader.LoadQuests();
         buildingDb = loader.LoadBuildings();
         economy = loader.LoadEconomy();
+        lotDb = loader.LoadLots();
 
         if (questDb == null)
         {
@@ -81,8 +88,40 @@ public class GameBootstrap : MonoBehaviour
             economy = new EconomyConfigData();
         }
 
-        GameDataRepository = new GameDataRepository(questDb, buildingDb, economy);
-        Debug.Log($"[GameBootstrap] GameDataRepository ready. Quests: {questDb.quests.Count}, Buildings: {buildingDb.buildings.Count}");
+        if (lotDb == null)
+        {
+            Debug.LogError("[GameBootstrap] lots.json missing or invalid. Using empty lot database.");
+            lotDb = new LotDatabaseData();
+        }
+
+        GameDataRepository = new GameDataRepository(questDb, buildingDb, economy, lotDb);
+        Debug.Log($"[GameBootstrap] GameDataRepository ready. Quests: {questDb.quests.Count}, Buildings: {buildingDb.buildings.Count}, Lots: {lotDb.lots.Count}");
+
+        BusinessTypeDatabaseData businessTypes = null;
+        BusinessModuleDatabaseData businessModules = null;
+        SupplierDatabaseData suppliers = null;
+        StaffRoleDatabaseData staffRoles = null;
+        CustomerBehaviorDatabaseData customerBehaviors = null;
+
+        string businessRootPath = Path.Combine(rootPath, "Business");
+        var businessLoader = new JsonBusinessDataLoader(businessRootPath);
+        businessTypes = businessLoader.LoadBusinessTypes();
+        businessModules = businessLoader.LoadBusinessModules();
+        suppliers = businessLoader.LoadSuppliers();
+        staffRoles = businessLoader.LoadStaffRoles();
+        customerBehaviors = businessLoader.LoadCustomerBehaviors();
+
+        if (businessTypes == null) businessTypes = new BusinessTypeDatabaseData();
+        if (businessModules == null) businessModules = new BusinessModuleDatabaseData();
+        if (suppliers == null) suppliers = new SupplierDatabaseData();
+        if (staffRoles == null) staffRoles = new StaffRoleDatabaseData();
+        if (customerBehaviors == null) customerBehaviors = new CustomerBehaviorDatabaseData();
+
+        BusinessDefinitionsValidator.Validate(businessTypes, businessModules, suppliers, staffRoles, customerBehaviors);
+        BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, businessModules, suppliers, staffRoles, customerBehaviors);
+        Debug.Log($"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}, Modules: {businessModules.modules.Count}");
+
+        LotDefinitionsValidator.Validate(lotDb, BusinessDefinitionsRepository);
 
         RuntimeState.Player = new PlayerProfileState(GameDataRepository.GetEconomy());
         RuntimeState.Buildings = new List<BuildingState>();
@@ -99,11 +138,22 @@ public class GameBootstrap : MonoBehaviour
         GraphProgressService = new GraphProgressService();
         GameServer = useRemoteServer
             ? new RemoteGameServer(remoteBaseUrl, remotePlayerId, remoteTimeoutSeconds, remoteDebugLog)
-            : new LocalGameServer(RuntimeState, BuildingService, QuestService, GameDataRepository, localMinDelayMs, localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
+            : new LocalGameServer(RuntimeState, BuildingService, QuestService, GameDataRepository, BusinessDefinitionsRepository, localMinDelayMs, localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
         PlayerStateSync = new PlayerStateSync();
         QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
-        ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync);
+        BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);
+        ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
         RequestManager = new RequestManager();
+        BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
+        BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
+        BusinessSimulationService = new BusinessSimulationService(BusinessDefinitionsRepository, BusinessStateSyncService);
+
+        var simulationRunner = GetComponent<BusinessSimulationTickRunner>();
+        if (simulationRunner == null)
+        {
+            simulationRunner = gameObject.AddComponent<BusinessSimulationTickRunner>();
+        }
+        simulationRunner.bootstrap = this;
 
         SeedInitialSnapshot();
     }

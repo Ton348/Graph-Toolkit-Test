@@ -1,0 +1,12 @@
+{
+  "businessTypes": [
+    {
+      "id": "grocery_store",
+      "displayName": "Магазин продуктов",
+      "requiredModules": ["storage", "shelves", "cash_register"],
+      "defaultStorageCapacity": 1000,
+      "defaultShelfCapacity": 200,
+      "productType": "grocery"
+    }
+  ]
+}

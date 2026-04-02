@@ -5,13 +5,15 @@ public class GameDataRepository
 {
     private readonly Dictionary<string, QuestDefinitionData> questsById = new Dictionary<string, QuestDefinitionData>();
     private readonly Dictionary<string, BuildingDefinitionData> buildingsById = new Dictionary<string, BuildingDefinitionData>();
+    private readonly Dictionary<string, LotDefinitionData> lotsById = new Dictionary<string, LotDefinitionData>();
     private readonly EconomyConfigData economy;
 
-    public GameDataRepository(QuestDatabaseData questDatabase, BuildingDatabaseData buildingDatabase, EconomyConfigData economy)
+    public GameDataRepository(QuestDatabaseData questDatabase, BuildingDatabaseData buildingDatabase, EconomyConfigData economy, LotDatabaseData lotDatabase)
     {
         this.economy = economy ?? new EconomyConfigData();
         IndexQuests(questDatabase);
         IndexBuildings(buildingDatabase);
+        IndexLots(lotDatabase);
     }
 
     public QuestDefinitionData GetQuestById(string id)
@@ -32,6 +34,21 @@ public class GameDataRepository
     public IEnumerable<BuildingDefinitionData> GetAllBuildings()
     {
         return buildingsById.Values;
+    }
+
+    public LotDefinitionData GetLotById(string id)
+    {
+        return !string.IsNullOrEmpty(id) && lotsById.TryGetValue(id, out var lot) ? lot : null;
+    }
+
+    public bool HasLot(string id)
+    {
+        return GetLotById(id) != null;
+    }
+
+    public IEnumerable<LotDefinitionData> GetAllLots()
+    {
+        return lotsById.Values;
     }
 
     public EconomyConfigData GetEconomy()
@@ -87,6 +104,32 @@ public class GameDataRepository
             else
             {
                 Debug.LogWarning($"[GameDataRepository] Duplicate building id: {building.id}");
+            }
+        }
+    }
+
+    private void IndexLots(LotDatabaseData lotDatabase)
+    {
+        lotsById.Clear();
+        if (lotDatabase == null || lotDatabase.lots == null)
+        {
+            return;
+        }
+
+        foreach (var lot in lotDatabase.lots)
+        {
+            if (lot == null || string.IsNullOrEmpty(lot.id))
+            {
+                continue;
+            }
+
+            if (!lotsById.ContainsKey(lot.id))
+            {
+                lotsById.Add(lot.id, lot);
+            }
+            else
+            {
+                Debug.LogWarning($"[GameDataRepository] Duplicate lot id: {lot.id}");
             }
         }
     }

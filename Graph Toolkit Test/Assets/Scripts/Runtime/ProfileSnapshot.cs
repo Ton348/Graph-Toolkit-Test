@@ -16,6 +16,8 @@ public class ProfileSnapshot
     public List<string> OwnedBuildingIds = new List<string>();
     public List<BuildingStateSnapshot> BuildingStates = new List<BuildingStateSnapshot>();
     public List<GraphCheckpointSnapshot> GraphCheckpoints = new List<GraphCheckpointSnapshot>();
+    public List<BusinessInstanceSnapshot> Businesses = new List<BusinessInstanceSnapshot>();
+    public List<string> KnownContacts = new List<string>();
 }
 
 [Serializable]

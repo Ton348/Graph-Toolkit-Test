@@ -1,0 +1,6 @@
+{
+  "roles": [
+    { "id": "cashier", "displayName": "Кассир", "salaryPerDay": 120, "throughputPerHour": 60 },
+    { "id": "merchandiser", "displayName": "Мерчендайзер", "salaryPerDay": 90, "throughputPerHour": 80 }
+  ]
+}

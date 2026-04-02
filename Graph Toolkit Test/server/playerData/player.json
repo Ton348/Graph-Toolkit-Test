@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 599,
+  "money": 200,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -23,5 +23,26 @@
       "currentExpenses": 50
     }
   ],
-  "graphCheckpoints": {}
+  "graphCheckpoints": {},
+  "businesses": [
+    {
+      "instanceId": "biz_1775124634564_1921",
+      "lotId": "lot_market_01",
+      "businessTypeId": "",
+      "isRented": true,
+      "isOpen": false,
+      "rentPerDay": 1000,
+      "installedModules": [],
+      "storageCapacity": 0,
+      "shelfCapacity": 0,
+      "storageStock": 0,
+      "shelfStock": 0,
+      "selectedSupplierId": null,
+      "autoDeliveryPerDay": 0,
+      "markupPercent": 0,
+      "hiredCashierContactId": null,
+      "hiredMerchContactId": null
+    }
+  ],
+  "knownContacts": []
 }

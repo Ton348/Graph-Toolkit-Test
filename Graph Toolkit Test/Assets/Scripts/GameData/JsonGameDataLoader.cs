@@ -40,6 +40,16 @@ public class JsonGameDataLoader
         return data;
     }
 
+    public LotDatabaseData LoadLots()
+    {
+        var data = Load<LotDatabaseData>("lots.json");
+        if (data != null)
+        {
+            Debug.Log($"[JsonGameDataLoader] Loaded lots: {data.lots?.Count ?? 0}");
+        }
+        return data;
+    }
+
     private T Load<T>(string fileName) where T : class
     {
         string path = Path.Combine(rootPath, fileName);

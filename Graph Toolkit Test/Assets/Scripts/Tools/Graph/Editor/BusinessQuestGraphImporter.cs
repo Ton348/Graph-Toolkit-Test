@@ -110,6 +110,104 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
             return;
         }
 
+        if (runtimeNode is RequestRentBusinessNode requestRentBusiness)
+        {
+            requestRentBusiness.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestRentBusiness.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestAssignBusinessTypeNode requestAssignBusinessType)
+        {
+            requestAssignBusinessType.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestAssignBusinessType.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestInstallBusinessModuleNode requestInstallBusinessModule)
+        {
+            requestInstallBusinessModule.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestInstallBusinessModule.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestAssignSupplierNode requestAssignSupplier)
+        {
+            requestAssignSupplier.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestAssignSupplier.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestHireBusinessWorkerNode requestHireBusinessWorker)
+        {
+            requestHireBusinessWorker.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestHireBusinessWorker.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestSetBusinessOpenNode requestSetBusinessOpen)
+        {
+            requestSetBusinessOpen.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestSetBusinessOpen.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestOpenBusinessNode requestOpenBusiness)
+        {
+            requestOpenBusiness.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestOpenBusiness.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestCloseBusinessNode requestCloseBusiness)
+        {
+            requestCloseBusiness.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestCloseBusiness.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestSetBusinessMarkupNode requestSetBusinessMarkup)
+        {
+            requestSetBusinessMarkup.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestSetBusinessMarkup.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is RequestUnlockContactNode requestUnlockContact)
+        {
+            requestUnlockContact.successNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            requestUnlockContact.failNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is CheckBusinessExistsNode checkBusinessExists)
+        {
+            checkBusinessExists.trueNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            checkBusinessExists.falseNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is CheckBusinessOpenNode checkBusinessOpen)
+        {
+            checkBusinessOpen.trueNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            checkBusinessOpen.falseNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is CheckBusinessModuleInstalledNode checkBusinessModuleInstalled)
+        {
+            checkBusinessModuleInstalled.trueNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            checkBusinessModuleInstalled.falseNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
+        if (runtimeNode is CheckContactKnownNode checkContactKnown)
+        {
+            checkContactKnown.trueNodeId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
+            checkContactKnown.falseNodeId = GetConnectedNodeIdByOutputIndex(node, 1, idMap);
+            return;
+        }
+
 
 
         string nextId = GetConnectedNodeIdByOutputIndex(node, 0, idMap);
@@ -175,6 +273,99 @@ internal class BusinessQuestGraphImporter : ScriptedImporter
                 runtimeNode = new RequestCompleteQuestNode
                 {
                     questId = GetOptionValue<string>(requestCompleteQuestNode, RequestCompleteQuestNodeModel.QUEST_ID_OPTION)
+                };
+                break;
+            case RequestRentBusinessNodeModel requestRentBusinessNode:
+                runtimeNode = new RequestRentBusinessNode
+                {
+                    lotId = GetOptionValue<string>(requestRentBusinessNode, RequestRentBusinessNodeModel.LOT_ID_OPTION)
+                };
+                break;
+            case RequestAssignBusinessTypeNodeModel requestAssignBusinessTypeNode:
+                runtimeNode = new RequestAssignBusinessTypeNode
+                {
+                    lotId = GetOptionValue<string>(requestAssignBusinessTypeNode, RequestAssignBusinessTypeNodeModel.LOT_ID_OPTION),
+                    businessTypeId = GetOptionValue<string>(requestAssignBusinessTypeNode, RequestAssignBusinessTypeNodeModel.BUSINESS_TYPE_ID_OPTION)
+                };
+                break;
+            case RequestInstallBusinessModuleNodeModel requestInstallBusinessModuleNode:
+                runtimeNode = new RequestInstallBusinessModuleNode
+                {
+                    lotId = GetOptionValue<string>(requestInstallBusinessModuleNode, RequestInstallBusinessModuleNodeModel.LOT_ID_OPTION),
+                    moduleId = GetOptionValue<string>(requestInstallBusinessModuleNode, RequestInstallBusinessModuleNodeModel.MODULE_ID_OPTION)
+                };
+                break;
+            case RequestAssignSupplierNodeModel requestAssignSupplierNode:
+                runtimeNode = new RequestAssignSupplierNode
+                {
+                    lotId = GetOptionValue<string>(requestAssignSupplierNode, RequestAssignSupplierNodeModel.LOT_ID_OPTION),
+                    supplierId = GetOptionValue<string>(requestAssignSupplierNode, RequestAssignSupplierNodeModel.SUPPLIER_ID_OPTION)
+                };
+                break;
+            case RequestHireBusinessWorkerNodeModel requestHireBusinessWorkerNode:
+                runtimeNode = new RequestHireBusinessWorkerNode
+                {
+                    lotId = GetOptionValue<string>(requestHireBusinessWorkerNode, RequestHireBusinessWorkerNodeModel.LOT_ID_OPTION),
+                    roleId = GetOptionValue<string>(requestHireBusinessWorkerNode, RequestHireBusinessWorkerNodeModel.ROLE_ID_OPTION),
+                    contactId = GetOptionValue<string>(requestHireBusinessWorkerNode, RequestHireBusinessWorkerNodeModel.CONTACT_ID_OPTION)
+                };
+                break;
+            case RequestSetBusinessOpenNodeModel requestSetBusinessOpenNode:
+                var openAction = GetOptionValue<BusinessOpenAction>(requestSetBusinessOpenNode, RequestSetBusinessOpenNodeModel.ACTION_OPTION);
+                runtimeNode = new RequestSetBusinessOpenNode
+                {
+                    lotId = GetOptionValue<string>(requestSetBusinessOpenNode, RequestSetBusinessOpenNodeModel.LOT_ID_OPTION),
+                    open = openAction == BusinessOpenAction.Open
+                };
+                break;
+            case RequestOpenBusinessNodeModel requestOpenBusinessNode:
+                runtimeNode = new RequestOpenBusinessNode
+                {
+                    lotId = GetOptionValue<string>(requestOpenBusinessNode, RequestOpenBusinessNodeModel.LOT_ID_OPTION)
+                };
+                break;
+            case RequestCloseBusinessNodeModel requestCloseBusinessNode:
+                runtimeNode = new RequestCloseBusinessNode
+                {
+                    lotId = GetOptionValue<string>(requestCloseBusinessNode, RequestCloseBusinessNodeModel.LOT_ID_OPTION)
+                };
+                break;
+            case RequestSetBusinessMarkupNodeModel requestSetBusinessMarkupNode:
+                runtimeNode = new RequestSetBusinessMarkupNode
+                {
+                    lotId = GetOptionValue<string>(requestSetBusinessMarkupNode, RequestSetBusinessMarkupNodeModel.LOT_ID_OPTION),
+                    markupPercent = GetOptionValue<int>(requestSetBusinessMarkupNode, RequestSetBusinessMarkupNodeModel.MARKUP_OPTION)
+                };
+                break;
+            case RequestUnlockContactNodeModel requestUnlockContactNode:
+                runtimeNode = new RequestUnlockContactNode
+                {
+                    contactId = GetOptionValue<string>(requestUnlockContactNode, RequestUnlockContactNodeModel.CONTACT_ID_OPTION)
+                };
+                break;
+            case CheckBusinessExistsNodeModel checkBusinessExistsNode:
+                runtimeNode = new CheckBusinessExistsNode
+                {
+                    lotId = GetOptionValue<string>(checkBusinessExistsNode, CheckBusinessExistsNodeModel.LOT_ID_OPTION)
+                };
+                break;
+            case CheckBusinessOpenNodeModel checkBusinessOpenNode:
+                runtimeNode = new CheckBusinessOpenNode
+                {
+                    lotId = GetOptionValue<string>(checkBusinessOpenNode, CheckBusinessOpenNodeModel.LOT_ID_OPTION)
+                };
+                break;
+            case CheckBusinessModuleInstalledNodeModel checkBusinessModuleInstalledNode:
+                runtimeNode = new CheckBusinessModuleInstalledNode
+                {
+                    lotId = GetOptionValue<string>(checkBusinessModuleInstalledNode, CheckBusinessModuleInstalledNodeModel.LOT_ID_OPTION),
+                    moduleId = GetOptionValue<string>(checkBusinessModuleInstalledNode, CheckBusinessModuleInstalledNodeModel.MODULE_ID_OPTION)
+                };
+                break;
+            case CheckContactKnownNodeModel checkContactKnownNode:
+                runtimeNode = new CheckContactKnownNode
+                {
+                    contactId = GetOptionValue<string>(checkContactKnownNode, CheckContactKnownNodeModel.CONTACT_ID_OPTION)
                 };
                 break;
             case INode refreshProfileNode when refreshProfileNode.GetType().Name == "RefreshProfileNodeModel":

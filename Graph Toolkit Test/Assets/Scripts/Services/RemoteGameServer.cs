@@ -230,6 +230,213 @@ public class RemoteGameServer : IGameServer
         return SendRequestAsync(request);
     }
 
+    public Task<ServerActionResult> TryRentBusinessAsync(string lotId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=rent_business lotId='{lotId}'");
+        }
+        var request = new RemoteRentBusinessRequest
+        {
+            action = "rent_business",
+            playerId = playerId,
+            data = new RemoteRentBusinessData { lotId = lotId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryAssignBusinessTypeAsync(string lotId, string businessTypeId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=assign_business_type lotId='{lotId}' businessTypeId='{businessTypeId}'");
+        }
+        var request = new RemoteAssignBusinessTypeRequest
+        {
+            action = "assign_business_type",
+            playerId = playerId,
+            data = new RemoteAssignBusinessTypeData { lotId = lotId, businessTypeId = businessTypeId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryInstallBusinessModuleAsync(string lotId, string moduleId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=install_business_module lotId='{lotId}' moduleId='{moduleId}'");
+        }
+        var request = new RemoteInstallBusinessModuleRequest
+        {
+            action = "install_business_module",
+            playerId = playerId,
+            data = new RemoteInstallBusinessModuleData { lotId = lotId, moduleId = moduleId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=assign_supplier lotId='{lotId}' supplierId='{supplierId}'");
+        }
+        var request = new RemoteAssignSupplierRequest
+        {
+            action = "assign_supplier",
+            playerId = playerId,
+            data = new RemoteAssignSupplierData { lotId = lotId, supplierId = supplierId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=hire_business_worker lotId='{lotId}' roleId='{roleId}' contactId='{contactId}'");
+        }
+        var request = new RemoteHireBusinessWorkerRequest
+        {
+            action = "hire_business_worker",
+            playerId = playerId,
+            data = new RemoteHireBusinessWorkerData { lotId = lotId, roleId = roleId, contactId = contactId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryOpenBusinessAsync(string lotId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=open_business lotId='{lotId}'");
+        }
+        var request = new RemoteBusinessLotRequest
+        {
+            action = "open_business",
+            playerId = playerId,
+            data = new RemoteBusinessLotData { lotId = lotId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryCloseBusinessAsync(string lotId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=close_business lotId='{lotId}'");
+        }
+        var request = new RemoteBusinessLotRequest
+        {
+            action = "close_business",
+            playerId = playerId,
+            data = new RemoteBusinessLotData { lotId = lotId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TrySetBusinessMarkupAsync(string lotId, int markupPercent)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=set_business_markup lotId='{lotId}' markupPercent={markupPercent}");
+        }
+        var request = new RemoteSetBusinessMarkupRequest
+        {
+            action = "set_business_markup",
+            playerId = playerId,
+            data = new RemoteSetBusinessMarkupData { lotId = lotId, markupPercent = markupPercent }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryUnlockContactAsync(string contactId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=unlock_contact contactId='{contactId}'");
+        }
+        var request = new RemoteUnlockContactRequest
+        {
+            action = "unlock_contact",
+            playerId = playerId,
+            data = new RemoteUnlockContactData { contactId = contactId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=add_business_stock lotId='{lotId}' amount={amount}");
+        }
+        var request = new RemoteAddBusinessStockRequest
+        {
+            action = "add_business_stock",
+            playerId = playerId,
+            data = new RemoteAddBusinessStockData { lotId = lotId, amount = amount }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=add_business_shelf_stock lotId='{lotId}' amount={amount}");
+        }
+        var request = new RemoteAddBusinessShelfStockRequest
+        {
+            action = "add_business_shelf_stock",
+            playerId = playerId,
+            data = new RemoteAddBusinessShelfStockData { lotId = lotId, amount = amount }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryClearBusinessStockAsync(string lotId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=clear_business_stock lotId='{lotId}'");
+        }
+        var request = new RemoteClearBusinessStockRequest
+        {
+            action = "clear_business_stock",
+            playerId = playerId,
+            data = new RemoteClearBusinessStockData { lotId = lotId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryResetBusinessesAsync()
+    {
+        if (debugLog)
+        {
+            Debug.Log("[RemoteGameServer] action=reset_businesses");
+        }
+        var request = new RemoteResetBusinessesRequest
+        {
+            action = "reset_businesses",
+            playerId = playerId
+        };
+
+        return SendRequestAsync(request);
+    }
+
     private async Task<ServerActionResult> SendRequestAsync<T>(T requestPayload)
     {
         string url = $"{baseUrl}/api/action";
@@ -419,6 +626,48 @@ public class RemoteGameServer : IGameServer
             }
         }
 
+        if (profile.businesses != null)
+        {
+            foreach (var business in profile.businesses)
+            {
+                if (business == null || string.IsNullOrEmpty(business.instanceId))
+                {
+                    continue;
+                }
+
+                var snapshotBusiness = new BusinessInstanceSnapshot
+                {
+                    instanceId = business.instanceId,
+                    lotId = business.lotId,
+                    businessTypeId = business.businessTypeId,
+                    isRented = business.isRented,
+                    isOpen = business.isOpen,
+                    rentPerDay = business.rentPerDay,
+                    storageCapacity = business.storageCapacity,
+                    shelfCapacity = business.shelfCapacity,
+                    storageStock = business.storageStock,
+                    shelfStock = business.shelfStock,
+                    selectedSupplierId = business.selectedSupplierId,
+                    autoDeliveryPerDay = business.autoDeliveryPerDay,
+                    markupPercent = business.markupPercent,
+                    hiredCashierContactId = business.hiredCashierContactId,
+                    hiredMerchContactId = business.hiredMerchContactId
+                };
+
+                if (business.installedModules != null)
+                {
+                    snapshotBusiness.installedModules.AddRange(business.installedModules);
+                }
+
+                snapshot.Businesses.Add(snapshotBusiness);
+            }
+        }
+
+        if (profile.knownContacts != null)
+        {
+            snapshot.KnownContacts.AddRange(profile.knownContacts);
+        }
+
         return snapshot;
     }
 
@@ -520,6 +769,175 @@ public class RemoteGameServer : IGameServer
     }
 
     [Serializable]
+    private class RemoteRentBusinessRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteRentBusinessData data;
+    }
+
+    [Serializable]
+    private class RemoteRentBusinessData
+    {
+        public string lotId;
+    }
+
+    [Serializable]
+    private class RemoteAssignBusinessTypeRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteAssignBusinessTypeData data;
+    }
+
+    [Serializable]
+    private class RemoteAssignBusinessTypeData
+    {
+        public string lotId;
+        public string businessTypeId;
+    }
+
+    [Serializable]
+    private class RemoteInstallBusinessModuleRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteInstallBusinessModuleData data;
+    }
+
+    [Serializable]
+    private class RemoteInstallBusinessModuleData
+    {
+        public string lotId;
+        public string moduleId;
+    }
+
+    [Serializable]
+    private class RemoteAssignSupplierRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteAssignSupplierData data;
+    }
+
+    [Serializable]
+    private class RemoteAssignSupplierData
+    {
+        public string lotId;
+        public string supplierId;
+    }
+
+    [Serializable]
+    private class RemoteHireBusinessWorkerRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteHireBusinessWorkerData data;
+    }
+
+    [Serializable]
+    private class RemoteHireBusinessWorkerData
+    {
+        public string lotId;
+        public string roleId;
+        public string contactId;
+    }
+
+    [Serializable]
+    private class RemoteBusinessLotRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteBusinessLotData data;
+    }
+
+    [Serializable]
+    private class RemoteBusinessLotData
+    {
+        public string lotId;
+    }
+
+    [Serializable]
+    private class RemoteSetBusinessMarkupRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteSetBusinessMarkupData data;
+    }
+
+    [Serializable]
+    private class RemoteSetBusinessMarkupData
+    {
+        public string lotId;
+        public int markupPercent;
+    }
+
+    [System.Serializable]
+    private class RemoteAddBusinessStockRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteAddBusinessStockData data;
+    }
+
+    [System.Serializable]
+    private class RemoteAddBusinessStockData
+    {
+        public string lotId;
+        public int amount;
+    }
+
+    [System.Serializable]
+    private class RemoteAddBusinessShelfStockRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteAddBusinessShelfStockData data;
+    }
+
+    [System.Serializable]
+    private class RemoteAddBusinessShelfStockData
+    {
+        public string lotId;
+        public int amount;
+    }
+
+    [System.Serializable]
+    private class RemoteClearBusinessStockRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteClearBusinessStockData data;
+    }
+
+    [System.Serializable]
+    private class RemoteClearBusinessStockData
+    {
+        public string lotId;
+    }
+
+    [System.Serializable]
+    private class RemoteResetBusinessesRequest
+    {
+        public string action;
+        public string playerId;
+    }
+
+    [Serializable]
+    private class RemoteUnlockContactRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteUnlockContactData data;
+    }
+
+    [Serializable]
+    private class RemoteUnlockContactData
+    {
+        public string contactId;
+    }
+
+    [Serializable]
     private class RemoteActionResponse
     {
         public bool success;
@@ -543,6 +961,8 @@ public class RemoteGameServer : IGameServer
         public int health;
         public RemoteBuildingStateDto[] buildingStates;
         public RemoteGraphCheckpointDto[] graphCheckpoints;
+        public RemoteBusinessStateDto[] businesses;
+        public string[] knownContacts;
     }
 
     [Serializable]
@@ -560,6 +980,27 @@ public class RemoteGameServer : IGameServer
     {
         public string graphId;
         public string checkpointId;
+    }
+
+    [Serializable]
+    private class RemoteBusinessStateDto
+    {
+        public string instanceId;
+        public string lotId;
+        public string businessTypeId;
+        public bool isRented;
+        public bool isOpen;
+        public int rentPerDay;
+        public string[] installedModules;
+        public int storageCapacity;
+        public int shelfCapacity;
+        public int storageStock;
+        public int shelfStock;
+        public string selectedSupplierId;
+        public int autoDeliveryPerDay;
+        public int markupPercent;
+        public string hiredCashierContactId;
+        public string hiredMerchContactId;
     }
 
     private static string MapQuestAction(QuestActionType action)

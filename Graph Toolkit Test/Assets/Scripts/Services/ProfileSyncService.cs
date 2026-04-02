@@ -7,14 +7,16 @@ public class ProfileSyncService
     private readonly GameRuntimeState runtime;
     private readonly GameDataRepository dataRepository;
     private readonly PlayerStateSync playerStateSync;
+    private readonly BusinessStateSyncService businessStateSync;
 
     public event Action<ProfileSnapshot> Synced;
 
-    public ProfileSyncService(GameRuntimeState runtime, GameDataRepository dataRepository, PlayerStateSync playerStateSync)
+    public ProfileSyncService(GameRuntimeState runtime, GameDataRepository dataRepository, PlayerStateSync playerStateSync, BusinessStateSyncService businessStateSync)
     {
         this.runtime = runtime;
         this.dataRepository = dataRepository;
         this.playerStateSync = playerStateSync;
+        this.businessStateSync = businessStateSync;
     }
 
     public void ApplySnapshot(ProfileSnapshot snapshot)
@@ -25,6 +27,7 @@ public class ProfileSyncService
         }
 
         playerStateSync?.ApplySnapshot(snapshot);
+        businessStateSync?.ApplySnapshot(snapshot);
 
         Debug.Log($"[ProfileSync] Applied snapshot: money={snapshot.Money}, active={snapshot.ActiveQuestIds?.Count ?? 0}, completed={snapshot.CompletedQuestIds?.Count ?? 0}, owned={snapshot.OwnedBuildingIds?.Count ?? 0}");
 
