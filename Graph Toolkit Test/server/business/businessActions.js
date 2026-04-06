@@ -151,6 +151,11 @@ function hireBusinessWorker(profile, data, businessDefs) {
     return fail('ContactNotKnown', 'Contact not unlocked.');
   }
 
+  const contactDef = businessDefs && businessDefs.staffContactById && businessDefs.staffContactById.get(contactId);
+  if (contactDef && contactDef.roleId && contactDef.roleId !== roleId) {
+    return fail('ContactRoleMismatch', 'Contact does not match selected role.');
+  }
+
   if (roleId === 'cashier') {
     business.hiredCashierContactId = contactId;
   } else if (roleId === 'merchandiser') {
@@ -319,5 +324,5 @@ module.exports = {
   addBusinessStock,
   addBusinessShelfStock,
   clearBusinessStock,
-  resetBusinesses
+  resetBusinesses,
 };

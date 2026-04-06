@@ -16,6 +16,7 @@ public class ProfileSnapshot
     public List<string> OwnedBuildingIds = new List<string>();
     public List<BuildingStateSnapshot> BuildingStates = new List<BuildingStateSnapshot>();
     public List<GraphCheckpointSnapshot> GraphCheckpoints = new List<GraphCheckpointSnapshot>();
+    public List<ConstructedSiteSnapshot> ConstructedSites = new List<ConstructedSiteSnapshot>();
     public List<BusinessInstanceSnapshot> Businesses = new List<BusinessInstanceSnapshot>();
     public List<string> KnownContacts = new List<string>();
 }
@@ -35,4 +36,12 @@ public class GraphCheckpointSnapshot
 {
     public string graphId;
     public string checkpointId;
+}
+
+[Serializable]
+public class ConstructedSiteSnapshot
+{
+    public string siteId;
+    public string visualId;
+    public bool isConstructed;
 }

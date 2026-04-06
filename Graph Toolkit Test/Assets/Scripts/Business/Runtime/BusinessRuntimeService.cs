@@ -52,12 +52,22 @@ public class BusinessRuntimeService
 
     public IEnumerable<string> GetAvailableWorkers(string roleId)
     {
-        if (stateSync == null)
+        if (stateSync == null || definitions == null || string.IsNullOrWhiteSpace(roleId))
         {
             return Enumerable.Empty<string>();
         }
 
-        return stateSync.GetKnownContacts();
+        var known = new HashSet<string>(stateSync.GetKnownContacts());
+        var result = new List<string>();
+        foreach (var contact in definitions.GetStaffContactsByRole(roleId))
+        {
+            if (contact != null && !string.IsNullOrWhiteSpace(contact.id) && known.Contains(contact.id))
+            {
+                result.Add(contact.id);
+            }
+        }
+
+        return result;
     }
 
     public IEnumerable<string> GetMissingRequiredModules(BusinessInstanceSnapshot business)

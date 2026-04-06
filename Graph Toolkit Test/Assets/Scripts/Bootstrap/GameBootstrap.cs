@@ -21,6 +21,9 @@ public class GameBootstrap : MonoBehaviour
     public BusinessRuntimeService BusinessRuntimeService { get; private set; }
     public BusinessActionFacade BusinessActionFacade { get; private set; }
     public BusinessSimulationService BusinessSimulationService { get; private set; }
+    public BusinessLiveSimulationService BusinessLiveSimulationService { get; private set; }
+    public BusinessVisualRegistry BusinessVisualRegistry { get; private set; }
+    public BusinessVisualSpawner BusinessVisualSpawner { get; private set; }
 
     [Header("Game Data (JSON)")]
     public string gameDataFolder = "GameData";
@@ -101,6 +104,7 @@ public class GameBootstrap : MonoBehaviour
         BusinessModuleDatabaseData businessModules = null;
         SupplierDatabaseData suppliers = null;
         StaffRoleDatabaseData staffRoles = null;
+        StaffContactDatabaseData staffContacts = null;
         CustomerBehaviorDatabaseData customerBehaviors = null;
 
         string businessRootPath = Path.Combine(rootPath, "Business");
@@ -109,16 +113,18 @@ public class GameBootstrap : MonoBehaviour
         businessModules = businessLoader.LoadBusinessModules();
         suppliers = businessLoader.LoadSuppliers();
         staffRoles = businessLoader.LoadStaffRoles();
+        staffContacts = businessLoader.LoadStaffContacts();
         customerBehaviors = businessLoader.LoadCustomerBehaviors();
 
         if (businessTypes == null) businessTypes = new BusinessTypeDatabaseData();
         if (businessModules == null) businessModules = new BusinessModuleDatabaseData();
         if (suppliers == null) suppliers = new SupplierDatabaseData();
         if (staffRoles == null) staffRoles = new StaffRoleDatabaseData();
+        if (staffContacts == null) staffContacts = new StaffContactDatabaseData();
         if (customerBehaviors == null) customerBehaviors = new CustomerBehaviorDatabaseData();
 
-        BusinessDefinitionsValidator.Validate(businessTypes, businessModules, suppliers, staffRoles, customerBehaviors);
-        BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, businessModules, suppliers, staffRoles, customerBehaviors);
+        BusinessDefinitionsValidator.Validate(businessTypes, businessModules, suppliers, staffRoles, staffContacts, customerBehaviors);
+        BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, businessModules, suppliers, staffRoles, staffContacts, customerBehaviors);
         Debug.Log($"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}, Modules: {businessModules.modules.Count}");
 
         LotDefinitionsValidator.Validate(lotDb, BusinessDefinitionsRepository);
@@ -147,6 +153,26 @@ public class GameBootstrap : MonoBehaviour
         BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
         BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
         BusinessSimulationService = new BusinessSimulationService(BusinessDefinitionsRepository, BusinessStateSyncService);
+        BusinessVisualRegistry = GetComponent<BusinessVisualRegistry>();
+        if (BusinessVisualRegistry == null)
+        {
+            BusinessVisualRegistry = FindAnyObjectByType<BusinessVisualRegistry>(FindObjectsInactive.Include);
+        }
+        if (BusinessVisualRegistry == null)
+        {
+            BusinessVisualRegistry = gameObject.AddComponent<BusinessVisualRegistry>();
+        }
+
+        BusinessVisualSpawner = GetComponent<BusinessVisualSpawner>();
+        if (BusinessVisualSpawner == null)
+        {
+            BusinessVisualSpawner = FindAnyObjectByType<BusinessVisualSpawner>(FindObjectsInactive.Include);
+        }
+        if (BusinessVisualSpawner == null)
+        {
+            BusinessVisualSpawner = gameObject.AddComponent<BusinessVisualSpawner>();
+        }
+        BusinessVisualSpawner.Initialize(this, BusinessVisualRegistry);
 
         var simulationRunner = GetComponent<BusinessSimulationTickRunner>();
         if (simulationRunner == null)
@@ -154,6 +180,13 @@ public class GameBootstrap : MonoBehaviour
             simulationRunner = gameObject.AddComponent<BusinessSimulationTickRunner>();
         }
         simulationRunner.bootstrap = this;
+
+        BusinessLiveSimulationService = GetComponent<BusinessLiveSimulationService>();
+        if (BusinessLiveSimulationService == null)
+        {
+            BusinessLiveSimulationService = gameObject.AddComponent<BusinessLiveSimulationService>();
+        }
+        BusinessLiveSimulationService.Initialize(this);
 
         SeedInitialSnapshot();
     }
@@ -220,7 +253,14 @@ public class GameBootstrap : MonoBehaviour
             }
         }
 
-        PlayerStateSync.ApplySnapshot(snapshot);
+        if (ProfileSyncService != null)
+        {
+            ProfileSyncService.ApplySnapshot(snapshot);
+        }
+        else
+        {
+            PlayerStateSync.ApplySnapshot(snapshot);
+        }
     }
 
     private async Task FetchRemoteProfile()

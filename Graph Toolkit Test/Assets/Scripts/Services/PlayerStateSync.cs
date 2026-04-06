@@ -8,6 +8,7 @@ public class PlayerStateSync
     private readonly HashSet<string> ownedBuildings = new HashSet<string>();
     private readonly Dictionary<string, BuildingStateSnapshot> buildingStates = new Dictionary<string, BuildingStateSnapshot>();
     private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
+    private readonly Dictionary<string, ConstructedSiteSnapshot> constructedSites = new Dictionary<string, ConstructedSiteSnapshot>();
 
     public int Money { get; private set; }
     public int Bargaining { get; private set; }
@@ -21,6 +22,7 @@ public class PlayerStateSync
     public IReadOnlyCollection<string> OwnedBuildings => ownedBuildings;
     public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => buildingStates;
     public IReadOnlyDictionary<string, string> GraphCheckpoints => graphCheckpoints;
+    public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => constructedSites;
 
     public event Action<ProfileSnapshot> SnapshotApplied;
 
@@ -107,6 +109,28 @@ public class PlayerStateSync
             }
         }
 
+        constructedSites.Clear();
+        if (snapshot.ConstructedSites != null && snapshot.ConstructedSites.Count > 0)
+        {
+            foreach (var site in snapshot.ConstructedSites)
+            {
+                if (site == null || string.IsNullOrWhiteSpace(site.siteId))
+                {
+                    continue;
+                }
+
+                var siteId = site.siteId.Trim();
+                var visualId = string.IsNullOrWhiteSpace(site.visualId) ? null : site.visualId.Trim();
+                bool isConstructed = site.isConstructed && !string.IsNullOrEmpty(visualId);
+                constructedSites[siteId] = new ConstructedSiteSnapshot
+                {
+                    siteId = siteId,
+                    visualId = isConstructed ? visualId : null,
+                    isConstructed = isConstructed
+                };
+            }
+        }
+
         SnapshotApplied?.Invoke(snapshot);
     }
 
@@ -124,6 +148,7 @@ public class PlayerStateSync
         ownedBuildings.Clear();
         buildingStates.Clear();
         graphCheckpoints.Clear();
+        constructedSites.Clear();
         SnapshotApplied?.Invoke(null);
     }
 
@@ -162,5 +187,21 @@ public class PlayerStateSync
         }
 
         return graphCheckpoints.TryGetValue(graphId, out checkpointId);
+    }
+
+    public bool TryGetConstructedSite(string siteId, out ConstructedSiteSnapshot site)
+    {
+        site = null;
+        if (string.IsNullOrWhiteSpace(siteId))
+        {
+            return false;
+        }
+
+        return constructedSites.TryGetValue(siteId.Trim(), out site);
+    }
+
+    public bool IsSiteConstructed(string siteId)
+    {
+        return TryGetConstructedSite(siteId, out var site) && site != null && site.isConstructed;
     }
 }

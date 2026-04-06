@@ -1,0 +1,18 @@
+{
+  "contacts": [
+    {
+      "id": "cashier_1",
+      "displayName": "Кассир Анна",
+      "salaryPerDay": 120,
+      "throughputPerHour": 60,
+      "roleId": "cashier"
+    },
+    {
+      "id": "merch_1",
+      "displayName": "Мерчендайзер Игорь",
+      "salaryPerDay": 90,
+      "throughputPerHour": 80,
+      "roleId": "merchandiser"
+    }
+  ]
+}

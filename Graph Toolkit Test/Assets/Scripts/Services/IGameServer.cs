@@ -23,4 +23,6 @@ public interface IGameServer
     System.Threading.Tasks.Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount);
     System.Threading.Tasks.Task<ServerActionResult> TryClearBusinessStockAsync(string lotId);
     System.Threading.Tasks.Task<ServerActionResult> TryResetBusinessesAsync();
+    System.Threading.Tasks.Task<ServerActionResult> TryConstructSiteVisualAsync(string siteId, string visualId);
+    System.Threading.Tasks.Task<ServerActionResult> TryRemoveSiteVisualAsync(string siteId);
 }

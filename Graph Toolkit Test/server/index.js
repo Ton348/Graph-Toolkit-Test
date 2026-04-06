@@ -4,7 +4,9 @@ const path = require('path');
 const { loadBusinessDefinitions } = require('./business/businessDefinitions');
 const { loadLotDefinitions } = require('./business/lotDefinitions');
 const { normalizeBusinessProfile, sanitizeBusinessProfile } = require('./business/businessState');
+const { normalizeConstructedSites, sanitizeConstructedSites } = require('./business/constructedSiteState');
 const businessActions = require('./business/businessActions');
+const constructedSiteActions = require('./business/constructedSiteActions');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 const HOST = process.env.HOST || '127.0.0.1';
@@ -111,6 +113,14 @@ function validateDefinitions(quests, buildings, economy, tradeConfig) {
         console.warn(`[server][validate] building ${b.id} purchaseCost < 0`);
         warnings++;
       }
+      if (!b.siteId || typeof b.siteId !== 'string' || !b.siteId.trim()) {
+        console.warn(`[server][validate] building ${b.id} missing siteId`);
+        warnings++;
+      }
+      if (!b.visualId || typeof b.visualId !== 'string' || !b.visualId.trim()) {
+        console.warn(`[server][validate] building ${b.id} missing visualId`);
+        warnings++;
+      }
     });
   }
 
@@ -175,8 +185,8 @@ function ensureBuildingStates(profile) {
     if (!def) return;
     const state = existing.get(id);
     const level = state && Number.isFinite(state.level) ? state.level : 0;
-    const currentIncome = state && Number.isFinite(state.currentIncome) ? state.currentIncome : (def.incomePerDay || 0);
-    const currentExpenses = state && Number.isFinite(state.currentExpenses) ? state.currentExpenses : (def.expensesPerDay || 0);
+    const currentIncome = state && Number.isFinite(state.currentIncome) ? state.currentIncome : 0;
+    const currentExpenses = state && Number.isFinite(state.currentExpenses) ? state.currentExpenses : 0;
 
     profile.buildingStates.push({
       id,
@@ -207,12 +217,15 @@ function loadPlayerProfile(playerId) {
       ownedBuildings: [],
       buildingStates: [],
       graphCheckpoints: {},
+      constructedSites: [],
       businesses: [],
       knownContacts: []
     };
     ensureBuildingStates(profile);
     normalizeBusinessProfile(profile);
     sanitizeBusinessProfile(profile, businessDefs);
+    normalizeConstructedSites(profile);
+    sanitizeConstructedSites(profile);
     writeJson(filePath, profile);
     return profile;
   }
@@ -223,6 +236,7 @@ function loadPlayerProfile(playerId) {
   if (!profile.ownedBuildings) profile.ownedBuildings = [];
   if (!profile.buildingStates) profile.buildingStates = [];
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
+  if (!profile.constructedSites) profile.constructedSites = [];
   if (!profile.businesses) profile.businesses = [];
   if (!profile.knownContacts) profile.knownContacts = [];
   if (!Number.isFinite(profile.bargaining)) profile.bargaining = defs.economy?.baseBargaining ?? 0;
@@ -234,6 +248,8 @@ function loadPlayerProfile(playerId) {
   ensureBuildingStates(profile);
   normalizeBusinessProfile(profile);
   sanitizeBusinessProfile(profile, businessDefs);
+  normalizeConstructedSites(profile);
+  sanitizeConstructedSites(profile);
   const ownedCount = (profile.ownedBuildings || []).length;
   if ((profile.buildingStates || []).length !== ownedCount)
   {
@@ -249,6 +265,8 @@ function savePlayerProfile(profile) {
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   normalizeBusinessProfile(profile);
   sanitizeBusinessProfile(profile, businessDefs);
+  normalizeConstructedSites(profile);
+  sanitizeConstructedSites(profile);
   writeJson(filePath, profile);
 }
 
@@ -278,6 +296,7 @@ function toResponseProfile(profile) {
     buildings: profile.ownedBuildings || [],
     buildingStates: profile.buildingStates || [],
     graphCheckpoints: toGraphCheckpointList(profile),
+    constructedSites: profile.constructedSites || [],
     businesses: profile.businesses || [],
     knownContacts: profile.knownContacts || []
   };
@@ -357,6 +376,7 @@ function handleBuyBuilding(req, res, payload) {
 
   profile.money -= cost;
   profile.ownedBuildings.push(buildingId);
+  applyConstructedSiteFromBuilding(profile, building);
 
   if (questAction === 'start') {
     profile.activeQuests.push(questId);
@@ -370,6 +390,36 @@ function handleBuyBuilding(req, res, payload) {
   ensureBuildingStates(profile);
   savePlayerProfile(profile);
   return success(res, 'Buy building success.', profile);
+}
+
+function applyConstructedSiteFromBuilding(profile, building) {
+  if (!profile || !building) return;
+
+  const siteId = typeof building.siteId === 'string' ? building.siteId.trim() : '';
+  const visualId = typeof building.visualId === 'string' ? building.visualId.trim() : '';
+  if (!siteId || !visualId) return;
+
+  normalizeConstructedSites(profile);
+  const existing = findConstructedSite(profile, siteId);
+  if (existing) {
+    existing.visualId = visualId;
+    existing.isConstructed = true;
+    return;
+  }
+
+  profile.constructedSites.push({
+    siteId,
+    visualId,
+    isConstructed: true
+  });
+}
+
+function findConstructedSite(profile, siteId) {
+  if (!profile || !Array.isArray(profile.constructedSites) || !siteId) {
+    return null;
+  }
+
+  return profile.constructedSites.find(site => site && site.siteId === siteId) || null;
 }
 
 function handleStartQuest(req, res, payload) {
@@ -728,6 +778,22 @@ function handleAction(req, res, payload) {
       console.log('[BusinessServer] action=reset_businesses');
       const profile = loadPlayerProfile(payload.playerId || 'player');
       const result = businessActions.resetBusinesses(profile);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'construct_site_visual': {
+      console.log('[BusinessServer] action=construct_site_visual');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = constructedSiteActions.constructSiteVisual(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'remove_site_visual': {
+      console.log('[BusinessServer] action=remove_site_visual');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = constructedSiteActions.removeSiteVisual(profile, payload.data);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);

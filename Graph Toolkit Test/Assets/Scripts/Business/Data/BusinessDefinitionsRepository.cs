@@ -6,6 +6,7 @@ public sealed class BusinessDefinitionsRepository
     private readonly Dictionary<string, BusinessModuleDefinitionData> modules = new Dictionary<string, BusinessModuleDefinitionData>();
     private readonly Dictionary<string, SupplierDefinitionData> suppliers = new Dictionary<string, SupplierDefinitionData>();
     private readonly Dictionary<string, StaffRoleDefinitionData> staffRoles = new Dictionary<string, StaffRoleDefinitionData>();
+    private readonly Dictionary<string, StaffContactDefinitionData> staffContacts = new Dictionary<string, StaffContactDefinitionData>();
     private readonly Dictionary<string, CustomerBehaviorDefinitionData> behaviors = new Dictionary<string, CustomerBehaviorDefinitionData>();
 
     public BusinessDefinitionsRepository(
@@ -13,6 +14,7 @@ public sealed class BusinessDefinitionsRepository
         BusinessModuleDatabaseData moduleDb,
         SupplierDatabaseData supplierDb,
         StaffRoleDatabaseData staffRoleDb,
+        StaffContactDatabaseData staffContactDb,
         CustomerBehaviorDatabaseData behaviorDb)
     {
         if (businessTypeDb?.businessTypes != null)
@@ -55,6 +57,17 @@ public sealed class BusinessDefinitionsRepository
                 if (item != null && !string.IsNullOrWhiteSpace(item.id) && !staffRoles.ContainsKey(item.id))
                 {
                     staffRoles[item.id] = item;
+                }
+            }
+        }
+
+        if (staffContactDb?.contacts != null)
+        {
+            foreach (var item in staffContactDb.contacts)
+            {
+                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !staffContacts.ContainsKey(item.id))
+                {
+                    staffContacts[item.id] = item;
                 }
             }
         }
@@ -119,10 +132,36 @@ public sealed class BusinessDefinitionsRepository
         return value;
     }
 
+    public StaffContactDefinitionData GetStaffContact(string id)
+    {
+        if (string.IsNullOrWhiteSpace(id)) return null;
+        staffContacts.TryGetValue(id, out var value);
+        return value;
+    }
+
+    public IEnumerable<StaffContactDefinitionData> GetAllStaffContacts() => staffContacts.Values;
+
+    public IEnumerable<StaffContactDefinitionData> GetStaffContactsByRole(string roleId)
+    {
+        if (string.IsNullOrWhiteSpace(roleId))
+        {
+            yield break;
+        }
+
+        foreach (var contact in staffContacts.Values)
+        {
+            if (contact != null && contact.roleId == roleId)
+            {
+                yield return contact;
+            }
+        }
+    }
+
     public bool HasBusinessType(string id) => GetBusinessType(id) != null;
     public bool HasModule(string id) => GetModule(id) != null;
     public bool HasSupplier(string id) => GetSupplier(id) != null;
     public bool HasStaffRole(string id) => GetStaffRole(id) != null;
+    public bool HasStaffContact(string id) => GetStaffContact(id) != null;
     public bool HasCustomerBehavior(string businessTypeId) => GetCustomerBehavior(businessTypeId) != null;
 
     public IEnumerable<BusinessTypeDefinitionData> GetAllBusinessTypes() => businessTypes.Values;

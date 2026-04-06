@@ -40,16 +40,8 @@ public class BuildingService
             return UpgradeResult.NotOwned;
         }
 
-        int cost = building.Definition.upgradeCost;
-        if (player.Money < cost)
-        {
-            return UpgradeResult.NotEnoughMoney;
-        }
-
-        player.Money -= cost;
-        building.Level += 1;
-        building.CurrentIncome += building.Definition.upgradeIncomeBonus;
-
-        return UpgradeResult.Success;
+        // Legacy upgrade flow is disabled while buildings are used only for
+        // purchase + persistent visual construction.
+        return UpgradeResult.NotOwned;
     }
 }

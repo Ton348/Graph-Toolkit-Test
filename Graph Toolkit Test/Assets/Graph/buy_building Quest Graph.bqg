@@ -72,8 +72,7 @@ MonoBehaviour:
         - rid: 7634388648029061367
         m_GraphStickyNoteModels: []
         m_GraphPlacematModels: []
-        m_GraphVariableModels:
-        - rid: 7634388648029061368
+        m_GraphVariableModels: []
         m_GraphPortalModels: []
         m_SectionModels:
         - rid: 6060224012171083963
@@ -82,7 +81,7 @@ MonoBehaviour:
           serializedVersion: 2
           x: -538.5
           y: 13
-          width: 2652.5
+          width: 2669
           height: 911
         m_GraphElementMetaData:
         - m_Guid:
@@ -397,14 +396,6 @@ MonoBehaviour:
             Hash: c037bce9d884c03e9e6c5951ada9c137
           m_Category: 2
           m_Index: 21
-        - m_Guid:
-            m_Value0: 10275166136001903569
-            m_Value1: 12059484055285960668
-          m_HashGuid:
-            serializedVersion: 2
-            Hash: d13b841829b9988edc8fceb9dae45ba7
-          m_Category: 1
-          m_Index: 0
         m_EntryPoint:
           rid: 6060224012171083965
         m_Graph:
@@ -419,9 +410,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 1c7f0edc7fcb3fd01fcc5826cede4af0
         m_Version: 2
-        m_Items:
-        - rid: 7634388648029061370
-        - rid: 7634388648029061368
+        m_Items: []
         m_Title: 
     - rid: 6060224012171083964
       type: {class: BusinessQuestEditorGraph, ns: , asm: Assembly-CSharp-Editor}
@@ -2434,42 +2423,3 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: 
-    - rid: 7634388648029061368
-      type: {class: VariableDeclarationModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Guid:
-          m_Value0: 10275166136001903569
-          m_Value1: 12059484055285960668
-        m_HashGuid:
-          serializedVersion: 2
-          Hash: d13b841829b9988edc8fceb9dae45ba7
-        m_Version: 2
-        m_Name: lot_market_01
-        m_UniqueId: 
-        m_DataType:
-          m_Identification: System.Single, System.Private.CoreLib, Version=4.0.0.0,
-            Culture=neutral, PublicKeyToken=b77a5c561934e089
-        m_IsExposed: 0
-        m_Scope: 0
-        m_ShowOnInspectorOnly: 0
-        m_Tooltip: 
-        m_InitializationValue:
-          rid: 7634388648029061369
-        m_Modifiers: 0
-        m_VariableFlags: 0
-    - rid: 7634388648029061369
-      type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 0
-    - rid: 7634388648029061370
-      type: {class: GroupModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Guid:
-          m_Value0: 9609862035645909730
-          m_Value1: 3718921018211932644
-        m_HashGuid:
-          serializedVersion: 2
-          Hash: e2ca2f2f9b165d85e499415ef6429c33
-        m_Version: 2
-        m_Items: []
-        m_Title: ' QUEST'

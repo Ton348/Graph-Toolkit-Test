@@ -11,7 +11,7 @@ public class BuildingState
         Definition = definition;
         IsOwned = false;
         Level = 0;
-        CurrentIncome = definition != null ? definition.incomePerDay : 0;
-        CurrentExpenses = definition != null ? definition.expensesPerDay : 0;
+        CurrentIncome = 0;
+        CurrentExpenses = 0;
     }
 }

@@ -4,12 +4,8 @@
       "id": "car_wash_01",
       "displayName": "Газпромнефть",
       "purchaseCost": 1000,
-      "rentPerMonth": 0,
-      "incomePerDay": 100,
-      "expensesPerDay": 50,
-      "netProfit": 0,
-      "upgradeCost": 700,
-      "upgradeIncomeBonus": 0
+      "siteId": "site_market_01",
+      "visualId": "Building_Pizza"
     }
   ]
 }

@@ -14,6 +14,7 @@ public sealed class JsonBusinessDataLoader
     public BusinessModuleDatabaseData LoadBusinessModules() => Load<BusinessModuleDatabaseData>("business_modules.json", "business modules");
     public SupplierDatabaseData LoadSuppliers() => Load<SupplierDatabaseData>("suppliers.json", "suppliers");
     public StaffRoleDatabaseData LoadStaffRoles() => Load<StaffRoleDatabaseData>("staff_roles.json", "staff roles");
+    public StaffContactDatabaseData LoadStaffContacts() => Load<StaffContactDatabaseData>("staff_contacts.json", "staff contacts");
     public CustomerBehaviorDatabaseData LoadCustomerBehaviors() => Load<CustomerBehaviorDatabaseData>("customer_behavior.json", "customer behaviors");
 
     private T Load<T>(string fileName, string label) where T : class

@@ -8,6 +8,7 @@ public static class BusinessDefinitionsValidator
         BusinessModuleDatabaseData modules,
         SupplierDatabaseData suppliers,
         StaffRoleDatabaseData staffRoles,
+        StaffContactDatabaseData staffContacts,
         CustomerBehaviorDatabaseData behaviors)
     {
         bool ok = true;
@@ -150,6 +151,62 @@ public static class BusinessDefinitionsValidator
                 if (role.salaryPerDay < 0 || role.throughputPerHour < 0)
                 {
                     Debug.LogError($"[BusinessDefinitions] staff role {role.id} has negative values.");
+                    ok = false;
+                }
+            }
+        }
+
+        if (staffContacts?.contacts == null)
+        {
+            Debug.LogError("[BusinessDefinitions] staff contacts list is missing.");
+            ok = false;
+        }
+        else
+        {
+            var ids = new HashSet<string>();
+            var roleIds = new HashSet<string>();
+            if (staffRoles?.roles != null)
+            {
+                foreach (var role in staffRoles.roles)
+                {
+                    if (role != null && !string.IsNullOrWhiteSpace(role.id))
+                    {
+                        roleIds.Add(role.id);
+                    }
+                }
+            }
+
+            foreach (var contact in staffContacts.contacts)
+            {
+                if (contact == null || string.IsNullOrWhiteSpace(contact.id))
+                {
+                    Debug.LogError("[BusinessDefinitions] staff contact has empty id.");
+                    ok = false;
+                    continue;
+                }
+
+                if (!ids.Add(contact.id))
+                {
+                    Debug.LogError($"[BusinessDefinitions] duplicate staff contact id: {contact.id}");
+                    ok = false;
+                }
+
+                if (contact.salaryPerDay < 0 || contact.throughputPerHour < 0)
+                {
+                    Debug.LogError($"[BusinessDefinitions] staff contact {contact.id} has negative values.");
+                    ok = false;
+                }
+
+                if (string.IsNullOrWhiteSpace(contact.roleId))
+                {
+                    Debug.LogError($"[BusinessDefinitions] staff contact {contact.id} has empty roleId.");
+                    ok = false;
+                    continue;
+                }
+
+                if (!roleIds.Contains(contact.roleId))
+                {
+                    Debug.LogError($"[BusinessDefinitions] staff contact {contact.id} references unknown roleId: {contact.roleId}");
                     ok = false;
                 }
             }

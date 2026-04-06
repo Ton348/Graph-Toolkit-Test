@@ -437,6 +437,44 @@ public class RemoteGameServer : IGameServer
         return SendRequestAsync(request);
     }
 
+    public Task<ServerActionResult> TryConstructSiteVisualAsync(string siteId, string visualId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=construct_site_visual siteId='{siteId}' visualId='{visualId}'");
+        }
+
+        var request = new RemoteConstructSiteVisualRequest
+        {
+            action = "construct_site_visual",
+            playerId = playerId,
+            data = new RemoteConstructSiteVisualData
+            {
+                siteId = siteId,
+                visualId = visualId
+            }
+        };
+
+        return SendRequestAsync(request);
+    }
+
+    public Task<ServerActionResult> TryRemoveSiteVisualAsync(string siteId)
+    {
+        if (debugLog)
+        {
+            Debug.Log($"[RemoteGameServer] action=remove_site_visual siteId='{siteId}'");
+        }
+
+        var request = new RemoteSiteVisualRequest
+        {
+            action = "remove_site_visual",
+            playerId = playerId,
+            data = new RemoteSiteVisualData { siteId = siteId }
+        };
+
+        return SendRequestAsync(request);
+    }
+
     private async Task<ServerActionResult> SendRequestAsync<T>(T requestPayload)
     {
         string url = $"{baseUrl}/api/action";
@@ -622,6 +660,24 @@ public class RemoteGameServer : IGameServer
                 {
                     graphId = checkpoint.graphId,
                     checkpointId = checkpoint.checkpointId
+                });
+            }
+        }
+
+        if (profile.constructedSites != null)
+        {
+            foreach (var site in profile.constructedSites)
+            {
+                if (site == null || string.IsNullOrWhiteSpace(site.siteId))
+                {
+                    continue;
+                }
+
+                snapshot.ConstructedSites.Add(new ConstructedSiteSnapshot
+                {
+                    siteId = site.siteId,
+                    visualId = site.visualId,
+                    isConstructed = site.isConstructed
                 });
             }
         }
@@ -924,6 +980,35 @@ public class RemoteGameServer : IGameServer
     }
 
     [Serializable]
+    private class RemoteConstructSiteVisualRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteConstructSiteVisualData data;
+    }
+
+    [Serializable]
+    private class RemoteConstructSiteVisualData
+    {
+        public string siteId;
+        public string visualId;
+    }
+
+    [Serializable]
+    private class RemoteSiteVisualRequest
+    {
+        public string action;
+        public string playerId;
+        public RemoteSiteVisualData data;
+    }
+
+    [Serializable]
+    private class RemoteSiteVisualData
+    {
+        public string siteId;
+    }
+
+    [Serializable]
     private class RemoteUnlockContactRequest
     {
         public string action;
@@ -961,6 +1046,7 @@ public class RemoteGameServer : IGameServer
         public int health;
         public RemoteBuildingStateDto[] buildingStates;
         public RemoteGraphCheckpointDto[] graphCheckpoints;
+        public RemoteConstructedSiteDto[] constructedSites;
         public RemoteBusinessStateDto[] businesses;
         public string[] knownContacts;
     }
@@ -980,6 +1066,14 @@ public class RemoteGameServer : IGameServer
     {
         public string graphId;
         public string checkpointId;
+    }
+
+    [Serializable]
+    private class RemoteConstructedSiteDto
+    {
+        public string siteId;
+        public string visualId;
+        public bool isConstructed;
     }
 
     [Serializable]

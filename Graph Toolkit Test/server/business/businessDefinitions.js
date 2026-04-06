@@ -14,7 +14,7 @@ function readJson(filePath) {
   return JSON.parse(raw);
 }
 
-function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, behaviors) {
+function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors) {
   let errors = 0;
   let warnings = 0;
 
@@ -131,6 +131,49 @@ function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRol
     });
   }
 
+  const roleIds = new Set();
+  if (staffRoles && Array.isArray(staffRoles.roles)) {
+    staffRoles.roles.forEach(r => {
+      if (r && r.id && String(r.id).trim()) {
+        roleIds.add(String(r.id).trim());
+      }
+    });
+  }
+
+  if (!staffContacts || !Array.isArray(staffContacts.contacts)) {
+    console.error('[server][business] staff_contacts missing "contacts" array');
+    errors++;
+  } else {
+    const ids = new Set();
+    staffContacts.contacts.forEach((c, i) => {
+      if (!c || !c.id || !String(c.id).trim()) {
+        console.error(`[server][business] staff contact at index ${i} missing id`);
+        errors++;
+        return;
+      }
+
+      if (ids.has(c.id)) {
+        console.error(`[server][business] duplicate staff contact id: ${c.id}`);
+        errors++;
+      }
+      ids.add(c.id);
+
+      if (!c.roleId || !String(c.roleId).trim()) {
+        console.error(`[server][business] staff contact ${c.id} missing roleId`);
+        errors++;
+      } else if (!roleIds.has(c.roleId)) {
+        console.error(`[server][business] staff contact ${c.id} references unknown roleId: ${c.roleId}`);
+        errors++;
+      }
+
+      if ((Number.isFinite(c.salaryPerDay) && c.salaryPerDay < 0) ||
+          (Number.isFinite(c.throughputPerHour) && c.throughputPerHour < 0)) {
+        console.warn(`[server][business] staff contact ${c.id} has negative values`);
+        warnings++;
+      }
+    });
+  }
+
   if (!behaviors || !Array.isArray(behaviors.behaviors)) {
     console.error('[server][business] customer_behavior missing "behaviors" array');
     errors++;
@@ -171,9 +214,10 @@ function loadBusinessDefinitions() {
   const modules = readJson(path.join(BUSINESS_DIR, 'business_modules.json'));
   const suppliers = readJson(path.join(BUSINESS_DIR, 'suppliers.json'));
   const staffRoles = readJson(path.join(BUSINESS_DIR, 'staff_roles.json'));
+  const staffContacts = readJson(path.join(BUSINESS_DIR, 'staff_contacts.json'));
   const behaviors = readJson(path.join(BUSINESS_DIR, 'customer_behavior.json'));
 
-  validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, behaviors);
+  validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors);
 
   const businessTypeById = new Map();
   (businessTypes.businessTypes || []).forEach(item => {
@@ -195,6 +239,11 @@ function loadBusinessDefinitions() {
     if (item && item.id && !staffRoleById.has(item.id)) staffRoleById.set(item.id, item);
   });
 
+  const staffContactById = new Map();
+  (staffContacts.contacts || []).forEach(item => {
+    if (item && item.id && !staffContactById.has(item.id)) staffContactById.set(item.id, item);
+  });
+
   const behaviorByBusinessTypeId = new Map();
   (behaviors.behaviors || []).forEach(item => {
     if (item && item.businessTypeId && !behaviorByBusinessTypeId.has(item.businessTypeId)) {
@@ -207,11 +256,13 @@ function loadBusinessDefinitions() {
     modules,
     suppliers,
     staffRoles,
+    staffContacts,
     behaviors,
     businessTypeById,
     moduleById,
     supplierById,
     staffRoleById,
+    staffContactById,
     behaviorByBusinessTypeId
   };
 }

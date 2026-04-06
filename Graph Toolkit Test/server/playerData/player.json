@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 200,
+  "money": 900,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -24,25 +24,38 @@
     }
   ],
   "graphCheckpoints": {},
+  "constructedSites": [
+    {
+      "siteId": "site_market_01",
+      "visualId": "Building_Pizza",
+      "isConstructed": true
+    }
+  ],
   "businesses": [
     {
-      "instanceId": "biz_1775124634564_1921",
+      "instanceId": "biz_1775199232571_1514",
       "lotId": "lot_market_01",
-      "businessTypeId": "",
+      "businessTypeId": "grocery_store",
       "isRented": true,
       "isOpen": false,
       "rentPerDay": 1000,
-      "installedModules": [],
-      "storageCapacity": 0,
-      "shelfCapacity": 0,
-      "storageStock": 0,
+      "installedModules": [
+        "shelves",
+        "storage"
+      ],
+      "storageCapacity": 1000,
+      "shelfCapacity": 200,
+      "storageStock": 200,
       "shelfStock": 0,
       "selectedSupplierId": null,
       "autoDeliveryPerDay": 0,
       "markupPercent": 0,
-      "hiredCashierContactId": null,
-      "hiredMerchContactId": null
+      "hiredCashierContactId": "supplier_wholesale_01",
+      "hiredMerchContactId": "merch_1"
     }
   ],
-  "knownContacts": []
+  "knownContacts": [
+    "supplier_wholesale_01",
+    "merch_1"
+  ]
 }

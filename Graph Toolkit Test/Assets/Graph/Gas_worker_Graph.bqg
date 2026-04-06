@@ -1083,14 +1083,16 @@ MonoBehaviour:
           - __option_NodeComment
           - __option_TargetObject
           - __option_IsActive
-          - __option_SpawnKey
+          - __option_VisualId
+          - __option_SiteId
           m_ValueList:
           - rid: 6060224012171084179
           - rid: 6060224012171084180
           - rid: 6060224012171084181
           - rid: 6060224012171084182
           - rid: 6060224012171084183
-          - rid: 6060224012171084184
+          - rid: 7634388676042293249
+          - rid: 7634388676042293314
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1129,10 +1131,6 @@ MonoBehaviour:
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
         m_Value: 1
-    - rid: 6060224012171084184
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084185
       type: {class: SetGameObjectActiveNodeModel, ns: , asm: Assembly-CSharp-Editor}
       data: 
@@ -3331,14 +3329,16 @@ MonoBehaviour:
           - __option_NodeComment
           - __option_TargetObject
           - __option_IsActive
-          - __option_SpawnKey
+          - __option_VisualId
+          - __option_SiteId
           m_ValueList:
           - rid: 7634388648029061269
           - rid: 7634388648029061270
           - rid: 7634388648029061271
           - rid: 7634388648029061272
           - rid: 7634388648029061273
-          - rid: 7634388648029061274
+          - rid: 7634388676042293251
+          - rid: 7634388676042293315
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -3377,10 +3377,6 @@ MonoBehaviour:
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
         m_Value: 1
-    - rid: 7634388648029061274
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061275
       type: {class: SetGameObjectActiveNodeModel, ns: , asm: Assembly-CSharp-Editor}
       data: 
@@ -3516,3 +3512,19 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: 
+    - rid: 7634388676042293249
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: Building_Pizza
+    - rid: 7634388676042293251
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388676042293314
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: site_market_01
+    - rid: 7634388676042293315
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 

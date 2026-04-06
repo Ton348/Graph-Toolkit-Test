@@ -1,31 +1,18 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class BusinessSimulationState
+public class BusinessSimulationState : BusinessRuntimeSimulationState
 {
     public string instanceId;
-    public string lotId;
-    public string businessTypeId;
     public bool isRented;
     public bool isOpen;
-    public int rentPerDay;
     public List<string> installedModules = new List<string>();
-    public int storageCapacity;
-    public int shelfCapacity;
-    public float storageStock;
-    public float shelfStock;
     public string selectedSupplierId;
     public int autoDeliveryPerDay;
     public int markupPercent;
     public string hiredCashierContactId;
     public string hiredMerchContactId;
-
-    public float accumulatedIncome;
-    public float accumulatedExpenses;
-
     public float cashierMultiplier = 1f;
-
     public float lastDelivered;
     public float lastShelved;
     public float lastDemand;

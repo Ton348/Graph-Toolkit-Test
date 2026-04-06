@@ -18,7 +18,7 @@ public class BusinessListView : MonoBehaviour
         }
     }
 
-    public void SetBusinesses(IEnumerable<BusinessInstanceSnapshot> businesses)
+    public void SetBusinesses(IEnumerable<BusinessInstanceSnapshot> businesses, Func<BusinessInstanceSnapshot, string> labelProvider = null)
     {
         entries.Clear();
         if (dropdown == null)
@@ -35,9 +35,13 @@ public class BusinessListView : MonoBehaviour
             {
                 if (business == null) continue;
                 entries.Add(business);
-                string label = !string.IsNullOrWhiteSpace(business.lotId)
-                    ? business.lotId
-                    : business.instanceId;
+                string label = labelProvider != null ? labelProvider(business) : null;
+                if (string.IsNullOrWhiteSpace(label))
+                {
+                    label = !string.IsNullOrWhiteSpace(business.lotId)
+                        ? business.lotId
+                        : business.instanceId;
+                }
                 labels.Add(label);
             }
         }

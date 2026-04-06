@@ -14,6 +14,7 @@ public class LocalGameServer : IGameServer
     private readonly float networkErrorChance;
     private readonly float timeoutChance;
     private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
+    private readonly List<ConstructedSiteSnapshot> constructedSites = new List<ConstructedSiteSnapshot>();
     private readonly List<BusinessInstanceSnapshot> businesses = new List<BusinessInstanceSnapshot>();
     private readonly HashSet<string> knownContacts = new HashSet<string>();
     private static readonly System.Random Random = new System.Random();
@@ -141,6 +142,8 @@ public class LocalGameServer : IGameServer
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuyFailed", "Buy building failed.");
         }
+
+        TryConstructSiteFromBuildingDefinition(building.Definition);
 
         if (questAction == QuestActionType.StartQuest)
         {
@@ -490,6 +493,69 @@ public class LocalGameServer : IGameServer
 
         businesses.Add(business);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Rent business success.");
+    }
+
+    public async Task<ServerActionResult> TryConstructSiteVisualAsync(string siteId, string visualId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(siteId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "SiteIdEmpty", "siteId is required.");
+        }
+
+        if (string.IsNullOrWhiteSpace(visualId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "VisualIdEmpty", "visualId is required.");
+        }
+
+        var site = FindConstructedSiteBySiteId(siteId);
+        if (site == null)
+        {
+            site = new ConstructedSiteSnapshot
+            {
+                siteId = siteId.Trim()
+            };
+            constructedSites.Add(site);
+        }
+
+        site.isConstructed = true;
+        site.visualId = visualId.Trim();
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Construct site visual success.");
+    }
+
+    public async Task<ServerActionResult> TryRemoveSiteVisualAsync(string siteId)
+    {
+        int delayMs = NextDelayMs();
+        var networkIssue = SampleNetworkIssue();
+        Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+        await Task.Delay(delayMs);
+
+        if (networkIssue != ServerActionResult.ErrorType.None)
+        {
+            return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+        }
+
+        if (string.IsNullOrWhiteSpace(siteId))
+        {
+            return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "SiteIdEmpty", "siteId is required.");
+        }
+
+        var site = FindConstructedSiteBySiteId(siteId);
+        if (site != null)
+        {
+            constructedSites.Remove(site);
+        }
+
+        return ServerActionResult.SuccessResult(BuildSnapshot(), "Remove site visual success.");
     }
 
     public async Task<ServerActionResult> TryAssignBusinessTypeAsync(string lotId, string businessTypeId)
@@ -999,6 +1065,49 @@ public class LocalGameServer : IGameServer
         return null;
     }
 
+    private ConstructedSiteSnapshot FindConstructedSiteBySiteId(string siteId)
+    {
+        if (string.IsNullOrWhiteSpace(siteId)) return null;
+
+        string normalizedSiteId = siteId.Trim();
+        for (int i = 0; i < constructedSites.Count; i++)
+        {
+            var site = constructedSites[i];
+            if (site != null && site.siteId == normalizedSiteId)
+            {
+                return site;
+            }
+        }
+
+        return null;
+    }
+
+    private void TryConstructSiteFromBuildingDefinition(BuildingDefinitionData definition)
+    {
+        if (definition == null || string.IsNullOrWhiteSpace(definition.siteId) || string.IsNullOrWhiteSpace(definition.visualId))
+        {
+            return;
+        }
+
+        string normalizedSiteId = definition.siteId.Trim();
+        string normalizedVisualId = definition.visualId.Trim();
+
+        var existing = FindConstructedSiteBySiteId(normalizedSiteId);
+        if (existing == null)
+        {
+            constructedSites.Add(new ConstructedSiteSnapshot
+            {
+                siteId = normalizedSiteId,
+                visualId = normalizedVisualId,
+                isConstructed = true
+            });
+            return;
+        }
+
+        existing.visualId = normalizedVisualId;
+        existing.isConstructed = true;
+    }
+
     private ProfileSnapshot BuildSnapshot()
     {
         var snapshot = new ProfileSnapshot();
@@ -1068,6 +1177,24 @@ public class LocalGameServer : IGameServer
                 {
                     graphId = pair.Key,
                     checkpointId = pair.Value
+                });
+            }
+        }
+
+        if (constructedSites.Count > 0)
+        {
+            foreach (var site in constructedSites)
+            {
+                if (site == null || string.IsNullOrWhiteSpace(site.siteId))
+                {
+                    continue;
+                }
+
+                snapshot.ConstructedSites.Add(new ConstructedSiteSnapshot
+                {
+                    siteId = site.siteId,
+                    visualId = site.isConstructed ? site.visualId : null,
+                    isConstructed = site.isConstructed && !string.IsNullOrWhiteSpace(site.visualId)
                 });
             }
         }

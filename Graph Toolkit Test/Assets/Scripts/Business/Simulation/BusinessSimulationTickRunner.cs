@@ -7,7 +7,7 @@ public class BusinessSimulationTickRunner : MonoBehaviour
     public float timeScale = 1f;
 
     private BusinessSimulationService simulationService;
-    private float accumulator;
+    private BusinessSimulationClock clock;
 
     private void Awake()
     {
@@ -20,22 +20,26 @@ public class BusinessSimulationTickRunner : MonoBehaviour
         {
             simulationService = bootstrap.BusinessSimulationService;
         }
+
+        clock = new BusinessSimulationClock
+        {
+            tickIntervalSeconds = tickIntervalSeconds
+        };
     }
 
     private void Update()
     {
-        if (simulationService == null || tickIntervalSeconds <= 0f)
+        if (simulationService == null || clock == null)
         {
             return;
         }
 
+        clock.tickIntervalSeconds = tickIntervalSeconds;
         simulationService.TimeScale = timeScale;
-        accumulator += Time.deltaTime;
-
-        while (accumulator >= tickIntervalSeconds)
+        clock.Update(Time.deltaTime);
+        while (clock.TryConsumeTick(out var delta))
         {
-            simulationService.Tick(tickIntervalSeconds);
-            accumulator -= tickIntervalSeconds;
+            simulationService.RunTick(delta);
         }
     }
 }

@@ -41,6 +41,16 @@ public class StaffRoleDefinitionData
 }
 
 [Serializable]
+public class StaffContactDefinitionData
+{
+    public string id;
+    public string displayName;
+    public int salaryPerDay;
+    public int throughputPerHour;
+    public string roleId;
+}
+
+[Serializable]
 public class MarkupRuleDefinitionData
 {
     public int minMarkup;
@@ -80,6 +90,12 @@ public class SupplierDatabaseData
 public class StaffRoleDatabaseData
 {
     public List<StaffRoleDefinitionData> roles = new List<StaffRoleDefinitionData>();
+}
+
+[Serializable]
+public class StaffContactDatabaseData
+{
+    public List<StaffContactDefinitionData> contacts = new List<StaffContactDefinitionData>();
 }
 
 [Serializable]

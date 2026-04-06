@@ -1,14 +1,22 @@
 using System.Collections.Generic;
+using Dreamteck.Splines;
 using UnityEngine;
 
 public class BusinessWorldRuntime : MonoBehaviour
 {
+    public string siteId;
     public string lotId;
     public Transform storagePoint;
     public Transform shelvesPoint;
     public Transform cashierPoint;
     public Transform deliveryZone;
     public List<BusinessModuleSlot> moduleSlots = new List<BusinessModuleSlot>();
+    public SplineComputer merchRoute;
+    public Transform merchSpawnPoint;
+    public GameObject merchWorkerPrefab;
+    public int merchTriggerGroupIndex = 0;
+    public string storageTriggerName = "Storage";
+    public string shelvesTriggerName = "Shelves";
 
     public GameBootstrap bootstrap;
 
@@ -47,5 +55,10 @@ public class BusinessWorldRuntime : MonoBehaviour
     public BusinessSimulationService GetSimulationService()
     {
         return bootstrap != null ? bootstrap.BusinessSimulationService : null;
+    }
+
+    public BusinessLiveSimulationService GetLiveSimulationService()
+    {
+        return bootstrap != null ? bootstrap.BusinessLiveSimulationService : null;
     }
 }
