@@ -601,7 +601,7 @@ MonoBehaviour:
           m_ValueList:
           - rid: 6060224012171084122
           - rid: 6060224012171084123
-          - rid: 6060224012171084124
+          - rid: 7634388769303429120
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -626,10 +626,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041D\u0430\u0447\u0430\u043B\u044C\u043D\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0433\u0440\u0430\u0444\u0430."
-    - rid: 6060224012171084124
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084125
       type: {class: StartNodeModel, ns: , asm: Assembly-CSharp-Editor}
       data: 
@@ -653,23 +649,23 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ConditionType
           - __option_TargetBuilding
           - __option_RequiredMoney
           - __option_PlayerStat
           - __option_RequiredStatValue
           - __option_QuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084127
           - rid: 6060224012171084128
-          - rid: 6060224012171084129
           - rid: 6060224012171084130
           - rid: 6060224012171084131
           - rid: 6060224012171084132
           - rid: 6060224012171084133
           - rid: 6060224012171084134
           - rid: 6060224012171084135
+          - rid: 7634388769303429121
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -694,10 +690,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442 \u0443\u0441\u043B\u043E\u0432\u0438\u0435
           \u0438 \u0432\u0435\u0434\u0435\u0442 \u043F\u043E True/False."
-    - rid: 6060224012171084129
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084130
       type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -791,17 +783,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084139
           - rid: 6060224012171084140
-          - rid: 6060224012171084141
           - rid: 6060224012171084142
           - rid: 6060224012171084143
           - rid: 6060224012171084144
+          - rid: 7634388769303429122
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -827,10 +819,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 6060224012171084141
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084142
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -899,15 +887,15 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ClearCheckpoint
           - __option_CompleteQuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084148
           - rid: 6060224012171084149
-          - rid: 6060224012171084150
           - rid: 6060224012171084151
           - rid: 6060224012171084152
+          - rid: 7634388769303429123
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -932,10 +920,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0433\u0440\u0430\u0444\u0430."
-    - rid: 6060224012171084150
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084151
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -967,19 +951,19 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Option1Label
           - __option_Option2Label
           - __option_Option3Label
           - __option_Option4Label
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084156
           - rid: 6060224012171084157
-          - rid: 6060224012171084158
           - rid: 6060224012171084159
           - rid: 6060224012171084160
           - rid: 6060224012171084161
           - rid: 6060224012171084162
+          - rid: 7634388769303429124
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1004,10 +988,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0438\u0433\u0440\u043E\u043A\u0443
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u0432\u044B\u0431\u043E\u0440\u0430."
-    - rid: 6060224012171084158
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084159
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1080,19 +1060,19 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_TargetObject
           - __option_IsActive
           - __option_VisualId
           - __option_SiteId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084179
           - rid: 6060224012171084180
-          - rid: 6060224012171084181
           - rid: 6060224012171084182
           - rid: 6060224012171084183
           - rid: 7634388676042293249
           - rid: 7634388676042293314
+          - rid: 7634388769303429125
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1119,10 +1099,6 @@ MonoBehaviour:
         m_Value: "\u0412\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u0438\u043B\u0438
           \u0432\u044B\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u044B\u0439
           \u043E\u0431\u044A\u0435\u043A\u0442"
-    - rid: 6060224012171084181
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084182
       type: {class: 'Constant`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1154,17 +1130,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084188
           - rid: 6060224012171084189
-          - rid: 6060224012171084190
           - rid: 6060224012171084191
           - rid: 6060224012171084192
           - rid: 6060224012171084193
+          - rid: 7634388769303429126
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1190,10 +1166,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 6060224012171084190
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084191
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1262,17 +1234,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_BuildingId
           - __option_QuestAction
           - __option_QuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084222
           - rid: 6060224012171084223
-          - rid: 6060224012171084224
           - rid: 6060224012171084225
           - rid: 6060224027096514746
           - rid: 6060224027096514747
+          - rid: 7634388769303429127
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1299,10 +1271,6 @@ MonoBehaviour:
         m_Value: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 \u0437\u0430\u043F\u0440\u043E\u0441
           \u043D\u0430 \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u0437\u0434\u0430\u043D\u0438\u044F
           \u0447\u0435\u0440\u0435\u0437 IGameServer."
-    - rid: 6060224012171084224
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084225
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1330,15 +1298,15 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ClearCheckpoint
           - __option_CompleteQuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224012171084236
           - rid: 6060224012171084237
-          - rid: 6060224012171084238
           - rid: 6060224012171084239
           - rid: 6060224012171084240
+          - rid: 7634388769303429128
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1363,10 +1331,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0433\u0440\u0430\u0444\u0430."
-    - rid: 6060224012171084238
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224012171084239
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1509,17 +1473,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224027096514760
           - rid: 6060224027096514761
-          - rid: 6060224027096514762
           - rid: 6060224027096514763
           - rid: 6060224027096514764
           - rid: 6060224027096514765
+          - rid: 7634388769303429129
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1545,10 +1509,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 6060224027096514762
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224027096514763
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1617,23 +1577,23 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ConditionType
           - __option_TargetBuilding
           - __option_RequiredMoney
           - __option_PlayerStat
           - __option_RequiredStatValue
           - __option_QuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457571
           - rid: 6060224031860457572
-          - rid: 6060224031860457573
           - rid: 6060224031860457574
           - rid: 6060224031860457575
           - rid: 6060224031860457576
           - rid: 6060224031860457577
           - rid: 6060224031860457578
           - rid: 6060224031860457579
+          - rid: 7634388769303429130
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1658,10 +1618,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442 \u0443\u0441\u043B\u043E\u0432\u0438\u0435
           \u0438 \u0432\u0435\u0434\u0435\u0442 \u043F\u043E True/False."
-    - rid: 6060224031860457573
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457574
       type: {class: EnumConstant, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1787,17 +1743,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457619
           - rid: 6060224031860457620
-          - rid: 6060224031860457621
           - rid: 6060224031860457622
           - rid: 6060224031860457623
           - rid: 6060224031860457624
+          - rid: 7634388769303429131
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1823,10 +1779,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 6060224031860457621
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457622
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1894,19 +1846,19 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Option1Label
           - __option_Option2Label
           - __option_Option3Label
           - __option_Option4Label
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457628
           - rid: 6060224031860457629
-          - rid: 6060224031860457630
           - rid: 6060224031860457631
           - rid: 6060224031860457632
           - rid: 6060224031860457633
           - rid: 6060224031860457634
+          - rid: 7634388769303429132
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -1931,10 +1883,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0438\u0433\u0440\u043E\u043A\u0443
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u0432\u044B\u0431\u043E\u0440\u0430."
-    - rid: 6060224031860457630
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457631
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2039,17 +1987,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457646
           - rid: 6060224031860457647
-          - rid: 6060224031860457648
           - rid: 6060224031860457649
           - rid: 6060224031860457650
           - rid: 6060224031860457651
+          - rid: 7634388769303429133
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2075,10 +2023,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 6060224031860457648
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457649
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2146,13 +2090,13 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_QuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457655
           - rid: 6060224031860457656
-          - rid: 6060224031860457657
           - rid: 6060224031860457658
+          - rid: 7634388769303429134
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2179,10 +2123,6 @@ MonoBehaviour:
         m_Value: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 \u0437\u0430\u043F\u0440\u043E\u0441
           \u043D\u0430 \u0437\u0430\u0432\u0435\u0440\u0448\u0435\u043D\u0438\u0435
           \u043A\u0432\u0435\u0441\u0442\u0430 \u0447\u0435\u0440\u0435\u0437 IGameServer."
-    - rid: 6060224031860457657
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457658
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2242,15 +2182,15 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ClearCheckpoint
           - __option_CompleteQuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457662
           - rid: 6060224031860457663
-          - rid: 6060224031860457664
           - rid: 6060224031860457665
           - rid: 6060224031860457666
+          - rid: 7634388769303429135
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2275,10 +2215,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0433\u0440\u0430\u0444\u0430."
-    - rid: 6060224031860457664
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457665
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2374,13 +2310,13 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_CheckpointId
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457671
           - rid: 6060224031860457672
-          - rid: 6060224031860457673
           - rid: 6060224031860457674
+          - rid: 7634388769303429136
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2405,10 +2341,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0421\u043E\u0445\u0440\u0430\u043D\u044F\u0435\u0442 \u0442\u043E\u0447\u043A\u0443
           \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0430\u0444\u0430."
-    - rid: 6060224031860457673
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457674
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2468,17 +2400,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457727
           - rid: 6060224031860457728
-          - rid: 6060224031860457729
           - rid: 6060224031860457730
           - rid: 6060224031860457731
           - rid: 6060224031860457732
+          - rid: 7634388769303429137
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2514,19 +2446,19 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Option1Label
           - __option_Option2Label
           - __option_Option3Label
           - __option_Option4Label
+          - __option_NodeComment
           m_ValueList:
           - rid: 6060224031860457734
           - rid: 6060224031860457735
-          - rid: 6060224031860457736
           - rid: 6060224031860457737
           - rid: 6060224031860457738
           - rid: 6060224031860457739
           - rid: 6060224031860457740
+          - rid: 7634388769303429138
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2552,10 +2484,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 6060224031860457729
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457730
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2581,10 +2509,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0438\u0433\u0440\u043E\u043A\u0443
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u0432\u044B\u0431\u043E\u0440\u0430."
-    - rid: 6060224031860457736
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 6060224031860457737
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2752,13 +2676,13 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_BuildingId
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061121
           - rid: 7634388648029061122
-          - rid: 7634388648029061123
           - rid: 7634388648029061124
+          - rid: 7634388769303429139
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2785,10 +2709,6 @@ MonoBehaviour:
           \u0442\u043E\u0440\u0433\u043E\u0432\u043B\u0438 \u0437\u0430 \u0437\u0434\u0430\u043D\u0438\u0435
           \u0438 \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 \u0441\u0435\u0440\u0432\u0435\u0440\u043D\u044B\u0439
           \u0437\u0430\u043F\u0440\u043E\u0441 \u043F\u043E\u0441\u043B\u0435 \u043F\u043E\u0434\u0442\u0432\u0435\u0440\u0436\u0434\u0435\u043D\u0438\u044F."
-    - rid: 7634388648029061123
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061124
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2880,17 +2800,17 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Title
           - __option_Body
           - __option_Screenshot
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061136
           - rid: 7634388648029061137
-          - rid: 7634388648029061138
           - rid: 7634388648029061139
           - rid: 7634388648029061140
           - rid: 7634388648029061141
+          - rid: 7634388769303429140
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2916,10 +2836,6 @@ MonoBehaviour:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0434\u0438\u0430\u043B\u043E\u0433
           \u0441 \u0437\u0430\u0433\u043E\u043B\u043E\u0432\u043A\u043E\u043C \u0438
           \u0442\u0435\u043A\u0441\u0442\u043E\u043C."
-    - rid: 7634388648029061138
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061139
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -2956,13 +2872,13 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_CheckpointId
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061161
           - rid: 7634388648029061162
-          - rid: 7634388648029061163
           - rid: 7634388648029061164
+          - rid: 7634388769303429141
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2987,10 +2903,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0421\u043E\u0445\u0440\u0430\u043D\u044F\u0435\u0442 \u0442\u043E\u0447\u043A\u0443
           \u043F\u0440\u043E\u0434\u043E\u043B\u0436\u0435\u043D\u0438\u044F \u0433\u0440\u0430\u0444\u0430."
-    - rid: 7634388648029061163
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061164
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -3018,19 +2930,19 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_Option1Label
           - __option_Option2Label
           - __option_Option3Label
           - __option_Option4Label
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061176
           - rid: 7634388648029061177
-          - rid: 7634388648029061178
           - rid: 7634388648029061179
           - rid: 7634388648029061180
           - rid: 7634388648029061181
           - rid: 7634388648029061182
+          - rid: 7634388769303429142
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -3055,10 +2967,6 @@ MonoBehaviour:
       data:
         m_Value: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442 \u0438\u0433\u0440\u043E\u043A\u0443
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u0432\u044B\u0431\u043E\u0440\u0430."
-    - rid: 7634388648029061178
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061179
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -3130,15 +3038,15 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ClearCheckpoint
           - __option_CompleteQuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061250
           - rid: 7634388648029061251
-          - rid: 7634388648029061252
           - rid: 7634388648029061253
           - rid: 7634388648029061254
+          - rid: 7634388769303429143
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -3163,10 +3071,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0433\u0440\u0430\u0444\u0430."
-    - rid: 7634388648029061252
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061253
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -3326,19 +3230,19 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_TargetObject
           - __option_IsActive
           - __option_VisualId
           - __option_SiteId
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061269
           - rid: 7634388648029061270
-          - rid: 7634388648029061271
           - rid: 7634388648029061272
           - rid: 7634388648029061273
           - rid: 7634388676042293251
           - rid: 7634388676042293315
+          - rid: 7634388769303429144
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -3365,10 +3269,6 @@ MonoBehaviour:
         m_Value: "\u0412\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u0438\u043B\u0438
           \u0432\u044B\u043A\u043B\u044E\u0447\u0430\u0435\u0442 \u0443\u043A\u0430\u0437\u0430\u043D\u043D\u044B\u0439
           \u043E\u0431\u044A\u0435\u043A\u0442"
-    - rid: 7634388648029061271
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061272
       type: {class: 'Constant`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -3432,15 +3332,15 @@ MonoBehaviour:
           m_KeyList:
           - __option_NodeTitle
           - __option_NodeDescription
-          - __option_NodeComment
           - __option_ClearCheckpoint
           - __option_CompleteQuestId
+          - __option_NodeComment
           m_ValueList:
           - rid: 7634388648029061284
           - rid: 7634388648029061285
-          - rid: 7634388648029061286
           - rid: 7634388648029061287
           - rid: 7634388648029061288
+          - rid: 7634388769303429145
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -3465,10 +3365,6 @@ MonoBehaviour:
       data:
         m_Value: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0433\u0440\u0430\u0444\u0430."
-    - rid: 7634388648029061286
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: 
     - rid: 7634388648029061287
       type: {class: 'Constant`1[[System.Boolean, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -3525,6 +3421,110 @@ MonoBehaviour:
       data:
         m_Value: site_market_01
     - rid: 7634388676042293315
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429120
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429121
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429122
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429123
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429124
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429125
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429126
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429127
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429128
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429129
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429130
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429131
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429132
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429133
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429134
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429135
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429136
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429137
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429138
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429139
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429140
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429141
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429142
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429143
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429144
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: 
+    - rid: 7634388769303429145
       type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
         m_Value: 

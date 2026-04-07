@@ -1,61 +1,20 @@
 {
   "playerId": "player",
-  "money": 900,
+  "money": 1000,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
   "speed": 1,
   "damage": 1,
   "health": 100,
-  "activeQuests": [],
-  "completedQuests": [
+  "activeQuests": [
     "buy_building"
   ],
-  "ownedBuildings": [
-    "car_wash_01"
-  ],
-  "buildingStates": [
-    {
-      "id": "car_wash_01",
-      "owned": true,
-      "level": 0,
-      "currentIncome": 100,
-      "currentExpenses": 50
-    }
-  ],
+  "completedQuests": [],
+  "ownedBuildings": [],
+  "buildingStates": [],
   "graphCheckpoints": {},
-  "constructedSites": [
-    {
-      "siteId": "site_market_01",
-      "visualId": "Building_Pizza",
-      "isConstructed": true
-    }
-  ],
-  "businesses": [
-    {
-      "instanceId": "biz_1775199232571_1514",
-      "lotId": "lot_market_01",
-      "businessTypeId": "grocery_store",
-      "isRented": true,
-      "isOpen": false,
-      "rentPerDay": 1000,
-      "installedModules": [
-        "shelves",
-        "storage"
-      ],
-      "storageCapacity": 1000,
-      "shelfCapacity": 200,
-      "storageStock": 200,
-      "shelfStock": 0,
-      "selectedSupplierId": null,
-      "autoDeliveryPerDay": 0,
-      "markupPercent": 0,
-      "hiredCashierContactId": "supplier_wholesale_01",
-      "hiredMerchContactId": "merch_1"
-    }
-  ],
-  "knownContacts": [
-    "supplier_wholesale_01",
-    "merch_1"
-  ]
+  "constructedSites": [],
+  "businesses": [],
+  "knownContacts": []
 }

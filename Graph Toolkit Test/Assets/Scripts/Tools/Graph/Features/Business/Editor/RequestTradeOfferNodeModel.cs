@@ -1,7 +1,6 @@
 using System;
 using Unity.GraphToolkit.Editor;
 
-[UseWithGraph(typeof(Graph.Core.Editor.GraphEditorGraph))]
 [Serializable]
 public class RequestTradeOfferNodeModel : BusinessQuestBusinessNodeModel
 {

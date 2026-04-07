@@ -10,7 +10,6 @@ public interface IBusinessQuestLegacyNode
 }
 
 [Serializable]
-[UseWithGraph(typeof(Graph.Core.Editor.GraphEditorGraph))]
 public abstract class BusinessQuestBusinessNodeModel : Graph.Core.Editor.GraphEditorNode, IBusinessQuestBusinessNode
 {
 }

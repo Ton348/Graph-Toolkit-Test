@@ -44,13 +44,7 @@ public abstract class BusinessQuestEditorNode : Node
             .WithDefaultValue(DefaultDescription)
             .Build();
 
-        var commentOption = context.AddOption<string>(COMMENT_OPTION)
-            .WithDisplayName("Комментарий")
-            .WithDefaultValue(string.Empty)
-            .Build();
-
         TryEnableMultiline(descriptionOption);
-        TryEnableMultiline(commentOption);
     }
 
     static void TryEnableMultiline(INodeOption option)
