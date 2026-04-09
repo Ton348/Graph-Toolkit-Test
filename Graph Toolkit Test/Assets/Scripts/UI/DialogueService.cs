@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -99,6 +100,12 @@ public class DialogueUIService : MonoBehaviour
     }
 }
 
-public class DialogueService : DialogueUIService
+public class DialogueService : DialogueUIService, IGraphDialogueService
 {
+    public Task ShowAsync(string title, string body)
+    {
+        var tcs = new TaskCompletionSource<bool>();
+        ShowDialogue(title, body, () => tcs.TrySetResult(true), null);
+        return tcs.Task;
+    }
 }

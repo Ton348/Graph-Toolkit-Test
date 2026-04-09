@@ -29223,7 +29223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  dialogueGraph: {fileID: -8116140793486648412, guid: 1122274328ac5453788e18a79d14df1f, type: 3}
+  dialogueGraph: {fileID: 0}
   stealGraph: {fileID: -8116140793486648412, guid: ed1a9ec85538441cfb6dc39d9d44f8a8, type: 3}
   allowSteal: 1
   lookForwardReference: {fileID: 0}

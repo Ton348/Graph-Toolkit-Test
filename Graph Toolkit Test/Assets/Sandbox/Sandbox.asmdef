@@ -1,0 +1,19 @@
+{
+  "name": "Sandbox",
+  "references": [
+    "GraphCore.Runtime",
+    "Game1Graph.Runtime",
+    "Legacy.Runtime",
+    "Prototype.Business",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

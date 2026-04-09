@@ -1,0 +1,17 @@
+{
+  "name": "Legacy.Runtime",
+  "references": [
+    "GraphCore.Runtime",
+    "Game1Graph.Runtime",
+    "Unity.TextMeshPro"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

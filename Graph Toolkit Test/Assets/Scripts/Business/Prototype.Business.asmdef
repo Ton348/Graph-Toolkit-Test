@@ -1,0 +1,20 @@
+{
+  "name": "Prototype.Business",
+  "references": [
+    "Legacy.Runtime",
+    "Unity.TextMeshPro",
+    "GraphCore.Runtime",
+    "Game1Graph.Runtime",
+    "Dreamteck.Splines",
+    "Dreamteck.Utilities"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

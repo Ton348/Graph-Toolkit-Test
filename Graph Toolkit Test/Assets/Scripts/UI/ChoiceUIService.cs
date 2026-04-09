@@ -1,11 +1,31 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChoiceUIService : MonoBehaviour
+public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
 {
+    public Task<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options)
+    {
+        var tcs = new TaskCompletionSource<int>();
+        var legacyOptions = new List<ChoiceOption>();
+        if (options != null)
+        {
+            for (int i = 0; i < options.Count; i++)
+            {
+                legacyOptions.Add(new ChoiceOption
+                {
+                    label = options[i].Label
+                });
+            }
+        }
+
+        ShowChoices(legacyOptions, index => tcs.TrySetResult(index));
+        return tcs.Task;
+    }
+
     public GameObject panel;
     public Button[] optionButtons = new Button[4];
     public TMP_Text[] optionTexts = new TMP_Text[4];

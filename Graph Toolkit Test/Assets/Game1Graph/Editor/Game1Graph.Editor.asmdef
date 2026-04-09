@@ -1,0 +1,22 @@
+{
+  "name": "Game1Graph.Editor",
+  "references": [
+    "Game1Graph.Runtime",
+    "GraphCore.Runtime",
+    "GraphCore.Editor",
+    "Unity.GraphToolkit.Editor",
+    "Unity.GraphToolkit.Common.Editor",
+    "Unity.GraphToolkit.Utility.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}
