@@ -29,6 +29,11 @@ public class DialogueUIService : MonoBehaviour
         }
     }
 
+    private void OnDisable()
+    {
+        HideDialogue();
+    }
+
     private void Update()
     {
         if (panel == null || !panel.activeSelf || onContinue == null)
@@ -105,13 +110,15 @@ public class DialogueService : DialogueUIService, IGraphDialogueService
 {
     public UniTask ShowAsync(string title, string body, CancellationToken cancellationToken)
     {
+        HideDialogue();
+
         UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
         CancellationTokenRegistration registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
         ShowDialogue(title, body, () => completionSource.TrySetResult(), null);
-        return AwaitWithCleanupAsync(completionSource, registration);
+        return AwaitWithCleanupAsync(this, completionSource, registration);
     }
 
-    private static async UniTask AwaitWithCleanupAsync(UniTaskCompletionSource completionSource, CancellationTokenRegistration registration)
+    private static async UniTask AwaitWithCleanupAsync(DialogueUIService dialogueUIService, UniTaskCompletionSource completionSource, CancellationTokenRegistration registration)
     {
         try
         {
@@ -120,6 +127,7 @@ public class DialogueService : DialogueUIService, IGraphDialogueService
         finally
         {
             registration.Dispose();
+            dialogueUIService.HideDialogue();
         }
     }
 }

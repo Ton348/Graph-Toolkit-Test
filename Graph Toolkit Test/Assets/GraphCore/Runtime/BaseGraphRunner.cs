@@ -13,7 +13,7 @@ public sealed class BaseGraphRunner
     private BaseGraph m_graph;
     private GraphExecutionContext m_context;
     private CancellationTokenSource m_runCancellationTokenSource;
-    private BusinessQuestNode m_currentNode;
+    private BaseGraphNode m_currentNode;
 
     public BaseGraphRunner(GraphNodeExecutorRegistry executorRegistry)
     {
@@ -69,7 +69,7 @@ public sealed class BaseGraphRunner
             return;
         }
 
-        if (!m_graph.TryGetStartNode(out BusinessQuestNode startNode))
+        if (!m_graph.TryGetStartNode(out BaseGraphNode startNode))
         {
             Debug.LogError($"{LogPrefix} Start node '{m_graph.startNodeId}' not found.", m_graph);
             Cleanup();
@@ -156,7 +156,7 @@ public sealed class BaseGraphRunner
             return false;
         }
 
-        if (!m_graph.TryGetNodeById(nextNodeId, out BusinessQuestNode nextNode))
+        if (!m_graph.TryGetNodeById(nextNodeId, out BaseGraphNode nextNode))
         {
             Debug.LogError($"{LogPrefix} Next node '{nextNodeId}' not found.", m_graph);
             return false;

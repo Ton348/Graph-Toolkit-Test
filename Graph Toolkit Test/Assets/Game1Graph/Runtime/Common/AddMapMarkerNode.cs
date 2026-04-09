@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class AddMapMarkerNode : BusinessQuestNode
+public class AddMapMarkerNode : BaseGraphNode
 {
     public string markerId;
     public Transform targetTransform;

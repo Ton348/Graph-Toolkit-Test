@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Flow
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class RandomNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class RandomNodeModel : BaseGraphEditorNode
     {
         public const string WEIGHT1_OPTION = "Weight1";
         public const string WEIGHT2_OPTION = "Weight2";

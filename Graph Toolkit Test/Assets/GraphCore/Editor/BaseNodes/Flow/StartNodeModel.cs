@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Flow
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class StartNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class StartNodeModel : BaseGraphEditorNode
     {
         protected override string DefaultTitle => "Начало графа";
         protected override string DefaultDescription => "Стартовая точка выполнения сценария";

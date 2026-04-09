@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Utility
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class LogNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class LogNodeModel : BaseGraphEditorNode
     {
         public const string MESSAGE_OPTION = "Message";
 

@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.World
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class MapMarkerNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class MapMarkerNodeModel : BaseGraphEditorNode
     {
         public const string MARKER_ID_OPTION = "MarkerId";
         public const string TARGET_OPTION = "Target";

@@ -6,11 +6,13 @@ public sealed class BaseGraph : ScriptableObject
 {
     private const string LogPrefix = "[BaseGraph]";
     public string startNodeId;
-    public List<BusinessQuestNode> nodes = new List<BusinessQuestNode>();
+    [SerializeReference]
+    public List<BaseGraphNode> nodes = new List<BaseGraphNode>();
 
-    private Dictionary<string, BusinessQuestNode> m_nodeLookup;
+    private Dictionary<string, BaseGraphNode> m_nodeLookup;
     private bool m_lookupInitialized;
     private GraphValidationResult m_lastValidationResult;
+    private int m_lastLookupNodeCount = -1;
 
     public GraphValidationResult ValidateGraph()
     {
@@ -23,7 +25,7 @@ public sealed class BaseGraph : ScriptableObject
         return ValidateGraph().ErrorCount > 0;
     }
 
-    public bool TryGetNodeById(string nodeId, out BusinessQuestNode node)
+    public bool TryGetNodeById(string nodeId, out BaseGraphNode node)
     {
         EnsureLookup();
 
@@ -42,12 +44,12 @@ public sealed class BaseGraph : ScriptableObject
         return m_nodeLookup.TryGetValue(nodeId, out node);
     }
 
-    public BusinessQuestNode GetNodeById(string nodeId)
+    public BaseGraphNode GetNodeById(string nodeId)
     {
-        return TryGetNodeById(nodeId, out BusinessQuestNode node) ? node : null;
+        return TryGetNodeById(nodeId, out BaseGraphNode node) ? node : null;
     }
 
-    public bool TryGetStartNode(out BusinessQuestNode node)
+    public bool TryGetStartNode(out BaseGraphNode node)
     {
         return TryGetNodeById(startNodeId, out node);
     }
@@ -57,11 +59,12 @@ public sealed class BaseGraph : ScriptableObject
         m_lookupInitialized = false;
         m_nodeLookup = null;
         m_lastValidationResult = null;
+        m_lastLookupNodeCount = -1;
     }
 
-    internal Dictionary<string, BusinessQuestNode> BuildNodeLookup(GraphValidationResult validationResult)
+    internal Dictionary<string, BaseGraphNode> BuildNodeLookup(GraphValidationResult validationResult)
     {
-        Dictionary<string, BusinessQuestNode> lookup = new Dictionary<string, BusinessQuestNode>(nodes != null ? nodes.Count : 0, StringComparer.Ordinal);
+        Dictionary<string, BaseGraphNode> lookup = new Dictionary<string, BaseGraphNode>(nodes != null ? nodes.Count : 0, StringComparer.Ordinal);
 
         if (nodes == null)
         {
@@ -71,7 +74,7 @@ public sealed class BaseGraph : ScriptableObject
 
         for (int i = 0; i < nodes.Count; i++)
         {
-            BusinessQuestNode node = nodes[i];
+            BaseGraphNode node = nodes[i];
             if (node == null)
             {
                 validationResult?.AddWarning($"Node index {i} is null.", nodeIndex: i);
@@ -95,7 +98,9 @@ public sealed class BaseGraph : ScriptableObject
 
     private void EnsureLookup()
     {
-        if (m_lookupInitialized)
+        int currentNodeCount = nodes != null ? nodes.Count : 0;
+        bool shouldRebuildLookup = !m_lookupInitialized || m_nodeLookup == null || m_lastLookupNodeCount != currentNodeCount;
+        if (!shouldRebuildLookup)
         {
             return;
         }
@@ -104,6 +109,7 @@ public sealed class BaseGraph : ScriptableObject
         m_nodeLookup = BuildNodeLookup(validation);
         m_lastValidationResult = validation;
         m_lookupInitialized = true;
+        m_lastLookupNodeCount = currentNodeCount;
 
         LogValidationIssues(validation);
     }

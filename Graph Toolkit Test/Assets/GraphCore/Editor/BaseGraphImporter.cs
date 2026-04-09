@@ -37,14 +37,14 @@ namespace Graph.Core.Editor
             }
 
             BaseGraph runtimeGraph = ScriptableObject.CreateInstance<BaseGraph>();
-            List<BusinessQuestNode> runtimeNodes = new List<BusinessQuestNode>(editorNodes.Count);
-            Dictionary<INode, BusinessQuestNode> nodeMap = new Dictionary<INode, BusinessQuestNode>(editorNodes.Count);
+            List<BaseGraphNode> runtimeNodes = new List<BaseGraphNode>(editorNodes.Count);
+            Dictionary<INode, BaseGraphNode> nodeMap = new Dictionary<INode, BaseGraphNode>(editorNodes.Count);
             Dictionary<INode, string> idMap = new Dictionary<INode, string>(editorNodes.Count);
 
             for (int i = 0; i < editorNodes.Count; i++)
             {
                 INode editorNode = editorNodes[i];
-                BusinessQuestNode runtimeNode = ConvertNode(editorNode);
+                BaseGraphNode runtimeNode = ConvertNode(editorNode);
                 if (runtimeNode == null)
                 {
                     continue;
@@ -57,7 +57,7 @@ namespace Graph.Core.Editor
                 idMap[editorNode] = nodeId;
             }
 
-            foreach (KeyValuePair<INode, BusinessQuestNode> pair in nodeMap)
+            foreach (KeyValuePair<INode, BaseGraphNode> pair in nodeMap)
             {
                 ApplyConnections(pair.Key, pair.Value, idMap);
             }
@@ -80,14 +80,14 @@ namespace Graph.Core.Editor
             return null;
         }
 
-        private static BusinessQuestNode ConvertNode(INode node)
+        private static BaseGraphNode ConvertNode(INode node)
         {
             if (node is not Node typedNode)
             {
                 return null;
             }
 
-            BusinessQuestNode runtimeNode = node switch
+            BaseGraphNode runtimeNode = node switch
             {
                 StartNodeModel => new StartNode(),
                 FinishNodeModel => new FinishNode(),
@@ -145,10 +145,10 @@ namespace Graph.Core.Editor
             ChoiceNode node = new ChoiceNode();
             string[] labels =
             {
-                GetOptionValue<string>(model, "Option1"),
-                GetOptionValue<string>(model, "Option2"),
-                GetOptionValue<string>(model, "Option3"),
-                GetOptionValue<string>(model, "Option4")
+                GetOptionValue<string>(model, ChoiceNodeModel.OPTION1_LABEL),
+                GetOptionValue<string>(model, ChoiceNodeModel.OPTION2_LABEL),
+                GetOptionValue<string>(model, ChoiceNodeModel.OPTION3_LABEL),
+                GetOptionValue<string>(model, ChoiceNodeModel.OPTION4_LABEL)
             };
 
             for (int i = 0; i < node.options.Count && i < labels.Length; i++)
@@ -188,7 +188,7 @@ namespace Graph.Core.Editor
             return node;
         }
 
-        private static void ApplyConnections(INode editorNode, BusinessQuestNode runtimeNode, Dictionary<INode, string> idMap)
+        private static void ApplyConnections(INode editorNode, BaseGraphNode runtimeNode, Dictionary<INode, string> idMap)
         {
             if (editorNode == null || runtimeNode == null)
             {
@@ -198,15 +198,26 @@ namespace Graph.Core.Editor
             switch (runtimeNode)
             {
                 case ChoiceNode choiceNode:
-                    for (int i = 0; i < choiceNode.options.Count; i++)
+                    if (choiceNode.options.Count > 0 && choiceNode.options[0] != null)
                     {
-                        if (choiceNode.options[i] == null)
-                        {
-                            continue;
-                        }
-
-                        choiceNode.options[i].nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, i, idMap);
+                        choiceNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION1_PORT, idMap);
                     }
+
+                    if (choiceNode.options.Count > 1 && choiceNode.options[1] != null)
+                    {
+                        choiceNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION2_PORT, idMap);
+                    }
+
+                    if (choiceNode.options.Count > 2 && choiceNode.options[2] != null)
+                    {
+                        choiceNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION3_PORT, idMap);
+                    }
+
+                    if (choiceNode.options.Count > 3 && choiceNode.options[3] != null)
+                    {
+                        choiceNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION4_PORT, idMap);
+                    }
+
                     return;
 
                 case RandomNode randomNode:
@@ -263,14 +274,33 @@ namespace Graph.Core.Editor
             return idMap.TryGetValue(nextNode, out string id) ? id : null;
         }
 
-        private static void ApplyNodeMetadata(Node editorNode, BusinessQuestNode runtimeNode)
+        private static string GetConnectedNodeIdByOutputName(INode node, string outputName, Dictionary<INode, string> idMap)
+        {
+            if (string.IsNullOrWhiteSpace(outputName))
+            {
+                return null;
+            }
+
+            int outputIndex = outputName switch
+            {
+                ChoiceNodeModel.OPTION1_PORT => 0,
+                ChoiceNodeModel.OPTION2_PORT => 1,
+                ChoiceNodeModel.OPTION3_PORT => 2,
+                ChoiceNodeModel.OPTION4_PORT => 3,
+                _ => -1
+            };
+
+            return GetConnectedNodeIdByOutputIndex(node, outputIndex, idMap);
+        }
+
+        private static void ApplyNodeMetadata(Node editorNode, BaseGraphNode runtimeNode)
         {
             if (editorNode == null || runtimeNode == null)
             {
                 return;
             }
 
-            if (TryGetOptionValue(editorNode, BusinessQuestEditorNode.TITLE_OPTION, out string title))
+            if (TryGetOptionValue(editorNode, BaseGraphEditorNode.TITLE_OPTION, out string title))
             {
                 runtimeNode.title = string.IsNullOrWhiteSpace(title) ? runtimeNode.GetType().Name : title;
             }
@@ -279,12 +309,12 @@ namespace Graph.Core.Editor
                 runtimeNode.title = runtimeNode.GetType().Name;
             }
 
-            if (TryGetOptionValue(editorNode, BusinessQuestEditorNode.DESCRIPTION_OPTION, out string description))
+            if (TryGetOptionValue(editorNode, BaseGraphEditorNode.DESCRIPTION_OPTION, out string description))
             {
                 runtimeNode.description = description;
             }
 
-            if (TryGetOptionValue(editorNode, BusinessQuestEditorNode.COMMENT_OPTION, out string comment))
+            if (TryGetOptionValue(editorNode, BaseGraphEditorNode.COMMENT_OPTION, out string comment))
             {
                 runtimeNode.comment = comment;
             }

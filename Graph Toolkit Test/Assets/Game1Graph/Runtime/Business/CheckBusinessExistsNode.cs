@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class CheckBusinessExistsNode : BusinessQuestNode
+public class CheckBusinessExistsNode : BaseGraphNode
 {
     public string lotId;
     public string trueNodeId;

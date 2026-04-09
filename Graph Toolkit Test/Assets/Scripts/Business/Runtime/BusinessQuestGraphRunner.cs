@@ -22,7 +22,7 @@ public class BusinessQuestGraphRunner
     private readonly Transform playerTransform;
     private readonly GraphProgressService graphProgressService;
 
-    private BusinessQuestNode currentNode;
+    private BaseGraphNode currentNode;
     private GraphExecutionContext executionContext;
     private Task<ServerActionResult> pendingServerTask;
     private string pendingSuccessNodeId;
@@ -1051,7 +1051,7 @@ public class BusinessQuestGraphRunner
         return currentContext != null && currentContext.contextType == InteractionContextType.Steal;
     }
 
-    private BusinessQuestNode ResolveStartNode()
+    private BaseGraphNode ResolveStartNode()
     {
         string graphId = GetGraphId();
         if (string.IsNullOrEmpty(graphId))
@@ -1181,7 +1181,7 @@ public class BusinessQuestGraphRunner
             return false;
         }
 
-        BusinessQuestNode current = graph.GetNodeById(dialogueNode.nextNodeId);
+        BaseGraphNode current = graph.GetNodeById(dialogueNode.nextNodeId);
         int safety = 0;
         while (current != null && safety < 20)
         {
@@ -1223,7 +1223,7 @@ public class BusinessQuestGraphRunner
         executionContext.Set(GraphContextKeys.ChoiceLastLabel, label);
     }
 
-    private void ExecuteImmediateNode(BusinessQuestNode node)
+    private void ExecuteImmediateNode(BaseGraphNode node)
     {
         switch (node)
         {

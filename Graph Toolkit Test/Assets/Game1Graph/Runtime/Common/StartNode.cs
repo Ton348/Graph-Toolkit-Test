@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class StartNode : BusinessQuestNode
+public class StartNode : BaseGraphNode
 {
     public StartNode()
     {

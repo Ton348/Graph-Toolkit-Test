@@ -61,7 +61,7 @@ public sealed class GraphNodeExecutorRegistry
         m_missingExecutorCache.Clear();
     }
 
-    public bool TryGetExecutor(BusinessQuestNode node, out IGraphNodeExecutor executor)
+    public bool TryGetExecutor(BaseGraphNode node, out IGraphNodeExecutor executor)
     {
         executor = null;
         if (node == null)

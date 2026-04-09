@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class CheckpointNode : BusinessQuestNode
+public class CheckpointNode : BaseGraphNode
 {
     public string checkpointId;
 }

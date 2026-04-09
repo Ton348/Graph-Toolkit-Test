@@ -3,7 +3,7 @@ using System;
 namespace GraphCore.BaseNodes.Runtime.Server
 {
     [Serializable]
-    public sealed class CheckpointNode : BusinessQuestNode
+    public sealed class CheckpointNode : BaseGraphNode
     {
         public string checkpointId;
         public CheckpointAction action;

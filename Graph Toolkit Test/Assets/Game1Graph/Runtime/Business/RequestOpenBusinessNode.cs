@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class RequestOpenBusinessNode : BusinessQuestNode
+public class RequestOpenBusinessNode : BaseGraphNode
 {
     public string lotId;
     public string successNodeId;

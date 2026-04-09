@@ -3,7 +3,7 @@ using System;
 namespace GraphCore.BaseNodes.Runtime.Flow
 {
     [Serializable]
-    public sealed class StartNode : BusinessQuestNode
+    public sealed class StartNode : BaseGraphNode
     {
         public StartNode()
         {

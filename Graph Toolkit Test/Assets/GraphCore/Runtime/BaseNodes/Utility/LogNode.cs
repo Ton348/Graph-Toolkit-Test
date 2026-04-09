@@ -3,7 +3,7 @@ using System;
 namespace GraphCore.BaseNodes.Runtime.Utility
 {
     [Serializable]
-    public sealed class LogNode : BusinessQuestNode
+    public sealed class LogNode : BaseGraphNode
     {
         public string message;
 

@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Flow
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class DelayNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class DelayNodeModel : BaseGraphEditorNode
     {
         public const string DELAY_SECONDS_OPTION = "DelaySeconds";
 

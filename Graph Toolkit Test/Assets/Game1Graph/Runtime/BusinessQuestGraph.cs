@@ -6,16 +6,16 @@ public class BusinessQuestGraph : ScriptableObject
     public string startNodeId;
 
     [SerializeReference]
-    public List<BusinessQuestNode> nodes = new List<BusinessQuestNode>();
+    public List<BaseGraphNode> nodes = new List<BaseGraphNode>();
 
-    public BusinessQuestNode GetNodeById(string id)
+    public BaseGraphNode GetNodeById(string id)
     {
         if (string.IsNullOrEmpty(id))
         {
             return null;
         }
 
-        foreach (BusinessQuestNode node in nodes)
+        foreach (BaseGraphNode node in nodes)
         {
             if (node != null && node.id == id)
             {
@@ -26,12 +26,12 @@ public class BusinessQuestGraph : ScriptableObject
         return null;
     }
 
-    public BusinessQuestNode GetStartNode()
+    public BaseGraphNode GetStartNode()
     {
         return GetNodeById(startNodeId);
     }
 
-    public BusinessQuestNode GetNextNode(BusinessQuestNode node)
+    public BaseGraphNode GetNextNode(BaseGraphNode node)
     {
         if (node == null)
         {
@@ -48,7 +48,7 @@ public class BusinessQuestGraph : ScriptableObject
             return null;
         }
 
-        foreach (BusinessQuestNode node in nodes)
+        foreach (BaseGraphNode node in nodes)
         {
             if (node is CheckpointNode checkpoint && checkpoint.checkpointId == checkpointId)
             {

@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class DialogueNode : BusinessQuestNode
+public class DialogueNode : BaseGraphNode
 {
     public string title;
     public string bodyText;

@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class RequestBuyBuildingNode : BusinessQuestNode
+public class RequestBuyBuildingNode : BaseGraphNode
 {
     public string buildingId;
     public QuestActionType questAction;

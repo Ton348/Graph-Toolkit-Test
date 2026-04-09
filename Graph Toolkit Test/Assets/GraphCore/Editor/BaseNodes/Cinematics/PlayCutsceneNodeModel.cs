@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Cinematics
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class PlayCutsceneNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class PlayCutsceneNodeModel : BaseGraphEditorNode
     {
         public const string CUTSCENE_REFERENCE_OPTION = "CutsceneReference";
 

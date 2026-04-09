@@ -6,6 +6,8 @@ public class NPCManager : Interactable
     [FormerlySerializedAs("questGraph")]
     public BusinessQuestGraph dialogueGraph;
     public BusinessQuestGraph stealGraph;
+    public BaseGraph baseDialogueGraph;
+    public BaseGraph baseStealGraph;
     public bool allowSteal = true;
     public Transform lookForwardReference;
     public float stealDistance = 1.5f;
@@ -20,9 +22,18 @@ public class NPCManager : Interactable
     public Transform playerTransform;
     private BusinessQuestGraphRunner runner;
     private BusinessQuestGraph currentGraph;
+    private BaseGraphRunner baseRunner;
+    private BaseGraph currentBaseGraph;
 
     public override void Interact(Transform player)
     {
+        var selectedBaseGraph = SelectBaseGraph(player);
+        if (selectedBaseGraph != null)
+        {
+            StartBaseGraph(selectedBaseGraph);
+            return;
+        }
+
         var selectedGraph = SelectGraph(player);
         if (selectedGraph == null)
         {
@@ -110,6 +121,69 @@ public class NPCManager : Interactable
         }
 
         return null;
+    }
+
+    private BaseGraph SelectBaseGraph(Transform player)
+    {
+        bool canSteal = allowSteal && baseStealGraph != null && StealContextEvaluator.CanStealFromNpc(player, this);
+        if (canSteal)
+        {
+            return baseStealGraph;
+        }
+
+        if (baseDialogueGraph != null)
+        {
+            return baseDialogueGraph;
+        }
+
+        if (baseStealGraph != null)
+        {
+            return baseStealGraph;
+        }
+
+        return null;
+    }
+
+    private void StartBaseGraph(BaseGraph graph)
+    {
+        if (graph == null)
+        {
+            return;
+        }
+
+        if (!HasGraphContent(graph))
+        {
+            Debug.LogError($"[NPCManager] BaseGraph '{graph.name}' does not contain runtime nodes on '{name}'.", this);
+            return;
+        }
+
+        if (baseRunner != null && baseRunner.IsRunning)
+        {
+            Debug.Log($"[NPCManager] BaseGraph interact ignored because graph is already running on '{name}'.");
+            return;
+        }
+
+        if (baseRunner == null || currentBaseGraph != graph)
+        {
+            baseRunner = new BaseGraphRunner(BaseGraphRuntimeComposition.CreateDefaultRegistry());
+            currentBaseGraph = graph;
+        }
+
+        GraphExecutionContext context = new GraphExecutionContext(
+            new GraphRuntimeServices(
+                dialogueService,
+                choiceUIService,
+                null,
+                null,
+                null,
+                null));
+
+        _ = baseRunner.RunAsync(graph, context);
+    }
+
+    private static bool HasGraphContent(BaseGraph graph)
+    {
+        return graph != null && graph.nodes != null && graph.nodes.Count > 0;
     }
 
     private InteractionContext BuildInteractionContext(Transform player)

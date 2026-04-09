@@ -3,7 +3,7 @@ using System;
 namespace GraphCore.BaseNodes.Runtime.Server
 {
     [Serializable]
-    public sealed class CompleteQuestNode : BusinessQuestNode
+    public sealed class CompleteQuestNode : BaseGraphNode
     {
         public string questId;
         public string successNodeId;

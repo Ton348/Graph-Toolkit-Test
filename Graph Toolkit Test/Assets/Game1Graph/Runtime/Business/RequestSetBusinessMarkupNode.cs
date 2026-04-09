@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class RequestSetBusinessMarkupNode : BusinessQuestNode
+public class RequestSetBusinessMarkupNode : BaseGraphNode
 {
     public string lotId;
     public int markupPercent;

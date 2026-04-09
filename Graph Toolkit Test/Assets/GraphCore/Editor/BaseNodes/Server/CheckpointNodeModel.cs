@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Server
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class CheckpointNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class CheckpointNodeModel : BaseGraphEditorNode
     {
         public const string CHECKPOINT_ID_OPTION = "CheckpointId";
         public const string ACTION_OPTION = "Action";

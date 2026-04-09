@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace GraphCore.BaseNodes.Runtime.UI
 {
     [Serializable]
-    public sealed class ChoiceNode : BusinessQuestNode
+    public sealed class ChoiceNode : BaseGraphNode
     {
-        public readonly List<ChoiceOption> options = new List<ChoiceOption>(4)
+        public List<ChoiceOption> options = new List<ChoiceOption>(4)
         {
             new ChoiceOption(),
             new ChoiceOption(),
@@ -16,8 +16,8 @@ namespace GraphCore.BaseNodes.Runtime.UI
 
         public ChoiceNode()
         {
-            Title = "Choice";
-            Description = "Shows player choices and branches by selection";
+            title = "Choice";
+            description = "Shows player choices and branches by selection";
         }
     }
 }

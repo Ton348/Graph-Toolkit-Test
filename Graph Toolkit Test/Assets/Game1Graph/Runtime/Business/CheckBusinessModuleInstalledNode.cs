@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class CheckBusinessModuleInstalledNode : BusinessQuestNode
+public class CheckBusinessModuleInstalledNode : BaseGraphNode
 {
     public string lotId;
     public string moduleId;

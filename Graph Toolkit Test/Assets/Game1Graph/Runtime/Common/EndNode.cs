@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class EndNode : BusinessQuestNode
+public class EndNode : BaseGraphNode
 {
     public bool clearCheckpoint = true;
     public string completeQuestId;

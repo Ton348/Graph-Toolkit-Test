@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class ConditionNode : BusinessQuestNode
+public class ConditionNode : BaseGraphNode
 {
     public ConditionType conditionType;
     public string buildingId;

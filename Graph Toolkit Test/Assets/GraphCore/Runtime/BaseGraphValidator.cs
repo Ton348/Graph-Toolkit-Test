@@ -25,7 +25,7 @@ public static class BaseGraphValidator
             return result;
         }
 
-        Dictionary<string, BusinessQuestNode> lookup = graph.BuildNodeLookup(result);
+        Dictionary<string, BaseGraphNode> lookup = graph.BuildNodeLookup(result);
         if (lookup.Count == 0)
         {
             result.AddError("Graph node lookup is empty after build.");
@@ -41,7 +41,7 @@ public static class BaseGraphValidator
             result.AddError($"Start node '{graph.startNodeId}' does not exist.");
         }
 
-        foreach (BusinessQuestNode node in graph.nodes)
+        foreach (BaseGraphNode node in graph.nodes)
         {
             if (node == null)
             {
@@ -92,7 +92,7 @@ public static class BaseGraphValidator
         return result;
     }
 
-    private static void ValidateBaseNext(Dictionary<string, BusinessQuestNode> lookup, BusinessQuestNode node, string nextNodeId, GraphValidationResult result)
+    private static void ValidateBaseNext(Dictionary<string, BaseGraphNode> lookup, BaseGraphNode node, string nextNodeId, GraphValidationResult result)
     {
         if (string.IsNullOrWhiteSpace(nextNodeId))
         {
@@ -102,7 +102,7 @@ public static class BaseGraphValidator
         ValidateLink(lookup, node, "nextNodeId", nextNodeId, result);
     }
 
-    private static void ValidateChoiceOptions(Dictionary<string, BusinessQuestNode> lookup, ChoiceNode node, GraphValidationResult result)
+    private static void ValidateChoiceOptions(Dictionary<string, BaseGraphNode> lookup, ChoiceNode node, GraphValidationResult result)
     {
         if (node.options == null || node.options.Count == 0)
         {
@@ -130,7 +130,7 @@ public static class BaseGraphValidator
         }
     }
 
-    private static void ValidateRandomOptions(Dictionary<string, BusinessQuestNode> lookup, RandomNode node, GraphValidationResult result)
+    private static void ValidateRandomOptions(Dictionary<string, BaseGraphNode> lookup, RandomNode node, GraphValidationResult result)
     {
         if (node.options == null || node.options.Count == 0)
         {
@@ -157,7 +157,7 @@ public static class BaseGraphValidator
         }
     }
 
-    private static void ValidateLink(Dictionary<string, BusinessQuestNode> lookup, BusinessQuestNode sourceNode, string fieldName, string nodeId, GraphValidationResult result)
+    private static void ValidateLink(Dictionary<string, BaseGraphNode> lookup, BaseGraphNode sourceNode, string fieldName, string nodeId, GraphValidationResult result)
     {
         if (string.IsNullOrWhiteSpace(nodeId))
         {
@@ -176,7 +176,7 @@ public static class BaseGraphValidator
         }
     }
 
-    private static void ValidateRequiredFields(BusinessQuestNode node, GraphValidationResult result)
+    private static void ValidateRequiredFields(BaseGraphNode node, GraphValidationResult result)
     {
         if (node is DialogueNode dialogueNode)
         {
@@ -238,7 +238,7 @@ public static class BaseGraphValidator
         }
     }
 
-    private static void ValidateDeadEndNode(BusinessQuestNode node, GraphValidationResult result)
+    private static void ValidateDeadEndNode(BaseGraphNode node, GraphValidationResult result)
     {
         if (node is FinishNode)
         {
@@ -253,7 +253,7 @@ public static class BaseGraphValidator
         result.AddWarning($"Node '{node.Id}' has no outgoing links and may terminate graph execution unexpectedly.", node.Id, node.GetType().Name);
     }
 
-    private static bool HasOutgoingLinks(BusinessQuestNode node)
+    private static bool HasOutgoingLinks(BaseGraphNode node)
     {
         foreach (string nextNodeId in EnumerateOutgoingLinks(node))
         {
@@ -283,7 +283,7 @@ public static class BaseGraphValidator
         }
     }
 
-    private static void ValidateUnreachableNodes(BaseGraph graph, Dictionary<string, BusinessQuestNode> lookup, GraphValidationResult result)
+    private static void ValidateUnreachableNodes(BaseGraph graph, Dictionary<string, BaseGraphNode> lookup, GraphValidationResult result)
     {
         if (string.IsNullOrWhiteSpace(graph.startNodeId) || !lookup.ContainsKey(graph.startNodeId))
         {
@@ -302,7 +302,7 @@ public static class BaseGraphValidator
                 continue;
             }
 
-            if (!lookup.TryGetValue(nodeId, out BusinessQuestNode node) || node == null)
+            if (!lookup.TryGetValue(nodeId, out BaseGraphNode node) || node == null)
             {
                 continue;
             }
@@ -323,7 +323,7 @@ public static class BaseGraphValidator
 
         for (int i = 0; i < graph.nodes.Count; i++)
         {
-            BusinessQuestNode node = graph.nodes[i];
+            BaseGraphNode node = graph.nodes[i];
             if (node == null || string.IsNullOrWhiteSpace(node.Id))
             {
                 continue;
@@ -336,7 +336,7 @@ public static class BaseGraphValidator
         }
     }
 
-    private static IEnumerable<string> EnumerateOutgoingLinks(BusinessQuestNode node)
+    private static IEnumerable<string> EnumerateOutgoingLinks(BaseGraphNode node)
     {
         if (!string.IsNullOrWhiteSpace(node.nextNodeId))
         {

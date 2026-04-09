@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Server
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class QuestStateConditionNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class QuestStateConditionNodeModel : BaseGraphEditorNode
     {
         public const string QUEST_ID_OPTION = "QuestId";
         public const string STATE_OPTION = "State";

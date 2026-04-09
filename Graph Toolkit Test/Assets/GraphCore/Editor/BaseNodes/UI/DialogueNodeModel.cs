@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.UI
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class DialogueNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class DialogueNodeModel : BaseGraphEditorNode
     {
         public const string DIALOGUE_TITLE_OPTION = "Title";
         public const string DIALOGUE_BODY_OPTION = "Body";

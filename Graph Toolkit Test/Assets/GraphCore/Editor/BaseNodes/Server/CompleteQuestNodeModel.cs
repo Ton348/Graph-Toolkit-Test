@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.Server
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class CompleteQuestNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class CompleteQuestNodeModel : BaseGraphEditorNode
     {
         public const string QUEST_ID_OPTION = "QuestId";
         public const string SUCCESS_PORT = "Success";

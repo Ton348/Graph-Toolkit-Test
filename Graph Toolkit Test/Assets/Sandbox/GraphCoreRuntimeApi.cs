@@ -8,7 +8,7 @@ namespace Graph.Core.Runtime
     }
 
     [Serializable]
-    public abstract class GraphNode : global::BusinessQuestNode
+    public abstract class GraphNode : global::BaseGraphNode
     {
     }
 

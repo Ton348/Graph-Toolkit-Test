@@ -132,7 +132,7 @@ public static class ConditionEvaluator
         return 0;
     }
 
-    static void LogIfFalse(BusinessQuestNode node, bool result, string reason)
+    static void LogIfFalse(BaseGraphNode node, bool result, string reason)
     {
         if (node == null)
         {

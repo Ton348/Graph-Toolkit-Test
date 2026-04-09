@@ -5,14 +5,14 @@ using Cysharp.Threading.Tasks;
 public interface IGraphNodeExecutor
 {
     Type NodeType { get; }
-    UniTask<GraphNodeExecutionResult> ExecuteAsync(BusinessQuestNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+    UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken);
 }
 
-public abstract class GraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : BusinessQuestNode
+public abstract class GraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : BaseGraphNode
 {
     public Type NodeType => typeof(TNode);
 
-    public UniTask<GraphNodeExecutionResult> ExecuteAsync(BusinessQuestNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+    public UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken)
     {
         if (context == null)
         {

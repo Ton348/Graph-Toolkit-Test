@@ -5,7 +5,7 @@ namespace GraphCore.BaseNodes.Editor.UI
 {
     [Serializable]
     [UseWithGraph(typeof(BaseGraphEditorGraph))]
-    public sealed class ChoiceNodeModel : Graph.Core.Editor.GraphEditorNode
+    public sealed class ChoiceNodeModel : BaseGraphEditorNode
     {
         public const string OPTION1_LABEL = "Option1Label";
         public const string OPTION2_LABEL = "Option2Label";
