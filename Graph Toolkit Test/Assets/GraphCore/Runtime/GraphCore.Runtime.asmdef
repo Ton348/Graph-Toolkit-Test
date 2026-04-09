@@ -1,6 +1,8 @@
 {
   "name": "GraphCore.Runtime",
-  "references": [],
+  "references": [
+    "UniTask"
+  ],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,

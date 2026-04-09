@@ -3,7 +3,7 @@ using System;
 namespace Graph.Core.Editor
 {
     [Serializable]
-    public class GraphEditorGraph : global::BusinessQuestEditorGraph
+    public sealed class GraphEditorGraph : global::BusinessQuestEditorGraph
     {
     }
 
@@ -11,5 +11,4 @@ namespace Graph.Core.Editor
     public abstract class GraphEditorNode : global::BusinessQuestEditorNode
     {
     }
-
 }

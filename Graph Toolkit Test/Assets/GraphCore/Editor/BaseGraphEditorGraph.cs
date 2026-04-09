@@ -9,7 +9,7 @@ public class BaseGraphEditorGraph : Unity.GraphToolkit.Editor.Graph
     internal const string AssetExtension = "basegraph";
 
     [MenuItem("Assets/Create/Base Graph")]
-    static void CreateAssetFile()
+    private static void CreateAssetFile()
     {
         GraphDatabase.PromptInProjectBrowserToCreateNewAsset<BaseGraphEditorGraph>("Base Graph");
     }

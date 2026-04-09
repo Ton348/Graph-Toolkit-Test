@@ -1,11 +1,53 @@
 using System;
+using UnityEngine.Serialization;
 
 [Serializable]
 public abstract class BusinessQuestNode
 {
-    public string id;
+    private const string LegacyApiMessage = "Legacy compatibility API. Use serialized fields directly.";
+
+    [FormerlySerializedAs("id")]
+    public string nodeId;
+
+    [FormerlySerializedAs("nextNodeId")]
     public string nextNodeId;
-    public string Title;
-    public string Description;
-    public string Comment;
+
+    [FormerlySerializedAs("Title")]
+    public string title;
+
+    [FormerlySerializedAs("Description")]
+    public string description;
+
+    [FormerlySerializedAs("Comment")]
+    public string comment;
+
+    public string Id => nodeId;
+
+    [Obsolete(LegacyApiMessage)]
+    public string id
+    {
+        get { return nodeId; }
+        set { nodeId = value; }
+    }
+
+    [Obsolete(LegacyApiMessage)]
+    public string Title
+    {
+        get { return title; }
+        set { title = value; }
+    }
+
+    [Obsolete(LegacyApiMessage)]
+    public string Description
+    {
+        get { return description; }
+        set { description = value; }
+    }
+
+    [Obsolete(LegacyApiMessage)]
+    public string Comment
+    {
+        get { return comment; }
+        set { comment = value; }
+    }
 }

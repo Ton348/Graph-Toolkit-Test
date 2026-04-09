@@ -1,15 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
 {
-    public Task<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options)
+    public UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken)
     {
-        var tcs = new TaskCompletionSource<int>();
+        UniTaskCompletionSource<int> completionSource = new UniTaskCompletionSource<int>();
+        CancellationTokenRegistration registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
         var legacyOptions = new List<ChoiceOption>();
         if (options != null)
         {
@@ -17,13 +19,25 @@ public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
             {
                 legacyOptions.Add(new ChoiceOption
                 {
-                    label = options[i].Label
+                    label = options[i].label
                 });
             }
         }
 
-        ShowChoices(legacyOptions, index => tcs.TrySetResult(index));
-        return tcs.Task;
+        ShowChoices(legacyOptions, index => completionSource.TrySetResult(index));
+        return AwaitWithCleanupAsync(completionSource, registration);
+    }
+
+    private static async UniTask<int> AwaitWithCleanupAsync(UniTaskCompletionSource<int> completionSource, CancellationTokenRegistration registration)
+    {
+        try
+        {
+            return await completionSource.Task;
+        }
+        finally
+        {
+            registration.Dispose();
+        }
     }
 
     public GameObject panel;

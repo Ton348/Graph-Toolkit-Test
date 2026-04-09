@@ -3,7 +3,8 @@
   "references": [
     "GraphCore.Runtime",
     "Game1Graph.Runtime",
-    "Unity.TextMeshPro"
+    "Unity.TextMeshPro",
+    "UniTask"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],

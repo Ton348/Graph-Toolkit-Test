@@ -1,353 +1,200 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
-using BaseCinematics = GraphCore.BaseNodes.Runtime.Cinematics;
-using BaseFlow = GraphCore.BaseNodes.Runtime.Flow;
-using BaseServer = GraphCore.BaseNodes.Runtime.Server;
-using BaseUI = GraphCore.BaseNodes.Runtime.UI;
-using BaseUtility = GraphCore.BaseNodes.Runtime.Utility;
-using BaseWorld = GraphCore.BaseNodes.Runtime.World;
 
 public sealed class BaseGraphRunner
 {
-    private BaseGraph graph;
-    private GraphExecutionContext context;
-    private BusinessQuestNode currentNode;
+    private const string LogPrefix = "[BaseGraphRunner]";
+    private const int DefaultMaxSteps = 10000;
+
+    private readonly GraphNodeExecutorRegistry m_executorRegistry;
+
+    private BaseGraph m_graph;
+    private GraphExecutionContext m_context;
+    private CancellationTokenSource m_runCancellationTokenSource;
+    private BusinessQuestNode m_currentNode;
+
+    public BaseGraphRunner(GraphNodeExecutorRegistry executorRegistry)
+    {
+        m_executorRegistry = executorRegistry ?? throw new ArgumentNullException(nameof(executorRegistry));
+    }
 
     public bool IsRunning { get; private set; }
 
-    public async Task RunAsync(BaseGraph graph, GraphExecutionContext context)
+    public UniTask RunAsync(BaseGraph graph, GraphExecutionContext context, CancellationToken cancellationToken = default, int maxSteps = DefaultMaxSteps)
     {
-        if (IsRunning || graph == null)
-        {
-            return;
-        }
-
-        this.graph = graph;
-        this.context = context ?? new GraphExecutionContext();
-        ResolveUiServicesIfNeeded();
-
-        currentNode = graph.GetStartNode();
-        IsRunning = true;
-
-        while (IsRunning && currentNode != null)
-        {
-            await ExecuteNode();
-        }
-
-        Stop();
+        return RunInternalAsync(graph, context, cancellationToken, maxSteps);
     }
 
     public void Stop()
     {
-        IsRunning = false;
-        graph = null;
-        context = null;
-        currentNode = null;
+        CancellationTokenSource cts = m_runCancellationTokenSource;
+        if (cts != null && !cts.IsCancellationRequested)
+        {
+            cts.Cancel();
+        }
     }
 
-    private async Task ExecuteNode()
+    private async UniTask RunInternalAsync(BaseGraph graph, GraphExecutionContext context, CancellationToken cancellationToken, int maxSteps)
     {
-        if (!IsRunning || currentNode == null || graph == null)
+        if (IsRunning)
         {
-            Stop();
+            Debug.LogWarning($"{LogPrefix} RunAsync ignored because runner is already active.");
             return;
         }
 
-        switch (currentNode)
+        if (graph == null)
         {
-            case BaseFlow.StartNode node:
-            {
-                currentNode = graph.GetNodeById(node.nextNodeId);
-                return;
-            }
+            Debug.LogError($"{LogPrefix} Graph is null.");
+            return;
+        }
 
-            case BaseFlow.FinishNode:
-            {
-                Stop();
-                return;
-            }
+        if (maxSteps <= 0)
+        {
+            Debug.LogError($"{LogPrefix} Invalid maxSteps value: {maxSteps}.");
+            return;
+        }
 
-            case BaseUtility.LogNode node:
-            {
-                Debug.Log(node.message ?? string.Empty);
-                currentNode = graph.GetNodeById(node.nextNodeId);
-                return;
-            }
+        m_graph = graph;
+        m_context = context ?? new GraphExecutionContext();
+        m_runCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        CancellationToken runCancellationToken = m_runCancellationTokenSource.Token;
 
-            case BaseFlow.DelayNode node:
+        GraphValidationResult validationResult = m_graph.ValidateGraph();
+        if (!validationResult.IsValid)
+        {
+            LogValidationIssues(validationResult);
+            Cleanup();
+            return;
+        }
+
+        if (!m_graph.TryGetStartNode(out BusinessQuestNode startNode))
+        {
+            Debug.LogError($"{LogPrefix} Start node '{m_graph.startNodeId}' not found.", m_graph);
+            Cleanup();
+            return;
+        }
+
+        m_currentNode = startNode;
+        IsRunning = true;
+
+        int step = 0;
+        try
+        {
+            while (IsRunning && m_currentNode != null)
             {
-                if (node.delaySeconds > 0f)
+                runCancellationToken.ThrowIfCancellationRequested();
+
+                step++;
+                if (step > maxSteps)
                 {
-                    int ms = Mathf.Max(1, Mathf.RoundToInt(node.delaySeconds * 1000f));
-                    await Task.Delay(ms);
-                }
-
-                currentNode = graph.GetNodeById(node.nextNodeId);
-                return;
-            }
-
-            case BaseFlow.RandomNode node:
-            {
-                currentNode = graph.GetNodeById(GetRandomNextId(node));
-                return;
-            }
-
-            case BaseUI.DialogueNode node:
-            {
-                ResolveUiServicesIfNeeded();
-                if (context?.DialogueService != null)
-                {
-                    await context.DialogueService.ShowAsync(node.dialogueTitle, node.body);
-                }
-                else
-                {
-                    Debug.Log($"Dialogue: {node.dialogueTitle}\n{node.body}");
-                }
-
-                currentNode = graph.GetNodeById(node.nextNodeId);
-                return;
-            }
-
-            case BaseUI.ChoiceNode node:
-            {
-                ResolveUiServicesIfNeeded();
-
-                List<BaseUI.ChoiceOption> validOptions = node.options
-                    .Where(o => o != null
-                        && !string.IsNullOrWhiteSpace(o.nextNodeId)
-                        && !string.IsNullOrWhiteSpace(o.label))
-                    .ToList();
-
-                if (validOptions.Count == 0)
-                {
-                    Stop();
+                    Debug.LogError($"{LogPrefix} Max step limit exceeded ({maxSteps}). Potential runaway execution near node '{m_currentNode.Id}'.", m_graph);
                     return;
                 }
 
-                int selectedIndex;
-                if (context?.ChoiceService != null)
+                if (!m_executorRegistry.TryGetExecutor(m_currentNode, out IGraphNodeExecutor executor))
                 {
-                    var entries = validOptions
-                        .Select(o => new GraphChoiceEntry(o.label ?? string.Empty))
-                        .ToList();
-                    selectedIndex = await context.ChoiceService.ShowAsync(entries);
-                }
-                else
-                {
-                    selectedIndex = 0;
-                }
-
-                if (selectedIndex < 0 || selectedIndex >= validOptions.Count)
-                {
-                    Stop();
+                    Debug.LogError($"{LogPrefix} No executor registered for node type '{m_currentNode.GetType().Name}' (id: '{m_currentNode.Id}').", m_graph);
                     return;
                 }
 
-                BaseUI.ChoiceOption selected = validOptions[selectedIndex];
-                currentNode = graph.GetNodeById(selected.nextNodeId);
-                return;
+                GraphNodeExecutionResult executionResult = await executor.ExecuteAsync(m_currentNode, m_context, runCancellationToken);
+                if (!HandleExecutionResult(executionResult))
+                {
+                    return;
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            Cleanup();
+        }
+    }
+
+    private bool HandleExecutionResult(GraphNodeExecutionResult executionResult)
+    {
+        switch (executionResult.signal)
+        {
+            case GraphNodeExecutionSignal.Stop:
+            {
+                if (!string.IsNullOrWhiteSpace(executionResult.diagnosticMessage))
+                {
+                    Debug.Log($"{LogPrefix} Stop: {executionResult.diagnosticMessage}");
+                }
+
+                return false;
             }
 
-            case BaseWorld.MapMarkerNode node:
+            case GraphNodeExecutionSignal.Fault:
             {
-                if (context?.MapMarkerService != null)
-                {
-                    context.MapMarkerService.ShowOrUpdateMarker(node.markerId, node.targetObjectName);
-                }
-                else
-                {
-                    Debug.Log($"MapMarker: markerId='{node.markerId}', target='{node.targetObjectName}'");
-                }
-
-                currentNode = graph.GetNodeById(node.nextNodeId);
-                return;
+                Debug.LogError($"{LogPrefix} Fault ({executionResult.errorType}): {executionResult.diagnosticMessage}", m_graph);
+                return false;
             }
 
-            case BaseCinematics.PlayCutsceneNode node:
+            case GraphNodeExecutionSignal.Continue:
             {
-                if (context?.CutsceneService != null)
-                {
-                    await context.CutsceneService.PlayAsync(node.cutsceneReference);
-                }
-                else
-                {
-                    Debug.Log($"PlayCutscene: '{node.cutsceneReference}'");
-                }
-
-                currentNode = graph.GetNodeById(node.nextNodeId);
-                return;
-            }
-
-            case BaseServer.CheckpointNode node:
-            {
-                bool success = false;
-                if (context?.CheckpointService != null)
-                {
-                    success = node.action == BaseServer.CheckpointAction.Clear
-                        ? await context.CheckpointService.ClearAsync(node.checkpointId)
-                        : await context.CheckpointService.SaveAsync(node.checkpointId);
-                }
-                else
-                {
-                    Debug.Log($"Checkpoint fallback: action='{node.action}', checkpointId='{node.checkpointId}'");
-                }
-
-                currentNode = graph.GetNodeById(success ? node.successNodeId : node.failNodeId);
-                return;
-            }
-
-            case BaseServer.StartQuestNode node:
-            {
-                bool success = false;
-                if (context?.QuestService != null)
-                {
-                    success = await context.QuestService.StartQuestAsync(node.questId);
-                }
-                else
-                {
-                    Debug.Log($"StartQuest fallback: questId='{node.questId}'");
-                }
-
-                currentNode = graph.GetNodeById(success ? node.successNodeId : node.failNodeId);
-                return;
-            }
-
-            case BaseServer.CompleteQuestNode node:
-            {
-                bool success = false;
-                if (context?.QuestService != null)
-                {
-                    success = await context.QuestService.CompleteQuestAsync(node.questId);
-                }
-                else
-                {
-                    Debug.Log($"CompleteQuest fallback: questId='{node.questId}'");
-                }
-
-                currentNode = graph.GetNodeById(success ? node.successNodeId : node.failNodeId);
-                return;
-            }
-
-            case BaseServer.QuestStateConditionNode node:
-            {
-                bool matches = false;
-                if (context?.QuestService != null)
-                {
-                    BaseServer.QuestState currentState = await context.QuestService.GetQuestStateAsync(node.questId);
-                    matches = currentState == node.state;
-                }
-                else
-                {
-                    Debug.Log($"QuestStateCondition fallback: questId='{node.questId}', expected='{node.state}'");
-                }
-
-                currentNode = graph.GetNodeById(matches ? node.trueNodeId : node.falseNodeId);
-                return;
+                return TryMoveToNextNode(executionResult.nextNodeId);
             }
 
             default:
             {
-                Stop();
-                return;
+                Debug.LogError($"{LogPrefix} Unknown execution signal '{executionResult.signal}'.", m_graph);
+                return false;
             }
         }
     }
 
-    private static string GetRandomNextId(BaseFlow.RandomNode node)
+    private bool TryMoveToNextNode(string nextNodeId)
     {
-        if (node?.options == null || node.options.Count == 0)
+        if (string.IsNullOrWhiteSpace(nextNodeId))
         {
-            return null;
+            Debug.LogError($"{LogPrefix} Execution result has empty next node id. Invalid transition.", m_graph);
+            return false;
         }
 
-        float totalWeight = 0f;
-        foreach (BaseFlow.RandomOption option in node.options)
+        if (!m_graph.TryGetNodeById(nextNodeId, out BusinessQuestNode nextNode))
         {
-            if (option == null || string.IsNullOrEmpty(option.nextNodeId))
-            {
-                continue;
-            }
-
-            totalWeight += Mathf.Max(0f, option.weight);
+            Debug.LogError($"{LogPrefix} Next node '{nextNodeId}' not found.", m_graph);
+            return false;
         }
 
-        if (totalWeight <= 0f)
-        {
-            foreach (BaseFlow.RandomOption option in node.options)
-            {
-                if (option != null && !string.IsNullOrEmpty(option.nextNodeId))
-                {
-                    return option.nextNodeId;
-                }
-            }
-
-            return null;
-        }
-
-        float roll = Random.Range(0f, totalWeight);
-        float accum = 0f;
-        foreach (BaseFlow.RandomOption option in node.options)
-        {
-            if (option == null || string.IsNullOrEmpty(option.nextNodeId))
-            {
-                continue;
-            }
-
-            accum += Mathf.Max(0f, option.weight);
-            if (roll <= accum)
-            {
-                return option.nextNodeId;
-            }
-        }
-
-        foreach (BaseFlow.RandomOption option in node.options)
-        {
-            if (option != null && !string.IsNullOrEmpty(option.nextNodeId))
-            {
-                return option.nextNodeId;
-            }
-        }
-
-        return null;
+        m_currentNode = nextNode;
+        return true;
     }
 
-    private void ResolveUiServicesIfNeeded()
+    private void LogValidationIssues(GraphValidationResult validationResult)
     {
-        if (context == null)
+        for (int i = 0; i < validationResult.Issues.Count; i++)
         {
-            return;
+            GraphValidationIssue issue = validationResult.Issues[i];
+            if (issue.severity == GraphValidationSeverity.Error)
+            {
+                Debug.LogError($"{LogPrefix} Validation: {issue}", m_graph);
+            }
+            else
+            {
+                Debug.LogWarning($"{LogPrefix} Validation: {issue}", m_graph);
+            }
         }
+    }
 
-        if (context.DialogueService != null && context.ChoiceService != null)
+    private void Cleanup()
+    {
+        IsRunning = false;
+        m_currentNode = null;
+        m_context = null;
+        m_graph = null;
+
+        CancellationTokenSource cancellationTokenSource = m_runCancellationTokenSource;
+        m_runCancellationTokenSource = null;
+
+        if (cancellationTokenSource != null)
         {
-            return;
-        }
-
-        MonoBehaviour[] behaviours = Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < behaviours.Length; i++)
-        {
-            MonoBehaviour behaviour = behaviours[i];
-            if (behaviour == null)
-            {
-                continue;
-            }
-
-            if (context.DialogueService == null && behaviour is IGraphDialogueService dialogueService)
-            {
-                context.DialogueService = dialogueService;
-            }
-
-            if (context.ChoiceService == null && behaviour is IGraphChoiceService choiceService)
-            {
-                context.ChoiceService = choiceService;
-            }
-
-            if (context.DialogueService != null && context.ChoiceService != null)
-            {
-                return;
-            }
+            cancellationTokenSource.Dispose();
         }
     }
 }

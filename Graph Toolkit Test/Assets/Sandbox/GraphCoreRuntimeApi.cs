@@ -29,8 +29,36 @@ namespace Graph.Core.Runtime
         }
     }
 
-    public class GraphExecutionContext : global::GraphExecutionContext
+    public sealed class GraphExecutionContext
     {
+        private readonly global::GraphExecutionContext m_context;
+
+        public GraphExecutionContext(global::IGraphRuntimeServices services = null)
+        {
+            m_context = new global::GraphExecutionContext(services);
+        }
+
+        public GraphExecutionContext(global::GraphExecutionContext context)
+        {
+            m_context = context ?? throw new ArgumentNullException(nameof(context));
+        }
+
+        public global::GraphExecutionContext RuntimeContext => m_context;
+
+        public global::IGraphRuntimeServices Services => m_context.Services;
+
+        public global::IGraphDialogueService DialogueService => m_context.DialogueService;
+
+        public global::IGraphChoiceService ChoiceService => m_context.ChoiceService;
+
+        public global::IGraphMapMarkerService MapMarkerService => m_context.MapMarkerService;
+
+        public global::IGraphCutsceneService CutsceneService => m_context.CutsceneService;
+
+        public global::IGraphCheckpointService CheckpointService => m_context.CheckpointService;
+
+        public global::IGraphQuestService QuestService => m_context.QuestService;
+
         public void Set<T>(GraphContextKey<T> key, T value)
         {
             if (key == null)
@@ -38,7 +66,7 @@ namespace Graph.Core.Runtime
                 return;
             }
 
-            SetValue(key.Id, value);
+            m_context.Set(new global::GraphContextKey<T>(key.Id), value);
         }
 
         public bool TryGet<T>(GraphContextKey<T> key, out T value)
@@ -49,17 +77,22 @@ namespace Graph.Core.Runtime
                 return false;
             }
 
-            return TryGetValue(key.Id, out value);
+            return m_context.TryGet(new global::GraphContextKey<T>(key.Id), out value);
         }
 
         public bool Has<T>(GraphContextKey<T> key)
         {
-            return key != null && HasValue(key.Id);
+            return key != null && m_context.Contains(new global::GraphContextKey<T>(key.Id));
         }
 
         public bool Remove<T>(GraphContextKey<T> key)
         {
-            return key != null && RemoveValue(key.Id);
+            return key != null && m_context.Remove(new global::GraphContextKey<T>(key.Id));
+        }
+
+        public void Clear()
+        {
+            m_context.Clear();
         }
     }
 

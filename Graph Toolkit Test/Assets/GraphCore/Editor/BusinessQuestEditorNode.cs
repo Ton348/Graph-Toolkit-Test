@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using Unity.GraphToolkit.Editor;
@@ -8,6 +7,8 @@ using Unity.GraphToolkit.Editor;
 [Serializable]
 public abstract class BusinessQuestEditorNode : Node
 {
+    private static readonly BindingFlags InstancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+    private static readonly BindingFlags InstancePublic = BindingFlags.Instance | BindingFlags.Public;
     public const string EXECUTION_PORT_NAME = "Next";
     public const string TITLE_OPTION = "NodeTitle";
     public const string DESCRIPTION_OPTION = "NodeDescription";
@@ -47,7 +48,7 @@ public abstract class BusinessQuestEditorNode : Node
         TryEnableMultiline(descriptionOption);
     }
 
-    static void TryEnableMultiline(INodeOption option)
+    private static void TryEnableMultiline(INodeOption option)
     {
         if (option == null)
         {
@@ -66,7 +67,17 @@ public abstract class BusinessQuestEditorNode : Node
             attributes = new List<Attribute>();
         }
 
-        if (!attributes.Any(a => a is MultilineAttribute))
+        bool hasMultilineAttribute = false;
+        for (int i = 0; i < attributes.Count; i++)
+        {
+            if (attributes[i] is MultilineAttribute)
+            {
+                hasMultilineAttribute = true;
+                break;
+            }
+        }
+
+        if (!hasMultilineAttribute)
         {
             attributes.Add(new MultilineAttribute());
         }
@@ -74,27 +85,27 @@ public abstract class BusinessQuestEditorNode : Node
         SetAttributes(portModel, attributes);
     }
 
-    static object GetPortModel(INodeOption option)
+    private static object GetPortModel(INodeOption option)
     {
-        var portModelProperty = option.GetType().GetProperty("PortModel", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        PropertyInfo portModelProperty = option.GetType().GetProperty("PortModel", InstancePublicAndNonPublic);
         return portModelProperty?.GetValue(option);
     }
 
-    static List<Attribute> GetAttributes(object portModel)
+    private static List<Attribute> GetAttributes(object portModel)
     {
-        var attributesProperty = portModel.GetType().GetProperty("Attributes", BindingFlags.Instance | BindingFlags.Public);
+        PropertyInfo attributesProperty = portModel.GetType().GetProperty("Attributes", InstancePublic);
         if (attributesProperty == null)
         {
             return null;
         }
 
-        var attributes = attributesProperty.GetValue(portModel) as IReadOnlyList<Attribute>;
+        IReadOnlyList<Attribute> attributes = attributesProperty.GetValue(portModel) as IReadOnlyList<Attribute>;
         return attributes == null ? null : new List<Attribute>(attributes);
     }
 
-    static void SetAttributes(object portModel, List<Attribute> attributes)
+    private static void SetAttributes(object portModel, List<Attribute> attributes)
     {
-        var setAttributesMethod = portModel.GetType().GetMethod("SetAttributes", BindingFlags.Instance | BindingFlags.NonPublic);
+        MethodInfo setAttributesMethod = portModel.GetType().GetMethod("SetAttributes", InstancePublicAndNonPublic);
         setAttributesMethod?.Invoke(portModel, new object[] { attributes });
     }
 }

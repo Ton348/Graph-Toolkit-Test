@@ -1,0 +1,36 @@
+using System;
+using System.Threading;
+using Cysharp.Threading.Tasks;
+
+public interface IGraphNodeExecutor
+{
+    Type NodeType { get; }
+    UniTask<GraphNodeExecutionResult> ExecuteAsync(BusinessQuestNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+}
+
+public abstract class GraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : BusinessQuestNode
+{
+    public Type NodeType => typeof(TNode);
+
+    public UniTask<GraphNodeExecutionResult> ExecuteAsync(BusinessQuestNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+    {
+        if (context == null)
+        {
+            return UniTask.FromResult(GraphNodeExecutionResult.Fault($"Graph execution context is null for executor {GetType().Name}."));
+        }
+        if (node == null)
+        {
+            return UniTask.FromResult(GraphNodeExecutionResult.Fault($"Graph node is null for executor {GetType().Name}."));
+        }
+        if (node is not TNode typedNode)
+        {
+            string actualType = node != null ? node.GetType().Name : "null";
+            string message = $"Node type mismatch for executor {GetType().Name}. Expected {typeof(TNode).Name}, got {actualType}.";
+            return UniTask.FromResult(GraphNodeExecutionResult.Fault(message));
+        }
+
+        return ExecuteTypedAsync(typedNode, context, cancellationToken);
+    }
+
+    protected abstract UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+}

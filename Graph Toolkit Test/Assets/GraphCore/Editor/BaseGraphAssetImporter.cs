@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Graph.Core.Editor;
 using Unity.GraphToolkit.Editor;
@@ -7,18 +8,32 @@ using UnityEngine;
 [ScriptedImporter(1, BaseGraphEditorGraph.AssetExtension)]
 internal class BaseGraphAssetImporter : ScriptedImporter
 {
+    private const string RuntimeGraphAssetName = "RuntimeGraph";
+
     public override void OnImportAsset(AssetImportContext ctx)
     {
-        BaseGraphEditorGraph graph = GraphDatabase.LoadGraphForImporter<BaseGraphEditorGraph>(ctx.assetPath);
-        BaseGraph runtimeGraph = graph != null ? BaseGraphImporter.BuildBaseGraph(graph) : null;
-        if (runtimeGraph == null)
+        if (ctx == null)
         {
-            runtimeGraph = ScriptableObject.CreateInstance<BaseGraph>();
-            runtimeGraph.startNodeId = null;
-            runtimeGraph.nodes = new List<BusinessQuestNode>();
+            throw new ArgumentNullException(nameof(ctx));
         }
 
-        ctx.AddObjectToAsset("RuntimeGraph", runtimeGraph);
+        BaseGraph runtimeGraph = BuildRuntimeGraph(ctx.assetPath);
+        ctx.AddObjectToAsset(RuntimeGraphAssetName, runtimeGraph);
         ctx.SetMainObject(runtimeGraph);
+    }
+
+    private static BaseGraph BuildRuntimeGraph(string assetPath)
+    {
+        BaseGraphEditorGraph graph = GraphDatabase.LoadGraphForImporter<BaseGraphEditorGraph>(assetPath);
+        BaseGraph runtimeGraph = graph != null ? BaseGraphImporter.BuildBaseGraph(graph) : null;
+        return runtimeGraph ?? CreateEmptyRuntimeGraph();
+    }
+
+    private static BaseGraph CreateEmptyRuntimeGraph()
+    {
+        BaseGraph runtimeGraph = ScriptableObject.CreateInstance<BaseGraph>();
+        runtimeGraph.startNodeId = null;
+        runtimeGraph.nodes = new List<BusinessQuestNode>();
+        return runtimeGraph;
     }
 }

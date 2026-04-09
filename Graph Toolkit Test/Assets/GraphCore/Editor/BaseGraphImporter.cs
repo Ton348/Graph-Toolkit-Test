@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using GraphCore.BaseNodes.Editor.Flow;
 using GraphCore.BaseNodes.Editor.Server;
 using GraphCore.BaseNodes.Editor.Cinematics;
@@ -20,6 +19,9 @@ namespace Graph.Core.Editor
 {
     public static class BaseGraphImporter
     {
+        private const int PrimaryOutputIndex = 0;
+        private const int SecondaryOutputIndex = 1;
+
         public static BaseGraph BuildBaseGraph(BaseGraphEditorGraph graph)
         {
             if (graph == null)
@@ -27,34 +29,37 @@ namespace Graph.Core.Editor
                 return null;
             }
 
-            StartNodeModel startNode = graph.GetNodes().OfType<StartNodeModel>().FirstOrDefault();
+            List<INode> editorNodes = new List<INode>(graph.GetNodes());
+            StartNodeModel startNode = FindStartNode(editorNodes);
             if (startNode == null)
             {
                 return null;
             }
 
-            var runtimeGraph = ScriptableObject.CreateInstance<BaseGraph>();
-            var runtimeNodes = new List<BusinessQuestNode>();
-            var nodeMap = new Dictionary<INode, BusinessQuestNode>();
-            var idMap = new Dictionary<INode, string>();
+            BaseGraph runtimeGraph = ScriptableObject.CreateInstance<BaseGraph>();
+            List<BusinessQuestNode> runtimeNodes = new List<BusinessQuestNode>(editorNodes.Count);
+            Dictionary<INode, BusinessQuestNode> nodeMap = new Dictionary<INode, BusinessQuestNode>(editorNodes.Count);
+            Dictionary<INode, string> idMap = new Dictionary<INode, string>(editorNodes.Count);
 
-            foreach (INode node in graph.GetNodes())
+            for (int i = 0; i < editorNodes.Count; i++)
             {
-                BusinessQuestNode runtimeNode = ConvertNode(node);
+                INode editorNode = editorNodes[i];
+                BusinessQuestNode runtimeNode = ConvertNode(editorNode);
                 if (runtimeNode == null)
                 {
                     continue;
                 }
 
-                runtimeNode.id = Guid.NewGuid().ToString();
+                string nodeId = Guid.NewGuid().ToString();
+                runtimeNode.nodeId = nodeId;
                 runtimeNodes.Add(runtimeNode);
-                nodeMap[node] = runtimeNode;
-                idMap[node] = runtimeNode.id;
+                nodeMap[editorNode] = runtimeNode;
+                idMap[editorNode] = nodeId;
             }
 
-            foreach ((INode node, BusinessQuestNode runtimeNode) in nodeMap)
+            foreach (KeyValuePair<INode, BusinessQuestNode> pair in nodeMap)
             {
-                ApplyConnections(node, runtimeNode, idMap);
+                ApplyConnections(pair.Key, pair.Value, idMap);
             }
 
             runtimeGraph.startNodeId = idMap.TryGetValue(startNode, out string startId) ? startId : null;
@@ -62,7 +67,20 @@ namespace Graph.Core.Editor
             return runtimeGraph;
         }
 
-        static BusinessQuestNode ConvertNode(INode node)
+        private static StartNodeModel FindStartNode(IReadOnlyList<INode> editorNodes)
+        {
+            for (int i = 0; i < editorNodes.Count; i++)
+            {
+                if (editorNodes[i] is StartNodeModel startNode)
+                {
+                    return startNode;
+                }
+            }
+
+            return null;
+        }
+
+        private static BusinessQuestNode ConvertNode(INode node)
         {
             if (node is not Node typedNode)
             {
@@ -122,9 +140,9 @@ namespace Graph.Core.Editor
             return runtimeNode;
         }
 
-        static ChoiceNode BuildChoiceNode(ChoiceNodeModel model)
+        private static ChoiceNode BuildChoiceNode(ChoiceNodeModel model)
         {
-            var node = new ChoiceNode();
+            ChoiceNode node = new ChoiceNode();
             string[] labels =
             {
                 GetOptionValue<string>(model, "Option1"),
@@ -146,9 +164,9 @@ namespace Graph.Core.Editor
             return node;
         }
 
-        static RandomNode BuildRandomNode(RandomNodeModel model)
+        private static RandomNode BuildRandomNode(RandomNodeModel model)
         {
-            var node = new RandomNode();
+            RandomNode node = new RandomNode();
             float[] weights =
             {
                 GetOptionValue<float>(model, "Weight1"),
@@ -170,7 +188,7 @@ namespace Graph.Core.Editor
             return node;
         }
 
-        static void ApplyConnections(INode editorNode, BusinessQuestNode runtimeNode, Dictionary<INode, string> idMap)
+        private static void ApplyConnections(INode editorNode, BusinessQuestNode runtimeNode, Dictionary<INode, string> idMap)
         {
             if (editorNode == null || runtimeNode == null)
             {
@@ -204,30 +222,30 @@ namespace Graph.Core.Editor
                     return;
 
                 case CheckpointNode checkpointNode:
-                    checkpointNode.successNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 0, idMap);
-                    checkpointNode.failNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 1, idMap);
+                    checkpointNode.successNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+                    checkpointNode.failNodeId = GetConnectedNodeIdByOutputIndex(editorNode, SecondaryOutputIndex, idMap);
                     return;
 
                 case StartQuestNode startQuestNode:
-                    startQuestNode.successNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 0, idMap);
-                    startQuestNode.failNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 1, idMap);
+                    startQuestNode.successNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+                    startQuestNode.failNodeId = GetConnectedNodeIdByOutputIndex(editorNode, SecondaryOutputIndex, idMap);
                     return;
 
                 case CompleteQuestNode completeQuestNode:
-                    completeQuestNode.successNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 0, idMap);
-                    completeQuestNode.failNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 1, idMap);
+                    completeQuestNode.successNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+                    completeQuestNode.failNodeId = GetConnectedNodeIdByOutputIndex(editorNode, SecondaryOutputIndex, idMap);
                     return;
 
                 case QuestStateConditionNode questStateConditionNode:
-                    questStateConditionNode.trueNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 0, idMap);
-                    questStateConditionNode.falseNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 1, idMap);
+                    questStateConditionNode.trueNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+                    questStateConditionNode.falseNodeId = GetConnectedNodeIdByOutputIndex(editorNode, SecondaryOutputIndex, idMap);
                     return;
             }
 
-            runtimeNode.nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, 0, idMap);
+            runtimeNode.nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
         }
 
-        static string GetConnectedNodeIdByOutputIndex(INode node, int outputIndex, Dictionary<INode, string> idMap)
+        private static string GetConnectedNodeIdByOutputIndex(INode node, int outputIndex, Dictionary<INode, string> idMap)
         {
             if (node == null || outputIndex < 0 || outputIndex >= node.outputPortCount)
             {
@@ -245,7 +263,7 @@ namespace Graph.Core.Editor
             return idMap.TryGetValue(nextNode, out string id) ? id : null;
         }
 
-        static void ApplyNodeMetadata(Node editorNode, BusinessQuestNode runtimeNode)
+        private static void ApplyNodeMetadata(Node editorNode, BusinessQuestNode runtimeNode)
         {
             if (editorNode == null || runtimeNode == null)
             {
@@ -254,26 +272,32 @@ namespace Graph.Core.Editor
 
             if (TryGetOptionValue(editorNode, BusinessQuestEditorNode.TITLE_OPTION, out string title))
             {
-                runtimeNode.Title = string.IsNullOrWhiteSpace(title) ? runtimeNode.GetType().Name : title;
+                runtimeNode.title = string.IsNullOrWhiteSpace(title) ? runtimeNode.GetType().Name : title;
             }
-            else if (string.IsNullOrWhiteSpace(runtimeNode.Title))
+            else if (string.IsNullOrWhiteSpace(runtimeNode.title))
             {
-                runtimeNode.Title = runtimeNode.GetType().Name;
+                runtimeNode.title = runtimeNode.GetType().Name;
             }
 
             if (TryGetOptionValue(editorNode, BusinessQuestEditorNode.DESCRIPTION_OPTION, out string description))
             {
-                runtimeNode.Description = description;
+                runtimeNode.description = description;
             }
 
             if (TryGetOptionValue(editorNode, BusinessQuestEditorNode.COMMENT_OPTION, out string comment))
             {
-                runtimeNode.Comment = comment;
+                runtimeNode.comment = comment;
             }
         }
 
-        static bool TryGetOptionValue<T>(Node node, string optionName, out T value)
+        private static bool TryGetOptionValue<T>(Node node, string optionName, out T value)
         {
+            if (node == null)
+            {
+                value = default;
+                return false;
+            }
+
             INodeOption option = node.GetNodeOptionByName(optionName);
             if (option != null && option.TryGetValue(out value))
             {
@@ -284,8 +308,13 @@ namespace Graph.Core.Editor
             return false;
         }
 
-        static T GetOptionValue<T>(Node node, string optionName)
+        private static T GetOptionValue<T>(Node node, string optionName)
         {
+            if (node == null)
+            {
+                return default;
+            }
+
             INodeOption option = node.GetNodeOptionByName(optionName);
             if (option != null && option.TryGetValue(out T value))
             {

@@ -1,26 +1,27 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using GraphCore.BaseNodes.Runtime.Server;
 
 public interface IGraphDialogueService
 {
-    Task ShowAsync(string title, string body);
+    UniTask ShowAsync(string title, string body, CancellationToken cancellationToken);
 }
 
 public readonly struct GraphChoiceEntry
 {
-    public readonly string Label;
+    public readonly string label;
 
     public GraphChoiceEntry(string label)
     {
-        Label = label;
+        this.label = label;
     }
 }
 
 public interface IGraphChoiceService
 {
-    Task<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options);
+    UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken);
 }
 
 public interface IGraphMapMarkerService
@@ -30,116 +31,160 @@ public interface IGraphMapMarkerService
 
 public interface IGraphCutsceneService
 {
-    Task PlayAsync(string cutsceneReference);
+    UniTask PlayAsync(string cutsceneReference, CancellationToken cancellationToken);
 }
 
 public interface IGraphCheckpointService
 {
-    Task<bool> SaveAsync(string checkpointId);
-    Task<bool> ClearAsync(string checkpointId);
+    UniTask<bool> SaveAsync(string checkpointId, CancellationToken cancellationToken);
+    UniTask<bool> ClearAsync(string checkpointId, CancellationToken cancellationToken);
 }
 
 public interface IGraphQuestService
 {
-    Task<bool> StartQuestAsync(string questId);
-    Task<bool> CompleteQuestAsync(string questId);
-    Task<QuestState> GetQuestStateAsync(string questId);
+    UniTask<bool> StartQuestAsync(string questId, CancellationToken cancellationToken);
+    UniTask<bool> CompleteQuestAsync(string questId, CancellationToken cancellationToken);
+    UniTask<QuestState> GetQuestStateAsync(string questId, CancellationToken cancellationToken);
 }
 
-public class GraphExecutionContext
+public interface IGraphRuntimeServices
 {
-    private readonly Dictionary<string, object> values = new Dictionary<string, object>();
+    IGraphDialogueService dialogueService { get; }
+    IGraphChoiceService choiceService { get; }
+    IGraphMapMarkerService mapMarkerService { get; }
+    IGraphCutsceneService cutsceneService { get; }
+    IGraphCheckpointService checkpointService { get; }
+    IGraphQuestService questService { get; }
+}
 
-    public IGraphDialogueService DialogueService { get; set; }
-    public IGraphChoiceService ChoiceService { get; set; }
-    public IGraphMapMarkerService MapMarkerService { get; set; }
-    public IGraphCutsceneService CutsceneService { get; set; }
-    public IGraphCheckpointService CheckpointService { get; set; }
-    public IGraphQuestService QuestService { get; set; }
+public sealed class GraphRuntimeServices : IGraphRuntimeServices
+{
+    public IGraphDialogueService dialogueService { get; }
+    public IGraphChoiceService choiceService { get; }
+    public IGraphMapMarkerService mapMarkerService { get; }
+    public IGraphCutsceneService cutsceneService { get; }
+    public IGraphCheckpointService checkpointService { get; }
+    public IGraphQuestService questService { get; }
+
+    public GraphRuntimeServices(
+        IGraphDialogueService dialogueService,
+        IGraphChoiceService choiceService,
+        IGraphMapMarkerService mapMarkerService,
+        IGraphCutsceneService cutsceneService,
+        IGraphCheckpointService checkpointService,
+        IGraphQuestService questService)
+    {
+        this.dialogueService = dialogueService;
+        this.choiceService = choiceService;
+        this.mapMarkerService = mapMarkerService;
+        this.cutsceneService = cutsceneService;
+        this.checkpointService = checkpointService;
+        this.questService = questService;
+    }
+}
+
+public sealed class GraphExecutionContext
+{
+    private sealed class TypedValue
+    {
+        public readonly Type valueType;
+        public readonly object value;
+
+        public TypedValue(Type valueType, object value)
+        {
+            this.valueType = valueType ?? typeof(object);
+            this.value = value;
+        }
+    }
+
+    private readonly Dictionary<GraphContextKey, TypedValue> m_values = new Dictionary<GraphContextKey, TypedValue>();
+
+    public GraphExecutionContext(IGraphRuntimeServices services = null)
+    {
+        Services = services;
+    }
+
+    public IGraphRuntimeServices Services { get; }
+
+    public IGraphDialogueService DialogueService => Services?.dialogueService;
+    public IGraphChoiceService ChoiceService => Services?.choiceService;
+    public IGraphMapMarkerService MapMarkerService => Services?.mapMarkerService;
+    public IGraphCutsceneService CutsceneService => Services?.cutsceneService;
+    public IGraphCheckpointService CheckpointService => Services?.checkpointService;
+    public IGraphQuestService QuestService => Services?.questService;
 
     public void Set<T>(GraphContextKey<T> key, T value)
     {
-        if (key == null)
-        {
-            return;
-        }
-
-        values[key.Id] = value;
+        EnsureKeyIsValid(key);
+        SetInternal(key, value);
     }
 
     public bool TryGet<T>(GraphContextKey<T> key, out T value)
     {
-        if (key == null)
-        {
-            value = default;
-            return false;
-        }
-
-        return TryGetValue(key.Id, out value);
+        EnsureKeyIsValid(key);
+        return TryGetInternal(key, out value);
     }
 
-    public bool Has<T>(GraphContextKey<T> key)
+    public bool Contains<T>(GraphContextKey<T> key)
     {
-        return key != null && values.ContainsKey(key.Id);
+        EnsureKeyIsValid(key);
+        return m_values.ContainsKey(key);
     }
 
     public bool Remove<T>(GraphContextKey<T> key)
     {
-        return key != null && values.Remove(key.Id);
-    }
-
-    public void SetValue<T>(string key, T value)
-    {
-        if (string.IsNullOrEmpty(key))
-        {
-            return;
-        }
-
-        values[key] = value;
-    }
-
-    public bool TryGetValue<T>(string key, out T value)
-    {
-        if (string.IsNullOrEmpty(key))
-        {
-            value = default;
-            return false;
-        }
-
-        if (!values.TryGetValue(key, out object raw))
-        {
-            value = default;
-            return false;
-        }
-
-        if (raw == null)
-        {
-            value = default;
-            return true;
-        }
-
-        if (raw is T typed)
-        {
-            value = typed;
-            return true;
-        }
-
-        value = default;
-        return false;
-    }
-
-    public bool HasValue(string key)
-    {
-        return !string.IsNullOrEmpty(key) && values.ContainsKey(key);
-    }
-
-    public bool RemoveValue(string key)
-    {
-        return !string.IsNullOrEmpty(key) && values.Remove(key);
+        EnsureKeyIsValid(key);
+        return m_values.Remove(key);
     }
 
     public void Clear()
     {
-        values.Clear();
+        m_values.Clear();
+    }
+
+    private static void EnsureKeyIsValid<T>(GraphContextKey<T> key)
+    {
+        if (key == null)
+        {
+            throw new ArgumentNullException(nameof(key));
+        }
+    }
+
+    private void SetInternal<T>(GraphContextKey<T> key, T value)
+    {
+        if (m_values.TryGetValue(key, out TypedValue existing) && existing.valueType != key.ValueType)
+        {
+            throw new InvalidOperationException($"GraphExecutionContext type mismatch on key '{key.Id}'. Existing type: {existing.valueType.Name}, new type: {key.ValueType.Name}.");
+        }
+
+        m_values[key] = new TypedValue(key.ValueType, value);
+    }
+
+    private bool TryGetInternal<T>(GraphContextKey<T> key, out T value)
+    {
+        if (!m_values.TryGetValue(key, out TypedValue stored))
+        {
+            value = default;
+            return false;
+        }
+
+        if (stored.valueType != key.ValueType)
+        {
+            throw new InvalidOperationException($"GraphExecutionContext type mismatch on key '{key.Id}'. Stored type: {stored.valueType.Name}, requested type: {key.ValueType.Name}.");
+        }
+
+        if (stored.value == null)
+        {
+            value = default;
+            return true;
+        }
+
+        if (stored.value is not T typedValue)
+        {
+            throw new InvalidOperationException($"GraphExecutionContext stored value cast failed on key '{key.Id}'. Stored runtime type: {stored.value.GetType().Name}, requested type: {key.ValueType.Name}.");
+        }
+
+        value = typedValue;
+        return true;
     }
 }

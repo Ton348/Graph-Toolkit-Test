@@ -1,5 +1,6 @@
 using System;
-using System.Threading.Tasks;
+using System.Threading;
+using Cysharp.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -102,10 +103,23 @@ public class DialogueUIService : MonoBehaviour
 
 public class DialogueService : DialogueUIService, IGraphDialogueService
 {
-    public Task ShowAsync(string title, string body)
+    public UniTask ShowAsync(string title, string body, CancellationToken cancellationToken)
     {
-        var tcs = new TaskCompletionSource<bool>();
-        ShowDialogue(title, body, () => tcs.TrySetResult(true), null);
-        return tcs.Task;
+        UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
+        CancellationTokenRegistration registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
+        ShowDialogue(title, body, () => completionSource.TrySetResult(), null);
+        return AwaitWithCleanupAsync(completionSource, registration);
+    }
+
+    private static async UniTask AwaitWithCleanupAsync(UniTaskCompletionSource completionSource, CancellationTokenRegistration registration)
+    {
+        try
+        {
+            await completionSource.Task;
+        }
+        finally
+        {
+            registration.Dispose();
+        }
     }
 }
