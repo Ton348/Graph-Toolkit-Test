@@ -9,9 +9,9 @@ using UnityEngine.Serialization;
 public class NPCManager : Interactable
 {
     [FormerlySerializedAs("questGraph")]
-    public BusinessQuestGraph dialogueGraph;
-    public BusinessQuestGraph stealGraph;
+    [FormerlySerializedAs("dialogueGraph")]
     public BaseGraph baseDialogueGraph;
+    [FormerlySerializedAs("stealGraph")]
     public BaseGraph baseStealGraph;
     public bool allowSteal = true;
     public Transform lookForwardReference;
@@ -25,107 +25,23 @@ public class NPCManager : Interactable
     public TradeOfferUIService tradeOfferUIService;
     public MapMarkerService mapMarkerService;
     public Transform playerTransform;
-    private BusinessQuestGraphRunner runner;
-    private BusinessQuestGraph currentGraph;
     private BaseGraphRunner baseRunner;
     private BaseGraph currentBaseGraph;
 
     public override void Interact(Transform player)
     {
         var selectedBaseGraph = SelectBaseGraph(player);
-        if (selectedBaseGraph != null)
-        {
-            StartBaseGraph(selectedBaseGraph);
-            return;
-        }
-
-        var selectedGraph = SelectGraph(player);
-        if (selectedGraph == null)
+        if (selectedBaseGraph == null)
         {
             return;
         }
 
-        if (bootstrap == null)
-        {
-            bootstrap = FindObjectOfType<GameBootstrap>();
-        }
-
-        if (bootstrap == null)
-        {
-            return;
-        }
-
-        if (playerTransform == null && player != null)
-        {
-            playerTransform = player;
-        }
-
-        if (tradeOfferUIService == null)
-        {
-            tradeOfferUIService = FindObjectOfType<TradeOfferUIService>();
-        }
-
-        if (runner != null && runner.IsRunning)
-        {
-            Debug.Log($"[NPCManager] Interact ignored because graph is already running on '{name}'.");
-            return;
-        }
-
-        bool shouldRecreateRunner = runner == null || currentGraph != selectedGraph || (tradeOfferUIService != null && !runner.HasTradeOfferUI);
-
-        if (shouldRecreateRunner)
-        {
-            if (playerTransform == null)
-            {
-                var playerMovement = FindObjectOfType<PlayerMovement>();
-                if (playerMovement != null)
-                {
-                    playerTransform = playerMovement.transform;
-                }
-            }
-
-            runner = new BusinessQuestGraphRunner(
-                selectedGraph,
-                bootstrap,
-                bootstrap.GameServer,
-                dialogueService,
-                choiceUIService,
-                tradeOfferUIService,
-                mapMarkerService,
-                playerTransform,
-                bootstrap.GraphProgressService
-            );
-            currentGraph = selectedGraph;
-        }
-
-        runner.Start(BuildInteractionContext(player));
+        StartBaseGraph(selectedBaseGraph);
     }
 
     public override void Interact()
     {
         Interact(null);
-    }
-
-    private BusinessQuestGraph SelectGraph(Transform player)
-    {
-        bool canSteal = allowSteal && stealGraph != null && StealContextEvaluator.CanStealFromNpc(player, this);
-
-        if (canSteal)
-        {
-            return stealGraph;
-        }
-
-        if (dialogueGraph != null)
-        {
-            return dialogueGraph;
-        }
-
-        if (stealGraph != null)
-        {
-            return stealGraph;
-        }
-
-        return null;
     }
 
     private BaseGraph SelectBaseGraph(Transform player)
@@ -186,6 +102,7 @@ public class NPCManager : Interactable
                 null,
                 null,
                 questService));
+        context.Set(GraphRuntimeContextKeys.immediateChoiceAfterDialogue, true);
 
         _ = baseRunner.RunAsync(graph, context);
     }
@@ -756,29 +673,4 @@ public class NPCManager : Interactable
         }
     }
 
-    private InteractionContext BuildInteractionContext(Transform player)
-    {
-        if (allowSteal && stealGraph != null && StealContextEvaluator.CanStealFromNpc(player, this))
-        {
-            return new InteractionContext
-            {
-                contextType = InteractionContextType.Steal,
-                sourceNpc = this
-            };
-        }
-
-        return new InteractionContext
-        {
-            contextType = InteractionContextType.Normal,
-            sourceNpc = this
-        };
-    }
-
-    private void Update()
-    {
-        if (runner != null && runner.IsRunning)
-        {
-            runner.Tick();
-        }
-    }
 }

@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using BaseFlow = GraphCore.BaseNodes.Runtime.Flow;
 using BaseUI = GraphCore.BaseNodes.Runtime.UI;
 using BaseUtility = GraphCore.BaseNodes.Runtime.Utility;
+using BaseWorld = GraphCore.BaseNodes.Runtime.World;
+using BaseServer = GraphCore.BaseNodes.Runtime.Server;
 
 // Legacy runtime runner kept temporarily for compatibility until all call sites are migrated to GraphCore.
 [Obsolete("Legacy runner. Use GraphCore BaseGraphRunner + GraphRuntimeServices pipeline instead.")]
@@ -221,6 +223,11 @@ public class BusinessQuestGraphRunner
                 case BaseUI.DialogueNode baseDialogueNode:
                     if (dialogueService != null)
                     {
+                        if (TryShowDialogueWithImmediateChoice(baseDialogueNode))
+                        {
+                            return;
+                        }
+
                         dialogueService.ShowDialogue(baseDialogueNode.dialogueTitle, baseDialogueNode.body, () =>
                         {
                             currentNode = graph.GetNodeById(baseDialogueNode.nextNodeId);
@@ -234,14 +241,16 @@ public class BusinessQuestGraphRunner
                 case BaseUI.ChoiceNode baseChoiceNode:
                     if (choiceUIService != null)
                     {
-                        choiceUIService.ShowChoices(ToLegacyChoices(baseChoiceNode.options), optionIndex =>
+                        choiceUIService.ShowChoices(baseChoiceNode.options, optionIndex =>
                         {
-                            currentNode = graph.GetNodeById(GetBaseChoiceNextId(baseChoiceNode, optionIndex));
+                            StoreChoiceContext(baseChoiceNode, optionIndex);
+                            currentNode = graph.GetNodeById(GetChoiceNextId(baseChoiceNode, optionIndex));
                             Advance();
                         });
                         return;
                     }
-                    currentNode = graph.GetNodeById(GetBaseChoiceNextId(baseChoiceNode, 0));
+                    StoreChoiceContext(baseChoiceNode, 0);
+                    currentNode = graph.GetNodeById(GetChoiceNextId(baseChoiceNode, 0));
                     continue;
 
                 case BaseUtility.LogNode logNode:
@@ -263,44 +272,6 @@ public class BusinessQuestGraphRunner
 
                 case BaseFlow.RandomNode randomNode:
                     currentNode = graph.GetNodeById(GetRandomNextId(randomNode));
-                    continue;
-
-                case StartNode:
-                    currentNode = graph.GetNodeById(currentNode.nextNodeId);
-                    continue;
-
-                case DialogueNode dialogueNode:
-                    if (dialogueService != null)
-                    {
-                        if (TryShowDialogueWithImmediateChoice(dialogueNode))
-                        {
-                            return;
-                        }
-
-                        dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, () =>
-                        {
-                            currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
-                            Advance();
-                        }, dialogueNode.screenshot);
-                        return;
-                    }
-                    currentNode = graph.GetNodeById(dialogueNode.nextNodeId);
-                    continue;
-
-                case ChoiceNode choiceNode:
-                    if (choiceUIService != null)
-                    {
-                        choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
-                        {
-                            StoreChoiceContext(choiceNode, optionIndex);
-                            string nextId = GetChoiceNextId(choiceNode, optionIndex);
-                            currentNode = graph.GetNodeById(nextId);
-                            Advance();
-                        });
-                        return;
-                    }
-                    StoreChoiceContext(choiceNode, 0);
-                    currentNode = graph.GetNodeById(GetChoiceNextId(choiceNode, 0));
                     continue;
 
                 case ConditionNode conditionNode:
@@ -347,7 +318,7 @@ public class BusinessQuestGraphRunner
                         continue;
                     }
 
-                case CheckpointNode checkpointNode:
+                case BaseServer.CheckpointNode checkpointNode:
                     {
                         Debug.Log($"[Checkpoint] START checkpointId='{checkpointNode.checkpointId}'");
                         SaveCheckpoint(checkpointNode);
@@ -448,7 +419,7 @@ public class BusinessQuestGraphRunner
                         return;
                     }
 
-                case RequestStartQuestNode requestStartQuestNode:
+                case BaseServer.StartQuestNode requestStartQuestNode:
                     {
                         Debug.Log($"[RequestStartQuest] START questId='{requestStartQuestNode.questId}'");
                         executionContext?.Set(GraphContextKeys.QuestLastRequestedId, requestStartQuestNode.questId);
@@ -473,7 +444,7 @@ public class BusinessQuestGraphRunner
                         return;
                     }
 
-                case RequestCompleteQuestNode requestCompleteQuestNode:
+                case BaseServer.CompleteQuestNode requestCompleteQuestNode:
                     {
                         Debug.Log($"[RequestCompleteQuest] START questId='{requestCompleteQuestNode.questId}'");
                         executionContext?.Set(GraphContextKeys.QuestLastRequestedId, requestCompleteQuestNode.questId);
@@ -741,37 +712,13 @@ public class BusinessQuestGraphRunner
                         return;
                     }
 
-                case RefreshProfileNode refreshProfileNode:
-                    {
-                        Debug.Log("[RefreshProfile] START");
-                        if (requestManager != null && !requestManager.TryStartRequest("RefreshProfile"))
-                        {
-                            currentNode = graph.GetNodeById(refreshProfileNode.failNodeId);
-                            continue;
-                        }
-
-                        if (gameServer == null)
-                        {
-                            Debug.Log("[RefreshProfile] Result: Fail - ServerMissing");
-                            requestManager?.FinishRequest();
-                            currentNode = graph.GetNodeById(refreshProfileNode.failNodeId);
-                            continue;
-                        }
-
-                        pendingServerTask = gameServer.TryGetProfileAsync();
-                        pendingSuccessNodeId = refreshProfileNode.successNodeId;
-                        pendingFailNodeId = refreshProfileNode.failNodeId;
-                        pendingRequestLabel = "RefreshProfile";
-                        return;
-                    }
-
-                case AddMapMarkerNode addMarkerNode:
-                    mapMarkerService?.ShowMarker(addMarkerNode.markerId, addMarkerNode.targetTransform, addMarkerNode.title);
+                case BaseWorld.MapMarkerNode addMarkerNode:
+                    mapMarkerService?.ShowMarker(addMarkerNode.markerId, null, addMarkerNode.targetObjectName);
                     if (CompassManager.Instance != null)
                     {
                         CompassManager.Instance.ShowTarget(addMarkerNode.markerId);
                     }
-                    Debug.Log($"[Marker] Node issued markerId='{addMarkerNode.markerId}' title='{addMarkerNode.title}'");
+                    Debug.Log($"[Marker] Node issued markerId='{addMarkerNode.markerId}' target='{addMarkerNode.targetObjectName}'");
                     currentNode = graph.GetNodeById(addMarkerNode.nextNodeId);
                     continue;
 
@@ -787,37 +734,6 @@ public class BusinessQuestGraphRunner
                     waitingGoToNode = goToPointNode;
                     return;
 
-                case EndNode endNode:
-                    if (!string.IsNullOrWhiteSpace(endNode.completeQuestId))
-                    {
-                        Debug.Log($"[EndNode] START completeQuestId='{endNode.completeQuestId}'");
-                        if (requestManager != null && !requestManager.TryStartRequest("EndCompleteQuest"))
-                        {
-                            Stop();
-                            return;
-                        }
-
-                        if (gameServer == null)
-                        {
-                            Debug.Log("[EndNode] Result: Fail - ServerMissing");
-                            requestManager?.FinishRequest();
-                            Stop();
-                            return;
-                        }
-
-                        pendingServerTask = gameServer.TryCompleteQuestAsync(endNode.completeQuestId);
-                        pendingSuccessNodeId = null;
-                        pendingFailNodeId = null;
-                        pendingEndClearCheckpoint = endNode.clearCheckpoint;
-                        pendingRequestLabel = "EndCompleteQuest";
-                        return;
-                    }
-                    if (endNode.clearCheckpoint)
-                    {
-                        ClearCheckpoint();
-                    }
-                    Stop();
-                    return;
             }
 
             Stop();
@@ -842,7 +758,7 @@ public class BusinessQuestGraphRunner
         return mapMarkerService != null ? mapMarkerService.GetTarget(node.markerId) : null;
     }
 
-    private string GetChoiceNextId(ChoiceNode node, int optionIndex)
+    private string GetChoiceNextId(BaseUI.ChoiceNode node, int optionIndex)
     {
         if (node == null || node.options == null || node.options.Count == 0)
         {
@@ -854,69 +770,15 @@ public class BusinessQuestGraphRunner
             optionIndex = 0;
         }
 
-        ChoiceOption selected = node.options[optionIndex];
-        if (selected != null)
-        {
-            return selected.nextNodeId;
-        }
-
-        foreach (ChoiceOption option in node.options)
-        {
-            if (option != null)
-            {
-                return option.nextNodeId;
-            }
-        }
-
-        return null;
-    }
-
-    private static List<ChoiceOption> ToLegacyChoices(List<BaseUI.ChoiceOption> baseOptions)
-    {
-        var result = new List<ChoiceOption>();
-        if (baseOptions == null)
-        {
-            return result;
-        }
-
-        foreach (BaseUI.ChoiceOption option in baseOptions)
-        {
-            if (option == null || string.IsNullOrWhiteSpace(option.label))
-            {
-                continue;
-            }
-
-            result.Add(new ChoiceOption
-            {
-                label = option.label,
-                nextNodeId = option.nextNodeId
-            });
-        }
-
-        return result;
-    }
-
-    private static string GetBaseChoiceNextId(BaseUI.ChoiceNode node, int optionIndex)
-    {
-        if (node?.options == null || node.options.Count == 0)
-        {
-            return null;
-        }
-
-        if (optionIndex < 0 || optionIndex >= node.options.Count)
-        {
-            optionIndex = 0;
-        }
-
         BaseUI.ChoiceOption selected = node.options[optionIndex];
-        if (selected != null && !string.IsNullOrEmpty(selected.nextNodeId))
+        if (selected != null)
         {
             return selected.nextNodeId;
         }
 
         foreach (BaseUI.ChoiceOption option in node.options)
         {
-            if (option != null && !string.IsNullOrEmpty(option.nextNodeId))
+            if (option != null)
             {
                 return option.nextNodeId;
             }
@@ -1075,7 +937,7 @@ public class BusinessQuestGraphRunner
             return graph.GetStartNode();
         }
 
-        CheckpointNode checkpoint = graph.GetCheckpointNodeById(checkpointId);
+        BaseServer.CheckpointNode checkpoint = graph.GetCheckpointNodeById(checkpointId);
         if (checkpoint == null)
         {
             Debug.Log($"[GraphRunner] Checkpoint not found graphId='{graphId}' checkpointId='{checkpointId}'");
@@ -1093,7 +955,7 @@ public class BusinessQuestGraphRunner
         return nextNode;
     }
 
-    private void SaveCheckpoint(CheckpointNode node)
+    private void SaveCheckpoint(BaseServer.CheckpointNode node)
     {
         if (node == null)
         {
@@ -1149,14 +1011,14 @@ public class BusinessQuestGraphRunner
         return graph != null ? graph.name : string.Empty;
     }
 
-    private bool TryShowDialogueWithImmediateChoice(DialogueNode dialogueNode)
+    private bool TryShowDialogueWithImmediateChoice(BaseUI.DialogueNode dialogueNode)
     {
         if (dialogueNode == null || dialogueService == null || choiceUIService == null)
         {
             return false;
         }
 
-        if (!TryFindImmediateChoice(dialogueNode, out ChoiceNode choiceNode))
+        if (!TryFindImmediateChoice(dialogueNode, out BaseUI.ChoiceNode choiceNode))
         {
             return false;
         }
@@ -1166,7 +1028,7 @@ public class BusinessQuestGraphRunner
             return false;
         }
 
-        dialogueService.ShowDialogue(dialogueNode.title, dialogueNode.bodyText, null, dialogueNode.screenshot);
+        dialogueService.ShowDialogue(dialogueNode.dialogueTitle, dialogueNode.body, null, null);
         choiceUIService.ShowChoices(choiceNode.options, optionIndex =>
         {
             string nextId = GetChoiceNextId(choiceNode, optionIndex);
@@ -1176,7 +1038,7 @@ public class BusinessQuestGraphRunner
         return true;
     }
 
-    private bool TryFindImmediateChoice(DialogueNode dialogueNode, out ChoiceNode choiceNode)
+    private bool TryFindImmediateChoice(BaseUI.DialogueNode dialogueNode, out BaseUI.ChoiceNode choiceNode)
     {
         choiceNode = null;
         if (dialogueNode == null || string.IsNullOrEmpty(dialogueNode.nextNodeId))
@@ -1188,13 +1050,13 @@ public class BusinessQuestGraphRunner
         int safety = 0;
         while (current != null && safety < 20)
         {
-            if (current is ChoiceNode foundChoice)
+            if (current is BaseUI.ChoiceNode foundChoice)
             {
                 choiceNode = foundChoice;
                 return true;
             }
 
-            if (current is CheckpointNode)
+            if (current is BaseServer.CheckpointNode)
             {
                 ExecuteImmediateNode(current);
                 current = graph.GetNodeById(current.nextNodeId);
@@ -1208,7 +1070,7 @@ public class BusinessQuestGraphRunner
         return false;
     }
 
-    private void StoreChoiceContext(ChoiceNode choiceNode, int optionIndex)
+    private void StoreChoiceContext(BaseUI.ChoiceNode choiceNode, int optionIndex)
     {
         if (executionContext == null || choiceNode == null)
         {
@@ -1230,7 +1092,7 @@ public class BusinessQuestGraphRunner
     {
         switch (node)
         {
-            case CheckpointNode checkpointNode:
+            case BaseServer.CheckpointNode checkpointNode:
                 _ = FireAndForgetCheckpointAsync(checkpointNode);
                 break;
         }
@@ -1294,7 +1156,7 @@ public class BusinessQuestGraphRunner
         }
     }
 
-    private async Task FireAndForgetCheckpointAsync(CheckpointNode node)
+    private async Task FireAndForgetCheckpointAsync(BaseServer.CheckpointNode node)
     {
         if (node == null)
         {

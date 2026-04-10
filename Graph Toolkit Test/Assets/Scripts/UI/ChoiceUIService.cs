@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using GraphCore.BaseNodes.Runtime.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -54,13 +55,13 @@ public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
         }
     }
 
-    public void ShowChoices(List<ChoiceOption> options, Action<int> onSelectedCallback)
+    public void ShowChoices(IReadOnlyList<ChoiceOption> options, Action<int> onSelectedCallback)
     {
         onSelected = onSelectedCallback;
         ApplyOptions(options);
     }
 
-    private void ApplyOptions(List<ChoiceOption> options)
+    private void ApplyOptions(IReadOnlyList<ChoiceOption> options)
     {
         if (panel != null)
         {

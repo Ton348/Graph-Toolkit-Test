@@ -58,6 +58,7 @@ public sealed class BaseGraphRunner
 
         m_graph = graph;
         m_context = context ?? new GraphExecutionContext();
+        m_context.Set(GraphRuntimeContextKeys.currentGraph, m_graph);
         m_runCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         CancellationToken runCancellationToken = m_runCancellationTokenSource.Token;
 
@@ -184,6 +185,11 @@ public sealed class BaseGraphRunner
 
     private void Cleanup()
     {
+        if (m_context != null)
+        {
+            m_context.Remove(GraphRuntimeContextKeys.currentGraph);
+        }
+
         IsRunning = false;
         m_currentNode = null;
         m_context = null;
