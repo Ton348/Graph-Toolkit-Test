@@ -27,6 +27,7 @@ public sealed class FinishNodeExecutor : GraphNodeExecutor<FinishNode>
 {
     protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(FinishNode node, GraphExecutionContext context, CancellationToken cancellationToken)
     {
+        context?.DialogueService?.EndConversation();
         return UniTask.FromResult(GraphNodeExecutionResult.Stop("Finish node reached."));
     }
 }

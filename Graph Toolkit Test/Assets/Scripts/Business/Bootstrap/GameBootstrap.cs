@@ -149,6 +149,7 @@ public class GameBootstrap : MonoBehaviour
         QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
         BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);
         ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
+        PlayerStateSync.RefreshRequested += HandlePlayerStateRefreshRequested;
         RequestManager = new RequestManager();
         BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
         BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
@@ -189,6 +190,47 @@ public class GameBootstrap : MonoBehaviour
         BusinessLiveSimulationService.Initialize(this);
 
         SeedInitialSnapshot();
+    }
+
+    private void HandlePlayerStateRefreshRequested()
+    {
+        _ = RefreshProfileFromServerAsync();
+    }
+
+    private async Task RefreshProfileFromServerAsync()
+    {
+        if (GameServer == null || ProfileSyncService == null)
+        {
+            return;
+        }
+
+        ServerActionResult result = null;
+        try
+        {
+            result = await GameServer.TryGetProfileAsync();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogWarning($"[GameBootstrap] Profile refresh failed: {ex.Message}");
+            return;
+        }
+
+        if (result == null)
+        {
+            Debug.LogWarning("[GameBootstrap] Profile refresh returned null.");
+            return;
+        }
+
+        if (!result.Success)
+        {
+            Debug.LogWarning($"[GameBootstrap] Profile refresh failed: {result.Type} - {result.ErrorCode}");
+            return;
+        }
+
+        if (result.ProfileSnapshot != null)
+        {
+            ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+        }
     }
 
     private void SeedInitialSnapshot()

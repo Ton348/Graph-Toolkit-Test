@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Cysharp.Threading.Tasks;
 
 public class PlayerStateSync
 {
@@ -25,6 +26,7 @@ public class PlayerStateSync
     public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => constructedSites;
 
     public event Action<ProfileSnapshot> SnapshotApplied;
+    public event Action RefreshRequested;
 
     public void ApplySnapshot(ProfileSnapshot snapshot)
     {
@@ -203,5 +205,22 @@ public class PlayerStateSync
     public bool IsSiteConstructed(string siteId)
     {
         return TryGetConstructedSite(siteId, out var site) && site != null && site.isConstructed;
+    }
+
+    public UniTask RefreshAsync()
+    {
+        RefreshRequested?.Invoke();
+        return UniTask.CompletedTask;
+    }
+
+    public void Refresh()
+    {
+        RefreshRequested?.Invoke();
+    }
+
+    public UniTask SyncAsync()
+    {
+        RefreshRequested?.Invoke();
+        return UniTask.CompletedTask;
     }
 }

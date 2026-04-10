@@ -9,6 +9,7 @@ using UnityEngine;
 public static class BaseGraphRuntimeExporter
 {
     private const string BuildMenuPath = "Assets/GraphCore/Build Runtime Graph";
+    private const string BuildAllMenuPath = "Assets/GraphCore/Build All Runtime Graphs";
     private const string RuntimeAssetSuffix = ".runtime.asset";
 
     [MenuItem(BuildMenuPath, true)]
@@ -28,18 +29,32 @@ public static class BaseGraphRuntimeExporter
             return;
         }
 
-        int builtCount = 0;
-        for (int i = 0; i < selectedPaths.Length; i++)
+        int builtCount = BuildRuntimeGraphAssets(selectedPaths, saveAndRefresh: true);
+        Debug.Log($"[BaseGraphRuntimeExporter] Built {builtCount}/{selectedPaths.Length} runtime graph assets.");
+    }
+
+    [MenuItem(BuildAllMenuPath)]
+    private static void BuildAllRuntimeGraphs()
+    {
+        string[] allBaseGraphGuids = AssetDatabase.FindAssets($"t:DefaultAsset *.{BaseGraphEditorGraph.AssetExtension}");
+        if (allBaseGraphGuids == null || allBaseGraphGuids.Length == 0)
         {
-            if (BuildRuntimeGraphAsset(selectedPaths[i]))
+            Debug.LogWarning("[BaseGraphRuntimeExporter] No .basegraph assets found.");
+            return;
+        }
+
+        List<string> paths = new List<string>(allBaseGraphGuids.Length);
+        for (int i = 0; i < allBaseGraphGuids.Length; i++)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(allBaseGraphGuids[i]);
+            if (IsBaseGraphAssetPath(path))
             {
-                builtCount++;
+                paths.Add(path);
             }
         }
 
-        AssetDatabase.SaveAssets();
-        AssetDatabase.Refresh();
-        Debug.Log($"[BaseGraphRuntimeExporter] Built {builtCount}/{selectedPaths.Length} runtime graph assets.");
+        int builtCount = BuildRuntimeGraphAssets(paths, saveAndRefresh: true);
+        Debug.Log($"[BaseGraphRuntimeExporter] Built {builtCount}/{paths.Count} runtime graph assets.");
     }
 
     public static bool BuildRuntimeGraphAsset(string editorGraphPath)
@@ -52,7 +67,7 @@ public static class BaseGraphRuntimeExporter
 
         try
         {
-            BaseGraphEditorGraph editorGraph = GraphDatabase.LoadGraph<BaseGraphEditorGraph>(editorGraphPath);
+            BaseGraphEditorGraph editorGraph = LoadBaseGraphEditorGraph(editorGraphPath);
             if (editorGraph == null)
             {
                 Debug.LogError($"[BaseGraphRuntimeExporter] Could not load BaseGraphEditorGraph at '{editorGraphPath}'.");
@@ -93,6 +108,70 @@ public static class BaseGraphRuntimeExporter
         }
     }
 
+    public static int BuildRuntimeGraphAssets(IEnumerable<string> editorGraphPaths, bool saveAndRefresh)
+    {
+        if (editorGraphPaths == null)
+        {
+            return 0;
+        }
+
+        int builtCount = 0;
+        foreach (string path in editorGraphPaths)
+        {
+            if (!IsBaseGraphAssetPath(path))
+            {
+                continue;
+            }
+
+            if (BuildRuntimeGraphAsset(path))
+            {
+                builtCount++;
+            }
+        }
+
+        if (saveAndRefresh)
+        {
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        return builtCount;
+    }
+
+    public static bool IsBaseGraphAssetPath(string assetPath)
+    {
+        return !string.IsNullOrWhiteSpace(assetPath)
+               && assetPath.EndsWith($".{BaseGraphEditorGraph.AssetExtension}", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public static bool IsValidBaseGraphEditorAsset(string assetPath)
+    {
+        if (!IsBaseGraphAssetPath(assetPath))
+        {
+            return false;
+        }
+
+        BaseGraphEditorGraph editorGraph = LoadBaseGraphEditorGraph(assetPath);
+        return editorGraph != null;
+    }
+
+    private static BaseGraphEditorGraph LoadBaseGraphEditorGraph(string editorGraphPath)
+    {
+        if (!IsBaseGraphAssetPath(editorGraphPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            return GraphDatabase.LoadGraph<BaseGraphEditorGraph>(editorGraphPath);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static string[] GetSelectedBaseGraphPaths()
     {
         string[] assetGuids = Selection.assetGUIDs;
@@ -106,7 +185,7 @@ public static class BaseGraphRuntimeExporter
                 continue;
             }
 
-            if (!path.EndsWith($".{BaseGraphEditorGraph.AssetExtension}", StringComparison.OrdinalIgnoreCase))
+            if (!IsBaseGraphAssetPath(path))
             {
                 continue;
             }

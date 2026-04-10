@@ -110,12 +110,15 @@ public class DialogueService : DialogueUIService, IGraphDialogueService
 {
     public UniTask ShowAsync(string title, string body, CancellationToken cancellationToken)
     {
-        HideDialogue();
-
         UniTaskCompletionSource completionSource = new UniTaskCompletionSource();
         CancellationTokenRegistration registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
         ShowDialogue(title, body, () => completionSource.TrySetResult(), null);
         return AwaitWithCleanupAsync(this, completionSource, registration);
+    }
+
+    public void EndConversation()
+    {
+        HideDialogue();
     }
 
     private static async UniTask AwaitWithCleanupAsync(DialogueUIService dialogueUIService, UniTaskCompletionSource completionSource, CancellationTokenRegistration registration)
@@ -127,7 +130,6 @@ public class DialogueService : DialogueUIService, IGraphDialogueService
         finally
         {
             registration.Dispose();
-            dialogueUIService.HideDialogue();
         }
     }
 }

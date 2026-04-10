@@ -1,10 +1,13 @@
 using UnityEngine;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BaseFlow = GraphCore.BaseNodes.Runtime.Flow;
 using BaseUI = GraphCore.BaseNodes.Runtime.UI;
 using BaseUtility = GraphCore.BaseNodes.Runtime.Utility;
 
+// Legacy runtime runner kept temporarily for compatibility until all call sites are migrated to GraphCore.
+[Obsolete("Legacy runner. Use GraphCore BaseGraphRunner + GraphRuntimeServices pipeline instead.")]
 public class BusinessQuestGraphRunner
 {
     private readonly BusinessQuestGraph graph;
@@ -953,7 +956,7 @@ public class BusinessQuestGraphRunner
             return null;
         }
 
-        float roll = Random.Range(0f, totalWeight);
+        float roll = UnityEngine.Random.Range(0f, totalWeight);
         float accum = 0f;
         foreach (BaseFlow.RandomOption option in node.options)
         {

@@ -7,6 +7,7 @@ using GraphCore.BaseNodes.Runtime.Server;
 public interface IGraphDialogueService
 {
     UniTask ShowAsync(string title, string body, CancellationToken cancellationToken);
+    void EndConversation();
 }
 
 public readonly struct GraphChoiceEntry
