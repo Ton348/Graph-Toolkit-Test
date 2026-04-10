@@ -1,8 +1,8 @@
 {
   "name": "Sandbox",
   "references": [
-    "GraphCore.Runtime",
-    "Game1Graph.Runtime",
+    "Graph.Core.Runtime",
+    "Game1.Graph.Runtime",
     "Legacy.Runtime",
     "Prototype.Business",
     "Unity.TextMeshPro"

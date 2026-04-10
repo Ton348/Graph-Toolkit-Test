@@ -1,8 +1,8 @@
 {
   "name": "Legacy.Runtime",
   "references": [
-    "GraphCore.Runtime",
-    "Game1Graph.Runtime",
+    "Graph.Core.Runtime",
+    "Game1.Graph.Runtime",
     "Unity.TextMeshPro",
     "UniTask"
   ],

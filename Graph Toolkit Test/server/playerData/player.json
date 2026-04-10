@@ -1,16 +1,16 @@
 {
   "playerId": "player",
-  "money": 1200,
+  "money": 1000,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
   "speed": 1,
   "damage": 1,
   "health": 100,
-  "activeQuests": [],
-  "completedQuests": [
+  "activeQuests": [
     "buy_building"
   ],
+  "completedQuests": [],
   "ownedBuildings": [],
   "buildingStates": [],
   "graphCheckpoints": {},

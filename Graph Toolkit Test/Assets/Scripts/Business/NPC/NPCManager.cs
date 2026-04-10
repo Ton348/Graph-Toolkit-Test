@@ -10,9 +10,9 @@ public class NPCManager : Interactable
 {
     [FormerlySerializedAs("questGraph")]
     [FormerlySerializedAs("dialogueGraph")]
-    public BaseGraph baseDialogueGraph;
+    public CommonGraph baseDialogueGraph;
     [FormerlySerializedAs("stealGraph")]
-    public BaseGraph baseStealGraph;
+    public CommonGraph baseStealGraph;
     public bool allowSteal = true;
     public Transform lookForwardReference;
     public float stealDistance = 1.5f;
@@ -25,8 +25,8 @@ public class NPCManager : Interactable
     public TradeOfferUIService tradeOfferUIService;
     public MapMarkerService mapMarkerService;
     public Transform playerTransform;
-    private BaseGraphRunner baseRunner;
-    private BaseGraph currentBaseGraph;
+    private CommonGraphRunner baseRunner;
+    private CommonGraph currentBaseGraph;
 
     public override void Interact(Transform player)
     {
@@ -44,7 +44,7 @@ public class NPCManager : Interactable
         Interact(null);
     }
 
-    private BaseGraph SelectBaseGraph(Transform player)
+    private CommonGraph SelectBaseGraph(Transform player)
     {
         bool canSteal = allowSteal && baseStealGraph != null && StealContextEvaluator.CanStealFromNpc(player, this);
         if (canSteal)
@@ -65,7 +65,7 @@ public class NPCManager : Interactable
         return null;
     }
 
-    private void StartBaseGraph(BaseGraph graph)
+    private void StartBaseGraph(CommonGraph graph)
     {
         if (graph == null)
         {
@@ -74,19 +74,19 @@ public class NPCManager : Interactable
 
         if (!HasGraphContent(graph))
         {
-            Debug.LogError($"[NPCManager] BaseGraph '{graph.name}' does not contain runtime nodes on '{name}'.", this);
+            Debug.LogError($"[NPCManager] CommonGraph '{graph.name}' does not contain runtime nodes on '{name}'.", this);
             return;
         }
 
         if (baseRunner != null && baseRunner.IsRunning)
         {
-            Debug.Log($"[NPCManager] BaseGraph interact ignored because graph is already running on '{name}'.");
+            Debug.Log($"[NPCManager] CommonGraph interact ignored because graph is already running on '{name}'.");
             return;
         }
 
         if (baseRunner == null || currentBaseGraph != graph)
         {
-            baseRunner = new BaseGraphRunner(BaseGraphRuntimeComposition.CreateDefaultRegistry());
+            baseRunner = new CommonGraphRunner(CommonGraphRuntimeComposition.CreateDefaultRegistry());
             currentBaseGraph = graph;
         }
 
@@ -107,7 +107,7 @@ public class NPCManager : Interactable
         _ = baseRunner.RunAsync(graph, context);
     }
 
-    private static bool HasGraphContent(BaseGraph graph)
+    private static bool HasGraphContent(CommonGraph graph)
     {
         return graph != null && graph.nodes != null && graph.nodes.Count > 0;
     }

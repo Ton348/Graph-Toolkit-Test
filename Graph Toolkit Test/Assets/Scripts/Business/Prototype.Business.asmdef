@@ -3,8 +3,8 @@
   "references": [
     "Legacy.Runtime",
     "Unity.TextMeshPro",
-    "GraphCore.Runtime",
-    "Game1Graph.Runtime",
+    "Graph.Core.Runtime",
+    "Game1.Graph.Runtime",
     "UniTask",
     "Dreamteck.Splines",
     "Dreamteck.Utilities"
