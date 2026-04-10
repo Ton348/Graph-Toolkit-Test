@@ -29223,7 +29223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  baseDialogueGraph: {fileID: 11400000, guid: 8644ebfb58032436e9794752b78d1d4d, type: 2}
+  baseDialogueGraph: {fileID: 11400000, guid: d1d94ca5e282144c8a5e211df542301d, type: 2}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 0}
@@ -75282,7 +75282,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 2
-  baseDialogueGraph: {fileID: 11400000, guid: 17161d760be6448cea75e8ab589a93c9, type: 2}
+  baseDialogueGraph: {fileID: 0}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 5388624718994620851}
