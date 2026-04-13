@@ -11,8 +11,20 @@ public static class CommonGraphRuntimeExporter
 	private const string BuildMenuPath = "Assets/GraphCore/Build Runtime Graph";
 	private const string BuildAllMenuPath = "Assets/GraphCore/Build All Runtime Graphs";
 	private const string RuntimeAssetSuffix = ".runtime.asset";
+	private static GraphValidationHook s_graphValidationHook;
 
 	public delegate CommonGraph GraphCompiler(CommonGraphEditorGraph editorGraph);
+	public delegate bool GraphValidationHook(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath);
+
+	public static void SetGraphValidationHook(GraphValidationHook validationHook)
+	{
+		s_graphValidationHook = validationHook;
+	}
+
+	public static void ClearGraphValidationHook()
+	{
+		s_graphValidationHook = null;
+	}
 
 	[MenuItem(BuildMenuPath, true)]
 	private static bool ValidateBuildSelectedRuntimeGraphs()
@@ -87,6 +99,12 @@ public static class CommonGraphRuntimeExporter
 			if (compiledGraph == null)
 			{
 				// Fresh graph assets can be empty right after creation. Skip auto-build quietly until authoring is valid.
+				return false;
+			}
+
+			if (s_graphValidationHook != null && !s_graphValidationHook(editorGraph, compiledGraph, editorGraphPath))
+			{
+				UnityEngine.Object.DestroyImmediate(compiledGraph);
 				return false;
 			}
 

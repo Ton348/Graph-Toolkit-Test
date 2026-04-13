@@ -25,6 +25,7 @@ public static class GameGraphEditorBootstrap
 			.Build();
 
 		CommonGraphImporter.SetExternalConverter(ConvertExternalNode);
+		CommonGraphRuntimeExporter.SetGraphValidationHook(ValidateBeforeBuild);
 
 		Debug.Log("[GameGraph] Module initialized.");
 	}
@@ -77,5 +78,15 @@ public static class GameGraphEditorBootstrap
 		}
 
 		return null;
+	}
+
+	private static bool ValidateBeforeBuild(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath)
+	{
+		if (s_module == null)
+		{
+			return true;
+		}
+
+		return GameGraphBuildValidationBridge.ValidateBeforeBuild(editorGraph, runtimeGraph, editorGraphPath, s_module.ValidationComposition);
 	}
 }

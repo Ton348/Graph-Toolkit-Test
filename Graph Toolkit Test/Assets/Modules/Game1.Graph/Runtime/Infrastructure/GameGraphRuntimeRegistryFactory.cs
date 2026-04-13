@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -6,75 +5,100 @@ using UnityEngine;
 
 public static class GameGraphRuntimeRegistryFactory
 {
-    public static GraphNodeExecutorRegistry Create()
-    {
-        GameGraphComposition composition = GameGraphComposition.CreateDefault();
+	private static readonly object s_cacheLock = new object();
+	private static Type[] s_cachedExecutorTypes;
 
-        HashSet<Assembly> assemblies = new HashSet<Assembly>();
-        Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-        for (int i = 0; i < loadedAssemblies.Length; i++)
-        {
-            Assembly assembly = loadedAssemblies[i];
-            if (assembly == null || assembly.IsDynamic)
-            {
-                continue;
-            }
+	public static GraphNodeExecutorRegistry Create()
+	{
+		GameGraphComposition composition = GameGraphComposition.CreateDefault();
+		Type[] executorTypes = GetCachedExecutorTypes();
 
-            assemblies.Add(assembly);
-        }
+		for (int i = 0; i < executorTypes.Length; i++)
+		{
+			Type type = executorTypes[i];
+			try
+			{
+				IGraphNodeExecutor executor = (IGraphNodeExecutor)Activator.CreateInstance(type);
+				composition.ExecutorRegistry.Register(executor);
+			}
+			catch (Exception exception)
+			{
+				Debug.LogError($"[GameGraphRuntimeRegistryFactory] Failed to register executor '{type.FullName}': {exception.Message}");
+			}
+		}
 
-        foreach (Assembly assembly in assemblies)
-        {
-            Type[] types;
-            try
-            {
-                types = assembly.GetTypes();
-            }
-            catch (ReflectionTypeLoadException exception)
-            {
-                types = exception.Types;
-            }
+		return composition.CreateRuntimeExecutorRegistry();
+	}
 
-            if (types == null)
-            {
-                continue;
-            }
+	private static Type[] GetCachedExecutorTypes()
+	{
+		lock (s_cacheLock)
+		{
+			if (s_cachedExecutorTypes != null)
+			{
+				return s_cachedExecutorTypes;
+			}
 
-            for (int i = 0; i < types.Length; i++)
-            {
-                Type type = types[i];
-                if (type == null || type.IsAbstract || type.IsGenericTypeDefinition)
-                {
-                    continue;
-                }
+			List<Type> executorTypes = new List<Type>();
+			HashSet<Assembly> assemblies = new HashSet<Assembly>();
+			Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+			for (int i = 0; i < loadedAssemblies.Length; i++)
+			{
+				Assembly assembly = loadedAssemblies[i];
+				if (assembly == null || assembly.IsDynamic)
+				{
+					continue;
+				}
 
-                if (!typeof(IGraphNodeExecutor).IsAssignableFrom(type))
-                {
-                    continue;
-                }
+				assemblies.Add(assembly);
+			}
 
-                if (type.GetCustomAttribute<GameGraphNodeExecutorAttribute>() == null)
-                {
-                    continue;
-                }
+			foreach (Assembly assembly in assemblies)
+			{
+				Type[] types;
+				try
+				{
+					types = assembly.GetTypes();
+				}
+				catch (ReflectionTypeLoadException exception)
+				{
+					types = exception.Types;
+				}
 
-                if (type.GetConstructor(Type.EmptyTypes) == null)
-                {
-                    continue;
-                }
+				if (types == null)
+				{
+					continue;
+				}
 
-                try
-                {
-                    IGraphNodeExecutor executor = (IGraphNodeExecutor)Activator.CreateInstance(type);
-                    composition.ExecutorRegistry.Register(executor);
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogError($"[GameGraphRuntimeRegistryFactory] Failed to register executor '{type.FullName}': {exception.Message}");
-                }
-            }
-        }
+				for (int i = 0; i < types.Length; i++)
+				{
+					Type type = types[i];
+					if (type == null || type.IsAbstract || type.IsGenericTypeDefinition)
+					{
+						continue;
+					}
 
-        return composition.CreateRuntimeExecutorRegistry();
-    }
+					if (!typeof(IGraphNodeExecutor).IsAssignableFrom(type))
+					{
+						continue;
+					}
+
+					if (type.GetCustomAttribute<GameGraphNodeExecutorAttribute>() == null)
+					{
+						continue;
+					}
+
+					if (type.GetConstructor(Type.EmptyTypes) == null)
+					{
+						continue;
+					}
+
+					executorTypes.Add(type);
+				}
+			}
+
+			s_cachedExecutorTypes = executorTypes.ToArray();
+			return s_cachedExecutorTypes;
+		}
+	}
 }

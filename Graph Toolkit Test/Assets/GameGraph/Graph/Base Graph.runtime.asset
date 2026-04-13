@@ -12,38 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: Base Graph.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::CommonGraph
-  startNodeId: 9efa9402-0d18-465b-96a8-59a19ab78fc5
+  startNodeId: 5d938d9f-000b-4f72-a7d7-c87afcb24765
   nodes:
-  - rid: 7634388925711909114
-  - rid: 7634388925711909115
-  - rid: 7634388925711909116
-  - rid: 7634388925711909117
-  - rid: 7634388925711909118
+  - rid: 7634388925711909496
+  - rid: 7634388925711909497
+  - rid: 7634388925711909498
+  - rid: 7634388925711909499
+  - rid: 7634388925711909500
   references:
     version: 2
     RefIds:
-    - rid: 7634388925711909114
+    - rid: 7634388925711909496
       type: {class: StartNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9efa9402-0d18-465b-96a8-59a19ab78fc5
+        nodeId: 5d938d9f-000b-4f72-a7d7-c87afcb24765
         nextNodeId: 
         title: StartNode
         description: Entry point of the graph
         comment: 
-    - rid: 7634388925711909115
+    - rid: 7634388925711909497
       type: {class: DialogueNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 458f64c8-a813-48ad-9eb6-9f2288b88c90
-        nextNodeId: 4bd9271c-b404-4c32-a6f3-209fc13765b0
+        nodeId: d92ff3a5-eeca-4ef0-ab2e-58060a461946
+        nextNodeId: 64c3e32f-dbe7-4bdb-bde9-b360b2a0f721
         title: DialogueNode
         description: Shows dialogue and continues
         comment: 
         dialogueTitle: "\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440"
-        body: "\u041A\u0443\u043F\u0438 \u0437\u0434\u0430\u043D\u0438\u0435"
-    - rid: 7634388925711909116
+        body: "\u041F\u043E\u0441\u0442\u0440\u043E\u0439 \u0437\u0434\u0430\u043D\u0438\u0435"
+    - rid: 7634388925711909498
+      type: {class: FinishNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 61eec65c-90ae-441e-9ea0-05e01db1fdde
+        nextNodeId: 
+        title: FinishNode
+        description: Terminates graph execution
+        comment: 
+    - rid: 7634388925711909499
       type: {class: ChoiceNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 4bd9271c-b404-4c32-a6f3-209fc13765b0
+        nodeId: 64c3e32f-dbe7-4bdb-bde9-b360b2a0f721
         nextNodeId: 
         title: ChoiceNode
         description: Shows player choices and branches by selection
@@ -57,21 +65,14 @@ MonoBehaviour:
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 7634388925711909117
-      type: {class: FinishNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
-      data:
-        nodeId: d66e545f-4d0f-4cf9-8a2f-f4477091b8de
-        nextNodeId: 
-        title: FinishNode
-        description: Terminates graph execution
-        comment: 
-    - rid: 7634388925711909118
+    - rid: 7634388925711909500
       type: {class: DialogueNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: a2533939-c1cb-432b-899c-80e4d7da2662
-        nextNodeId: d66e545f-4d0f-4cf9-8a2f-f4477091b8de
+        nodeId: 5c3373a2-14b0-4b34-a110-7920d87508d8
+        nextNodeId: 61eec65c-90ae-441e-9ea0-05e01db1fdde
         title: DialogueNode
         description: Shows dialogue and continues
         comment: 
         dialogueTitle: "\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440"
-        body: "\u0423\u0434\u0430\u0447\u0438"
+        body: "\u0421\u0442\u0440\u043E\u0438\u0442\u0435\u043B\u044C \u0442\u0435\u0431\u0435
+          \u0432 \u044D\u0442\u043E\u043C \u043F\u043E\u043C\u043E\u0436\u0435\u0442"

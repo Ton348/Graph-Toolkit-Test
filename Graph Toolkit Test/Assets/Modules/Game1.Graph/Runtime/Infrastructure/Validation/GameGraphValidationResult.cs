@@ -5,21 +5,49 @@ public sealed class GameGraphValidationResult
 	private readonly List<GameGraphValidationIssue> m_issues = new List<GameGraphValidationIssue>();
 
 	public IReadOnlyList<GameGraphValidationIssue> Issues => m_issues;
-	public bool HasErrors
+	public int ErrorCount
 	{
 		get
 		{
+			int count = 0;
 			for (int i = 0; i < m_issues.Count; i++)
 			{
 				if (m_issues[i].severity == GameGraphValidationIssueSeverity.Error)
 				{
-					return true;
+					count++;
 				}
 			}
 
-			return false;
+			return count;
 		}
 	}
+
+	public int WarningCount
+	{
+		get
+		{
+			int count = 0;
+			for (int i = 0; i < m_issues.Count; i++)
+			{
+				if (m_issues[i].severity == GameGraphValidationIssueSeverity.Warning)
+				{
+					count++;
+				}
+			}
+
+			return count;
+		}
+	}
+
+	public bool HasErrors
+	{
+		get
+		{
+			return ErrorCount > 0;
+		}
+	}
+
+	public bool HasWarnings => WarningCount > 0;
 
 	public void AddIssue(GameGraphValidationIssueSeverity severity, GameGraphNode node, string fieldName, string message)
 	{

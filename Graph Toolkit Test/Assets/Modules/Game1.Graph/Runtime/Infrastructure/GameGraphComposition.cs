@@ -23,6 +23,11 @@ public sealed class GameGraphComposition
 		ExecutorRegistry.Register<TExecutor>();
 	}
 
+	public void RegisterExecutor(IGraphNodeExecutor executor)
+	{
+		ExecutorRegistry.Register(executor);
+	}
+
 	public static GameGraphComposition CreateDefault()
 	{
 		return new GameGraphComposition(new GameGraphExecutorRegistry());
