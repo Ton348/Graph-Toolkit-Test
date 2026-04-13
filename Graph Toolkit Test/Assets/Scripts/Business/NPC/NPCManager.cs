@@ -86,7 +86,7 @@ public class NPCManager : Interactable
 
         if (baseRunner == null || currentBaseGraph != graph)
         {
-            baseRunner = new CommonGraphRunner(CommonGraphRuntimeComposition.CreateDefaultRegistry());
+            baseRunner = new CommonGraphRunner(GameGraphRuntimeRegistryFactory.Create());
             currentBaseGraph = graph;
         }
 
@@ -111,6 +111,7 @@ public class NPCManager : Interactable
     {
         return graph != null && graph.nodes != null && graph.nodes.Count > 0;
     }
+
 
     private sealed class GraphQuestServiceAdapter : IGraphQuestService
     {

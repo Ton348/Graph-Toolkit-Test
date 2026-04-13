@@ -13,18 +13,42 @@ public sealed class GameGraphExecutorRegistry
 			throw new ArgumentNullException(nameof(executor));
 		}
 
+		if (executor.NodeType == null)
+		{
+			throw new InvalidOperationException($"Executor '{executor.GetType().Name}' has null NodeType.");
+		}
+
 		if (m_executorsByNodeType.TryGetValue(executor.NodeType, out IGraphNodeExecutor existingExecutor))
 		{
-			throw new InvalidOperationException(
-				$"Executor for node type '{executor.NodeType.Name}' is already registered by '{existingExecutor.GetType().Name}'.");
+			// replace existing (deterministic behavior)
+			m_executors.Remove(existingExecutor);
+			m_executorsByNodeType[executor.NodeType] = executor;
+			m_executors.Add(executor);
+			return;
 		}
 
 		m_executors.Add(executor);
 		m_executorsByNodeType.Add(executor.NodeType, executor);
 	}
 
+	public void Register<TExecutor>() where TExecutor : IGraphNodeExecutor, new()
+	{
+		Register(new TExecutor());
+	}
+
+	public bool TryGetExecutor(Type nodeType, out IGraphNodeExecutor executor)
+	{
+		if (nodeType == null)
+		{
+			executor = null;
+			return false;
+		}
+
+		return m_executorsByNodeType.TryGetValue(nodeType, out executor);
+	}
+
 	public IReadOnlyList<IGraphNodeExecutor> GetExecutors()
 	{
-		return m_executors;
+		return m_executors.AsReadOnly();
 	}
 }

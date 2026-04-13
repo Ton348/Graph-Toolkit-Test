@@ -3,21 +3,24 @@ using System.Collections.Generic;
 
 public sealed class GameGraphComposition
 {
-	private readonly GameGraphExecutorRegistry m_executorRegistry;
+	public GameGraphExecutorRegistry ExecutorRegistry { get; }
 
 	public GameGraphComposition(GameGraphExecutorRegistry executorRegistry)
 	{
-		m_executorRegistry = executorRegistry ?? throw new ArgumentNullException(nameof(executorRegistry));
+		ExecutorRegistry = executorRegistry ?? throw new ArgumentNullException(nameof(executorRegistry));
 	}
-
-	public GameGraphExecutorRegistry ExecutorRegistry => m_executorRegistry;
 
 	public GraphNodeExecutorRegistry CreateRuntimeExecutorRegistry()
 	{
 		List<IGraphNodeExecutor> executors = new List<IGraphNodeExecutor>();
 		executors.AddRange(CommonGraphRuntimeComposition.CreateDefaultExecutors());
-		executors.AddRange(m_executorRegistry.GetExecutors());
+		executors.AddRange(ExecutorRegistry.GetExecutors());
 		return CommonGraphRuntimeComposition.CreateRegistry(executors);
+	}
+
+	public void RegisterExecutor<TExecutor>() where TExecutor : IGraphNodeExecutor, new()
+	{
+		ExecutorRegistry.Register<TExecutor>();
 	}
 
 	public static GameGraphComposition CreateDefault()

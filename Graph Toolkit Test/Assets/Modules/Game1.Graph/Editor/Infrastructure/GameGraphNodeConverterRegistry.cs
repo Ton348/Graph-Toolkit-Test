@@ -14,17 +14,37 @@ public sealed class GameGraphNodeConverterRegistry
 		}
 
 		Type converterType = converter.GetType();
+
 		if (m_registeredConverterTypes.Contains(converterType))
 		{
-			throw new InvalidOperationException($"Converter '{converterType.Name}' is already registered.");
+			// replace existing
+			for (int i = 0; i < m_converters.Count; i++)
+			{
+				if (m_converters[i].GetType() == converterType)
+				{
+					m_converters[i] = converter;
+					return;
+				}
+			}
 		}
 
 		m_converters.Add(converter);
 		m_registeredConverterTypes.Add(converterType);
 	}
 
+	public void Register<TConverter>() where TConverter : IGameGraphNodeConverter, new()
+	{
+		Register(new TConverter());
+	}
+
 	public bool TryConvert(object editorNodeModel, out GameGraphNode runtimeNode)
 	{
+		if (editorNodeModel == null)
+		{
+			runtimeNode = null;
+			return false;
+		}
+
 		for (int i = 0; i < m_converters.Count; i++)
 		{
 			IGameGraphNodeConverter converter = m_converters[i];
@@ -41,5 +61,28 @@ public sealed class GameGraphNodeConverterRegistry
 
 		runtimeNode = null;
 		return false;
+	}
+
+	public bool HasConverterFor(object editorNodeModel)
+	{
+		if (editorNodeModel == null)
+		{
+			return false;
+		}
+
+		for (int i = 0; i < m_converters.Count; i++)
+		{
+			if (m_converters[i].CanConvert(editorNodeModel))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public IReadOnlyList<IGameGraphNodeConverter> GetConverters()
+	{
+		return m_converters.AsReadOnly();
 	}
 }

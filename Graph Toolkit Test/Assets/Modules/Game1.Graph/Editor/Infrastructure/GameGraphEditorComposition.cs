@@ -1,20 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 public sealed class GameGraphEditorComposition
 {
-	private readonly GameGraphNodeConverterRegistry m_converterRegistry;
+	public GameGraphNodeConverterRegistry ConverterRegistry { get; }
 
 	public GameGraphEditorComposition(GameGraphNodeConverterRegistry converterRegistry)
 	{
-		m_converterRegistry = converterRegistry ?? throw new ArgumentNullException(nameof(converterRegistry));
+		ConverterRegistry = converterRegistry ?? throw new ArgumentNullException(nameof(converterRegistry));
 	}
-
-	public GameGraphNodeConverterRegistry ConverterRegistry => m_converterRegistry;
 
 	public void RegisterConverter(IGameGraphNodeConverter converter)
 	{
-		m_converterRegistry.Register(converter);
+		ConverterRegistry.Register(converter);
+	}
+
+	public void RegisterConverter<TConverter>() where TConverter : IGameGraphNodeConverter, new()
+	{
+		ConverterRegistry.Register<TConverter>();
 	}
 
 	public void RegisterConverters(IEnumerable<IGameGraphNodeConverter> converters)
@@ -31,13 +35,18 @@ public sealed class GameGraphEditorComposition
 				continue;
 			}
 
-			m_converterRegistry.Register(converter);
+			ConverterRegistry.Register(converter);
 		}
 	}
 
 	public bool TryConvert(object editorNodeModel, out GameGraphNode runtimeNode)
 	{
-		return m_converterRegistry.TryConvert(editorNodeModel, out runtimeNode);
+		return ConverterRegistry.TryConvert(editorNodeModel, out runtimeNode);
+	}
+
+	public void RegisterConvertersFromAssemblies(IEnumerable<Assembly> assemblies)
+	{
+		GameGraphAutoRegistration.RegisterConverters(ConverterRegistry, assemblies);
 	}
 
 	public static GameGraphEditorComposition CreateDefault()

@@ -12,6 +12,8 @@ public static class CommonGraphRuntimeExporter
 	private const string BuildAllMenuPath = "Assets/GraphCore/Build All Runtime Graphs";
 	private const string RuntimeAssetSuffix = ".runtime.asset";
 
+	public delegate CommonGraph GraphCompiler(CommonGraphEditorGraph editorGraph);
+
 	[MenuItem(BuildMenuPath, true)]
 	private static bool ValidateBuildSelectedRuntimeGraphs()
 	{
@@ -59,6 +61,11 @@ public static class CommonGraphRuntimeExporter
 
 	public static bool BuildRuntimeGraphAsset(string editorGraphPath)
 	{
+		return BuildRuntimeGraphAsset(editorGraphPath, null);
+	}
+
+	public static bool BuildRuntimeGraphAsset(string editorGraphPath, GraphCompiler compiler)
+	{
 		if (string.IsNullOrWhiteSpace(editorGraphPath))
 		{
 			Debug.LogError("[CommonGraphRuntimeExporter] Editor graph path is empty.");
@@ -74,7 +81,9 @@ public static class CommonGraphRuntimeExporter
 				return false;
 			}
 
-			CommonGraph compiledGraph = CommonGraphImporter.BuildBaseGraph(editorGraph);
+			GraphCompiler effectiveCompiler = compiler ?? CommonGraphImporter.BuildBaseGraph;
+
+			CommonGraph compiledGraph = effectiveCompiler(editorGraph);
 			if (compiledGraph == null)
 			{
 				// Fresh graph assets can be empty right after creation. Skip auto-build quietly until authoring is valid.
@@ -110,6 +119,11 @@ public static class CommonGraphRuntimeExporter
 
 	public static int BuildRuntimeGraphAssets(IEnumerable<string> editorGraphPaths, bool saveAndRefresh)
 	{
+		return BuildRuntimeGraphAssets(editorGraphPaths, saveAndRefresh, null);
+	}
+
+	public static int BuildRuntimeGraphAssets(IEnumerable<string> editorGraphPaths, bool saveAndRefresh, GraphCompiler compiler)
+	{
 		if (editorGraphPaths == null)
 		{
 			return 0;
@@ -123,7 +137,7 @@ public static class CommonGraphRuntimeExporter
 				continue;
 			}
 
-			if (BuildRuntimeGraphAsset(path))
+			if (BuildRuntimeGraphAsset(path, compiler))
 			{
 				builtCount++;
 			}

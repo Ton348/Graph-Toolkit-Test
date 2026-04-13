@@ -9,6 +9,7 @@ public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 	private static readonly HashSet<string> PendingFirstSavePaths = new HashSet<string>();
 	private static bool s_rebuildScheduled;
 	private static bool s_isProcessing;
+	private static CommonGraphRuntimeExporter.GraphCompiler s_graphCompiler;
 
 	private static void OnPostprocessAllAssets(
 		string[] importedAssets,
@@ -53,6 +54,16 @@ public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 		return EditorPrefs.GetBool(AutoBuildPreferenceKey, true);
 	}
 
+	public static void SetGraphCompiler(CommonGraphRuntimeExporter.GraphCompiler graphCompiler)
+	{
+		s_graphCompiler = graphCompiler;
+	}
+
+	public static void ClearGraphCompiler()
+	{
+		s_graphCompiler = null;
+	}
+
 	private static void EnqueueBaseGraphPaths(string[] assetPaths)
 	{
 		if (assetPaths == null || assetPaths.Length == 0)
@@ -92,7 +103,7 @@ public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 			FilterPathsForSafeBuild(paths, out string[] safePaths);
 
 			// Avoid forcing Refresh during graph asset creation flow. It can race with GraphToolkit graph registration.
-			int builtCount = CommonGraphRuntimeExporter.BuildRuntimeGraphAssets(safePaths, saveAndRefresh: false);
+			int builtCount = CommonGraphRuntimeExporter.BuildRuntimeGraphAssets(safePaths, saveAndRefresh: false, s_graphCompiler);
 			AssetDatabase.SaveAssets();
 			if (builtCount > 0)
 			{
