@@ -3,6 +3,7 @@
   "references": [
     "Graph.Core.Runtime",
     "Game1.Graph.Runtime",
+    "GameGraph.Runtime",
     "Legacy.Runtime",
     "Prototype.Business",
     "Unity.TextMeshPro"

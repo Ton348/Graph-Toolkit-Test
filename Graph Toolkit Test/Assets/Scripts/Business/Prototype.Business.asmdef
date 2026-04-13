@@ -5,6 +5,7 @@
     "Unity.TextMeshPro",
     "Graph.Core.Runtime",
     "Game1.Graph.Runtime",
+    "GameGraph.Runtime",
     "UniTask",
     "Dreamteck.Splines",
     "Dreamteck.Utilities"
