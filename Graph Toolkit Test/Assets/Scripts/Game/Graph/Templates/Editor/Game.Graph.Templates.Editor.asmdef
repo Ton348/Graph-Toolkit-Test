@@ -1,0 +1,24 @@
+{
+  "name": "Game.Graph.Templates.Editor",
+  "references": [
+    "Game.Graph.Templates.Runtime",
+    "Game1.Graph.Runtime",
+    "Game1.Graph.Editor",
+    "Graph.Core.Runtime",
+    "Graph.Core.Editor",
+    "Unity.GraphToolkit.Editor",
+    "Unity.GraphToolkit.Common.Editor",
+    "Unity.GraphToolkit.Utility.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

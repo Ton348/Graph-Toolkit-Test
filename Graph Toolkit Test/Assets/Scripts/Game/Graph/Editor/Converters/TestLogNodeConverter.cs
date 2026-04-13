@@ -1,6 +1,8 @@
 using Graph.Core.Editor;
+using UnityEngine.Scripting.APIUpdating;
 
 [GameGraphNodeConverter]
+[MovedFrom(true, sourceNamespace: "", sourceAssembly: "Game1.Graph.Editor", sourceClassName: "TestLogNodeConverter")]
 public sealed class TestLogNodeConverter : IGameGraphNodeConverter
 {
 	public bool CanConvert(object editorNodeModel)

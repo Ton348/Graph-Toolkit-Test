@@ -1,0 +1,17 @@
+{
+  "name": "Game.Graph.Templates.Runtime",
+  "references": [
+    "Graph.Core.Runtime",
+    "Game1.Graph.Runtime",
+    "UniTask"
+  ],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

@@ -12,26 +12,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: Base Graph 2.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::CommonGraph
-  startNodeId: 8ef21094-fbf7-4a3d-b4b0-d246658ab890
+  startNodeId: bfdd766e-796d-43de-9029-9facd99ca64a
   nodes:
-  - rid: 7634388925711909094
-  - rid: 7634388925711909095
+  - rid: 7634388925711909124
+  - rid: 7634388925711909125
   references:
     version: 2
     RefIds:
-    - rid: 7634388925711909094
+    - rid: 7634388925711909124
       type: {class: FinishNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 7da64cdf-4841-4b67-9b89-337c0d9a6134
+        nodeId: bf2a0068-bb65-4fce-a06c-c56a216d194e
         nextNodeId: 
         title: FinishNode
         description: Terminates graph execution
         comment: 
-    - rid: 7634388925711909095
+    - rid: 7634388925711909125
       type: {class: StartNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 8ef21094-fbf7-4a3d-b4b0-d246658ab890
-        nextNodeId: 7da64cdf-4841-4b67-9b89-337c0d9a6134
+        nodeId: bfdd766e-796d-43de-9029-9facd99ca64a
+        nextNodeId: bf2a0068-bb65-4fce-a06c-c56a216d194e
         title: StartNode
         description: Entry point of the graph
         comment: 

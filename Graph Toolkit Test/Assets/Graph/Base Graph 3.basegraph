@@ -246,7 +246,7 @@ MonoBehaviour:
       data:
         m_Value: "\u0442\u0435\u0441\u0442\u043E\u0432\u0430\u044F \u043D\u043E\u0434\u0430"
     - rid: 7634388925711908952
-      type: {class: TestLogNodeModel, ns: , asm: Game1.Graph.Editor}
+      type: {class: TestLogNodeModel, ns: , asm: Game.Graph.Editor}
       data: 
     - rid: 7634388925711908953
       type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}

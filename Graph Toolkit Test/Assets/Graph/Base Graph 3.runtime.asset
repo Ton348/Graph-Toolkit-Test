@@ -12,35 +12,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: Base Graph 3.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::CommonGraph
-  startNodeId: 101eb422-a517-4cb9-a6a9-967db34b1463
+  startNodeId: 24412328-159a-4a90-93f3-4e3664f1e9c6
   nodes:
-  - rid: 7634388925711909096
-  - rid: 7634388925711909097
-  - rid: 7634388925711909098
+  - rid: 7634388925711909126
+  - rid: 7634388925711909127
+  - rid: 7634388925711909128
   references:
     version: 2
     RefIds:
-    - rid: 7634388925711909096
+    - rid: 7634388925711909126
       type: {class: StartNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 101eb422-a517-4cb9-a6a9-967db34b1463
-        nextNodeId: 591a8442-cf88-4ab3-89ac-4fecadbede18
+        nodeId: 24412328-159a-4a90-93f3-4e3664f1e9c6
+        nextNodeId: e1cdd06a-2a3c-49b4-ae31-aa205a27ddf8
         title: StartNode
         description: Entry point of the graph
         comment: 
-    - rid: 7634388925711909097
-      type: {class: TestLogNode, ns: , asm: Game1.Graph.Runtime}
+    - rid: 7634388925711909127
+      type: {class: TestLogNode, ns: , asm: Game.Graph.Runtime}
       data:
-        nodeId: 591a8442-cf88-4ab3-89ac-4fecadbede18
-        nextNodeId: 6612609b-616f-4732-ae12-a7aa7fe741f3
+        nodeId: e1cdd06a-2a3c-49b4-ae31-aa205a27ddf8
+        nextNodeId: a07a8c76-86b0-4aa1-88eb-3377ca0f87c4
         title: TestLogNode
         description: 
         comment: 
         message: "\u0442\u0435\u0441\u0442\u043E\u0432\u0430\u044F \u043D\u043E\u0434\u0430"
-    - rid: 7634388925711909098
+    - rid: 7634388925711909128
       type: {class: FinishNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 6612609b-616f-4732-ae12-a7aa7fe741f3
+        nodeId: a07a8c76-86b0-4aa1-88eb-3377ca0f87c4
         nextNodeId: 
         title: FinishNode
         description: Terminates graph execution
