@@ -12,7 +12,6 @@ public abstract class CommonGraphEditorNode : Node
 	public const string EXECUTION_PORT_NAME = "Next";
 	public const string TITLE_OPTION = "NodeTitle";
 	public const string DESCRIPTION_OPTION = "NodeDescription";
-	public const string COMMENT_OPTION = "NodeComment";
 
 	protected virtual string DefaultTitle => GetType().Name;
 	protected virtual string DefaultDescription => string.Empty;

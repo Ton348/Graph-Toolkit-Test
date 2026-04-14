@@ -18,9 +18,6 @@ public abstract class BaseGraphNode
 	[FormerlySerializedAs("Description")]
 	public string description;
 
-	[FormerlySerializedAs("Comment")]
-	public string comment;
-
 	public string Id => nodeId;
 
 	[Obsolete(LegacyApiMessage)]
@@ -44,10 +41,4 @@ public abstract class BaseGraphNode
 		set { description = value; }
 	}
 
-	[Obsolete(LegacyApiMessage)]
-	public string Comment
-	{
-		get { return comment; }
-		set { comment = value; }
-	}
 }

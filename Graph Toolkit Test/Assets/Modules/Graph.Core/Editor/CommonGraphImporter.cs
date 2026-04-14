@@ -144,6 +144,33 @@ namespace Graph.Core.Editor
 					delaySeconds = GetOptionValue<float>(delayModel, "DelaySeconds")
 				},
 				RandomNodeModel randomModel => BuildRandomNode(randomModel),
+				CheckpointNodeModel checkpointModel => new CheckpointNode
+				{
+					checkpointId = GetOptionValue<string>(checkpointModel, CheckpointNodeModel.CHECKPOINT_ID_OPTION),
+					action = GetOptionValue<CheckpointAction>(checkpointModel, CheckpointNodeModel.ACTION_OPTION)
+				},
+				StartQuestNodeModel startQuestModel => new StartQuestNode
+				{
+					questId = GetOptionValue<string>(startQuestModel, StartQuestNodeModel.QUEST_ID_OPTION)
+				},
+				CompleteQuestNodeModel completeQuestModel => new CompleteQuestNode
+				{
+					questId = GetOptionValue<string>(completeQuestModel, CompleteQuestNodeModel.QUEST_ID_OPTION)
+				},
+				QuestStateConditionNodeModel questStateConditionModel => new QuestStateConditionNode
+				{
+					questId = GetOptionValue<string>(questStateConditionModel, QuestStateConditionNodeModel.QUEST_ID_OPTION),
+					state = GetOptionValue<QuestState>(questStateConditionModel, QuestStateConditionNodeModel.STATE_OPTION)
+				},
+				MapMarkerNodeModel mapMarkerModel => new MapMarkerNode
+				{
+					markerId = GetOptionValue<string>(mapMarkerModel, MapMarkerNodeModel.MARKER_ID_OPTION),
+					targetObjectName = GetOptionValue<string>(mapMarkerModel, MapMarkerNodeModel.TARGET_OPTION)
+				},
+				PlayCutsceneNodeModel playCutsceneModel => new PlayCutsceneNode
+				{
+					cutsceneReference = GetOptionValue<string>(playCutsceneModel, PlayCutsceneNodeModel.CUTSCENE_REFERENCE_OPTION)
+				},
 				_ => null
 			};
 
@@ -154,12 +181,20 @@ namespace Graph.Core.Editor
 		private static ChoiceNode BuildChoiceNode(ChoiceNodeModel model)
 		{
 			ChoiceNode node = new ChoiceNode();
+			node.options[0].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION1_LABEL);
+			node.options[1].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION2_LABEL);
+			node.options[2].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION3_LABEL);
+			node.options[3].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION4_LABEL);
 			return node;
 		}
 
 		private static RandomNode BuildRandomNode(RandomNodeModel model)
 		{
 			RandomNode node = new RandomNode();
+			node.options[0].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT1_OPTION);
+			node.options[1].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT2_OPTION);
+			node.options[2].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT3_OPTION);
+			node.options[3].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT4_OPTION);
 			return node;
 		}
 
@@ -167,6 +202,52 @@ namespace Graph.Core.Editor
 		{
 			if (editorNode == null || runtimeNode == null)
 			{
+				return;
+			}
+
+			if (editorNode is ChoiceNodeModel && runtimeNode is ChoiceNode choiceNode)
+			{
+				choiceNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION1_PORT, idMap);
+				choiceNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION2_PORT, idMap);
+				choiceNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION3_PORT, idMap);
+				choiceNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION4_PORT, idMap);
+				return;
+			}
+
+			if (editorNode is RandomNodeModel && runtimeNode is RandomNode randomNode)
+			{
+				randomNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION1_PORT, idMap);
+				randomNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION2_PORT, idMap);
+				randomNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION3_PORT, idMap);
+				randomNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION4_PORT, idMap);
+				return;
+			}
+
+			if (editorNode is CheckpointNodeModel && runtimeNode is CheckpointNode checkpointNode)
+			{
+				checkpointNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.SUCCESS_PORT, idMap);
+				checkpointNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.FAIL_PORT, idMap);
+				return;
+			}
+
+			if (editorNode is StartQuestNodeModel && runtimeNode is StartQuestNode startQuestNode)
+			{
+				startQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.SUCCESS_PORT, idMap);
+				startQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.FAIL_PORT, idMap);
+				return;
+			}
+
+			if (editorNode is CompleteQuestNodeModel && runtimeNode is CompleteQuestNode completeQuestNode)
+			{
+				completeQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.SUCCESS_PORT, idMap);
+				completeQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.FAIL_PORT, idMap);
+				return;
+			}
+
+			if (editorNode is QuestStateConditionNodeModel && runtimeNode is QuestStateConditionNode questStateConditionNode)
+			{
+				questStateConditionNode.trueNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.TRUE_PORT, idMap);
+				questStateConditionNode.falseNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.FALSE_PORT, idMap);
 				return;
 			}
 
@@ -181,6 +262,29 @@ namespace Graph.Core.Editor
 			}
 
 			IPort outputPort = node.GetOutputPort(outputIndex);
+			if (outputPort == null)
+			{
+				return null;
+			}
+
+			IPort nextPort = outputPort.firstConnectedPort;
+			INode nextNode = nextPort?.GetNode();
+			if (nextNode == null)
+			{
+				return null;
+			}
+
+			return idMap.TryGetValue(nextNode, out string id) ? id : null;
+		}
+
+		public static string GetConnectedNodeIdByOutputName(INode node, string outputPortName, IReadOnlyDictionary<INode, string> idMap)
+		{
+			if (node == null || string.IsNullOrWhiteSpace(outputPortName))
+			{
+				return null;
+			}
+
+			IPort outputPort = node.GetOutputPortByName(outputPortName);
 			if (outputPort == null)
 			{
 				return null;

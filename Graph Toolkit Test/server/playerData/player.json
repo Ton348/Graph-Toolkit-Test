@@ -7,7 +7,9 @@
   "speed": 1,
   "damage": 1,
   "health": 100,
-  "activeQuests": [],
+  "activeQuests": [
+    "buy_building"
+  ],
   "completedQuests": [],
   "ownedBuildings": [],
   "buildingStates": [],
