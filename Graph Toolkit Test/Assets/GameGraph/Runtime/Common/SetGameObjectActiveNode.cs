@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [Serializable]
-public class SetGameObjectActiveNode : BaseGraphNode
+public sealed class SetGameObjectActiveNode : GameGraphNextNode
 {
 	public GameObject targetObject;
 	public string siteId;

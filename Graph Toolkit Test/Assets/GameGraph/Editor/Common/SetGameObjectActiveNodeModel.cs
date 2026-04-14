@@ -23,6 +23,6 @@ public sealed class SetGameObjectActiveNodeModel : GameGraphEditorNode
 	protected override void OnDefinePorts(IPortDefinitionContext context)
 	{
 		AddInputExecutionPort(context);
-		AddOutputExecutionPort(context);
+		AddNextPort(context);
 	}
 }

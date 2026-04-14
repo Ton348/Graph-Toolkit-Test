@@ -1,9 +1,7 @@
 using System;
 
 [Serializable]
-public class RequestCloseBusinessNode : BaseGraphNode
+public sealed class RequestCloseBusinessNode : GameGraphSuccessFailNode
 {
     public string lotId;
-    public string successNodeId;
-    public string failNodeId;
 }

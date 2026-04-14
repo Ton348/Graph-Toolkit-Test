@@ -1,9 +1,7 @@
 using System;
 
 [Serializable]
-public class CheckBusinessOpenNode : BaseGraphNode
+public sealed class CheckBusinessOpenNode : GameGraphTrueFalseNode
 {
     public string lotId;
-    public string trueNodeId;
-    public string falseNodeId;
 }

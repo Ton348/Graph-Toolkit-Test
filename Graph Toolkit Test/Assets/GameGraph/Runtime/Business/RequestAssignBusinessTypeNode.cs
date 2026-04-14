@@ -1,10 +1,8 @@
 using System;
 
 [Serializable]
-public class RequestAssignBusinessTypeNode : BaseGraphNode
+public sealed class RequestAssignBusinessTypeNode : GameGraphSuccessFailNode
 {
     public string lotId;
     public string businessTypeId;
-    public string successNodeId;
-    public string failNodeId;
 }

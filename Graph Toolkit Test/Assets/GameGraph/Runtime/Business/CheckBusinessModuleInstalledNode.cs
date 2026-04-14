@@ -1,10 +1,8 @@
 using System;
 
 [Serializable]
-public class CheckBusinessModuleInstalledNode : BaseGraphNode
+public sealed class CheckBusinessModuleInstalledNode : GameGraphTrueFalseNode
 {
     public string lotId;
     public string moduleId;
-    public string trueNodeId;
-    public string falseNodeId;
 }

@@ -102,6 +102,9 @@ public class NPCManager : Interactable
                 null,
                 null,
                 questService));
+        context.Set(GraphContextKeys.RuntimeBootstrap, bootstrap);
+        context.Set(GraphContextKeys.RuntimeMapMarkerService, mapMarkerService);
+        context.Set(GraphContextKeys.RuntimePlayerTransform, playerTransform);
         context.Set(GraphRuntimeContextKeys.immediateChoiceAfterDialogue, true);
 
         _ = baseRunner.RunAsync(graph, context);

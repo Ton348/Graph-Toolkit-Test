@@ -1,7 +1,7 @@
 using System;
 
 [Serializable]
-public class ConditionNode : BaseGraphNode
+public sealed class ConditionNode : GameGraphTrueFalseNode
 {
 	public ConditionType conditionType;
 	public string buildingId;
@@ -9,8 +9,6 @@ public class ConditionNode : BaseGraphNode
 	public PlayerStatType playerStatType;
 	public int requiredStatValue;
 	public string questId;
-	public string trueNodeId;
-	public string falseNodeId;
 
 	public ConditionNode()
 	{

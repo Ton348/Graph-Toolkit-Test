@@ -2,7 +2,8 @@
 	"name": "GameGraph.Runtime",
 	"references": [
 		"Game1.Graph.Runtime",
-		"Graph.Core.Runtime"
+		"Graph.Core.Runtime",
+		"UniTask"
 	],
 	"includePlatforms": [],
 	"excludePlatforms": [],

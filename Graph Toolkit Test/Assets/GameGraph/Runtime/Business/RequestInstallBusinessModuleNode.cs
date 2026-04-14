@@ -1,10 +1,8 @@
 using System;
 
 [Serializable]
-public class RequestInstallBusinessModuleNode : BaseGraphNode
+public sealed class RequestInstallBusinessModuleNode : GameGraphSuccessFailNode
 {
     public string lotId;
     public string moduleId;
-    public string successNodeId;
-    public string failNodeId;
 }

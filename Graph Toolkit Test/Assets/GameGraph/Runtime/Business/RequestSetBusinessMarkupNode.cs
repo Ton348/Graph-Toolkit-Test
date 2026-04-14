@@ -1,10 +1,8 @@
 using System;
 
 [Serializable]
-public class RequestSetBusinessMarkupNode : BaseGraphNode
+public sealed class RequestSetBusinessMarkupNode : GameGraphSuccessFailNode
 {
     public string lotId;
     public int markupPercent;
-    public string successNodeId;
-    public string failNodeId;
 }

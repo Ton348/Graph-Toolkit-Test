@@ -1,7 +1,7 @@
 {
   "name": "Prototype.Business",
   "references": [
-    "Legacy.Runtime",
+    "Scripts.Runtime",
     "Unity.TextMeshPro",
     "Graph.Core.Runtime",
     "Game1.Graph.Runtime",

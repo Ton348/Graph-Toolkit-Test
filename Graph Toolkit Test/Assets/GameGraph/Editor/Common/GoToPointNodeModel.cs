@@ -21,6 +21,6 @@ public sealed class GoToPointNodeModel : GameGraphEditorNode
 	protected override void OnDefinePorts(IPortDefinitionContext context)
 	{
 		AddInputExecutionPort(context);
-		AddOutputExecutionPort(context);
+		AddNextPort(context);
 	}
 }

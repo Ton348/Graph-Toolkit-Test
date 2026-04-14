@@ -5,8 +5,6 @@ using UnityEngine;
 public class LocalGameServer : IGameServer
 {
     private readonly GameRuntimeState runtime;
-    private readonly BuildingService buildingService;
-    private readonly QuestService questService;
     private readonly GameDataRepository dataRepository;
     private readonly BusinessDefinitionsRepository businessRepository;
     private readonly int minDelayMs;
@@ -21,8 +19,6 @@ public class LocalGameServer : IGameServer
 
     public LocalGameServer(
         GameRuntimeState runtime,
-        BuildingService buildingService,
-        QuestService questService,
         GameDataRepository dataRepository,
         BusinessDefinitionsRepository businessRepository,
         int minDelayMs = 100,
@@ -31,8 +27,6 @@ public class LocalGameServer : IGameServer
         float timeoutChance = 0.03f)
     {
         this.runtime = runtime;
-        this.buildingService = buildingService;
-        this.questService = questService;
         this.dataRepository = dataRepository;
         this.businessRepository = businessRepository;
         this.minDelayMs = Mathf.Clamp(minDelayMs, 0, 60000);
@@ -109,7 +103,7 @@ public class LocalGameServer : IGameServer
                 return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotFound", "Quest definition not found.");
             }
 
-            questState = questService != null ? questService.GetQuestById(questId) : null;
+            questState = GetQuestById(questId);
 
             if (questAction == QuestActionType.StartQuest)
             {
@@ -137,8 +131,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
         }
 
-        bool ok = buildingService != null && buildingService.TryBuyBuilding(building, runtime.Player);
-        if (!ok)
+        if (!TryBuyBuilding(building, runtime.Player))
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuyFailed", "Buy building failed.");
         }
@@ -147,7 +140,7 @@ public class LocalGameServer : IGameServer
 
         if (questAction == QuestActionType.StartQuest)
         {
-            questService?.AcceptQuest(questDefinition);
+            AcceptQuest(questDefinition);
         }
         else if (questAction == QuestActionType.CompleteQuest)
         {
@@ -155,7 +148,7 @@ public class LocalGameServer : IGameServer
             {
                 runtime.Player.Money += questDefinition.rewardMoney;
             }
-            questService?.CompleteQuest(questId);
+            CompleteQuest(questId);
         }
 
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Buy building success.");
@@ -209,13 +202,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
-        QuestState quest = questService != null ? questService.GetQuestById(questId) : null;
+        QuestState quest = GetQuestById(questId);
         if (quest == null || quest.Status != QuestStatus.Active)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest is not active.");
         }
 
-        questService?.CompleteQuest(questId);
+        CompleteQuest(questId);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Complete quest success.");
     }
 
@@ -241,13 +234,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
-        QuestState quest = questService != null ? questService.GetQuestById(questId) : null;
+        QuestState quest = GetQuestById(questId);
         if (quest == null || quest.Status != QuestStatus.Active)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest is not active.");
         }
 
-        questService?.FailQuest(questId);
+        FailQuest(questId);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Fail quest success.");
     }
 
@@ -1256,14 +1249,105 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
-        QuestState existing = questService != null ? questService.GetQuestById(questDefinition.id) : null;
+        QuestState existing = GetQuestById(questDefinition.id);
         if (existing != null && existing.Status == QuestStatus.Active)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestAlreadyActive", "Quest already active.");
         }
 
-        questService?.AcceptQuest(questDefinition);
+        AcceptQuest(questDefinition);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Start quest success.");
+    }
+
+    private bool TryBuyBuilding(BuildingState building, PlayerProfileState player)
+    {
+        if (building == null || player == null || building.Definition == null)
+        {
+            return false;
+        }
+
+        if (building.IsOwned)
+        {
+            return false;
+        }
+
+        int cost = building.Definition.purchaseCost;
+        if (player.Money < cost)
+        {
+            return false;
+        }
+
+        player.Money -= cost;
+        building.IsOwned = true;
+        return true;
+    }
+
+    private void AcceptQuest(QuestDefinitionData definition)
+    {
+        if (runtime == null || runtime.Quests == null || definition == null)
+        {
+            return;
+        }
+
+        if (HasActiveQuest(definition.id))
+        {
+            return;
+        }
+
+        QuestState quest = GetQuestById(definition.id);
+        if (quest == null)
+        {
+            quest = new QuestState(definition);
+            runtime.Quests.Add(quest);
+        }
+        else
+        {
+            quest.Definition = definition;
+        }
+
+        quest.Status = QuestStatus.Active;
+    }
+
+    private void CompleteQuest(string questId)
+    {
+        QuestState quest = GetQuestById(questId);
+        if (quest != null && quest.Status == QuestStatus.Active)
+        {
+            quest.Status = QuestStatus.Completed;
+        }
+    }
+
+    private void FailQuest(string questId)
+    {
+        QuestState quest = GetQuestById(questId);
+        if (quest != null && quest.Status == QuestStatus.Active)
+        {
+            quest.Status = QuestStatus.Failed;
+        }
+    }
+
+    private bool HasActiveQuest(string questId)
+    {
+        QuestState quest = GetQuestById(questId);
+        return quest != null && quest.Status == QuestStatus.Active;
+    }
+
+    private QuestState GetQuestById(string questId)
+    {
+        if (runtime == null || runtime.Quests == null || string.IsNullOrEmpty(questId))
+        {
+            return null;
+        }
+
+        foreach (QuestState quest in runtime.Quests)
+        {
+            if (quest?.Definition != null && quest.Definition.id == questId)
+            {
+                return quest;
+            }
+        }
+
+        return null;
     }
 
     private int NextDelayMs()

@@ -1,20 +1,36 @@
 {
   "playerId": "player",
-  "money": 1000,
+  "money": 200,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
   "speed": 1,
   "damage": 1,
   "health": 100,
-  "activeQuests": [
+  "activeQuests": [],
+  "completedQuests": [
     "buy_building"
   ],
-  "completedQuests": [],
-  "ownedBuildings": [],
-  "buildingStates": [],
+  "ownedBuildings": [
+    "car_wash_01"
+  ],
+  "buildingStates": [
+    {
+      "id": "car_wash_01",
+      "owned": true,
+      "level": 0,
+      "currentIncome": 0,
+      "currentExpenses": 0
+    }
+  ],
   "graphCheckpoints": {},
-  "constructedSites": [],
+  "constructedSites": [
+    {
+      "siteId": "site_market_01",
+      "visualId": "Building_Pizza",
+      "isConstructed": true
+    }
+  ],
   "businesses": [],
   "knownContacts": []
 }

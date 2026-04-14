@@ -1,9 +1,7 @@
 using System;
 
 [Serializable]
-public class CheckContactKnownNode : BaseGraphNode
+public sealed class CheckContactKnownNode : GameGraphTrueFalseNode
 {
     public string contactId;
-    public string trueNodeId;
-    public string falseNodeId;
 }

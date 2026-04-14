@@ -6,9 +6,6 @@ using UnityEngine;
 public class GameBootstrap : MonoBehaviour
 {
     public GameRuntimeState RuntimeState { get; private set; }
-    public PlayerService PlayerService { get; private set; }
-    public BuildingService BuildingService { get; private set; }
-    public QuestService QuestService { get; private set; }
     public GraphProgressService GraphProgressService { get; private set; }
     public IGameServer GameServer { get; private set; }
     public ProfileSyncService ProfileSyncService { get; private set; }
@@ -138,13 +135,10 @@ public class GameBootstrap : MonoBehaviour
 
         RuntimeState.Quests = new List<QuestState>();
 
-        PlayerService = new PlayerService(RuntimeState.Player);
-        BuildingService = new BuildingService();
-        QuestService = new QuestService(RuntimeState);
         GraphProgressService = new GraphProgressService();
         GameServer = useRemoteServer
             ? new RemoteGameServer(remoteBaseUrl, remotePlayerId, remoteTimeoutSeconds, remoteDebugLog)
-            : new LocalGameServer(RuntimeState, BuildingService, QuestService, GameDataRepository, BusinessDefinitionsRepository, localMinDelayMs, localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
+            : new LocalGameServer(RuntimeState, GameDataRepository, BusinessDefinitionsRepository, localMinDelayMs, localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
         PlayerStateSync = new PlayerStateSync();
         QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
         BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);

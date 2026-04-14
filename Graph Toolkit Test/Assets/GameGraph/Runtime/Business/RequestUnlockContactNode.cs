@@ -1,9 +1,7 @@
 using System;
 
 [Serializable]
-public class RequestUnlockContactNode : BaseGraphNode
+public sealed class RequestUnlockContactNode : GameGraphSuccessFailNode
 {
     public string contactId;
-    public string successNodeId;
-    public string failNodeId;
 }

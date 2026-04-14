@@ -1,0 +1,30 @@
+using System;
+
+[GameGraphNodeValidator]
+public sealed class SetGameObjectActiveNodeDataValidator : IGameGraphNodeValidator
+{
+	public Type NodeType => typeof(SetGameObjectActiveNode);
+
+	public bool Validate(GameGraphNode node, GameGraphValidationResult result)
+	{
+		if (!GameGraphBusinessValidatorHelpers.ValidateType(node, result, out SetGameObjectActiveNode typedNode))
+		{
+			return false;
+		}
+
+		bool valid = true;
+		valid &= GameGraphValidationHelpers.ValidateNodeId(typedNode.nextNodeId, typedNode, nameof(typedNode.nextNodeId), result);
+		valid &= GameGraphValidationHelpers.ValidateRequiredString(typedNode.siteId, typedNode, nameof(typedNode.siteId), result);
+		if (typedNode.isActive)
+		{
+			bool hasVisual = !string.IsNullOrWhiteSpace(typedNode.visualId) || typedNode.targetObject != null;
+			if (!hasVisual)
+			{
+				result?.AddError(typedNode, nameof(typedNode.visualId), "visualId or targetObject is required when isActive is true.");
+				valid = false;
+			}
+		}
+
+		return valid;
+	}
+}
