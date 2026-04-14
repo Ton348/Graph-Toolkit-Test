@@ -433,6 +433,7 @@ public class LocalGameServer : IGameServer
 
         runtime.Player.Money -= offeredAmount;
         building.IsOwned = true;
+        TryConstructSiteFromBuildingDefinition(building.Definition);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Trade offer accepted.");
     }
 

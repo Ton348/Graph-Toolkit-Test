@@ -22588,7 +22588,6 @@ Transform:
   - {fileID: 1793650115}
   - {fileID: 1932609000}
   - {fileID: 1457792245}
-  - {fileID: 1316722314}
   - {fileID: 389144118}
   - {fileID: 1890233157}
   - {fileID: 107207839}
@@ -22917,6 +22916,7 @@ Transform:
   m_Children:
   - {fileID: 5388624718994620851}
   - {fileID: 1795324667941802040}
+  - {fileID: 1316722314}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &548558632
@@ -29223,7 +29223,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  baseDialogueGraph: {fileID: 11400000, guid: 82675b19eaebc4ef49052ee048cafd1d, type: 2}
+  baseDialogueGraph: {fileID: 11400000, guid: 2c09d7b5bc4534cb9af62fb586fa2817, type: 2}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 0}
@@ -61125,7 +61125,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 536621267}
+    m_TransformParent: {fileID: 546552207}
     m_Modifications:
     - target: {fileID: 100000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_Name
@@ -61137,19 +61137,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 103.05408
+      value: -3.308319
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -51.193474
+      value: 2.896904
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071067
+      value: -0.019711558
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalRotation.x
@@ -61157,16 +61157,23 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0.7071068
+      value: -0.9998057
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
       propertyPath: m_LocalRotation.z
       value: -0
       objectReference: {fileID: 0}
+    - target: {fileID: 400000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: -182.259
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 100000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1712667992}
   m_SourcePrefab: {fileID: 100100000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
 --- !u!1001 &1636873468
 PrefabInstance:
@@ -64084,6 +64091,38 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 4f32dfddb033d3e40b5841bc53cc1689, type: 3}
   m_PrefabInstance: {fileID: 1122962925}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1712667989 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 100000, guid: b549b1699e4cdad44b2c014041303df4, type: 3}
+  m_PrefabInstance: {fileID: 1635683998}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1712667992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1712667989}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97b14f704cbea4b6aa93a41157969d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Prototype.Business::NPCManager
+  interactionDistance: 2
+  baseDialogueGraph: {fileID: 11400000, guid: 39fb9563cbecf45b8b333b0f20de6ad1, type: 2}
+  baseStealGraph: {fileID: 0}
+  allowSteal: 1
+  lookForwardReference: {fileID: 0}
+  stealDistance: 1.5
+  stealBackAngle: 120
+  stealMinBackAngle: 40
+  ownerId: 
+  bootstrap: {fileID: 1614953995}
+  dialogueService: {fileID: 1233045968}
+  choiceUIService: {fileID: 1668601430}
+  tradeOfferUIService: {fileID: 101739910}
+  mapMarkerService: {fileID: 904529085}
+  playerTransform: {fileID: 1316722314}
 --- !u!4 &1713562306 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 4f32dfddb033d3e40b5841bc53cc1689, type: 3}
@@ -75282,7 +75321,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 2
-  baseDialogueGraph: {fileID: 11400000, guid: a9eb79036b5cb45138d7772a6b75dd14, type: 2}
+  baseDialogueGraph: {fileID: 11400000, guid: caa4ef6bd91864f40a9175eaf3c79602, type: 2}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 5388624718994620851}

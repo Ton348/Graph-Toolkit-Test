@@ -1,0 +1,141 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
+  m_Name: "\u0421all_merchandiser.runtime"
+  m_EditorClassIdentifier: Graph.Core.Runtime::CommonGraph
+  startNodeId: d7de6516-ee9f-48f8-b0dd-c67612cd4dd4
+  nodes:
+  - rid: 7634388946994332661
+  - rid: 7634388946994332662
+  - rid: 7634388946994332663
+  - rid: 7634388946994332664
+  - rid: 7634388946994332665
+  - rid: 7634388946994332666
+  - rid: 7634388946994332667
+  - rid: 7634388946994332668
+  - rid: 7634388946994332669
+  - rid: 7634388946994332670
+  references:
+    version: 2
+    RefIds:
+    - rid: 7634388946994332661
+      type: {class: StartNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: d7de6516-ee9f-48f8-b0dd-c67612cd4dd4
+        nextNodeId: 4f31f383-509a-4806-a8a6-4a01a6966ec7
+        title: StartNode
+        description: Entry point of the graph
+    - rid: 7634388946994332662
+      type: {class: DialogueNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 4f31f383-509a-4806-a8a6-4a01a6966ec7
+        nextNodeId: 94611980-ead9-43c0-a1c4-c056aa302471
+        title: DialogueNode
+        description: Shows dialogue and continues
+        dialogueTitle: "\u0414\u043E\u0441\u043A\u0430 \u043E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u044F"
+        body: "\u0418\u0449\u0443 \u0440\u0430\u0431\u043E\u0442\u0443 \u0440\u0430\u0437\u043D\u043E\u0440\u0430\u0431\u043E\u0447\u0438\u043C"
+    - rid: 7634388946994332663
+      type: {class: ChoiceNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 94611980-ead9-43c0-a1c4-c056aa302471
+        nextNodeId: 
+        title: ChoiceNode
+        description: Shows player choices and branches by selection
+        options:
+        - label: "\u041F\u043E\u0437\u0432\u043E\u043D\u044E, \u0432\u0434\u0440\u0443\u0433
+            \u043F\u0440\u0438\u0433\u043E\u0434\u0438\u0442\u0441\u044F \u043A\u043E\u043D\u0442\u0430\u043A\u0442"
+          nextNodeId: b180a1a3-906e-474c-901e-4f8adf895e7a
+        - label: "\u041F\u0440\u043E\u0439\u0442\u0438 \u043C\u0438\u043C\u043E"
+          nextNodeId: 10bdd109-17f3-40da-b494-a09b472471f7
+        - label: 
+          nextNodeId: 
+        - label: 
+          nextNodeId: 
+    - rid: 7634388946994332664
+      type: {class: DialogueNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
+      data:
+        nodeId: b180a1a3-906e-474c-901e-4f8adf895e7a
+        nextNodeId: c9b8e167-939f-48ae-b40d-0947991e31a8
+        title: DialogueNode
+        description: Shows dialogue and continues
+        dialogueTitle: "\u0420\u0430\u0437\u043D\u043E\u0440\u0430\u0431\u043E\u0447\u0438\u0439"
+        body: "\u0410\u043B\u043E, \u0441\u043B\u0443\u0448\u0430\u044E \u0432\u0430\u0441!"
+    - rid: 7634388946994332665
+      type: {class: ChoiceNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
+      data:
+        nodeId: c9b8e167-939f-48ae-b40d-0947991e31a8
+        nextNodeId: 
+        title: ChoiceNode
+        description: Shows player choices and branches by selection
+        options:
+        - label: "\u042F \u043F\u043E \u043E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u044E.
+            \u0420\u0430\u0431\u043E\u0442\u0430 \u043D\u0443\u0436\u043D\u0430?  "
+          nextNodeId: 32a020c9-e566-49bf-a46c-74edbe5faecd
+        - label: "\u0411\u0440\u043E\u0441\u0438\u0442\u044C \u0442\u0440\u0443\u0431\u043A\u0443"
+          nextNodeId: 10bdd109-17f3-40da-b494-a09b472471f7
+        - label: 
+          nextNodeId: 
+        - label: 
+          nextNodeId: 
+    - rid: 7634388946994332666
+      type: {class: DialogueNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 32a020c9-e566-49bf-a46c-74edbe5faecd
+        nextNodeId: db8a5446-f2f6-4128-b8a6-72b9ef44b8b1
+        title: DialogueNode
+        description: Shows dialogue and continues
+        dialogueTitle: "\u0420\u0430\u0437\u043D\u043E\u0440\u0430\u0431\u043E\u0447\u0438\u0439"
+        body: "\u0414\u0430 \u0434\u0430, \u043D\u0430 \u043B\u044E\u0431\u0443\u044E
+          \u0441\u043E\u0433\u043B\u0430\u0441\u0435\u043D."
+    - rid: 7634388946994332667
+      type: {class: FinishNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 10bdd109-17f3-40da-b494-a09b472471f7
+        nextNodeId: 
+        title: FinishNode
+        description: Terminates graph execution
+    - rid: 7634388946994332668
+      type: {class: ChoiceNode, ns: GraphCore.BaseNodes.Runtime.UI, asm: Graph.Core.Runtime}
+      data:
+        nodeId: db8a5446-f2f6-4128-b8a6-72b9ef44b8b1
+        nextNodeId: 
+        title: ChoiceNode
+        description: Shows player choices and branches by selection
+        options:
+        - label: "\u041F\u043E\u043D\u044F\u043B, \u0437\u0430\u043F\u0438\u0448\u0443
+            \u0432\u0430\u0448 \u043A\u043E\u043D\u0442\u0430\u043A\u0442, \u0435\u0441\u043B\u0438
+            \u0447\u0442\u043E \u0431\u0443\u0434\u0435\u0442, \u043D\u0430\u0431\u0435\u0440\u0443.
+            \u041F\u043E\u043A\u0430!"
+          nextNodeId: 4187ec78-66dc-43b4-8a75-da59a493e561
+        - label: 
+          nextNodeId: 
+        - label: 
+          nextNodeId: 
+        - label: 
+          nextNodeId: 
+    - rid: 7634388946994332669
+      type: {class: RequestUnlockContactNode, ns: , asm: GameGraph.Runtime}
+      data:
+        nodeId: 4187ec78-66dc-43b4-8a75-da59a493e561
+        nextNodeId: 4b9db335-3665-4d65-9894-be25b6227566
+        title: RequestUnlockContactNode
+        description: 
+        successNodeId: 4b9db335-3665-4d65-9894-be25b6227566
+        failNodeId: 4b9db335-3665-4d65-9894-be25b6227566
+        contactId: merch_1
+    - rid: 7634388946994332670
+      type: {class: FinishNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 4b9db335-3665-4d65-9894-be25b6227566
+        nextNodeId: 
+        title: FinishNode
+        description: Terminates graph execution

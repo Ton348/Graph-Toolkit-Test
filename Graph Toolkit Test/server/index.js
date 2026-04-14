@@ -587,6 +587,7 @@ function handleSubmitTradeOffer(req, res, payload) {
 
   profile.money -= offeredAmount;
   profile.ownedBuildings.push(buildingId);
+  applyConstructedSiteFromBuilding(profile, building);
   ensureBuildingStates(profile);
   savePlayerProfile(profile);
   return success(res, 'Trade offer accepted.', profile);
