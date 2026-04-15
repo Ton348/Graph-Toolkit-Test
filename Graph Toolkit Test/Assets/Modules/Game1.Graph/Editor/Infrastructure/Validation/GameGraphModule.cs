@@ -1,30 +1,33 @@
-
-using System;
+using Game1.Graph.Runtime;
 using GraphCore.Editor;
+using System;
 
-public sealed class GameGraphModule
+namespace Game1.Graph.Editor
 {
-	internal GameGraphModule(
-		GameGraphComposition runtimeComposition,
-		GameGraphEditorComposition editorComposition,
-		GameGraphValidationComposition validationComposition)
+	public sealed class GameGraphModule
 	{
-		RuntimeComposition = runtimeComposition ?? throw new ArgumentNullException(nameof(runtimeComposition));
-		EditorComposition = editorComposition ?? throw new ArgumentNullException(nameof(editorComposition));
-		ValidationComposition = validationComposition ?? throw new ArgumentNullException(nameof(validationComposition));
-	}
+		public GameGraphComposition RuntimeComposition { get; }
+		public GameGraphEditorComposition EditorComposition { get; }
+		public GameGraphValidationComposition ValidationComposition { get; }
 
-	public GameGraphComposition RuntimeComposition { get; }
-	public GameGraphEditorComposition EditorComposition { get; }
-	public GameGraphValidationComposition ValidationComposition { get; }
+		internal GameGraphModule(
+			GameGraphComposition runtimeComposition,
+			GameGraphEditorComposition editorComposition,
+			GameGraphValidationComposition validationComposition)
+		{
+			RuntimeComposition = runtimeComposition ?? throw new ArgumentNullException(nameof(runtimeComposition));
+			EditorComposition = editorComposition ?? throw new ArgumentNullException(nameof(editorComposition));
+			ValidationComposition = validationComposition ?? throw new ArgumentNullException(nameof(validationComposition));
+		}
 
-	public GameGraphImporterIntegration CreateImporterIntegration()
-	{
-		return new GameGraphImporterIntegration(EditorComposition);
-	}
+		public GameGraphImporterIntegration CreateImporterIntegration()
+		{
+			return new GameGraphImporterIntegration(EditorComposition);
+		}
 
-	public static GameGraphModuleBuilder Create()
-	{
-		return new GameGraphModuleBuilder();
+		public static GameGraphModuleBuilder Create()
+		{
+			return new GameGraphModuleBuilder();
+		}
 	}
 }

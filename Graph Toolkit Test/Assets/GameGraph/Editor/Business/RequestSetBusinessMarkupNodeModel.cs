@@ -1,13 +1,15 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestSetBusinessMarkupNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string LOT_ID_OPTION = "LotId";
-	public const string MARKUP_PERCENT_OPTION = "MarkupPercent";
+	public const string LotIdOption = "LotId";
+	public const string MarkupPercentOption = "MarkupPercent";
 
 	protected override string DefaultTitle => "Изменить наценку бизнеса";
 	protected override string DefaultDescription => "Запрашивает изменение наценки бизнеса.";
@@ -15,7 +17,7 @@ public sealed class RequestSetBusinessMarkupNodeModel : GameGraphSuccessFailNode
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(LOT_ID_OPTION).WithDisplayName("LotId");
-		context.AddOption<int>(MARKUP_PERCENT_OPTION).WithDisplayName("MarkupPercent");
+		context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		context.AddOption<int>(MarkupPercentOption).WithDisplayName("MarkupPercent");
 	}
 }

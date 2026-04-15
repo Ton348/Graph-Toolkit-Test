@@ -1,31 +1,34 @@
 using System;
 
-[GameGraphNodeValidator]
-public sealed class GameGraphSuccessFailNodeValidator : IGameGraphNodeValidator
+namespace Game1.Graph.Runtime
 {
-	public Type NodeType => typeof(GameGraphSuccessFailNode);
-
-	public bool Validate(GameGraphNode node, GameGraphValidationResult result)
+	[GameGraphNodeValidator]
+	public sealed class GameGraphSuccessFailNodeValidator : IGameGraphNodeValidator
 	{
-		if (node is not GameGraphSuccessFailNode typedNode)
-		{
-			result?.AddError(node, nameof(node), "Invalid node type for GameGraphSuccessFailNodeValidator.");
-			return false;
-		}
+		public Type NodeType => typeof(GameGraphSuccessFailNode);
 
-		bool valid = true;
-		if (string.IsNullOrWhiteSpace(typedNode.successNodeId))
+		public bool Validate(GameGraphNode node, GameGraphValidationResult result)
 		{
-			result?.AddError(typedNode, nameof(typedNode.successNodeId), "Success node id is required.");
-			valid = false;
-		}
+			if (node is not GameGraphSuccessFailNode typedNode)
+			{
+				result?.AddError(node, nameof(node), "Invalid node type for GameGraphSuccessFailNodeValidator.");
+				return false;
+			}
 
-		if (string.IsNullOrWhiteSpace(typedNode.failNodeId))
-		{
-			result?.AddError(typedNode, nameof(typedNode.failNodeId), "Fail node id is required.");
-			valid = false;
-		}
+			bool valid = true;
+			if (string.IsNullOrWhiteSpace(typedNode.successNodeId))
+			{
+				result?.AddError(typedNode, nameof(typedNode.successNodeId), "Success node id is required.");
+				valid = false;
+			}
 
-		return valid;
+			if (string.IsNullOrWhiteSpace(typedNode.failNodeId))
+			{
+				result?.AddError(typedNode, nameof(typedNode.failNodeId), "Fail node id is required.");
+				valid = false;
+			}
+
+			return valid;
+		}
 	}
 }

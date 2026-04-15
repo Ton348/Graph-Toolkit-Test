@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Game1.Graph.Runtime;
 
 [Serializable]
 public sealed class GoToPointNode : GameGraphNextNode

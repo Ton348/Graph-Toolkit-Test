@@ -1,7 +1,10 @@
 using System;
 
-[Serializable]
-public abstract class GameGraphNextNode : GameGraphNode
+namespace Game1.Graph.Runtime
 {
-	public string nextNodeId;
+	[Serializable]
+	public abstract class GameGraphNextNode : GameGraphNode
+	{
+		public string nextNodeId;
+	}
 }

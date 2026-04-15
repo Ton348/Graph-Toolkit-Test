@@ -1,13 +1,15 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestAssignBusinessTypeNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string LOT_ID_OPTION = "LotId";
-	public const string BUSINESS_TYPE_ID_OPTION = "BusinessTypeId";
+	public const string LotIdOption = "LotId";
+	public const string BusinessTypeIdOption = "BusinessTypeId";
 
 	protected override string DefaultTitle => "Назначить тип бизнеса";
 	protected override string DefaultDescription => "Назначает тип бизнеса для участка.";
@@ -15,7 +17,7 @@ public sealed class RequestAssignBusinessTypeNodeModel : GameGraphSuccessFailNod
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(LOT_ID_OPTION).WithDisplayName("LotId");
-		context.AddOption<string>(BUSINESS_TYPE_ID_OPTION).WithDisplayName("BusinessTypeId");
+		context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		context.AddOption<string>(BusinessTypeIdOption).WithDisplayName("BusinessTypeId");
 	}
 }

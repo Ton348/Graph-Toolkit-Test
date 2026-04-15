@@ -1,17 +1,21 @@
-using System;
+using Game1.Graph.Runtime;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-[Serializable]
-[UseWithGraph(typeof(CommonGraphEditorGraph))]
-public abstract class GameGraphNextNodeModel : GameGraphEditorNode
+namespace Game1.Graph.Editor
 {
-	protected override string DefaultTitle => "Game Next Node";
-	protected override string DefaultDescription => "Base template for game node with single next output.";
-
-	protected override void OnDefinePorts(IPortDefinitionContext context)
+	[Serializable]
+	[UseWithGraph(typeof(CommonGraphEditorGraph))]
+	public abstract class GameGraphNextNodeModel : GameGraphEditorNode
 	{
-		AddInputExecutionPort(context);
-		AddNextPort(context);
+		protected override string DefaultTitle => "Game Next Node";
+		protected override string DefaultDescription => "Base template for game node with single next output.";
+
+		protected override void OnDefinePorts(IPortDefinitionContext context)
+		{
+			AddInputExecutionPort(context);
+			AddNextPort(context);
+		}
 	}
 }

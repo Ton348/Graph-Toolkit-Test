@@ -1,17 +1,19 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class ConditionNodeModel : GameGraphTrueFalseNodeModel
 {
-	public const string CONDITION_TYPE_OPTION = "ConditionType";
-	public const string BUILDING_ID_OPTION = "BuildingId";
-	public const string REQUIRED_MONEY_OPTION = "RequiredMoney";
-	public const string PLAYER_STAT_TYPE_OPTION = "PlayerStatType";
-	public const string REQUIRED_STAT_VALUE_OPTION = "RequiredStatValue";
-	public const string QUEST_ID_OPTION = "QuestId";
+	public const string ConditionTypeOption = "ConditionType";
+	public const string BuildingIdOption = "BuildingId";
+	public const string RequiredMoneyOption = "RequiredMoney";
+	public const string PlayerStatTypeOption = "PlayerStatType";
+	public const string RequiredStatValueOption = "RequiredStatValue";
+	public const string QuestIdOption = "QuestId";
 
 	protected override string DefaultTitle => "Проверка условия";
 	protected override string DefaultDescription => "Проверяет условие и выбирает ветку Истина/Ложь.";
@@ -19,12 +21,12 @@ public sealed class ConditionNodeModel : GameGraphTrueFalseNodeModel
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<ConditionType>(CONDITION_TYPE_OPTION).WithDisplayName("ConditionType");
-		context.AddOption<string>(BUILDING_ID_OPTION).WithDisplayName("BuildingId");
-		context.AddOption<int>(REQUIRED_MONEY_OPTION).WithDisplayName("RequiredMoney");
-		context.AddOption<PlayerStatType>(PLAYER_STAT_TYPE_OPTION).WithDisplayName("PlayerStatType");
-		context.AddOption<int>(REQUIRED_STAT_VALUE_OPTION).WithDisplayName("RequiredStatValue");
-		context.AddOption<string>(QUEST_ID_OPTION).WithDisplayName("QuestId");
+		context.AddOption<ConditionType>(ConditionTypeOption).WithDisplayName("ConditionType");
+		context.AddOption<string>(BuildingIdOption).WithDisplayName("BuildingId");
+		context.AddOption<int>(RequiredMoneyOption).WithDisplayName("RequiredMoney");
+		context.AddOption<PlayerStatType>(PlayerStatTypeOption).WithDisplayName("PlayerStatType");
+		context.AddOption<int>(RequiredStatValueOption).WithDisplayName("RequiredStatValue");
+		context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
 	}
 
 }

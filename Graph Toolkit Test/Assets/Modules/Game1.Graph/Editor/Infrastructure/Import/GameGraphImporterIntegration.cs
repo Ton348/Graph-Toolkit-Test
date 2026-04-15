@@ -1,32 +1,36 @@
-using System;
+using Game1.Graph.Runtime;
 using System.Collections.Generic;
+using System;
 
-public sealed class GameGraphImporterIntegration
+namespace Game1.Graph.Editor
 {
-public GameGraphEditorComposition EditorComposition { get; }
-
-public GameGraphImporterIntegration(GameGraphEditorComposition editorComposition)
-{
-	EditorComposition = editorComposition ?? throw new ArgumentNullException(nameof(editorComposition));
-}
-
-	public bool HasConverterFor(object editorNodeModel)
+	public sealed class GameGraphImporterIntegration
 	{
-		return EditorComposition.ConverterRegistry.HasConverterFor(editorNodeModel);
+	public GameGraphEditorComposition EditorComposition { get; }
+
+	public GameGraphImporterIntegration(GameGraphEditorComposition editorComposition)
+	{
+		EditorComposition = editorComposition ?? throw new ArgumentNullException(nameof(editorComposition));
 	}
 
-	public bool TryConvert(object editorNodeModel, out GameGraphNode runtimeNode)
-	{
-		return EditorComposition.TryConvert(editorNodeModel, out runtimeNode);
-	}
+		public bool HasConverterFor(object editorNodeModel)
+		{
+			return EditorComposition.ConverterRegistry.HasConverterFor(editorNodeModel);
+		}
 
-	public IReadOnlyList<Type> GetMissingConverters(IEnumerable<object> editorNodeModels)
-	{
-		return GameGraphAutoRegistration.FindUnsupportedModels(editorNodeModels, EditorComposition.ConverterRegistry);
-	}
+		public bool TryConvert(object editorNodeModel, out GameGraphNode runtimeNode)
+		{
+			return EditorComposition.TryConvert(editorNodeModel, out runtimeNode);
+		}
 
-	public IReadOnlyList<Type> GetUnsupportedModels(IEnumerable<object> editorNodeModels)
-	{
-		return GetMissingConverters(editorNodeModels);
+		public IReadOnlyList<Type> GetMissingConverters(IEnumerable<object> editorNodeModels)
+		{
+			return GameGraphAutoRegistration.FindUnsupportedModels(editorNodeModels, EditorComposition.ConverterRegistry);
+		}
+
+		public IReadOnlyList<Type> GetUnsupportedModels(IEnumerable<object> editorNodeModels)
+		{
+			return GetMissingConverters(editorNodeModels);
+		}
 	}
 }

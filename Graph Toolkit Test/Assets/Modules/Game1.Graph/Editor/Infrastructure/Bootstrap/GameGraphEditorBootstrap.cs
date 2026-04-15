@@ -1,89 +1,93 @@
-using System;
+using Game1.Graph.Runtime;
+using GraphCore.Editor;
 using System.Collections.Generic;
 using System.Reflection;
-using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 
-[InitializeOnLoad]
-public static class GameGraphEditorBootstrap
+namespace Game1.Graph.Editor
 {
-	private static GameGraphModule s_module;
-
-	static GameGraphEditorBootstrap()
+	[InitializeOnLoad]
+	public static class GameGraphEditorBootstrap
 	{
-		Initialize();
-	}
+		private static GameGraphModule s_module;
 
-	public static GameGraphModule Module => s_module;
+		public static GameGraphModule Module => s_module;
 
-	private static void Initialize()
-	{
-		s_module = GameGraphModule.Create()
-			.WithAutoRegistration(GetEditorAssemblies())
-			.Build();
-
-		CommonGraphImporter.SetExternalConverter(ConvertExternalNode);
-		CommonGraphRuntimeExporter.SetGraphValidationHook(ValidateBeforeBuild);
-	}
-
-	private static Assembly[] GetEditorAssemblies()
-	{
-		List<Assembly> assemblies = new List<Assembly>();
-		Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-		for (int i = 0; i < loadedAssemblies.Length; i++)
+		static GameGraphEditorBootstrap()
 		{
-			Assembly assembly = loadedAssemblies[i];
-			if (assembly == null || assembly.IsDynamic)
-			{
-				continue;
-			}
-
-			string assemblyName = assembly.GetName().Name;
-			if (string.IsNullOrWhiteSpace(assemblyName))
-			{
-				continue;
-			}
-
-			if (!assemblyName.EndsWith(".Editor", StringComparison.Ordinal) &&
-				!string.Equals(assemblyName, "Assembly-CSharp-Editor", StringComparison.Ordinal))
-			{
-				continue;
-			}
-
-			assemblies.Add(assembly);
+			Initialize();
 		}
 
-		return assemblies.ToArray();
-	}
-
-	private static BaseGraphNode ConvertExternalNode(INode editorNode)
-	{
-		if (s_module == null || editorNode == null)
+		private static void Initialize()
 		{
+			s_module = GameGraphModule.Create()
+				.WithAutoRegistration(GetEditorAssemblies())
+				.Build();
+
+			CommonGraphImporter.SetExternalConverter(ConvertExternalNode);
+			CommonGraphRuntimeExporter.SetGraphValidationHook(ValidateBeforeBuild);
+		}
+
+		private static Assembly[] GetEditorAssemblies()
+		{
+			List<Assembly> assemblies = new List<Assembly>();
+			Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+			for (int i = 0; i < loadedAssemblies.Length; i++)
+			{
+				Assembly assembly = loadedAssemblies[i];
+				if (assembly == null || assembly.IsDynamic)
+				{
+					continue;
+				}
+
+				string assemblyName = assembly.GetName().Name;
+				if (string.IsNullOrWhiteSpace(assemblyName))
+				{
+					continue;
+				}
+
+				if (!assemblyName.EndsWith(".Editor", StringComparison.Ordinal) &&
+					!string.Equals(assemblyName, "Assembly-CSharp-Editor", StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				assemblies.Add(assembly);
+			}
+
+			return assemblies.ToArray();
+		}
+
+		private static BaseGraphNode ConvertExternalNode(INode editorNode)
+		{
+			if (s_module == null || editorNode == null)
+			{
+				return null;
+			}
+
+			if (s_module.EditorComposition == null || s_module.EditorComposition.ConverterRegistry == null)
+			{
+				return null;
+			}
+
+			if (s_module.EditorComposition.ConverterRegistry.TryConvert(editorNode, out GameGraphNode runtimeNode))
+			{
+				return runtimeNode;
+			}
+
 			return null;
 		}
 
-		if (s_module.EditorComposition == null || s_module.EditorComposition.ConverterRegistry == null)
+		private static bool ValidateBeforeBuild(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath)
 		{
-			return null;
+			if (s_module == null)
+			{
+				return true;
+			}
+
+			return GameGraphBuildValidationBridge.ValidateBeforeBuild(editorGraph, runtimeGraph, editorGraphPath, s_module.ValidationComposition);
 		}
-
-		if (s_module.EditorComposition.ConverterRegistry.TryConvert(editorNode, out GameGraphNode runtimeNode))
-		{
-			return runtimeNode;
-		}
-
-		return null;
-	}
-
-	private static bool ValidateBeforeBuild(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath)
-	{
-		if (s_module == null)
-		{
-			return true;
-		}
-
-		return GameGraphBuildValidationBridge.ValidateBeforeBuild(editorGraph, runtimeGraph, editorGraphPath, s_module.ValidationComposition);
 	}
 }

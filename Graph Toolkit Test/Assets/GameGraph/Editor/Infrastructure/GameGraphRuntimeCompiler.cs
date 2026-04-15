@@ -1,5 +1,7 @@
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 public static class GameGraphRuntimeCompiler
 {
@@ -14,22 +16,22 @@ public static class GameGraphRuntimeCompiler
 
 		if (editorNode is GameGraphSuccessFailNodeModel && runtimeNode is GameGraphSuccessFailNode successFailNode)
 		{
-			successFailNode.successNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphSuccessFailNodeModel.SUCCESS_PORT, idMap);
-			successFailNode.failNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphSuccessFailNodeModel.FAIL_PORT, idMap);
+			successFailNode.successNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphSuccessFailNodeModel.SuccessPort, idMap);
+			successFailNode.failNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphSuccessFailNodeModel.FailPort, idMap);
 			return;
 		}
 
 		if (editorNode is GameGraphTrueFalseNodeModel && runtimeNode is GameGraphTrueFalseNode trueFalseNode)
 		{
-			trueFalseNode.trueNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphTrueFalseNodeModel.TRUE_PORT, idMap);
-			trueFalseNode.falseNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphTrueFalseNodeModel.FALSE_PORT, idMap);
+			trueFalseNode.trueNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphTrueFalseNodeModel.TruePort, idMap);
+			trueFalseNode.falseNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, GameGraphTrueFalseNodeModel.FalsePort, idMap);
 			return;
 		}
 
 		if (editorNode is ConditionNodeModel && runtimeNode is ConditionNode conditionNode)
 		{
-			conditionNode.trueNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, ConditionNodeModel.TRUE_PORT, idMap);
-			conditionNode.falseNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, ConditionNodeModel.FALSE_PORT, idMap);
+			conditionNode.trueNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, ConditionNodeModel.TruePort, idMap);
+			conditionNode.falseNodeId = CommonGraphImporter.GetConnectedNodeIdByOutputName(editorNode, ConditionNodeModel.FalsePort, idMap);
 		}
 	}
 }

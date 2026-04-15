@@ -1,8 +1,11 @@
-using System;
 using System.Collections.Generic;
+using System;
 
-[Serializable]
-public abstract class GameGraphMultiChoiceNode : GameGraphNode
+namespace Game1.Graph.Runtime
 {
-	public List<GameGraphChoiceBranch> options = new List<GameGraphChoiceBranch>();
+	[Serializable]
+	public abstract class GameGraphMultiChoiceNode : GameGraphNode
+	{
+		public List<GameGraphChoiceBranch> options = new List<GameGraphChoiceBranch>();
+	}
 }

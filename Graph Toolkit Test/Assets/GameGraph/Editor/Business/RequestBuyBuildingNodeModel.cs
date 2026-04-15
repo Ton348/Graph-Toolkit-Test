@@ -1,14 +1,16 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestBuyBuildingNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string BUILDING_ID_OPTION = "BuildingId";
-	public const string QUEST_ACTION_OPTION = "QuestAction";
-	public const string QUEST_ID_OPTION = "QuestId";
+	public const string BuildingIdOption = "BuildingId";
+	public const string QuestActionOption = "QuestAction";
+	public const string QuestIdOption = "QuestId";
 
 	protected override string DefaultTitle => "Купить здание";
 	protected override string DefaultDescription => "Запрашивает покупку здания.";
@@ -16,8 +18,8 @@ public sealed class RequestBuyBuildingNodeModel : GameGraphSuccessFailNodeModel
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(BUILDING_ID_OPTION).WithDisplayName("BuildingId");
-		context.AddOption<QuestActionType>(QUEST_ACTION_OPTION).WithDisplayName("QuestAction");
-		context.AddOption<string>(QUEST_ID_OPTION).WithDisplayName("QuestId");
+		context.AddOption<string>(BuildingIdOption).WithDisplayName("BuildingId");
+		context.AddOption<QuestActionType>(QuestActionOption).WithDisplayName("QuestAction");
+		context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
 	}
 }

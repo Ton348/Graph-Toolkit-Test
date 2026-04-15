@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class GoToPointNodeConverter : GameGraphNodeConverterBase<GoToPointNodeModel, GoToPointNode>
@@ -7,8 +9,8 @@ public sealed class GoToPointNodeConverter : GameGraphNodeConverterBase<GoToPoin
 	{
 		runtimeNode = new GoToPointNode
 		{
-			markerId = GetOptionValue<string>(model, GoToPointNodeModel.MARKER_ID_OPTION),
-			arrivalDistance = GetOptionValue(model, GoToPointNodeModel.ARRIVAL_DISTANCE_OPTION, 2f)
+			markerId = GetOptionValue<string>(model, GoToPointNodeModel.MarkerIdOption),
+			arrivalDistance = GetOptionValue(model, GoToPointNodeModel.ArrivalDistanceOption, 2f)
 		};
 		return true;
 	}

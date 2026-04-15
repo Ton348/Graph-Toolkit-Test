@@ -1,13 +1,15 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestSetBusinessOpenNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string LOT_ID_OPTION = "LotId";
-	public const string OPEN_OPTION = "Open";
+	public const string LotIdOption = "LotId";
+	public const string OpenOption = "Open";
 
 	protected override string DefaultTitle => "Установить статус открытия";
 	protected override string DefaultDescription => "Устанавливает желаемый статус открытия бизнеса.";
@@ -15,7 +17,7 @@ public sealed class RequestSetBusinessOpenNodeModel : GameGraphSuccessFailNodeMo
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(LOT_ID_OPTION).WithDisplayName("LotId");
-		context.AddOption<bool>(OPEN_OPTION).WithDisplayName("Open");
+		context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		context.AddOption<bool>(OpenOption).WithDisplayName("Open");
 	}
 }

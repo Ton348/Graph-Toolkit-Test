@@ -8,10 +8,10 @@ namespace GraphCore.BaseNodes.Editor.Server
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class QuestStateConditionNodeModel : CommonGraphEditorNode
 	{
-		public const string QUEST_ID_OPTION = "QuestId";
-		public const string STATE_OPTION = "State";
-		public const string TRUE_PORT = "True";
-		public const string FALSE_PORT = "False";
+		public const string QuestIdOption = "QuestId";
+		public const string StateOption = "State";
+		public const string TruePort = "True";
+		public const string FalsePort = "False";
 
 		protected override string DefaultTitle => "Проверка квеста";
 		protected override string DefaultDescription => "Проверяет состояние квеста";
@@ -19,8 +19,8 @@ namespace GraphCore.BaseNodes.Editor.Server
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(QUEST_ID_OPTION).WithDisplayName("QuestId");
-			context.AddOption<GraphCore.BaseNodes.Runtime.Server.QuestState>(STATE_OPTION)
+			context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
+			context.AddOption<GraphCore.BaseNodes.Runtime.Server.QuestState>(StateOption)
 				.WithDisplayName("State")
 				.WithDefaultValue(GraphCore.BaseNodes.Runtime.Server.QuestState.None);
 		}
@@ -28,8 +28,8 @@ namespace GraphCore.BaseNodes.Editor.Server
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(TRUE_PORT).WithDisplayName("True").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(FALSE_PORT).WithDisplayName("False").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(TruePort).WithDisplayName("True").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(FalsePort).WithDisplayName("False").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
 		}
 	}
 }

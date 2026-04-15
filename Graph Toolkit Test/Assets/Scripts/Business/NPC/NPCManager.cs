@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Serialization;
+using Game1.Graph.Runtime;
 
 public class NPCManager : Interactable
 {

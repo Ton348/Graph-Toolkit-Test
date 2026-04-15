@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class SetGameObjectActiveNodeConverter : GameGraphNodeConverterBase<SetGameObjectActiveNodeModel, SetGameObjectActiveNode>
@@ -7,9 +9,9 @@ public sealed class SetGameObjectActiveNodeConverter : GameGraphNodeConverterBas
 	{
 		runtimeNode = new SetGameObjectActiveNode
 		{
-			siteId = GetOptionValue<string>(model, SetGameObjectActiveNodeModel.SITE_ID_OPTION),
-			visualId = GetOptionValue<string>(model, SetGameObjectActiveNodeModel.VISUAL_ID_OPTION),
-			isActive = GetOptionValue(model, SetGameObjectActiveNodeModel.IS_ACTIVE_OPTION, false)
+			siteId = GetOptionValue<string>(model, SetGameObjectActiveNodeModel.SiteIdOption),
+			visualId = GetOptionValue<string>(model, SetGameObjectActiveNodeModel.VisualIdOption),
+			isActive = GetOptionValue(model, SetGameObjectActiveNodeModel.IsActiveOption, false)
 		};
 		return true;
 	}

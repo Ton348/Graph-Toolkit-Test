@@ -1,42 +1,45 @@
 using System;
 
-[GameGraphNodeValidator]
-public sealed class GameGraphMultiChoiceNodeValidator : IGameGraphNodeValidator
+namespace Game1.Graph.Runtime
 {
-	public Type NodeType => typeof(GameGraphMultiChoiceNode);
-
-	public bool Validate(GameGraphNode node, GameGraphValidationResult result)
+	[GameGraphNodeValidator]
+	public sealed class GameGraphMultiChoiceNodeValidator : IGameGraphNodeValidator
 	{
-		if (node is not GameGraphMultiChoiceNode typedNode)
-		{
-			result?.AddError(node, nameof(node), "Invalid node type for GameGraphMultiChoiceNodeValidator.");
-			return false;
-		}
+		public Type NodeType => typeof(GameGraphMultiChoiceNode);
 
-		if (typedNode.options == null || typedNode.options.Count == 0)
+		public bool Validate(GameGraphNode node, GameGraphValidationResult result)
 		{
-			result?.AddError(typedNode, nameof(typedNode.options), "At least one choice option is required.");
-			return false;
-		}
-
-		bool valid = true;
-		for (int i = 0; i < typedNode.options.Count; i++)
-		{
-			GameGraphChoiceBranch option = typedNode.options[i];
-			if (option == null)
+			if (node is not GameGraphMultiChoiceNode typedNode)
 			{
-				result?.AddError(typedNode, nameof(typedNode.options), $"Option at index {i} is null.");
-				valid = false;
-				continue;
+				result?.AddError(node, nameof(node), "Invalid node type for GameGraphMultiChoiceNodeValidator.");
+				return false;
 			}
 
-			if (string.IsNullOrWhiteSpace(option.nextNodeId))
+			if (typedNode.options == null || typedNode.options.Count == 0)
 			{
-				result?.AddError(typedNode, nameof(option.nextNodeId), $"Option {i} next node id is required.");
-				valid = false;
+				result?.AddError(typedNode, nameof(typedNode.options), "At least one choice option is required.");
+				return false;
 			}
-		}
 
-		return valid;
+			bool valid = true;
+			for (int i = 0; i < typedNode.options.Count; i++)
+			{
+				GameGraphChoiceBranch option = typedNode.options[i];
+				if (option == null)
+				{
+					result?.AddError(typedNode, nameof(typedNode.options), $"Option at index {i} is null.");
+					valid = false;
+					continue;
+				}
+
+				if (string.IsNullOrWhiteSpace(option.nextNodeId))
+				{
+					result?.AddError(typedNode, nameof(option.nextNodeId), $"Option {i} next node id is required.");
+					valid = false;
+				}
+			}
+
+			return valid;
+		}
 	}
 }

@@ -1,17 +1,21 @@
-using System;
+using Game1.Graph.Runtime;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-[Serializable]
-[UseWithGraph(typeof(CommonGraphEditorGraph))]
-public abstract class GameGraphSuccessFailNodeModel : GameGraphEditorNode
+namespace Game1.Graph.Editor
 {
-	protected override string DefaultTitle => "Game Success/Fail Node";
-	protected override string DefaultDescription => "Base template for game node with success/fail branching.";
-
-	protected override void OnDefinePorts(IPortDefinitionContext context)
+	[Serializable]
+	[UseWithGraph(typeof(CommonGraphEditorGraph))]
+	public abstract class GameGraphSuccessFailNodeModel : GameGraphEditorNode
 	{
-		AddInputExecutionPort(context);
-		AddSuccessFailPorts(context);
+		protected override string DefaultTitle => "Game Success/Fail Node";
+		protected override string DefaultDescription => "Base template for game node with success/fail branching.";
+
+		protected override void OnDefinePorts(IPortDefinitionContext context)
+		{
+			AddInputExecutionPort(context);
+			AddSuccessFailPorts(context);
+		}
 	}
 }

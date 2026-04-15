@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class RequestHireBusinessWorkerNodeConverter : GameGraphNodeConverterBase<RequestHireBusinessWorkerNodeModel, RequestHireBusinessWorkerNode>
@@ -7,9 +9,9 @@ public sealed class RequestHireBusinessWorkerNodeConverter : GameGraphNodeConver
 	{
 		runtimeNode = new RequestHireBusinessWorkerNode
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, RequestHireBusinessWorkerNodeModel.LOT_ID_OPTION),
-			roleId = GetOptionValue<string>(editorNodeModel, RequestHireBusinessWorkerNodeModel.ROLE_ID_OPTION),
-			contactId = GetOptionValue<string>(editorNodeModel, RequestHireBusinessWorkerNodeModel.CONTACT_ID_OPTION)
+			lotId = GetOptionValue<string>(editorNodeModel, RequestHireBusinessWorkerNodeModel.LotIdOption),
+			roleId = GetOptionValue<string>(editorNodeModel, RequestHireBusinessWorkerNodeModel.RoleIdOption),
+			contactId = GetOptionValue<string>(editorNodeModel, RequestHireBusinessWorkerNodeModel.ContactIdOption)
 		};
 		return true;
 	}

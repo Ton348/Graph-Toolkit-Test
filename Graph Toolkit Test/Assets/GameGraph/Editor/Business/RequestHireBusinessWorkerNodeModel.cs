@@ -1,14 +1,16 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestHireBusinessWorkerNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string LOT_ID_OPTION = "LotId";
-	public const string ROLE_ID_OPTION = "RoleId";
-	public const string CONTACT_ID_OPTION = "ContactId";
+	public const string LotIdOption = "LotId";
+	public const string RoleIdOption = "RoleId";
+	public const string ContactIdOption = "ContactId";
 
 	protected override string DefaultTitle => "Нанять сотрудника";
 	protected override string DefaultDescription => "Запрашивает найм сотрудника для бизнеса.";
@@ -16,8 +18,8 @@ public sealed class RequestHireBusinessWorkerNodeModel : GameGraphSuccessFailNod
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(LOT_ID_OPTION).WithDisplayName("LotId");
-		context.AddOption<string>(ROLE_ID_OPTION).WithDisplayName("RoleId");
-		context.AddOption<string>(CONTACT_ID_OPTION).WithDisplayName("ContactId");
+		context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		context.AddOption<string>(RoleIdOption).WithDisplayName("RoleId");
+		context.AddOption<string>(ContactIdOption).WithDisplayName("ContactId");
 	}
 }

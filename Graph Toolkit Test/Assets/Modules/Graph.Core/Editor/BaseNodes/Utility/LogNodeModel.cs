@@ -8,7 +8,7 @@ namespace GraphCore.BaseNodes.Editor.Utility
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class LogNodeModel : CommonGraphEditorNode
 	{
-		public const string MESSAGE_OPTION = "Message";
+		public const string MessageOption = "Message";
 
 		protected override string DefaultTitle => "Лог";
 		protected override string DefaultDescription => "Выводит сообщение в консоль";
@@ -16,7 +16,7 @@ namespace GraphCore.BaseNodes.Editor.Utility
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(MESSAGE_OPTION).WithDisplayName("Message");
+			context.AddOption<string>(MessageOption).WithDisplayName("Message");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

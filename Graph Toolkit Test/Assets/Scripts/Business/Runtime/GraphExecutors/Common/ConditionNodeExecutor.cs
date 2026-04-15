@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game1.Graph.Runtime;
 
 [GameGraphNodeExecutor]
 public sealed class ConditionNodeExecutor : GameGraphTrueFalseNodeExecutor<ConditionNode>

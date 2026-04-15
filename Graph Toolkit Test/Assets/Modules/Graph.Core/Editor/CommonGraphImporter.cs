@@ -146,30 +146,30 @@ namespace GraphCore.Editor
 				RandomNodeModel randomModel => BuildRandomNode(randomModel),
 				CheckpointNodeModel checkpointModel => new CheckpointNode
 				{
-					checkpointId = GetOptionValue<string>(checkpointModel, CheckpointNodeModel.CHECKPOINT_ID_OPTION),
-					action = GetOptionValue<CheckpointAction>(checkpointModel, CheckpointNodeModel.ACTION_OPTION)
+					checkpointId = GetOptionValue<string>(checkpointModel, CheckpointNodeModel.CheckpointIdOption),
+					action = GetOptionValue<CheckpointAction>(checkpointModel, CheckpointNodeModel.ActionOption)
 				},
 				StartQuestNodeModel startQuestModel => new StartQuestNode
 				{
-					questId = GetOptionValue<string>(startQuestModel, StartQuestNodeModel.QUEST_ID_OPTION)
+					questId = GetOptionValue<string>(startQuestModel, StartQuestNodeModel.QuestIdOption)
 				},
 				CompleteQuestNodeModel completeQuestModel => new CompleteQuestNode
 				{
-					questId = GetOptionValue<string>(completeQuestModel, CompleteQuestNodeModel.QUEST_ID_OPTION)
+					questId = GetOptionValue<string>(completeQuestModel, CompleteQuestNodeModel.QuestIdOption)
 				},
 				QuestStateConditionNodeModel questStateConditionModel => new QuestStateConditionNode
 				{
-					questId = GetOptionValue<string>(questStateConditionModel, QuestStateConditionNodeModel.QUEST_ID_OPTION),
-					state = GetOptionValue<QuestState>(questStateConditionModel, QuestStateConditionNodeModel.STATE_OPTION)
+					questId = GetOptionValue<string>(questStateConditionModel, QuestStateConditionNodeModel.QuestIdOption),
+					state = GetOptionValue<QuestState>(questStateConditionModel, QuestStateConditionNodeModel.StateOption)
 				},
 				MapMarkerNodeModel mapMarkerModel => new MapMarkerNode
 				{
-					markerId = GetOptionValue<string>(mapMarkerModel, MapMarkerNodeModel.MARKER_ID_OPTION),
-					targetObjectName = GetOptionValue<string>(mapMarkerModel, MapMarkerNodeModel.TARGET_OPTION)
+					markerId = GetOptionValue<string>(mapMarkerModel, MapMarkerNodeModel.MarkerIdOption),
+					targetObjectName = GetOptionValue<string>(mapMarkerModel, MapMarkerNodeModel.TargetOption)
 				},
 				PlayCutsceneNodeModel playCutsceneModel => new PlayCutsceneNode
 				{
-					cutsceneReference = GetOptionValue<string>(playCutsceneModel, PlayCutsceneNodeModel.CUTSCENE_REFERENCE_OPTION)
+					cutsceneReference = GetOptionValue<string>(playCutsceneModel, PlayCutsceneNodeModel.CutsceneReferenceOption)
 				},
 				_ => null
 			};
@@ -181,20 +181,20 @@ namespace GraphCore.Editor
 		private static ChoiceNode BuildChoiceNode(ChoiceNodeModel model)
 		{
 			ChoiceNode node = new ChoiceNode();
-			node.options[0].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION1_LABEL);
-			node.options[1].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION2_LABEL);
-			node.options[2].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION3_LABEL);
-			node.options[3].label = GetOptionValue<string>(model, ChoiceNodeModel.OPTION4_LABEL);
+			node.options[0].label = GetOptionValue<string>(model, ChoiceNodeModel.Option1Label);
+			node.options[1].label = GetOptionValue<string>(model, ChoiceNodeModel.Option2Label);
+			node.options[2].label = GetOptionValue<string>(model, ChoiceNodeModel.Option3Label);
+			node.options[3].label = GetOptionValue<string>(model, ChoiceNodeModel.Option4Label);
 			return node;
 		}
 
 		private static RandomNode BuildRandomNode(RandomNodeModel model)
 		{
 			RandomNode node = new RandomNode();
-			node.options[0].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT1_OPTION);
-			node.options[1].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT2_OPTION);
-			node.options[2].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT3_OPTION);
-			node.options[3].weight = GetOptionValue<float>(model, RandomNodeModel.WEIGHT4_OPTION);
+			node.options[0].weight = GetOptionValue<float>(model, RandomNodeModel.Weight1Option);
+			node.options[1].weight = GetOptionValue<float>(model, RandomNodeModel.Weight2Option);
+			node.options[2].weight = GetOptionValue<float>(model, RandomNodeModel.Weight3Option);
+			node.options[3].weight = GetOptionValue<float>(model, RandomNodeModel.Weight4Option);
 			return node;
 		}
 
@@ -207,47 +207,47 @@ namespace GraphCore.Editor
 
 			if (editorNode is ChoiceNodeModel && runtimeNode is ChoiceNode choiceNode)
 			{
-				choiceNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION1_PORT, idMap);
-				choiceNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION2_PORT, idMap);
-				choiceNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION3_PORT, idMap);
-				choiceNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.OPTION4_PORT, idMap);
+				choiceNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option1Port, idMap);
+				choiceNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option2Port, idMap);
+				choiceNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option3Port, idMap);
+				choiceNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option4Port, idMap);
 				return;
 			}
 
 			if (editorNode is RandomNodeModel && runtimeNode is RandomNode randomNode)
 			{
-				randomNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION1_PORT, idMap);
-				randomNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION2_PORT, idMap);
-				randomNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION3_PORT, idMap);
-				randomNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.OPTION4_PORT, idMap);
+				randomNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option1Port, idMap);
+				randomNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option2Port, idMap);
+				randomNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option3Port, idMap);
+				randomNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option4Port, idMap);
 				return;
 			}
 
 			if (editorNode is CheckpointNodeModel && runtimeNode is CheckpointNode checkpointNode)
 			{
-				checkpointNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.SUCCESS_PORT, idMap);
-				checkpointNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.FAIL_PORT, idMap);
+				checkpointNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.SuccessPort, idMap);
+				checkpointNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.FailPort, idMap);
 				return;
 			}
 
 			if (editorNode is StartQuestNodeModel && runtimeNode is StartQuestNode startQuestNode)
 			{
-				startQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.SUCCESS_PORT, idMap);
-				startQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.FAIL_PORT, idMap);
+				startQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.SuccessPort, idMap);
+				startQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.FailPort, idMap);
 				return;
 			}
 
 			if (editorNode is CompleteQuestNodeModel && runtimeNode is CompleteQuestNode completeQuestNode)
 			{
-				completeQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.SUCCESS_PORT, idMap);
-				completeQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.FAIL_PORT, idMap);
+				completeQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.SuccessPort, idMap);
+				completeQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.FailPort, idMap);
 				return;
 			}
 
 			if (editorNode is QuestStateConditionNodeModel && runtimeNode is QuestStateConditionNode questStateConditionNode)
 			{
-				questStateConditionNode.trueNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.TRUE_PORT, idMap);
-				questStateConditionNode.falseNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.FALSE_PORT, idMap);
+				questStateConditionNode.trueNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.TruePort, idMap);
+				questStateConditionNode.falseNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.FalsePort, idMap);
 				return;
 			}
 

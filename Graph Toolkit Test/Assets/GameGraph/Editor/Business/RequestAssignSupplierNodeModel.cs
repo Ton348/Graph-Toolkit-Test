@@ -1,13 +1,15 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestAssignSupplierNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string LOT_ID_OPTION = "LotId";
-	public const string SUPPLIER_ID_OPTION = "SupplierId";
+	public const string LotIdOption = "LotId";
+	public const string SupplierIdOption = "SupplierId";
 
 	protected override string DefaultTitle => "Назначить поставщика";
 	protected override string DefaultDescription => "Назначает поставщика бизнесу.";
@@ -15,7 +17,7 @@ public sealed class RequestAssignSupplierNodeModel : GameGraphSuccessFailNodeMod
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(LOT_ID_OPTION).WithDisplayName("LotId");
-		context.AddOption<string>(SUPPLIER_ID_OPTION).WithDisplayName("SupplierId");
+		context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		context.AddOption<string>(SupplierIdOption).WithDisplayName("SupplierId");
 	}
 }

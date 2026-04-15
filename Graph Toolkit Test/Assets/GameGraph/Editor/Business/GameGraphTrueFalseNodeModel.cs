@@ -1,16 +1,18 @@
 using System;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 public abstract class GameGraphTrueFalseNodeModel : GameGraphEditorNode
 {
-	public const string TRUE_PORT = GameGraphPortNames.True;
-	public const string FALSE_PORT = GameGraphPortNames.False;
+	public const string TruePort = GameGraphPortNames.True;
+	public const string FalsePort = GameGraphPortNames.False;
 
 	protected override void OnDefinePorts(IPortDefinitionContext context)
 	{
 		AddInputExecutionPort(context);
-		context.AddOutputPort(TRUE_PORT).WithDisplayName(TRUE_PORT).WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-		context.AddOutputPort(FALSE_PORT).WithDisplayName(FALSE_PORT).WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+		context.AddOutputPort(TruePort).WithDisplayName(TruePort).WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+		context.AddOutputPort(FalsePort).WithDisplayName(FalsePort).WithConnectorUI(PortConnectorUI.Arrowhead).Build();
 	}
 }

@@ -1,6 +1,9 @@
-public enum GameGraphValidationIssueSeverity
+namespace Game1.Graph.Runtime
 {
-	Info,
-	Warning,
-	Error
+	public enum GameGraphValidationIssueSeverity
+	{
+		Info,
+		Warning,
+		Error
+	}
 }

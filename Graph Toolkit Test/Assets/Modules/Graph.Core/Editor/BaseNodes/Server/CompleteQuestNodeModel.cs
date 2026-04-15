@@ -8,9 +8,9 @@ namespace GraphCore.BaseNodes.Editor.Server
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class CompleteQuestNodeModel : CommonGraphEditorNode
 	{
-		public const string QUEST_ID_OPTION = "QuestId";
-		public const string SUCCESS_PORT = "Success";
-		public const string FAIL_PORT = "Fail";
+		public const string QuestIdOption = "QuestId";
+		public const string SuccessPort = "Success";
+		public const string FailPort = "Fail";
 
 		protected override string DefaultTitle => "Завершить квест";
 		protected override string DefaultDescription => "Завершает квест в профиле игрока";
@@ -18,14 +18,14 @@ namespace GraphCore.BaseNodes.Editor.Server
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(QUEST_ID_OPTION).WithDisplayName("QuestId");
+			context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(SUCCESS_PORT).WithDisplayName("Success").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(FAIL_PORT).WithDisplayName("Fail").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(SuccessPort).WithDisplayName("Success").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(FailPort).WithDisplayName("Fail").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
 		}
 	}
 }

@@ -1,22 +1,25 @@
-using System;
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
+using System;
 
-public abstract class GameGraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : GameGraphNode
+namespace Game1.Graph.Runtime
 {
-	public Type NodeType => typeof(TNode);
-
-	public UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public abstract class GameGraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : GameGraphNode
 	{
-		if (node is not TNode typedNode)
+		public Type NodeType => typeof(TNode);
+
+		public UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.Fault(
-				$"Expected node type '{typeof(TNode).Name}', got '{node?.GetType().Name ?? "null"}'.",
-				GraphNodeExecutionErrorType.InvalidNode));
+			if (node is not TNode typedNode)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.Fault(
+					$"Expected node type '{typeof(TNode).Name}', got '{node?.GetType().Name ?? "null"}'.",
+					GraphNodeExecutionErrorType.InvalidNode));
+			}
+
+			return ExecuteAsync(typedNode, context, cancellationToken);
 		}
 
-		return ExecuteAsync(typedNode, context, cancellationToken);
+		protected abstract UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
 	}
-
-	protected abstract UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
 }

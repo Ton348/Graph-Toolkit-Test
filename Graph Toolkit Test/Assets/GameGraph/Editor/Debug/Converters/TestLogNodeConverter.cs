@@ -1,5 +1,7 @@
 using GraphCore.Editor;
 using UnityEngine.Scripting.APIUpdating;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Game1.Graph.Editor", sourceClassName: "TestLogNodeConverter")]
@@ -19,7 +21,7 @@ public sealed class TestLogNodeConverter : IGameGraphNodeConverter
 			return false;
 		}
 
-		string message = CommonGraphImporter.GetOptionValue<string>(model, TestLogNodeModel.MESSAGE_OPTION);
+		string message = CommonGraphImporter.GetOptionValue<string>(model, TestLogNodeModel.MessageOption);
 
 		runtimeNode = new TestLogNode
 		{

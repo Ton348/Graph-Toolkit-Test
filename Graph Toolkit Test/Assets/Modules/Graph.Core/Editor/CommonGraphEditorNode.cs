@@ -9,16 +9,16 @@ public abstract class CommonGraphEditorNode : Node
 {
 	private static readonly BindingFlags InstancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 	private static readonly BindingFlags InstancePublic = BindingFlags.Instance | BindingFlags.Public;
-	public const string EXECUTION_PORT_NAME = "Next";
-	public const string TITLE_OPTION = "NodeTitle";
-	public const string DESCRIPTION_OPTION = "NodeDescription";
+	public const string ExecutionPortName = "Next";
+	public const string TitleOption = "NodeTitle";
+	public const string DescriptionOption = "NodeDescription";
 
 	protected virtual string DefaultTitle => GetType().Name;
 	protected virtual string DefaultDescription => string.Empty;
 
 	protected void AddInputExecutionPort(IPortDefinitionContext context)
 	{
-		context.AddInputPort(EXECUTION_PORT_NAME)
+		context.AddInputPort(ExecutionPortName)
 			.WithDisplayName(string.Empty)
 			.WithConnectorUI(PortConnectorUI.Arrowhead)
 			.Build();
@@ -26,7 +26,7 @@ public abstract class CommonGraphEditorNode : Node
 
 	protected void AddOutputExecutionPort(IPortDefinitionContext context)
 	{
-		context.AddOutputPort(EXECUTION_PORT_NAME)
+		context.AddOutputPort(ExecutionPortName)
 			.WithDisplayName(string.Empty)
 			.WithConnectorUI(PortConnectorUI.Arrowhead)
 			.Build();
@@ -34,12 +34,12 @@ public abstract class CommonGraphEditorNode : Node
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
-		_ = context.AddOption<string>(TITLE_OPTION)
+		_ = context.AddOption<string>(TitleOption)
 			.WithDisplayName("Название")
 			.WithDefaultValue(DefaultTitle)
 			.Build();
 
-		INodeOption descriptionOption = context.AddOption<string>(DESCRIPTION_OPTION)
+		INodeOption descriptionOption = context.AddOption<string>(DescriptionOption)
 			.WithDisplayName("Описание")
 			.WithDefaultValue(DefaultDescription)
 			.Build();

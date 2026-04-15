@@ -1,16 +1,19 @@
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 
-[GameGraphNodeExecutor]
-public sealed class SampleNodeExecutor : GameGraphNextNodeExecutor<SampleNode>
+namespace Game1.Graph.Runtime
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(SampleNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class SampleNodeExecutor : GameGraphNextNodeExecutor<SampleNode>
 	{
-		if (!node.enabled)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(SampleNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.Stop("Sample node is disabled."));
-		}
+			if (!node.enabled)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.Stop("Sample node is disabled."));
+			}
 
-		return UniTask.FromResult(ContinueToNext(node));
+			return UniTask.FromResult(ContinueToNext(node));
+		}
 	}
 }

@@ -8,7 +8,7 @@ namespace GraphCore.BaseNodes.Editor.Cinematics
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class PlayCutsceneNodeModel : CommonGraphEditorNode
 	{
-		public const string CUTSCENE_REFERENCE_OPTION = "CutsceneReference";
+		public const string CutsceneReferenceOption = "CutsceneReference";
 
 		protected override string DefaultTitle => "Запуск катсцены";
 		protected override string DefaultDescription => "Запускает катсцену через Cinemachine";
@@ -16,7 +16,7 @@ namespace GraphCore.BaseNodes.Editor.Cinematics
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(CUTSCENE_REFERENCE_OPTION).WithDisplayName("CutsceneReference");
+			context.AddOption<string>(CutsceneReferenceOption).WithDisplayName("CutsceneReference");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

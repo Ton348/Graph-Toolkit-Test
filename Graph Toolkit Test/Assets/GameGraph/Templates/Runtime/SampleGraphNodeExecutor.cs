@@ -1,5 +1,6 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using Game1.Graph.Runtime;
 
 // Copy this file, rename class and generic type, then implement node behavior.
 // Add [GameGraphNodeExecutor] if you want auto-registration.

@@ -1,30 +1,33 @@
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 
-public abstract class GameGraphSuccessFailNodeExecutor<TNode> : GameGraphNodeExecutor<TNode> where TNode : GameGraphSuccessFailNode
+namespace Game1.Graph.Runtime
 {
-	protected sealed override async UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public abstract class GameGraphSuccessFailNodeExecutor<TNode> : GameGraphNodeExecutor<TNode> where TNode : GameGraphSuccessFailNode
 	{
-		if (node == null)
+		protected sealed override async UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return GraphNodeExecutionResult.Fault("Node is null.", GraphNodeExecutionErrorType.InvalidNode);
+			if (node == null)
+			{
+				return GraphNodeExecutionResult.Fault("Node is null.", GraphNodeExecutionErrorType.InvalidNode);
+			}
+
+			bool isSuccess = await EvaluateSuccessAsync(node, context, cancellationToken);
+			return isSuccess
+				? GraphNodeExecutionResult.ContinueTo(node.successNodeId)
+				: GraphNodeExecutionResult.ContinueTo(node.failNodeId);
 		}
 
-		bool isSuccess = await EvaluateSuccessAsync(node, context, cancellationToken);
-		return isSuccess
-			? GraphNodeExecutionResult.ContinueTo(node.successNodeId)
-			: GraphNodeExecutionResult.ContinueTo(node.failNodeId);
-	}
+		protected abstract UniTask<bool> EvaluateSuccessAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
 
-	protected abstract UniTask<bool> EvaluateSuccessAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+		protected static GraphNodeExecutionResult Success(TNode node)
+		{
+			return GraphNodeExecutionResult.ContinueTo(node?.successNodeId);
+		}
 
-	protected static GraphNodeExecutionResult Success(TNode node)
-	{
-		return GraphNodeExecutionResult.ContinueTo(node?.successNodeId);
-	}
-
-	protected static GraphNodeExecutionResult Fail(TNode node)
-	{
-		return GraphNodeExecutionResult.ContinueTo(node?.failNodeId);
+		protected static GraphNodeExecutionResult Fail(TNode node)
+		{
+			return GraphNodeExecutionResult.ContinueTo(node?.failNodeId);
+		}
 	}
 }

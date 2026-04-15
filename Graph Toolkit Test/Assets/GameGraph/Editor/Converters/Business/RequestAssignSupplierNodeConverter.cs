@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class RequestAssignSupplierNodeConverter : GameGraphNodeConverterBase<RequestAssignSupplierNodeModel, RequestAssignSupplierNode>
@@ -7,8 +9,8 @@ public sealed class RequestAssignSupplierNodeConverter : GameGraphNodeConverterB
 	{
 		runtimeNode = new RequestAssignSupplierNode
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.LOT_ID_OPTION),
-			supplierId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.SUPPLIER_ID_OPTION)
+			lotId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.LotIdOption),
+			supplierId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.SupplierIdOption)
 		};
 		return true;
 	}

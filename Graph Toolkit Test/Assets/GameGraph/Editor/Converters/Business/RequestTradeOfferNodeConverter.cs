@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class RequestTradeOfferNodeConverter : GameGraphNodeConverterBase<RequestTradeOfferNodeModel, RequestTradeOfferNode>
@@ -7,7 +9,7 @@ public sealed class RequestTradeOfferNodeConverter : GameGraphNodeConverterBase<
 	{
 		runtimeNode = new RequestTradeOfferNode
 		{
-			buildingId = GetOptionValue<string>(editorNodeModel, RequestTradeOfferNodeModel.BUILDING_ID_OPTION)
+			buildingId = GetOptionValue<string>(editorNodeModel, RequestTradeOfferNodeModel.BuildingIdOption)
 		};
 		return true;
 	}

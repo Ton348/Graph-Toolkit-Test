@@ -1,19 +1,23 @@
-using System;
+using Game1.Graph.Runtime;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-[Serializable]
-[UseWithGraph(typeof(CommonGraphEditorGraph))]
-public abstract class GameGraphConditionNodeModel : GameGraphTrueFalseNodeModel
+namespace Game1.Graph.Editor
 {
-	protected override string DefaultTitle => "Game Condition Node";
-	protected override string DefaultDescription => "Base template for game condition node with true/false branching.";
-
-	protected virtual string ConditionOptionKey => GameGraphOptionNames.TargetId;
-
-	protected override void OnDefineOptions(IOptionDefinitionContext context)
+	[Serializable]
+	[UseWithGraph(typeof(CommonGraphEditorGraph))]
+	public abstract class GameGraphConditionNodeModel : GameGraphTrueFalseNodeModel
 	{
-		base.OnDefineOptions(context);
-		AddStringOption(context, ConditionOptionKey, "Condition");
+		protected override string DefaultTitle => "Game Condition Node";
+		protected override string DefaultDescription => "Base template for game condition node with true/false branching.";
+
+		protected virtual string ConditionOptionKey => GameGraphOptionNames.TargetId;
+
+		protected override void OnDefineOptions(IOptionDefinitionContext context)
+		{
+			base.OnDefineOptions(context);
+			AddStringOption(context, ConditionOptionKey, "Condition");
+		}
 	}
 }

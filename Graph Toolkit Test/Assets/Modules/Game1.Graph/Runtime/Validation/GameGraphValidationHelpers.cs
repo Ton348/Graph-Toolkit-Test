@@ -1,79 +1,82 @@
-using System;
 using System.Collections.Generic;
+using System;
 
-public static class GameGraphValidationHelpers
+namespace Game1.Graph.Runtime
 {
-	public static bool ValidateNodeId(string nodeId, string fieldName, ICollection<string> errors)
+	public static class GameGraphValidationHelpers
 	{
-		if (!string.IsNullOrWhiteSpace(nodeId))
+		public static bool ValidateNodeId(string nodeId, string fieldName, ICollection<string> errors)
 		{
-			return true;
-		}
-
-		AddError(errors, $"Field '{fieldName}' is required.");
-		return false;
-	}
-
-	public static bool ValidateAnyNodeId(ICollection<string> errors, params (string fieldName, string nodeId)[] fields)
-	{
-		if (fields == null || fields.Length == 0)
-		{
-			AddError(errors, "No branch fields were provided for validation.");
-			return false;
-		}
-
-		for (int i = 0; i < fields.Length; i++)
-		{
-			if (!string.IsNullOrWhiteSpace(fields[i].nodeId))
+			if (!string.IsNullOrWhiteSpace(nodeId))
 			{
 				return true;
 			}
+
+			AddError(errors, $"Field '{fieldName}' is required.");
+			return false;
 		}
 
-		AddError(errors, "At least one branch target must be configured.");
-		return false;
-	}
-
-	public static bool ValidateRequiredString(string value, string fieldName, ICollection<string> errors)
-	{
-		if (!string.IsNullOrWhiteSpace(value))
+		public static bool ValidateAnyNodeId(ICollection<string> errors, params (string fieldName, string nodeId)[] fields)
 		{
-			return true;
+			if (fields == null || fields.Length == 0)
+			{
+				AddError(errors, "No branch fields were provided for validation.");
+				return false;
+			}
+
+			for (int i = 0; i < fields.Length; i++)
+			{
+				if (!string.IsNullOrWhiteSpace(fields[i].nodeId))
+				{
+					return true;
+				}
+			}
+
+			AddError(errors, "At least one branch target must be configured.");
+			return false;
 		}
 
-		AddError(errors, $"Field '{fieldName}' is required.");
-		return false;
-	}
-
-	public static bool ValidateNodeId(string nodeId, GameGraphNode node, string fieldName, GameGraphValidationResult result)
-	{
-		if (!string.IsNullOrWhiteSpace(nodeId))
+		public static bool ValidateRequiredString(string value, string fieldName, ICollection<string> errors)
 		{
-			return true;
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				return true;
+			}
+
+			AddError(errors, $"Field '{fieldName}' is required.");
+			return false;
 		}
 
-		result?.AddError(node, fieldName, $"Field '{fieldName}' is required.");
-		return false;
-	}
-
-	public static bool ValidateRequiredString(string value, GameGraphNode node, string fieldName, GameGraphValidationResult result)
-	{
-		if (!string.IsNullOrWhiteSpace(value))
+		public static bool ValidateNodeId(string nodeId, GameGraphNode node, string fieldName, GameGraphValidationResult result)
 		{
-			return true;
+			if (!string.IsNullOrWhiteSpace(nodeId))
+			{
+				return true;
+			}
+
+			result?.AddError(node, fieldName, $"Field '{fieldName}' is required.");
+			return false;
 		}
 
-		result?.AddError(node, fieldName, $"Field '{fieldName}' is required.");
-		return false;
-	}
-
-	private static void AddError(ICollection<string> errors, string message)
-	{
-		if (errors == null)
+		public static bool ValidateRequiredString(string value, GameGraphNode node, string fieldName, GameGraphValidationResult result)
 		{
-			return;
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				return true;
+			}
+
+			result?.AddError(node, fieldName, $"Field '{fieldName}' is required.");
+			return false;
 		}
 
-		errors.Add(message);
+		private static void AddError(ICollection<string> errors, string message)
+		{
+			if (errors == null)
+			{
+				return;
+			}
+
+			errors.Add(message);
+		}
 	}
 }

@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class CheckBusinessModuleInstalledNodeConverter : GameGraphNodeConverterBase<CheckBusinessModuleInstalledNodeModel, CheckBusinessModuleInstalledNode>
@@ -7,8 +9,8 @@ public sealed class CheckBusinessModuleInstalledNodeConverter : GameGraphNodeCon
 	{
 		runtimeNode = new CheckBusinessModuleInstalledNode
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessModuleInstalledNodeModel.LOT_ID_OPTION),
-			moduleId = GetOptionValue<string>(editorNodeModel, CheckBusinessModuleInstalledNodeModel.MODULE_ID_OPTION)
+			lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessModuleInstalledNodeModel.LotIdOption),
+			moduleId = GetOptionValue<string>(editorNodeModel, CheckBusinessModuleInstalledNodeModel.ModuleIdOption)
 		};
 		return true;
 	}

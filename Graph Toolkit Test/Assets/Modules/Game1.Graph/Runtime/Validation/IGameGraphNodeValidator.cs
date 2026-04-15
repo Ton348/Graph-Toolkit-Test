@@ -1,7 +1,10 @@
 using System;
 
-public interface IGameGraphNodeValidator
+namespace Game1.Graph.Runtime
 {
-	Type NodeType { get; }
-	bool Validate(GameGraphNode node, GameGraphValidationResult result);
+	public interface IGameGraphNodeValidator
+	{
+		Type NodeType { get; }
+		bool Validate(GameGraphNode node, GameGraphValidationResult result);
+	}
 }

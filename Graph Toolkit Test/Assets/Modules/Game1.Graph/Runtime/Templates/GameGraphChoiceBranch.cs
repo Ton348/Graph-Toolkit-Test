@@ -1,8 +1,11 @@
 using System;
 
-[Serializable]
-public sealed class GameGraphChoiceBranch
+namespace Game1.Graph.Runtime
 {
-	public string label;
-	public string nextNodeId;
+	[Serializable]
+	public sealed class GameGraphChoiceBranch
+	{
+		public string label;
+		public string nextNodeId;
+	}
 }

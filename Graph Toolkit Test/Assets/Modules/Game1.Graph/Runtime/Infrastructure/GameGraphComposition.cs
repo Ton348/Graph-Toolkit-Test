@@ -1,35 +1,38 @@
-using System;
 using System.Collections.Generic;
+using System;
 
-public sealed class GameGraphComposition
+namespace Game1.Graph.Runtime
 {
-	public GameGraphExecutorRegistry ExecutorRegistry { get; }
-
-	public GameGraphComposition(GameGraphExecutorRegistry executorRegistry)
+	public sealed class GameGraphComposition
 	{
-		ExecutorRegistry = executorRegistry ?? throw new ArgumentNullException(nameof(executorRegistry));
-	}
+		public GameGraphExecutorRegistry ExecutorRegistry { get; }
 
-	public GraphNodeExecutorRegistry CreateRuntimeExecutorRegistry()
-	{
-		List<IGraphNodeExecutor> executors = new List<IGraphNodeExecutor>();
-		executors.AddRange(CommonGraphRuntimeComposition.CreateDefaultExecutors());
-		executors.AddRange(ExecutorRegistry.GetExecutors());
-		return CommonGraphRuntimeComposition.CreateRegistry(executors);
-	}
+		public GameGraphComposition(GameGraphExecutorRegistry executorRegistry)
+		{
+			ExecutorRegistry = executorRegistry ?? throw new ArgumentNullException(nameof(executorRegistry));
+		}
 
-	public void RegisterExecutor<TExecutor>() where TExecutor : IGraphNodeExecutor, new()
-	{
-		ExecutorRegistry.Register<TExecutor>();
-	}
+		public GraphNodeExecutorRegistry CreateRuntimeExecutorRegistry()
+		{
+			List<IGraphNodeExecutor> executors = new List<IGraphNodeExecutor>();
+			executors.AddRange(CommonGraphRuntimeComposition.CreateDefaultExecutors());
+			executors.AddRange(ExecutorRegistry.GetExecutors());
+			return CommonGraphRuntimeComposition.CreateRegistry(executors);
+		}
 
-	public void RegisterExecutor(IGraphNodeExecutor executor)
-	{
-		ExecutorRegistry.Register(executor);
-	}
+		public void RegisterExecutor<TExecutor>() where TExecutor : IGraphNodeExecutor, new()
+		{
+			ExecutorRegistry.Register<TExecutor>();
+		}
 
-	public static GameGraphComposition CreateDefault()
-	{
-		return new GameGraphComposition(new GameGraphExecutorRegistry());
+		public void RegisterExecutor(IGraphNodeExecutor executor)
+		{
+			ExecutorRegistry.Register(executor);
+		}
+
+		public static GameGraphComposition CreateDefault()
+		{
+			return new GameGraphComposition(new GameGraphExecutorRegistry());
+		}
 	}
 }

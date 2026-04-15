@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class RequestCloseBusinessNodeConverter : GameGraphNodeConverterBase<RequestCloseBusinessNodeModel, RequestCloseBusinessNode>
@@ -7,7 +9,7 @@ public sealed class RequestCloseBusinessNodeConverter : GameGraphNodeConverterBa
 	{
 		runtimeNode = new RequestCloseBusinessNode
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, RequestCloseBusinessNodeModel.LOT_ID_OPTION)
+			lotId = GetOptionValue<string>(editorNodeModel, RequestCloseBusinessNodeModel.LotIdOption)
 		};
 		return true;
 	}

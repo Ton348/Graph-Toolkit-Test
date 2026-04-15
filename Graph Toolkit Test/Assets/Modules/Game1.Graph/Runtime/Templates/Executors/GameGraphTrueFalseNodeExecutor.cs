@@ -1,30 +1,33 @@
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
 
-public abstract class GameGraphTrueFalseNodeExecutor<TNode> : GameGraphNodeExecutor<TNode> where TNode : GameGraphTrueFalseNode
+namespace Game1.Graph.Runtime
 {
-	protected sealed override async UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public abstract class GameGraphTrueFalseNodeExecutor<TNode> : GameGraphNodeExecutor<TNode> where TNode : GameGraphTrueFalseNode
 	{
-		if (node == null)
+		protected sealed override async UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return GraphNodeExecutionResult.Fault("Node is null.", GraphNodeExecutionErrorType.InvalidNode);
+			if (node == null)
+			{
+				return GraphNodeExecutionResult.Fault("Node is null.", GraphNodeExecutionErrorType.InvalidNode);
+			}
+
+			bool condition = await EvaluateConditionAsync(node, context, cancellationToken);
+			return condition
+				? GraphNodeExecutionResult.ContinueTo(node.trueNodeId)
+				: GraphNodeExecutionResult.ContinueTo(node.falseNodeId);
 		}
 
-		bool condition = await EvaluateConditionAsync(node, context, cancellationToken);
-		return condition
-			? GraphNodeExecutionResult.ContinueTo(node.trueNodeId)
-			: GraphNodeExecutionResult.ContinueTo(node.falseNodeId);
-	}
+		protected abstract UniTask<bool> EvaluateConditionAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
 
-	protected abstract UniTask<bool> EvaluateConditionAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+		protected static GraphNodeExecutionResult True(TNode node)
+		{
+			return GraphNodeExecutionResult.ContinueTo(node?.trueNodeId);
+		}
 
-	protected static GraphNodeExecutionResult True(TNode node)
-	{
-		return GraphNodeExecutionResult.ContinueTo(node?.trueNodeId);
-	}
-
-	protected static GraphNodeExecutionResult False(TNode node)
-	{
-		return GraphNodeExecutionResult.ContinueTo(node?.falseNodeId);
+		protected static GraphNodeExecutionResult False(TNode node)
+		{
+			return GraphNodeExecutionResult.ContinueTo(node?.falseNodeId);
+		}
 	}
 }

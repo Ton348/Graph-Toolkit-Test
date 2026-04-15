@@ -1,12 +1,14 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class RequestUnlockContactNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string CONTACT_ID_OPTION = "ContactId";
+	public const string ContactIdOption = "ContactId";
 
 	protected override string DefaultTitle => "Разблокировать контакт";
 	protected override string DefaultDescription => "Запрашивает разблокировку контакта.";
@@ -14,6 +16,6 @@ public sealed class RequestUnlockContactNodeModel : GameGraphSuccessFailNodeMode
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(CONTACT_ID_OPTION).WithDisplayName("ContactId");
+		context.AddOption<string>(ContactIdOption).WithDisplayName("ContactId");
 	}
 }

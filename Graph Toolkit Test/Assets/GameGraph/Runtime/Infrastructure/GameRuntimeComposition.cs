@@ -1,3 +1,4 @@
+using Game1.Graph.Runtime;
 public static class GameRuntimeComposition
 {
 	public static GameGraphComposition Create()

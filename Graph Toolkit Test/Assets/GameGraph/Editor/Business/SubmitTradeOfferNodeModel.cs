@@ -1,12 +1,14 @@
 using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]
 public sealed class SubmitTradeOfferNodeModel : GameGraphSuccessFailNodeModel
 {
-	public const string BUILDING_ID_OPTION = "BuildingId";
+	public const string BuildingIdOption = "BuildingId";
 
 	protected override string DefaultTitle => "Trade Offer";
 	protected override string DefaultDescription => "Отправляет торговое предложение по зданию.";
@@ -14,6 +16,6 @@ public sealed class SubmitTradeOfferNodeModel : GameGraphSuccessFailNodeModel
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
 		base.OnDefineOptions(context);
-		context.AddOption<string>(BUILDING_ID_OPTION).WithDisplayName("BuildingId");
+		context.AddOption<string>(BuildingIdOption).WithDisplayName("BuildingId");
 	}
 }

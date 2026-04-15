@@ -1,6 +1,9 @@
 using System;
 
-[Serializable]
-public abstract class GameGraphNode : BaseGraphNode
+namespace Game1.Graph.Runtime
 {
+	[Serializable]
+	public abstract class GameGraphNode : BaseGraphNode
+	{
+	}
 }

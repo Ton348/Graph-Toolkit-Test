@@ -1,8 +1,11 @@
 using System;
 
-[Serializable]
-public abstract class GameGraphTrueFalseNode : GameGraphNode
+namespace Game1.Graph.Runtime
 {
-	public string trueNodeId;
-	public string falseNodeId;
+	[Serializable]
+	public abstract class GameGraphTrueFalseNode : GameGraphNode
+	{
+		public string trueNodeId;
+		public string falseNodeId;
+	}
 }

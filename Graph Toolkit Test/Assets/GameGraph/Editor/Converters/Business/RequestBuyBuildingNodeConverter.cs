@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class RequestBuyBuildingNodeConverter : GameGraphNodeConverterBase<RequestBuyBuildingNodeModel, RequestBuyBuildingNode>
@@ -7,9 +9,9 @@ public sealed class RequestBuyBuildingNodeConverter : GameGraphNodeConverterBase
 	{
 		runtimeNode = new RequestBuyBuildingNode
 		{
-			buildingId = GetOptionValue<string>(editorNodeModel, RequestBuyBuildingNodeModel.BUILDING_ID_OPTION),
-			questAction = GetOptionValue(editorNodeModel, RequestBuyBuildingNodeModel.QUEST_ACTION_OPTION, QuestActionType.None),
-			questId = GetOptionValue<string>(editorNodeModel, RequestBuyBuildingNodeModel.QUEST_ID_OPTION)
+			buildingId = GetOptionValue<string>(editorNodeModel, RequestBuyBuildingNodeModel.BuildingIdOption),
+			questAction = GetOptionValue(editorNodeModel, RequestBuyBuildingNodeModel.QuestActionOption, QuestActionType.None),
+			questId = GetOptionValue<string>(editorNodeModel, RequestBuyBuildingNodeModel.QuestIdOption)
 		};
 		return true;
 	}

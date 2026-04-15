@@ -8,8 +8,8 @@ namespace GraphCore.BaseNodes.Editor.UI
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class DialogueNodeModel : CommonGraphEditorNode
 	{
-		public const string DIALOGUE_TITLE_OPTION = "Title";
-		public const string DIALOGUE_BODY_OPTION = "Body";
+		public const string DialogueTitleOption = "Title";
+		public const string DialogueBodyOption = "Body";
 
 		protected override string DefaultTitle => "Диалог NPC";
 		protected override string DefaultDescription => "Показывает диалог NPC";
@@ -17,8 +17,8 @@ namespace GraphCore.BaseNodes.Editor.UI
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(DIALOGUE_TITLE_OPTION).WithDisplayName("Title");
-			context.AddOption<string>(DIALOGUE_BODY_OPTION).WithDisplayName("Body");
+			context.AddOption<string>(DialogueTitleOption).WithDisplayName("Title");
+			context.AddOption<string>(DialogueBodyOption).WithDisplayName("Body");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

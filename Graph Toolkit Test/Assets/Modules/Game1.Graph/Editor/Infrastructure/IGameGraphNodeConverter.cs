@@ -1,5 +1,10 @@
-public interface IGameGraphNodeConverter
+using Game1.Graph.Runtime;
+
+namespace Game1.Graph.Editor
 {
-	bool CanConvert(object editorNodeModel);
-	bool TryConvert(object editorNodeModel, out GameGraphNode runtimeNode);
+	public interface IGameGraphNodeConverter
+	{
+		bool CanConvert(object editorNodeModel);
+		bool TryConvert(object editorNodeModel, out GameGraphNode runtimeNode);
+	}
 }

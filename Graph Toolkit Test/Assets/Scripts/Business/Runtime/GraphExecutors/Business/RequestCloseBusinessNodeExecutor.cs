@@ -1,6 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using Game1.Graph.Runtime;
 
 [GameGraphNodeExecutor]
 public sealed class RequestCloseBusinessNodeExecutor : GameGraphServerRequestExecutor<RequestCloseBusinessNode>

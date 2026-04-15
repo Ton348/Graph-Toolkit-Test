@@ -8,15 +8,15 @@ namespace GraphCore.BaseNodes.Editor.UI
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class ChoiceNodeModel : CommonGraphEditorNode
 	{
-		public const string OPTION1_LABEL = "Option1Label";
-		public const string OPTION2_LABEL = "Option2Label";
-		public const string OPTION3_LABEL = "Option3Label";
-		public const string OPTION4_LABEL = "Option4Label";
+		public const string Option1Label = "Option1Label";
+		public const string Option2Label = "Option2Label";
+		public const string Option3Label = "Option3Label";
+		public const string Option4Label = "Option4Label";
 
-		public const string OPTION1_PORT = "Option1";
-		public const string OPTION2_PORT = "Option2";
-		public const string OPTION3_PORT = "Option3";
-		public const string OPTION4_PORT = "Option4";
+		public const string Option1Port = "Option1";
+		public const string Option2Port = "Option2";
+		public const string Option3Port = "Option3";
+		public const string Option4Port = "Option4";
 
 		protected override string DefaultTitle => "Выбор игрока";
 		protected override string DefaultDescription => "Показывает варианты ответа игрока";
@@ -24,19 +24,19 @@ namespace GraphCore.BaseNodes.Editor.UI
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(OPTION1_LABEL).WithDisplayName("Option1");
-			context.AddOption<string>(OPTION2_LABEL).WithDisplayName("Option2");
-			context.AddOption<string>(OPTION3_LABEL).WithDisplayName("Option3");
-			context.AddOption<string>(OPTION4_LABEL).WithDisplayName("Option4");
+			context.AddOption<string>(Option1Label).WithDisplayName("Option1");
+			context.AddOption<string>(Option2Label).WithDisplayName("Option2");
+			context.AddOption<string>(Option3Label).WithDisplayName("Option3");
+			context.AddOption<string>(Option4Label).WithDisplayName("Option4");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(OPTION1_PORT).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(OPTION2_PORT).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(OPTION3_PORT).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(OPTION4_PORT).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(Option1Port).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(Option2Port).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(Option3Port).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(Option4Port).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
 		}
 	}
 }

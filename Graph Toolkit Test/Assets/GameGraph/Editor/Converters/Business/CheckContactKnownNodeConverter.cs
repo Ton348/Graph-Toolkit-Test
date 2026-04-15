@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class CheckContactKnownNodeConverter : GameGraphNodeConverterBase<CheckContactKnownNodeModel, CheckContactKnownNode>
@@ -7,7 +9,7 @@ public sealed class CheckContactKnownNodeConverter : GameGraphNodeConverterBase<
 	{
 		runtimeNode = new CheckContactKnownNode
 		{
-			contactId = GetOptionValue<string>(editorNodeModel, CheckContactKnownNodeModel.CONTACT_ID_OPTION)
+			contactId = GetOptionValue<string>(editorNodeModel, CheckContactKnownNodeModel.ContactIdOption)
 		};
 		return true;
 	}

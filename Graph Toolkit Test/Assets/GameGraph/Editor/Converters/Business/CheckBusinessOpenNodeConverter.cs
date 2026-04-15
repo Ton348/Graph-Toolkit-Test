@@ -1,4 +1,6 @@
 using GraphCore.Editor;
+using Game1.Graph.Runtime;
+using Game1.Graph.Editor;
 
 [GameGraphNodeConverter]
 public sealed class CheckBusinessOpenNodeConverter : GameGraphNodeConverterBase<CheckBusinessOpenNodeModel, CheckBusinessOpenNode>
@@ -7,7 +9,7 @@ public sealed class CheckBusinessOpenNodeConverter : GameGraphNodeConverterBase<
 	{
 		runtimeNode = new CheckBusinessOpenNode
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessOpenNodeModel.LOT_ID_OPTION)
+			lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessOpenNodeModel.LotIdOption)
 		};
 		return true;
 	}

@@ -1,7 +1,10 @@
 using System;
 
-[Serializable]
-public sealed class SampleNode : GameGraphNextNode
+namespace Game1.Graph.Runtime
 {
-	public bool enabled;
+	[Serializable]
+	public sealed class SampleNode : GameGraphNextNode
+	{
+		public bool enabled;
+	}
 }
