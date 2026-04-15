@@ -1,3 +1,5 @@
+using GraphCore.Runtime;
+
 public static class GraphContextKeys
 {
     public static readonly GraphContextKey<GameBootstrap> RuntimeBootstrap = new GraphContextKey<GameBootstrap>("runtime.bootstrap");

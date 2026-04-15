@@ -1,6 +1,8 @@
 using Game1.Graph.Runtime;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure.Converters;
+namespace Game1.Graph.Templates.Samples
 {
 	[GameGraphNodeConverter]
 	public sealed class SampleNodeConverter : GameGraphNodeConverterBase<SampleNodeModel, SampleNode>

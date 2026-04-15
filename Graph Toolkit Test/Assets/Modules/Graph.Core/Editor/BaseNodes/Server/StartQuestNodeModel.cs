@@ -1,8 +1,8 @@
-using System;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Server
+namespace GraphCore.Editor.BaseNodes.Server
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -24,8 +24,16 @@ namespace GraphCore.BaseNodes.Editor.Server
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(SuccessPort).WithDisplayName("Success").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(FailPort).WithDisplayName("Fail").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+
+			context.AddOutputPort(SuccessPort)
+				.WithDisplayName("Success")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+
+			context.AddOutputPort(FailPort)
+				.WithDisplayName("Fail")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
 		}
 	}
 }

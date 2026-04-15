@@ -1,6 +1,7 @@
 using System;
 using Game1.Graph.Runtime;
 
+using Game1.Graph.Runtime.Infrastructure.Validation;
 public static class GameGraphBusinessValidatorHelpers
 {
 	public static bool ValidateType<TNode>(GameGraphNode node, GameGraphValidationResult result, out TNode typedNode) where TNode : GameGraphNode

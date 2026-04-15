@@ -1,6 +1,7 @@
 using System;
+using GraphCore.Runtime;
 
-namespace GraphCore.BaseNodes.Runtime.World
+namespace GraphCore.Runtime.Nodes.World
 {
 	[Serializable]
 	public sealed class MapMarkerNode : BaseGraphNode

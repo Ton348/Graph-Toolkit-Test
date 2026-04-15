@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure.AutoRegistration;
+namespace Game1.Graph.Editor.Infrastructure
 {
 	public sealed class GameGraphEditorComposition
 	{

@@ -1,6 +1,7 @@
 using System;
+using GraphCore.Runtime;
 
-namespace GraphCore.BaseNodes.Runtime.Utility
+namespace GraphCore.Runtime.Nodes.Utility
 {
 	[Serializable]
 	public sealed class LogNode : BaseGraphNode

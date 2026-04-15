@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GraphCore.Runtime;
 using UnityEditor;
 
 namespace GraphCore.Editor
@@ -6,9 +7,10 @@ namespace GraphCore.Editor
 	public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 	{
 		private const string AutoBuildPreferenceKey = "GraphCore.AutoBuildRuntimeGraphs";
+		private const string AutoBuildMenuPath = "Assets/GraphCore/Auto Build Runtime Graphs";
 
-		private static readonly HashSet<string> PendingBaseGraphPaths = new HashSet<string>();
-		private static readonly HashSet<string> PendingFirstSavePaths = new HashSet<string>();
+		private static readonly HashSet<string> s_pendingBaseGraphPaths = new HashSet<string>();
+		private static readonly HashSet<string> s_pendingFirstSavePaths = new HashSet<string>();
 		private static bool s_rebuildScheduled;
 		private static bool s_isProcessing;
 		private static CommonGraphRuntimeExporter.GraphCompiler s_graphCompiler;
@@ -27,7 +29,7 @@ namespace GraphCore.Editor
 			EnqueueBaseGraphPaths(importedAssets);
 			EnqueueBaseGraphPaths(movedAssets);
 
-			if (PendingBaseGraphPaths.Count == 0 || s_rebuildScheduled)
+			if (s_pendingBaseGraphPaths.Count == 0 || s_rebuildScheduled)
 			{
 				return;
 			}
@@ -36,19 +38,19 @@ namespace GraphCore.Editor
 			EditorApplication.delayCall += ProcessPendingBuilds;
 		}
 
-		[MenuItem("Assets/GraphCore/Auto Build Runtime Graphs", true)]
+		[MenuItem(AutoBuildMenuPath, true)]
 		private static bool ValidateAutoBuildMenu()
 		{
-			Menu.SetChecked("Assets/GraphCore/Auto Build Runtime Graphs", IsAutoBuildEnabled());
+			Menu.SetChecked(AutoBuildMenuPath, IsAutoBuildEnabled());
 			return true;
 		}
 
-		[MenuItem("Assets/GraphCore/Auto Build Runtime Graphs")]
+		[MenuItem(AutoBuildMenuPath)]
 		private static void ToggleAutoBuild()
 		{
 			bool nextValue = !IsAutoBuildEnabled();
 			EditorPrefs.SetBool(AutoBuildPreferenceKey, nextValue);
-			Menu.SetChecked("Assets/GraphCore/Auto Build Runtime Graphs", nextValue);
+			Menu.SetChecked(AutoBuildMenuPath, nextValue);
 		}
 
 		private static bool IsAutoBuildEnabled()
@@ -80,7 +82,7 @@ namespace GraphCore.Editor
 				// Loading at this stage can trigger duplicate-path warnings in Unity/GraphToolkit.
 				if (CommonGraphRuntimeExporter.IsBaseGraphAssetPath(path))
 				{
-					PendingBaseGraphPaths.Add(path);
+					s_pendingBaseGraphPaths.Add(path);
 				}
 			}
 		}
@@ -90,18 +92,18 @@ namespace GraphCore.Editor
 			EditorApplication.delayCall -= ProcessPendingBuilds;
 			s_rebuildScheduled = false;
 
-			if (!IsAutoBuildEnabled() || PendingBaseGraphPaths.Count == 0)
+			if (!IsAutoBuildEnabled() || s_pendingBaseGraphPaths.Count == 0)
 			{
-				PendingBaseGraphPaths.Clear();
+				s_pendingBaseGraphPaths.Clear();
 				return;
 			}
 
 			s_isProcessing = true;
 			try
 			{
-				string[] paths = new string[PendingBaseGraphPaths.Count];
-				PendingBaseGraphPaths.CopyTo(paths);
-				PendingBaseGraphPaths.Clear();
+				string[] paths = new string[s_pendingBaseGraphPaths.Count];
+				s_pendingBaseGraphPaths.CopyTo(paths);
+				s_pendingBaseGraphPaths.Clear();
 				FilterPathsForSafeBuild(paths, out string[] safePaths);
 
 				// Avoid forcing Refresh during graph asset creation flow. It can race with GraphToolkit graph registration.
@@ -130,13 +132,13 @@ namespace GraphCore.Editor
 				if (!runtimeExists)
 				{
 					// First import right after graph creation is noisy in GraphToolkit; skip once, build on next save.
-					if (!PendingFirstSavePaths.Contains(editorGraphPath))
+					if (!s_pendingFirstSavePaths.Contains(editorGraphPath))
 					{
-						PendingFirstSavePaths.Add(editorGraphPath);
+						s_pendingFirstSavePaths.Add(editorGraphPath);
 						continue;
 					}
 
-					PendingFirstSavePaths.Remove(editorGraphPath);
+					s_pendingFirstSavePaths.Remove(editorGraphPath);
 				}
 
 				result.Add(editorGraphPath);

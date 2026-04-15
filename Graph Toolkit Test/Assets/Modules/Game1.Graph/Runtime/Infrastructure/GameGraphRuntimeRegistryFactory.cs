@@ -2,8 +2,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System;
 using UnityEngine;
+using GraphCore.Runtime;
+using Game1.Graph.Runtime;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+namespace Game1.Graph.Runtime.Infrastructure
 {
 	public static class GameGraphRuntimeRegistryFactory
 	{

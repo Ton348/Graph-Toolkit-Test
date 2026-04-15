@@ -1,22 +1,26 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Threading;
+using GraphCore.Runtime;
 
-public sealed class StartQuestNodeExecutor : BaseGraphNodeExecutor<StartQuestNode>
+namespace GraphCore.Runtime.Executors.Server
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(StartQuestNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class StartQuestNodeExecutor : BaseGraphNodeExecutor<StartQuestNode>
 	{
-		if (context.QuestService == null)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(StartQuestNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.failNodeId));
+			if (context.QuestService == null)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.failNodeId));
+			}
+
+			return ExecuteWithServiceAsync(node, context.QuestService, cancellationToken);
 		}
 
-		return ExecuteWithServiceAsync(node, context.QuestService, cancellationToken);
-	}
-
-	private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(StartQuestNode node, IGraphQuestService questService, CancellationToken cancellationToken)
-	{
-		bool success = await questService.StartQuestAsync(node.questId, cancellationToken);
-		return GraphNodeExecutionResult.ContinueTo(success ? node.successNodeId : node.failNodeId);
+		private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(StartQuestNode node, IGraphQuestService questService, CancellationToken cancellationToken)
+		{
+			bool success = await questService.StartQuestAsync(node.questId, cancellationToken);
+			return GraphNodeExecutionResult.ContinueTo(success ? node.successNodeId : node.failNodeId);
+		}
 	}
 }

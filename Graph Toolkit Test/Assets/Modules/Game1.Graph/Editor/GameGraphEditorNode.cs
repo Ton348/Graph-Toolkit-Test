@@ -1,7 +1,10 @@
 using Game1.Graph.Runtime;
 using System;
+using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
+using Game1.Graph.Editor.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure;
 namespace Game1.Graph.Editor
 {
 	[Serializable]

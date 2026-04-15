@@ -1,10 +1,14 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphChoiceService
+namespace GraphCore.Runtime
 {
-	UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken);
+	public interface IGraphChoiceService
+	{
+		UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken);
+	}
 }

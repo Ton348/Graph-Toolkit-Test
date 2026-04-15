@@ -1,90 +1,94 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.UI;
+using GraphCore.Runtime.Nodes.UI;
 using System.Collections.Generic;
 using System.Threading;
+using GraphCore.Runtime;
 
-public sealed class DialogueNodeExecutor : BaseGraphNodeExecutor<DialogueNode>
+namespace GraphCore.Runtime.Executors.UI
 {
-	protected override async UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(DialogueNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class DialogueNodeExecutor : BaseGraphNodeExecutor<DialogueNode>
 	{
-		IGraphDialogueService dialogueService = context.DialogueService;
-		if (dialogueService == null)
+		protected override async UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(DialogueNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
-		}
-
-		if (!TryGetImmediateChoiceNode(node, context, out ChoiceNode choiceNode))
-		{
-			await dialogueService.ShowAsync(node.dialogueTitle, node.body, cancellationToken);
-			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
-		}
-
-		_ = dialogueService.ShowAsync(node.dialogueTitle, node.body, cancellationToken);
-		return await ExecuteImmediateChoiceAsync(choiceNode, context, cancellationToken);
-	}
-
-	private static bool TryGetImmediateChoiceNode(DialogueNode node, GraphExecutionContext context, out ChoiceNode choiceNode)
-	{
-		choiceNode = null;
-		if (!context.ImmediateChoiceAfterDialogue)
-		{
-			return false;
-		}
-
-		CommonGraph graph = context.CurrentGraph;
-		if (graph == null)
-		{
-			return false;
-		}
-
-		if (!graph.TryGetNodeById(node.nextNodeId, out BaseGraphNode nextNode) || nextNode is not ChoiceNode foundChoiceNode)
-		{
-			return false;
-		}
-
-		choiceNode = foundChoiceNode;
-		return true;
-	}
-
-	private static async UniTask<GraphNodeExecutionResult> ExecuteImmediateChoiceAsync(ChoiceNode choiceNode, GraphExecutionContext context, CancellationToken cancellationToken)
-	{
-		if (choiceNode.options == null)
-		{
-			return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' options list is null.", GraphNodeExecutionErrorType.InvalidNode);
-		}
-
-		List<ChoiceOption> validOptions = new List<ChoiceOption>();
-		for (int i = 0; i < choiceNode.options.Count; i++)
-		{
-			ChoiceOption option = choiceNode.options[i];
-			if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId) && !string.IsNullOrWhiteSpace(option.label))
+			IGraphDialogueService dialogueService = context.DialogueService;
+			if (dialogueService == null)
 			{
-				validOptions.Add(option);
+				return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
 			}
+
+			if (!TryGetImmediateChoiceNode(node, context, out ChoiceNode choiceNode))
+			{
+				await dialogueService.ShowAsync(node.dialogueTitle, node.body, cancellationToken);
+				return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+			}
+
+			_ = dialogueService.ShowAsync(node.dialogueTitle, node.body, cancellationToken);
+			return await ExecuteImmediateChoiceAsync(choiceNode, context, cancellationToken);
 		}
 
-		if (validOptions.Count == 0)
+		private static bool TryGetImmediateChoiceNode(DialogueNode node, GraphExecutionContext context, out ChoiceNode choiceNode)
 		{
-			return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' has no valid options.", GraphNodeExecutionErrorType.InvalidTransition);
+			choiceNode = null;
+			if (!context.ImmediateChoiceAfterDialogue)
+			{
+				return false;
+			}
+
+			CommonGraph graph = context.CurrentGraph;
+			if (graph == null)
+			{
+				return false;
+			}
+
+			if (!graph.TryGetNodeById(node.nextNodeId, out BaseGraphNode nextNode) || nextNode is not ChoiceNode foundChoiceNode)
+			{
+				return false;
+			}
+
+			choiceNode = foundChoiceNode;
+			return true;
 		}
 
-		if (context.ChoiceService == null)
+		private static async UniTask<GraphNodeExecutionResult> ExecuteImmediateChoiceAsync(ChoiceNode choiceNode, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId);
-		}
+			if (choiceNode.options == null)
+			{
+				return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' options list is null.", GraphNodeExecutionErrorType.InvalidNode);
+			}
 
-		List<GraphChoiceEntry> entries = new List<GraphChoiceEntry>(validOptions.Count);
-		for (int i = 0; i < validOptions.Count; i++)
-		{
-			entries.Add(new GraphChoiceEntry(validOptions[i].label));
-		}
+			List<ChoiceOption> validOptions = new List<ChoiceOption>();
+			for (int i = 0; i < choiceNode.options.Count; i++)
+			{
+				ChoiceOption option = choiceNode.options[i];
+				if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId) && !string.IsNullOrWhiteSpace(option.label))
+				{
+					validOptions.Add(option);
+				}
+			}
 
-		int selectedIndex = await context.ChoiceService.ShowAsync(entries, cancellationToken);
-		if (selectedIndex < 0 || selectedIndex >= validOptions.Count)
-		{
-			return GraphNodeExecutionResult.Fault($"Choice service returned invalid index: {selectedIndex}.", GraphNodeExecutionErrorType.ServiceFailure);
-		}
+			if (validOptions.Count == 0)
+			{
+				return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' has no valid options.", GraphNodeExecutionErrorType.InvalidTransition);
+			}
 
-		return GraphNodeExecutionResult.ContinueTo(validOptions[selectedIndex].nextNodeId);
+			if (context.ChoiceService == null)
+			{
+				return GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId);
+			}
+
+			List<GraphChoiceEntry> entries = new List<GraphChoiceEntry>(validOptions.Count);
+			for (int i = 0; i < validOptions.Count; i++)
+			{
+				entries.Add(new GraphChoiceEntry(validOptions[i].label));
+			}
+
+			int selectedIndex = await context.ChoiceService.ShowAsync(entries, cancellationToken);
+			if (selectedIndex < 0 || selectedIndex >= validOptions.Count)
+			{
+				return GraphNodeExecutionResult.Fault($"Choice service returned invalid index: {selectedIndex}.", GraphNodeExecutionErrorType.ServiceFailure);
+			}
+
+			return GraphNodeExecutionResult.ContinueTo(validOptions[selectedIndex].nextNodeId);
+		}
 	}
 }

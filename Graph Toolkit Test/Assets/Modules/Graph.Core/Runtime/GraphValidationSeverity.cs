@@ -1,5 +1,9 @@
-public enum GraphValidationSeverity
+using GraphCore.Runtime;
+namespace GraphCore.Runtime
 {
-	Warning = 0,
-	Error = 1
+	public enum GraphValidationSeverity
+	{
+		Warning = 0,
+		Error = 1
+	}
 }

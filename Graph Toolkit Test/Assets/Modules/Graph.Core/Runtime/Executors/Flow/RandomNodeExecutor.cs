@@ -1,60 +1,64 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Cinematics;
-using GraphCore.BaseNodes.Runtime.Flow;
-using GraphCore.BaseNodes.Runtime.Server;
-using GraphCore.BaseNodes.Runtime.UI;
-using GraphCore.BaseNodes.Runtime.Utility;
-using GraphCore.BaseNodes.Runtime.World;
+using GraphCore.Runtime.Nodes.Cinematics;
+using GraphCore.Runtime.Nodes.Flow;
+using GraphCore.Runtime.Nodes.Server;
+using GraphCore.Runtime.Nodes.UI;
+using GraphCore.Runtime.Nodes.Utility;
+using GraphCore.Runtime.Nodes.World;
 using System.Collections.Generic;
 using System.Threading;
 using System;
 using UnityEngine;
+using GraphCore.Runtime;
 
-public sealed class RandomNodeExecutor : BaseGraphNodeExecutor<RandomNode>
+namespace GraphCore.Runtime.Executors.Flow
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(RandomNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class RandomNodeExecutor : BaseGraphNodeExecutor<RandomNode>
 	{
-		if (node.options == null || node.options.Count == 0)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(RandomNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no options.", GraphNodeExecutionErrorType.InvalidNode));
-		}
-
-		List<RandomOption> validOptions = new List<RandomOption>();
-		for (int i = 0; i < node.options.Count; i++)
-		{
-			RandomOption option = node.options[i];
-			if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId))
+			if (node.options == null || node.options.Count == 0)
 			{
-				validOptions.Add(option);
+				return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no options.", GraphNodeExecutionErrorType.InvalidNode));
 			}
-		}
 
-		if (validOptions.Count == 0)
-		{
-			return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no valid options with nextNodeId.", GraphNodeExecutionErrorType.InvalidTransition));
-		}
-
-		float totalWeight = 0f;
-		for (int i = 0; i < validOptions.Count; i++)
-		{
-			totalWeight += Mathf.Max(0f, validOptions[i].weight);
-		}
-		if (totalWeight <= 0f)
-		{
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId));
-		}
-
-		float roll = UnityEngine.Random.Range(0f, totalWeight);
-		float cumulative = 0f;
-		foreach (RandomOption option in validOptions)
-		{
-			cumulative += Mathf.Max(0f, option.weight);
-			if (roll <= cumulative)
+			List<RandomOption> validOptions = new List<RandomOption>();
+			for (int i = 0; i < node.options.Count; i++)
 			{
-				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(option.nextNodeId));
+				RandomOption option = node.options[i];
+				if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId))
+				{
+					validOptions.Add(option);
+				}
 			}
-		}
 
-		return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[validOptions.Count - 1].nextNodeId));
+			if (validOptions.Count == 0)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no valid options with nextNodeId.", GraphNodeExecutionErrorType.InvalidTransition));
+			}
+
+			float totalWeight = 0f;
+			for (int i = 0; i < validOptions.Count; i++)
+			{
+				totalWeight += Mathf.Max(0f, validOptions[i].weight);
+			}
+			if (totalWeight <= 0f)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId));
+			}
+
+			float roll = UnityEngine.Random.Range(0f, totalWeight);
+			float cumulative = 0f;
+			foreach (RandomOption option in validOptions)
+			{
+				cumulative += Mathf.Max(0f, option.weight);
+				if (roll <= cumulative)
+				{
+					return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(option.nextNodeId));
+				}
+			}
+
+			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[validOptions.Count - 1].nextNodeId));
+		}
 	}
 }

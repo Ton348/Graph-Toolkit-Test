@@ -3,7 +3,8 @@ using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Templates;
+namespace Game1.Graph.Templates.Samples
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]

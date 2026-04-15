@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System;
+using GraphCore.Runtime;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime;
+using Game1.Graph.Runtime.Validation;
+namespace Game1.Graph.Runtime.Infrastructure.Validation
 {
 	public sealed class GameGraphNodeValidatorRegistry
 	{

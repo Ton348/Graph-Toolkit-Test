@@ -1,9 +1,15 @@
 using Game1.Graph.Runtime;
+using GraphCore.Runtime;
 using System.Collections.Generic;
 using System.Reflection;
 using System;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure;
+using Game1.Graph.Editor.Infrastructure.AutoRegistration;
+using Game1.Graph.Runtime.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure.Validation;
+using Game1.Graph.Runtime.Validation;
+namespace Game1.Graph.Editor.Infrastructure.Validation
 {
 	public sealed class GameGraphModuleBuilder
 	{

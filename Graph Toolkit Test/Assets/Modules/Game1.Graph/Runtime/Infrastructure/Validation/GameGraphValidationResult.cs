@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using GraphCore.Runtime;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime;
+namespace Game1.Graph.Runtime.Infrastructure.Validation
 {
 	public sealed class GameGraphValidationResult
 	{

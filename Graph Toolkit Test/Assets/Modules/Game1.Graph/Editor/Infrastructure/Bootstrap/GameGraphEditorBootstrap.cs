@@ -1,12 +1,14 @@
 using Game1.Graph.Runtime;
 using GraphCore.Editor;
+using GraphCore.Runtime;
 using System.Collections.Generic;
 using System.Reflection;
 using System;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure.Validation;
+namespace Game1.Graph.Editor.Infrastructure.Bootstrap
 {
 	[InitializeOnLoad]
 	public static class GameGraphEditorBootstrap

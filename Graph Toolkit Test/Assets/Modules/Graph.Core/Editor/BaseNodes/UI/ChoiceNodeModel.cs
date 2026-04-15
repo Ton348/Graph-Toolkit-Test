@@ -1,8 +1,8 @@
-using System;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.UI
+namespace GraphCore.Editor.BaseNodes.UI
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -24,19 +24,43 @@ namespace GraphCore.BaseNodes.Editor.UI
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(Option1Label).WithDisplayName("Option1");
-			context.AddOption<string>(Option2Label).WithDisplayName("Option2");
-			context.AddOption<string>(Option3Label).WithDisplayName("Option3");
-			context.AddOption<string>(Option4Label).WithDisplayName("Option4");
+
+			context.AddOption<string>(Option1Label)
+				.WithDisplayName("Option1");
+
+			context.AddOption<string>(Option2Label)
+				.WithDisplayName("Option2");
+
+			context.AddOption<string>(Option3Label)
+				.WithDisplayName("Option3");
+
+			context.AddOption<string>(Option4Label)
+				.WithDisplayName("Option4");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(Option1Port).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option2Port).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option3Port).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option4Port).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+
+			context.AddOutputPort(Option1Port)
+				.WithDisplayName("Option1")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+
+			context.AddOutputPort(Option2Port)
+				.WithDisplayName("Option2")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+
+			context.AddOutputPort(Option3Port)
+				.WithDisplayName("Option3")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+
+			context.AddOutputPort(Option4Port)
+				.WithDisplayName("Option4")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
 		}
 	}
 }

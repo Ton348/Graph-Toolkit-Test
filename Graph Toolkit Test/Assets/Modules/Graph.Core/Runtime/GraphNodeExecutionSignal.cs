@@ -1,6 +1,10 @@
-public enum GraphNodeExecutionSignal
+using GraphCore.Runtime;
+namespace GraphCore.Runtime
 {
-	Continue = 0,
-	Stop = 1,
-	Fault = 2
+	public enum GraphNodeExecutionSignal
+	{
+		Continue = 0,
+		Stop = 1,
+		Fault = 2
+	}
 }

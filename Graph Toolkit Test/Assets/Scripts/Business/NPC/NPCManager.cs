@@ -7,6 +7,8 @@ using UnityEngine;
 using UnityEngine.Serialization;
 using Game1.Graph.Runtime;
 
+using Game1.Graph.Runtime.Infrastructure;
+using GraphCore.Runtime;
 public class NPCManager : Interactable
 {
     [FormerlySerializedAs("questGraph")]
@@ -185,12 +187,12 @@ public class NPCManager : Interactable
             return outcome.Success;
         }
 
-        Cysharp.Threading.Tasks.UniTask<GraphCore.BaseNodes.Runtime.Server.QuestState> IGraphQuestService.GetQuestStateAsync(string questId, CancellationToken cancellationToken)
+        Cysharp.Threading.Tasks.UniTask<GraphCore.Runtime.Nodes.Server.QuestState> IGraphQuestService.GetQuestStateAsync(string questId, CancellationToken cancellationToken)
         {
             return GetQuestStateAsyncInternal(questId, cancellationToken);
         }
 
-        private async Cysharp.Threading.Tasks.UniTask<GraphCore.BaseNodes.Runtime.Server.QuestState> GetQuestStateAsyncInternal(string questId, CancellationToken cancellationToken)
+        private async Cysharp.Threading.Tasks.UniTask<GraphCore.Runtime.Nodes.Server.QuestState> GetQuestStateAsyncInternal(string questId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(questId))
             {
@@ -213,26 +215,26 @@ public class NPCManager : Interactable
             bool isActive = await TryQueryQuestFlagAsync(new[] { "IsQuestActiveAsync", "HasActiveQuestAsync", "IsQuestActive", "HasActiveQuest" }, questId, cancellationToken);
             if (isActive)
             {
-                GraphCore.BaseNodes.Runtime.Server.QuestState activeState = ParseQuestStateName("Active");
-                if (!Equals(activeState, default(GraphCore.BaseNodes.Runtime.Server.QuestState)))
+                GraphCore.Runtime.Nodes.Server.QuestState activeState = ParseQuestStateName("Active");
+                if (!Equals(activeState, default(GraphCore.Runtime.Nodes.Server.QuestState)))
                 {
                     return activeState;
                 }
 
                 activeState = ParseQuestStateName("InProgress");
-                if (!Equals(activeState, default(GraphCore.BaseNodes.Runtime.Server.QuestState)))
+                if (!Equals(activeState, default(GraphCore.Runtime.Nodes.Server.QuestState)))
                 {
                     return activeState;
                 }
 
                 activeState = ParseQuestStateName("Started");
-                if (!Equals(activeState, default(GraphCore.BaseNodes.Runtime.Server.QuestState)))
+                if (!Equals(activeState, default(GraphCore.Runtime.Nodes.Server.QuestState)))
                 {
                     return activeState;
                 }
             }
 
-            if (TryGetQuestStateFromPlayerSync(questId, out GraphCore.BaseNodes.Runtime.Server.QuestState syncState))
+            if (TryGetQuestStateFromPlayerSync(questId, out GraphCore.Runtime.Nodes.Server.QuestState syncState))
             {
                 return syncState;
             }
@@ -240,7 +242,7 @@ public class NPCManager : Interactable
             return default;
         }
 
-        private bool TryGetQuestStateFromPlayerSync(string questId, out GraphCore.BaseNodes.Runtime.Server.QuestState state)
+        private bool TryGetQuestStateFromPlayerSync(string questId, out GraphCore.Runtime.Nodes.Server.QuestState state)
         {
             state = default;
             if (string.IsNullOrWhiteSpace(questId))
@@ -614,29 +616,29 @@ public class NPCManager : Interactable
             return true;
         }
 
-        private static async UniTask<GraphCore.BaseNodes.Runtime.Server.QuestState> ConvertToQuestStateAsync(object result)
+        private static async UniTask<GraphCore.Runtime.Nodes.Server.QuestState> ConvertToQuestStateAsync(object result)
         {
             if (result == null)
             {
                 return default;
             }
 
-            if (result is GraphCore.BaseNodes.Runtime.Server.QuestState directState)
+            if (result is GraphCore.Runtime.Nodes.Server.QuestState directState)
             {
                 return directState;
             }
 
-            if (result is UniTask<GraphCore.BaseNodes.Runtime.Server.QuestState> uniTaskState)
+            if (result is UniTask<GraphCore.Runtime.Nodes.Server.QuestState> uniTaskState)
             {
                 return await uniTaskState;
             }
 
-            if (result is Task<GraphCore.BaseNodes.Runtime.Server.QuestState> taskState)
+            if (result is Task<GraphCore.Runtime.Nodes.Server.QuestState> taskState)
             {
                 return await taskState;
             }
 
-            if (result is ValueTask<GraphCore.BaseNodes.Runtime.Server.QuestState> valueTaskState)
+            if (result is ValueTask<GraphCore.Runtime.Nodes.Server.QuestState> valueTaskState)
             {
                 return await valueTaskState;
             }
@@ -650,14 +652,14 @@ public class NPCManager : Interactable
             return default;
         }
 
-        private static GraphCore.BaseNodes.Runtime.Server.QuestState ParseQuestStateName(string stateName)
+        private static GraphCore.Runtime.Nodes.Server.QuestState ParseQuestStateName(string stateName)
         {
             if (string.IsNullOrWhiteSpace(stateName))
             {
                 return default;
             }
 
-            return Enum.TryParse(stateName, true, out GraphCore.BaseNodes.Runtime.Server.QuestState parsedState) ? parsedState : default;
+            return Enum.TryParse(stateName, true, out GraphCore.Runtime.Nodes.Server.QuestState parsedState) ? parsedState : default;
         }
 
         private readonly struct QuestActionOutcome

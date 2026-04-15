@@ -1,6 +1,7 @@
 using System;
+using GraphCore.Runtime;
 
-namespace GraphCore.BaseNodes.Runtime.Cinematics
+namespace GraphCore.Runtime.Nodes.Cinematics
 {
 	[Serializable]
 	public sealed class PlayCutsceneNode : BaseGraphNode

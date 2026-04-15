@@ -1,7 +1,11 @@
 using Cysharp.Threading.Tasks;
 using System.Threading;
+using GraphCore.Runtime;
+using Game1.Graph.Runtime;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime.Infrastructure;
+using Game1.Graph.Runtime.Templates;
+namespace Game1.Graph.Runtime.Templates.Executors
 {
 	public abstract class GameGraphTrueFalseNodeExecutor<TNode> : GameGraphNodeExecutor<TNode> where TNode : GameGraphTrueFalseNode
 	{

@@ -1,4 +1,5 @@
-namespace GraphCore.BaseNodes.Runtime.Server
+using GraphCore.Runtime;
+namespace GraphCore.Runtime.Nodes.Server
 {
 	public enum CheckpointAction
 	{

@@ -1,8 +1,10 @@
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime;
+namespace Game1.Graph.Runtime.Infrastructure
 {
 	public abstract class GameGraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : GameGraphNode
 	{

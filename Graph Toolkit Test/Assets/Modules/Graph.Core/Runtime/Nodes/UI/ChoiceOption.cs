@@ -1,6 +1,7 @@
 using System;
+using GraphCore.Runtime;
 
-namespace GraphCore.BaseNodes.Runtime.UI
+namespace GraphCore.Runtime.Nodes.UI
 {
 	[Serializable]
 	public sealed class ChoiceOption

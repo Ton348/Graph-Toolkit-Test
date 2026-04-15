@@ -1,8 +1,12 @@
-public enum GraphNodeExecutionErrorType
+using GraphCore.Runtime;
+namespace GraphCore.Runtime
 {
-	None = 0,
-	InvalidNode = 1,
-	InvalidTransition = 2,
-	ServiceFailure = 3,
-	InternalError = 4
+	public enum GraphNodeExecutionErrorType
+	{
+		None = 0,
+		InvalidNode = 1,
+		InvalidTransition = 2,
+		ServiceFailure = 3,
+		InternalError = 4
+	}
 }

@@ -1,15 +1,19 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphRuntimeServices
+namespace GraphCore.Runtime
 {
-	IGraphDialogueService dialogueService { get; }
-	IGraphChoiceService choiceService { get; }
-	IGraphMapMarkerService mapMarkerService { get; }
-	IGraphCutsceneService cutsceneService { get; }
-	IGraphCheckpointService checkpointService { get; }
-	IGraphQuestService questService { get; }
+	public interface IGraphRuntimeServices
+	{
+		IGraphDialogueService dialogueService { get; }
+		IGraphChoiceService choiceService { get; }
+		IGraphMapMarkerService mapMarkerService { get; }
+		IGraphCutsceneService cutsceneService { get; }
+		IGraphCheckpointService checkpointService { get; }
+		IGraphQuestService questService { get; }
+	}
 }

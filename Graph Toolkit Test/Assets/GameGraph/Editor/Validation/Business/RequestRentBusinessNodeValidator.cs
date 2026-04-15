@@ -1,6 +1,9 @@
 using System;
 using Game1.Graph.Runtime;
 
+using Game1.Graph.Runtime.Infrastructure.Validation;
+using Game1.Graph.Runtime.Validation;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 [GameGraphNodeValidator]
 public sealed class RequestRentBusinessNodeValidator : IGameGraphNodeValidator
 {

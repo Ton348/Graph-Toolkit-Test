@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure;
+namespace Game1.Graph.Editor.Infrastructure.Converters
 {
 	public abstract class GameGraphNodeConverterBase<TModel, TNode> : IGameGraphNodeConverter
 		where TModel : Node

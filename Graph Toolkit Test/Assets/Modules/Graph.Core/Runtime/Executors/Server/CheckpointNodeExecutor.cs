@@ -1,25 +1,29 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Threading;
+using GraphCore.Runtime;
 
-public sealed class CheckpointNodeExecutor : BaseGraphNodeExecutor<CheckpointNode>
+namespace GraphCore.Runtime.Executors.Server
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(CheckpointNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class CheckpointNodeExecutor : BaseGraphNodeExecutor<CheckpointNode>
 	{
-		if (context.CheckpointService == null)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(CheckpointNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.failNodeId));
+			if (context.CheckpointService == null)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.failNodeId));
+			}
+
+			return ExecuteWithServiceAsync(node, context.CheckpointService, cancellationToken);
 		}
 
-		return ExecuteWithServiceAsync(node, context.CheckpointService, cancellationToken);
-	}
+		private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(CheckpointNode node, IGraphCheckpointService checkpointService, CancellationToken cancellationToken)
+		{
+			bool success = node.action == CheckpointAction.Clear
+				? await checkpointService.ClearAsync(node.checkpointId, cancellationToken)
+				: await checkpointService.SaveAsync(node.checkpointId, cancellationToken);
 
-	private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(CheckpointNode node, IGraphCheckpointService checkpointService, CancellationToken cancellationToken)
-	{
-		bool success = node.action == CheckpointAction.Clear
-			? await checkpointService.ClearAsync(node.checkpointId, cancellationToken)
-			: await checkpointService.SaveAsync(node.checkpointId, cancellationToken);
-
-		return GraphNodeExecutionResult.ContinueTo(success ? node.successNodeId : node.failNodeId);
+			return GraphNodeExecutionResult.ContinueTo(success ? node.successNodeId : node.failNodeId);
+		}
 	}
 }

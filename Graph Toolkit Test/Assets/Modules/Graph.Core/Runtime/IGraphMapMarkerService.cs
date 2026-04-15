@@ -1,10 +1,14 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphMapMarkerService
+namespace GraphCore.Runtime
 {
-	void ShowOrUpdateMarker(string markerId, string targetObjectName);
+	public interface IGraphMapMarkerService
+	{
+		void ShowOrUpdateMarker(string markerId, string targetObjectName);
+	}
 }

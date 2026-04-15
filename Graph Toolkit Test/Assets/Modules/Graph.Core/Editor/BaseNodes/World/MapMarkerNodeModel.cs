@@ -1,8 +1,8 @@
-using System;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.World
+namespace GraphCore.Editor.BaseNodes.World
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -17,8 +17,12 @@ namespace GraphCore.BaseNodes.Editor.World
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(MarkerIdOption).WithDisplayName("MarkerId");
-			context.AddOption<string>(TargetOption).WithDisplayName("Target");
+
+			context.AddOption<string>(MarkerIdOption)
+				.WithDisplayName("MarkerId");
+
+			context.AddOption<string>(TargetOption)
+				.WithDisplayName("Target");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

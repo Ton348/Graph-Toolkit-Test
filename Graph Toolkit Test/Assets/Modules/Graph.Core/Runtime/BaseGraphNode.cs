@@ -1,39 +1,41 @@
 using System;
 using UnityEngine.Serialization;
 
-[Serializable]
-public abstract class BaseGraphNode
+namespace GraphCore.Runtime
 {
-	[FormerlySerializedAs("id")]
-	public string nodeId;
-
-	[FormerlySerializedAs("nextNodeId")]
-	public string nextNodeId;
-
-	[FormerlySerializedAs("Title")]
-	public string title;
-
-	[FormerlySerializedAs("Description")]
-	public string description;
-
-	public string Id => nodeId;
-
-	public string id
+	[Serializable]
+	public abstract class BaseGraphNode
 	{
-		get { return nodeId; }
-		set { nodeId = value; }
-	}
+		[FormerlySerializedAs("id")]
+		public string nodeId;
 
-	public string Title
-	{
-		get { return title; }
-		set { title = value; }
-	}
+		[FormerlySerializedAs("nextNodeId")]
+		public string nextNodeId;
 
-	public string Description
-	{
-		get { return description; }
-		set { description = value; }
-	}
+		[FormerlySerializedAs("Title")]
+		public string title;
 
+		[FormerlySerializedAs("Description")]
+		public string description;
+
+		public string Id => nodeId;
+
+		public string id
+		{
+			get => nodeId;
+			set => nodeId = value;
+		}
+
+		public string Title
+		{
+			get => title;
+			set => title = value;
+		}
+
+		public string Description
+		{
+			get => description;
+			set => description = value;
+		}
+	}
 }

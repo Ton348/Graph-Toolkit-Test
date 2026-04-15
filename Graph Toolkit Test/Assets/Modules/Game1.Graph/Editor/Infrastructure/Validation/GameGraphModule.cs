@@ -2,7 +2,11 @@ using Game1.Graph.Runtime;
 using GraphCore.Editor;
 using System;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure;
+using Game1.Graph.Editor.Infrastructure.Import;
+using Game1.Graph.Runtime.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure.Validation;
+namespace Game1.Graph.Editor.Infrastructure.Validation
 {
 	public sealed class GameGraphModule
 	{

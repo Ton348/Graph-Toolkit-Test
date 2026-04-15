@@ -5,8 +5,8 @@ using UnityEditor;
 namespace GraphCore.Editor
 {
 	[Serializable]
-	[Unity.GraphToolkit.Editor.Graph(AssetExtension)]
-	public class CommonGraphEditorGraph : Unity.GraphToolkit.Editor.Graph
+	[Graph(AssetExtension)]
+	public sealed class CommonGraphEditorGraph : Graph
 	{
 		internal const string AssetExtension = "basegraph";
 

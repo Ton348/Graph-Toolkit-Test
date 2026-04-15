@@ -1,9 +1,13 @@
 using Cysharp.Threading.Tasks;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphNodeExecutor
+namespace GraphCore.Runtime
 {
-	Type NodeType { get; }
-	UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+	public interface IGraphNodeExecutor
+	{
+		Type NodeType { get; }
+		UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+	}
 }

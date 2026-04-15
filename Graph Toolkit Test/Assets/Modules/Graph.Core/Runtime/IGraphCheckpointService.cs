@@ -1,11 +1,15 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphCheckpointService
+namespace GraphCore.Runtime
 {
-	UniTask<bool> SaveAsync(string checkpointId, CancellationToken cancellationToken);
-	UniTask<bool> ClearAsync(string checkpointId, CancellationToken cancellationToken);
+	public interface IGraphCheckpointService
+	{
+		UniTask<bool> SaveAsync(string checkpointId, CancellationToken cancellationToken);
+		UniTask<bool> ClearAsync(string checkpointId, CancellationToken cancellationToken);
+	}
 }

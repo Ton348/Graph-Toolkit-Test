@@ -1,8 +1,8 @@
-using System;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Server
+namespace GraphCore.Editor.BaseNodes.Server
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -20,9 +20,9 @@ namespace GraphCore.BaseNodes.Editor.Server
 		{
 			base.OnDefineOptions(context);
 			context.AddOption<string>(CheckpointIdOption).WithDisplayName("CheckpointId");
-			context.AddOption<GraphCore.BaseNodes.Runtime.Server.CheckpointAction>(ActionOption)
+			context.AddOption<GraphCore.Runtime.Nodes.Server.CheckpointAction>(ActionOption)
 				.WithDisplayName("Action")
-				.WithDefaultValue(GraphCore.BaseNodes.Runtime.Server.CheckpointAction.Save);
+				.WithDefaultValue(GraphCore.Runtime.Nodes.Server.CheckpointAction.Save);
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

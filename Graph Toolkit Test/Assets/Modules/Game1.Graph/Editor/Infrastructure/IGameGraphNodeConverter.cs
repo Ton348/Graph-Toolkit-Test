@@ -1,6 +1,6 @@
 using Game1.Graph.Runtime;
 
-namespace Game1.Graph.Editor
+namespace Game1.Graph.Editor.Infrastructure
 {
 	public interface IGameGraphNodeConverter
 	{

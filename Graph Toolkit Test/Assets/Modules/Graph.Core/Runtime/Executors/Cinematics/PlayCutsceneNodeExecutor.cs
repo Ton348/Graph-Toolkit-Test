@@ -1,22 +1,26 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Cinematics;
+using GraphCore.Runtime.Nodes.Cinematics;
 using System.Threading;
+using GraphCore.Runtime;
 
-public sealed class PlayCutsceneNodeExecutor : BaseGraphNodeExecutor<PlayCutsceneNode>
+namespace GraphCore.Runtime.Executors.Cinematics
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(PlayCutsceneNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class PlayCutsceneNodeExecutor : BaseGraphNodeExecutor<PlayCutsceneNode>
 	{
-		if (context.CutsceneService == null)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(PlayCutsceneNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+			if (context.CutsceneService == null)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+			}
+
+			return ExecuteWithServiceAsync(node, context.CutsceneService, cancellationToken);
 		}
 
-		return ExecuteWithServiceAsync(node, context.CutsceneService, cancellationToken);
-	}
-
-	private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(PlayCutsceneNode node, IGraphCutsceneService cutsceneService, CancellationToken cancellationToken)
-	{
-		await cutsceneService.PlayAsync(node.cutsceneReference, cancellationToken);
-		return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+		private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(PlayCutsceneNode node, IGraphCutsceneService cutsceneService, CancellationToken cancellationToken)
+		{
+			await cutsceneService.PlayAsync(node.cutsceneReference, cancellationToken);
+			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+		}
 	}
 }

@@ -1,10 +1,14 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphCutsceneService
+namespace GraphCore.Runtime
 {
-	UniTask PlayAsync(string cutsceneReference, CancellationToken cancellationToken);
+	public interface IGraphCutsceneService
+	{
+		UniTask PlayAsync(string cutsceneReference, CancellationToken cancellationToken);
+	}
 }

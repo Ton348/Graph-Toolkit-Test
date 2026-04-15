@@ -1,15 +1,19 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public readonly struct GraphChoiceEntry
+namespace GraphCore.Runtime
 {
-	public readonly string label;
-
-	public GraphChoiceEntry(string label)
+	public readonly struct GraphChoiceEntry
 	{
-		this.label = label;
+		public readonly string label;
+
+		public GraphChoiceEntry(string label)
+		{
+			this.label = label;
+		}
 	}
 }

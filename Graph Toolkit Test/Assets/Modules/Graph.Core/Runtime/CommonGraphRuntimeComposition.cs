@@ -1,40 +1,49 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using GraphCore.Runtime.Executors.Cinematics;
+using GraphCore.Runtime.Executors.Flow;
+using GraphCore.Runtime.Executors.Server;
+using GraphCore.Runtime.Executors.UI;
+using GraphCore.Runtime.Executors.Utility;
+using GraphCore.Runtime.Executors.World;
 
-public static class CommonGraphRuntimeComposition
+namespace GraphCore.Runtime
 {
-	public static IReadOnlyList<IGraphNodeExecutor> CreateDefaultExecutors()
+	public static class CommonGraphRuntimeComposition
 	{
-		return new List<IGraphNodeExecutor>
+		public static IReadOnlyList<IGraphNodeExecutor> CreateDefaultExecutors()
 		{
-			new StartNodeExecutor(),
-			new FinishNodeExecutor(),
-			new LogNodeExecutor(),
-			new DelayNodeExecutor(),
-			new RandomNodeExecutor(),
-			new DialogueNodeExecutor(),
-			new ChoiceNodeExecutor(),
-			new MapMarkerNodeExecutor(),
-			new PlayCutsceneNodeExecutor(),
-			new CheckpointNodeExecutor(),
-			new StartQuestNodeExecutor(),
-			new CompleteQuestNodeExecutor(),
-			new QuestStateConditionNodeExecutor()
-		};
-	}
-
-	public static GraphNodeExecutorRegistry CreateRegistry(IEnumerable<IGraphNodeExecutor> executors)
-	{
-		if (executors == null)
-		{
-			throw new ArgumentNullException(nameof(executors));
+			return new List<IGraphNodeExecutor>
+			{
+				new StartNodeExecutor(),
+				new FinishNodeExecutor(),
+				new LogNodeExecutor(),
+				new DelayNodeExecutor(),
+				new RandomNodeExecutor(),
+				new DialogueNodeExecutor(),
+				new ChoiceNodeExecutor(),
+				new MapMarkerNodeExecutor(),
+				new PlayCutsceneNodeExecutor(),
+				new CheckpointNodeExecutor(),
+				new StartQuestNodeExecutor(),
+				new CompleteQuestNodeExecutor(),
+				new QuestStateConditionNodeExecutor()
+			};
 		}
 
-		return new GraphNodeExecutorRegistry(executors);
-	}
+		public static GraphNodeExecutorRegistry CreateRegistry(IEnumerable<IGraphNodeExecutor> executors)
+		{
+			if (executors == null)
+			{
+				throw new ArgumentNullException(nameof(executors));
+			}
 
-	public static GraphNodeExecutorRegistry CreateDefaultRegistry()
-	{
-		return CreateRegistry(CreateDefaultExecutors());
+			return new GraphNodeExecutorRegistry(executors);
+		}
+
+		public static GraphNodeExecutorRegistry CreateDefaultRegistry()
+		{
+			return CreateRegistry(CreateDefaultExecutors());
+		}
 	}
 }

@@ -2,6 +2,7 @@ using GraphCore.Editor;
 using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
 
+using Game1.Graph.Editor.Infrastructure;
 // Copy this file, rename class and types, then map model -> runtime node fields.
 // Add [GameGraphNodeConverter] if you want auto-registration.
 public abstract class SampleGraphNodeConverter : IGameGraphNodeConverter

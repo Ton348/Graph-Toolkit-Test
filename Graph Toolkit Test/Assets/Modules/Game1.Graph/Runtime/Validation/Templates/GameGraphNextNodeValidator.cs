@@ -1,8 +1,14 @@
 using System;
+using GraphCore.Runtime;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+using Game1.Graph.Runtime.Infrastructure.Validation;
+using Game1.Graph.Runtime.Templates;
+using Game1.Graph.Runtime.Validation;
+namespace Game1.Graph.Runtime.Validation.Templates
 {
-	[GameGraphNodeValidator]
+	[Game1.Graph.Runtime.Infrastructure.AutoRegistration.GameGraphNodeValidator]
 	public sealed class GameGraphNextNodeValidator : IGameGraphNodeValidator
 	{
 		public Type NodeType => typeof(GameGraphNextNode);

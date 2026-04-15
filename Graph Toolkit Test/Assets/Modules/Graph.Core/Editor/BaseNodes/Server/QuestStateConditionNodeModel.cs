@@ -2,7 +2,7 @@ using System;
 using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Server
+namespace GraphCore.Editor.BaseNodes.Server
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -20,16 +20,23 @@ namespace GraphCore.BaseNodes.Editor.Server
 		{
 			base.OnDefineOptions(context);
 			context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
-			context.AddOption<GraphCore.BaseNodes.Runtime.Server.QuestState>(StateOption)
+			context.AddOption<GraphCore.Runtime.Nodes.Server.QuestState>(StateOption)
 				.WithDisplayName("State")
-				.WithDefaultValue(GraphCore.BaseNodes.Runtime.Server.QuestState.None);
+				.WithDefaultValue(GraphCore.Runtime.Nodes.Server.QuestState.None);
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(TruePort).WithDisplayName("True").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(FalsePort).WithDisplayName("False").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(TruePort)
+				.WithDisplayName("True")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+
+			context.AddOutputPort(FalsePort)
+				.WithDisplayName("False")
+				.WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
 		}
 	}
 }

@@ -1,31 +1,35 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public sealed class GraphRuntimeServices : IGraphRuntimeServices
+namespace GraphCore.Runtime
 {
-	public IGraphDialogueService dialogueService { get; }
-	public IGraphChoiceService choiceService { get; }
-	public IGraphMapMarkerService mapMarkerService { get; }
-	public IGraphCutsceneService cutsceneService { get; }
-	public IGraphCheckpointService checkpointService { get; }
-	public IGraphQuestService questService { get; }
-
-	public GraphRuntimeServices(
-		IGraphDialogueService dialogueService,
-		IGraphChoiceService choiceService,
-		IGraphMapMarkerService mapMarkerService,
-		IGraphCutsceneService cutsceneService,
-		IGraphCheckpointService checkpointService,
-		IGraphQuestService questService)
+	public sealed class GraphRuntimeServices : IGraphRuntimeServices
 	{
-		this.dialogueService = dialogueService;
-		this.choiceService = choiceService;
-		this.mapMarkerService = mapMarkerService;
-		this.cutsceneService = cutsceneService;
-		this.checkpointService = checkpointService;
-		this.questService = questService;
+		public IGraphDialogueService dialogueService { get; }
+		public IGraphChoiceService choiceService { get; }
+		public IGraphMapMarkerService mapMarkerService { get; }
+		public IGraphCutsceneService cutsceneService { get; }
+		public IGraphCheckpointService checkpointService { get; }
+		public IGraphQuestService questService { get; }
+
+		public GraphRuntimeServices(
+			IGraphDialogueService dialogueService,
+			IGraphChoiceService choiceService,
+			IGraphMapMarkerService mapMarkerService,
+			IGraphCutsceneService cutsceneService,
+			IGraphCheckpointService checkpointService,
+			IGraphQuestService questService)
+		{
+			this.dialogueService = dialogueService;
+			this.choiceService = choiceService;
+			this.mapMarkerService = mapMarkerService;
+			this.cutsceneService = cutsceneService;
+			this.checkpointService = checkpointService;
+			this.questService = questService;
+		}
 	}
 }

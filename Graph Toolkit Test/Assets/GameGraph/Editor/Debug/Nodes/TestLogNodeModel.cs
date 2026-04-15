@@ -4,6 +4,7 @@ using Unity.GraphToolkit.Editor;
 using UnityEngine.Scripting.APIUpdating;
 using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
+using GraphCore.Runtime;
 
 [Serializable]
 [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Game1.Graph.Editor", sourceClassName: "TestLogNodeModel")]

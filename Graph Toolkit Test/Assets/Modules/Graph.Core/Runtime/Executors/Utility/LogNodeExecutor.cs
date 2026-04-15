@@ -1,11 +1,15 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Utility;
+using GraphCore.Runtime.Nodes.Utility;
 using System.Threading;
+using GraphCore.Runtime;
 
-public sealed class LogNodeExecutor : BaseGraphNodeExecutor<LogNode>
+namespace GraphCore.Runtime.Executors.Utility
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(LogNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class LogNodeExecutor : BaseGraphNodeExecutor<LogNode>
 	{
-		return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(LogNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		{
+			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+		}
 	}
 }

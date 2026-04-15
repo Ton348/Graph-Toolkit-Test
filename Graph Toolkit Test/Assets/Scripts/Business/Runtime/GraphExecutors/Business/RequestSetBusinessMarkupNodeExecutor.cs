@@ -1,9 +1,12 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using GraphCore.Runtime;
 using UnityEngine;
 using Game1.Graph.Runtime;
 
-[GameGraphNodeExecutor]
+using Game1.Graph.Runtime.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+[GameGraphNodeExecutorAttribute]
 public sealed class RequestSetBusinessMarkupNodeExecutor : GameGraphServerRequestExecutor<RequestSetBusinessMarkupNode>
 {
 	protected override UniTask<ServerActionResult> ExecuteRequestAsync(RequestSetBusinessMarkupNode node, GameBootstrap bootstrap, GraphExecutionContext context, CancellationToken cancellationToken)

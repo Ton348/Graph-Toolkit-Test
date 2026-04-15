@@ -1,10 +1,12 @@
 using Game1.Graph.Runtime;
 using GraphCore.Editor;
+using GraphCore.Runtime;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Runtime.Infrastructure.Validation;
+namespace Game1.Graph.Editor.Infrastructure.Validation
 {
 	public static class GameGraphBuildValidationBridge
 	{

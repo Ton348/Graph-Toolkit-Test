@@ -2,7 +2,9 @@ using Game1.Graph.Runtime;
 using System.Collections.Generic;
 using System;
 
-namespace Game1.Graph.Editor
+using Game1.Graph.Editor.Infrastructure;
+using Game1.Graph.Editor.Infrastructure.AutoRegistration;
+namespace Game1.Graph.Editor.Infrastructure.Import
 {
 	public sealed class GameGraphImporterIntegration
 	{

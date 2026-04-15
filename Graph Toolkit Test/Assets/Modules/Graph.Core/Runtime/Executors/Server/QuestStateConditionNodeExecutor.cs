@@ -1,23 +1,27 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Threading;
+using GraphCore.Runtime;
 
-public sealed class QuestStateConditionNodeExecutor : BaseGraphNodeExecutor<QuestStateConditionNode>
+namespace GraphCore.Runtime.Executors.Server
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(QuestStateConditionNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	public sealed class QuestStateConditionNodeExecutor : BaseGraphNodeExecutor<QuestStateConditionNode>
 	{
-		if (context.QuestService == null)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(QuestStateConditionNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.falseNodeId));
+			if (context.QuestService == null)
+			{
+				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.falseNodeId));
+			}
+
+			return ExecuteWithServiceAsync(node, context.QuestService, cancellationToken);
 		}
 
-		return ExecuteWithServiceAsync(node, context.QuestService, cancellationToken);
-	}
-
-	private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(QuestStateConditionNode node, IGraphQuestService questService, CancellationToken cancellationToken)
-	{
-		QuestState actualState = await questService.GetQuestStateAsync(node.questId, cancellationToken);
-		bool isMatch = actualState == node.state;
-		return GraphNodeExecutionResult.ContinueTo(isMatch ? node.trueNodeId : node.falseNodeId);
+		private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(QuestStateConditionNode node, IGraphQuestService questService, CancellationToken cancellationToken)
+		{
+			QuestState actualState = await questService.GetQuestStateAsync(node.questId, cancellationToken);
+			bool isMatch = actualState == node.state;
+			return GraphNodeExecutionResult.ContinueTo(isMatch ? node.trueNodeId : node.falseNodeId);
+		}
 	}
 }

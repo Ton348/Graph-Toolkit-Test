@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime;
+using GraphCore.Runtime.Nodes.Server;
 using UnityEngine;
-using Game1.Graph.Runtime;
 
 public class BusinessQuestGraph : ScriptableObject
 {

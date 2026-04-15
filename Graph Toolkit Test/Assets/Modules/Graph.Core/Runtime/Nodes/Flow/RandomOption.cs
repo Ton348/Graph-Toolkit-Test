@@ -1,6 +1,7 @@
 using System;
+using GraphCore.Runtime;
 
-namespace GraphCore.BaseNodes.Runtime.Flow
+namespace GraphCore.Runtime.Nodes.Flow
 {
 	[Serializable]
 	public sealed class RandomOption

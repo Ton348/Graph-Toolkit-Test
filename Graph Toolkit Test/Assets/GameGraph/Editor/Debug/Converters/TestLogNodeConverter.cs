@@ -3,6 +3,9 @@ using UnityEngine.Scripting.APIUpdating;
 using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
 
+using Game1.Graph.Editor.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+using GraphCore.Runtime;
 [GameGraphNodeConverter]
 [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Game1.Graph.Editor", sourceClassName: "TestLogNodeConverter")]
 public sealed class TestLogNodeConverter : IGameGraphNodeConverter

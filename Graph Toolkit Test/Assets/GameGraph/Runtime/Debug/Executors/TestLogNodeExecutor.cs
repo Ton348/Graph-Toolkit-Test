@@ -1,9 +1,13 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using GraphCore.Runtime;
+using GraphCore.Runtime.Executors;
 using UnityEngine.Scripting.APIUpdating;
 using Game1.Graph.Runtime;
+using Game1.Graph.Runtime.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 
-[GameGraphNodeExecutor]
+[GameGraphNodeExecutorAttribute]
 [MovedFrom(true, sourceNamespace: "", sourceAssembly: "Game1.Graph.Runtime", sourceClassName: "TestLogNodeExecutor")]
 public sealed class TestLogNodeExecutor : BaseGraphNodeExecutor<TestLogNode>
 {

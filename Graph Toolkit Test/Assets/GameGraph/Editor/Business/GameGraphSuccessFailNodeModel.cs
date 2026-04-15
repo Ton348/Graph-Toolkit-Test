@@ -3,6 +3,8 @@ using Unity.GraphToolkit.Editor;
 using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
 
+using Game1.Graph.Editor.Templates;
+using Game1.Graph.Runtime.Infrastructure;
 [Serializable]
 public abstract class GameGraphSuccessFailNodeModel : GameGraphEditorNode
 {

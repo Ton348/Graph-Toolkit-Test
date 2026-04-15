@@ -1,9 +1,13 @@
 using Cysharp.Threading.Tasks;
+using GraphCore.Runtime;
 using System.Threading;
 
-namespace Game1.Graph.Runtime
+using Game1.Graph.Runtime.Infrastructure;
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+using Game1.Graph.Runtime.Templates.Executors;
+namespace Game1.Graph.Templates.Samples
 {
-	[GameGraphNodeExecutor]
+	[GameGraphNodeExecutorAttribute]
 	public sealed class SampleNodeExecutor : GameGraphNextNodeExecutor<SampleNode>
 	{
 		protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(SampleNode node, GraphExecutionContext context, CancellationToken cancellationToken)

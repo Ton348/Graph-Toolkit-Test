@@ -1,8 +1,8 @@
-using System;
 using GraphCore.Editor;
+using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Utility
+namespace GraphCore.Editor.BaseNodes.Utility
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -16,7 +16,9 @@ namespace GraphCore.BaseNodes.Editor.Utility
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			context.AddOption<string>(MessageOption).WithDisplayName("Message");
+
+			context.AddOption<string>(MessageOption)
+				.WithDisplayName("Message");
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

@@ -1,12 +1,16 @@
 using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using GraphCore.Runtime.Nodes.Server;
 using System.Collections.Generic;
 using System.Threading;
 using System;
+using GraphCore.Runtime;
 
-public interface IGraphQuestService
+namespace GraphCore.Runtime
 {
-	UniTask<bool> StartQuestAsync(string questId, CancellationToken cancellationToken);
-	UniTask<bool> CompleteQuestAsync(string questId, CancellationToken cancellationToken);
-	UniTask<QuestState> GetQuestStateAsync(string questId, CancellationToken cancellationToken);
+	public interface IGraphQuestService
+	{
+		UniTask<bool> StartQuestAsync(string questId, CancellationToken cancellationToken);
+		UniTask<bool> CompleteQuestAsync(string questId, CancellationToken cancellationToken);
+		UniTask<QuestState> GetQuestStateAsync(string questId, CancellationToken cancellationToken);
+	}
 }

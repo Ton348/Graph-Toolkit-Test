@@ -1,7 +1,11 @@
-public sealed class GraphContextKey<T> : GraphContextKey
+using GraphCore.Runtime;
+namespace GraphCore.Runtime
 {
-	public GraphContextKey(string id)
-		: base(id, typeof(T))
+	public sealed class GraphContextKey<T> : GraphContextKey
 	{
+		public GraphContextKey(string id)
+			: base(id, typeof(T))
+		{
+		}
 	}
 }

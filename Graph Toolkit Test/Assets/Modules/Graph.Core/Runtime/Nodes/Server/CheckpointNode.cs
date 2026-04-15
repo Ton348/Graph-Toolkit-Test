@@ -1,6 +1,7 @@
 using System;
+using GraphCore.Runtime;
 
-namespace GraphCore.BaseNodes.Runtime.Server
+namespace GraphCore.Runtime.Nodes.Server
 {
 	[Serializable]
 	public sealed class CheckpointNode : BaseGraphNode
