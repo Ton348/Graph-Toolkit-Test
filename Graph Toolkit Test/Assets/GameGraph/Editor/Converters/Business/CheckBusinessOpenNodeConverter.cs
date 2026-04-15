@@ -1,4 +1,4 @@
-using Graph.Core.Editor;
+using GraphCore.Editor;
 
 [GameGraphNodeConverter]
 public sealed class CheckBusinessOpenNodeConverter : GameGraphNodeConverterBase<CheckBusinessOpenNodeModel, CheckBusinessOpenNode>

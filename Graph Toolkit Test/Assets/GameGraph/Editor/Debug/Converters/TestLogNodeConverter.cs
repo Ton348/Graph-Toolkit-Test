@@ -1,4 +1,4 @@
-using Graph.Core.Editor;
+using GraphCore.Editor;
 using UnityEngine.Scripting.APIUpdating;
 
 [GameGraphNodeConverter]

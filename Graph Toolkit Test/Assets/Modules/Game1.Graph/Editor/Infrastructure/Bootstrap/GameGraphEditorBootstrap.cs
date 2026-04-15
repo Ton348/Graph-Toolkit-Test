@@ -1,10 +1,9 @@
-using UnityEditor;
-using UnityEngine;
-using Graph.Core.Editor;
-using Unity.GraphToolkit.Editor;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using GraphCore.Editor;
+using Unity.GraphToolkit.Editor;
+using UnityEditor;
 
 [InitializeOnLoad]
 public static class GameGraphEditorBootstrap
@@ -26,8 +25,6 @@ public static class GameGraphEditorBootstrap
 
 		CommonGraphImporter.SetExternalConverter(ConvertExternalNode);
 		CommonGraphRuntimeExporter.SetGraphValidationHook(ValidateBeforeBuild);
-
-		Debug.Log("[GameGraph] Module initialized.");
 	}
 
 	private static Assembly[] GetEditorAssemblies()

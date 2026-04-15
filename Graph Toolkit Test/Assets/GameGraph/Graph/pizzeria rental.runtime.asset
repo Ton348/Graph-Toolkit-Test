@@ -12,24 +12,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: pizzeria rental.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::CommonGraph
-  startNodeId: 8af204a3-3c0e-4495-aa2a-d181e40f1ad2
+  startNodeId: 014ac2b0-697b-42a9-b18f-32724944852b
   nodes:
-  - rid: 7634388946994332659
-  - rid: 7634388946994332660
+  - rid: 7634388971055743051
+  - rid: 7634388971055743052
   references:
     version: 2
     RefIds:
-    - rid: 7634388946994332659
+    - rid: 7634388971055743051
       type: {class: StartNode, ns: GraphCore.BaseNodes.Runtime.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 8af204a3-3c0e-4495-aa2a-d181e40f1ad2
-        nextNodeId: bfa1845e-d34b-45a1-bedb-37e9c32f10db
+        nodeId: 014ac2b0-697b-42a9-b18f-32724944852b
+        nextNodeId: d0a70fd8-aa24-4e08-8c1f-19052b52c4d3
         title: StartNode
         description: Entry point of the graph
-    - rid: 7634388946994332660
+    - rid: 7634388971055743052
       type: {class: QuestStateConditionNode, ns: GraphCore.BaseNodes.Runtime.Server, asm: Graph.Core.Runtime}
       data:
-        nodeId: bfa1845e-d34b-45a1-bedb-37e9c32f10db
+        nodeId: d0a70fd8-aa24-4e08-8c1f-19052b52c4d3
         nextNodeId: 
         title: QuestStateConditionNode
         description: Checks quest state and branches

@@ -80,7 +80,6 @@ public class NPCManager : Interactable
 
         if (baseRunner != null && baseRunner.IsRunning)
         {
-            Debug.Log($"[NPCManager] CommonGraph interact ignored because graph is already running on '{name}'.");
             return;
         }
 
@@ -105,7 +104,7 @@ public class NPCManager : Interactable
         context.Set(GraphContextKeys.RuntimeBootstrap, bootstrap);
         context.Set(GraphContextKeys.RuntimeMapMarkerService, mapMarkerService);
         context.Set(GraphContextKeys.RuntimePlayerTransform, playerTransform);
-        context.Set(GraphRuntimeContextKeys.immediateChoiceAfterDialogue, true);
+        context.ImmediateChoiceAfterDialogue = true;
 
         _ = baseRunner.RunAsync(graph, context);
     }
@@ -351,7 +350,6 @@ public class NPCManager : Interactable
                 return;
             }
 
-            Debug.LogWarning("[NPCManager] Quest action succeeded, but no profile refresh method was found on bootstrap or PlayerStateSync.", m_logContext);
         }
 
         private static object GetMemberValue(object target, string memberName)

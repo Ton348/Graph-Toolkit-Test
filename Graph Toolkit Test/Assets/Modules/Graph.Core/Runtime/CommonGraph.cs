@@ -125,10 +125,5 @@ public sealed class CommonGraph : ScriptableObject
 		{
 			Debug.LogError($"{LogPrefix} {validationResult.Errors[i]}", this);
 		}
-
-		for (int i = 0; i < validationResult.Warnings.Count; i++)
-		{
-			Debug.LogWarning($"{LogPrefix} {validationResult.Warnings[i]}", this);
-		}
 	}
 }

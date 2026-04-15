@@ -1,24 +1,25 @@
 {
-	"name": "GameGraph.Editor",
-	"references": [
-		"GameGraph.Runtime",
-		"Game1.Graph.Runtime",
-		"Game1.Graph.Editor",
-		"Graph.Core.Runtime",
-		"Graph.Core.Editor",
-		"Unity.GraphToolkit.Editor",
-		"Unity.GraphToolkit.Common.Editor",
-		"Unity.GraphToolkit.Utility.Editor"
-	],
-	"includePlatforms": [
-		"Editor"
-	],
-	"excludePlatforms": [],
-	"allowUnsafeCode": false,
-	"overrideReferences": false,
-	"precompiledReferences": [],
-	"autoReferenced": true,
-	"defineConstraints": [],
-	"versionDefines": [],
-	"noEngineReferences": false
+  "name": "GameGraph.Editor",
+  "references": [
+    "GameGraph.Runtime",
+    "Game1.Graph.Runtime",
+    "Game1.Graph.Editor",
+    "Graph.Core.Runtime",
+    "Graph.Core.Editor",
+    "Unity.GraphToolkit.Editor",
+    "Unity.GraphToolkit.Common.Editor",
+    "Unity.GraphToolkit.Utility.Editor"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "rootNamespace": "GameGraph.Editor"
 }

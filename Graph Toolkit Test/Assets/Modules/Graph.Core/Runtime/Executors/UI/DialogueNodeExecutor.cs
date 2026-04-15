@@ -1,24 +1,15 @@
-using System;
+using Cysharp.Threading.Tasks;
+using GraphCore.BaseNodes.Runtime.UI;
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Cinematics;
-using GraphCore.BaseNodes.Runtime.Flow;
-using GraphCore.BaseNodes.Runtime.Server;
-using GraphCore.BaseNodes.Runtime.UI;
-using GraphCore.BaseNodes.Runtime.Utility;
-using GraphCore.BaseNodes.Runtime.World;
-using UnityEngine;
 
-public sealed class DialogueNodeExecutor : GraphNodeExecutor<DialogueNode>
+public sealed class DialogueNodeExecutor : BaseGraphNodeExecutor<DialogueNode>
 {
 	protected override async UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(DialogueNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 	{
 		IGraphDialogueService dialogueService = context.DialogueService;
 		if (dialogueService == null)
 		{
-			Debug.Log($"{BaseNodeExecutorConstants.LogPrefix} Dialogue fallback: {node.dialogueTitle}\n{node.body}");
-			Debug.LogWarning($"{BaseNodeExecutorConstants.LogPrefix} Dialogue service is not registered. Using fallback continuation for node '{node.Id}'.");
 			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
 		}
 
@@ -35,12 +26,13 @@ public sealed class DialogueNodeExecutor : GraphNodeExecutor<DialogueNode>
 	private static bool TryGetImmediateChoiceNode(DialogueNode node, GraphExecutionContext context, out ChoiceNode choiceNode)
 	{
 		choiceNode = null;
-		if (!IsImmediateChoiceModeEnabled(context))
+		if (!context.ImmediateChoiceAfterDialogue)
 		{
 			return false;
 		}
 
-		if (!context.TryGet(GraphRuntimeContextKeys.currentGraph, out CommonGraph graph) || graph == null)
+		CommonGraph graph = context.CurrentGraph;
+		if (graph == null)
 		{
 			return false;
 		}
@@ -52,11 +44,6 @@ public sealed class DialogueNodeExecutor : GraphNodeExecutor<DialogueNode>
 
 		choiceNode = foundChoiceNode;
 		return true;
-	}
-
-	private static bool IsImmediateChoiceModeEnabled(GraphExecutionContext context)
-	{
-		return context.TryGet(GraphRuntimeContextKeys.immediateChoiceAfterDialogue, out bool isEnabled) && isEnabled;
 	}
 
 	private static async UniTask<GraphNodeExecutionResult> ExecuteImmediateChoiceAsync(ChoiceNode choiceNode, GraphExecutionContext context, CancellationToken cancellationToken)
@@ -83,7 +70,6 @@ public sealed class DialogueNodeExecutor : GraphNodeExecutor<DialogueNode>
 
 		if (context.ChoiceService == null)
 		{
-			Debug.LogWarning($"{BaseNodeExecutorConstants.LogPrefix} Choice service is not registered. Selecting first option as fallback for node '{choiceNode.Id}'.");
 			return GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId);
 		}
 

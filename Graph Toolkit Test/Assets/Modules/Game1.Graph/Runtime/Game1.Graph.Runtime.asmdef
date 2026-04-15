@@ -12,5 +12,6 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false
+  "noEngineReferences": false,
+  "rootNamespace": "Game1.Graph.Runtime"
 }

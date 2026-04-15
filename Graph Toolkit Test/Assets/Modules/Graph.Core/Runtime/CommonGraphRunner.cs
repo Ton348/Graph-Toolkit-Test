@@ -1,6 +1,6 @@
-using System;
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
+using System;
 using UnityEngine;
 
 public sealed class CommonGraphRunner
@@ -40,7 +40,6 @@ public sealed class CommonGraphRunner
 	{
 		if (IsRunning)
 		{
-			Debug.LogWarning($"{LogPrefix} RunAsync ignored because runner is already active.");
 			return;
 		}
 
@@ -58,7 +57,7 @@ public sealed class CommonGraphRunner
 
 		m_graph = graph;
 		m_context = context ?? new GraphExecutionContext();
-		m_context.Set(GraphRuntimeContextKeys.currentGraph, m_graph);
+		m_context.CurrentGraph = m_graph;
 		m_runCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 		CancellationToken runCancellationToken = m_runCancellationTokenSource.Token;
 
@@ -122,11 +121,6 @@ public sealed class CommonGraphRunner
 		{
 			case GraphNodeExecutionSignal.Stop:
 			{
-				if (!string.IsNullOrWhiteSpace(executionResult.diagnosticMessage))
-				{
-					Debug.Log($"{LogPrefix} Stop: {executionResult.diagnosticMessage}");
-				}
-
 				return false;
 			}
 
@@ -176,10 +170,6 @@ public sealed class CommonGraphRunner
 			{
 				Debug.LogError($"{LogPrefix} Validation: {issue}", m_graph);
 			}
-			else
-			{
-				Debug.LogWarning($"{LogPrefix} Validation: {issue}", m_graph);
-			}
 		}
 	}
 
@@ -187,7 +177,7 @@ public sealed class CommonGraphRunner
 	{
 		if (m_context != null)
 		{
-			m_context.Remove(GraphRuntimeContextKeys.currentGraph);
+			m_context.CurrentGraph = null;
 		}
 
 		IsRunning = false;

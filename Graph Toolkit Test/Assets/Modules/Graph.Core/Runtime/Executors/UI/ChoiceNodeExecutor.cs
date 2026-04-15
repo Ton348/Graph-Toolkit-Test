@@ -1,16 +1,9 @@
-using System;
+using Cysharp.Threading.Tasks;
+using GraphCore.BaseNodes.Runtime.UI;
 using System.Collections.Generic;
 using System.Threading;
-using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Cinematics;
-using GraphCore.BaseNodes.Runtime.Flow;
-using GraphCore.BaseNodes.Runtime.Server;
-using GraphCore.BaseNodes.Runtime.UI;
-using GraphCore.BaseNodes.Runtime.Utility;
-using GraphCore.BaseNodes.Runtime.World;
-using UnityEngine;
 
-public sealed class ChoiceNodeExecutor : GraphNodeExecutor<ChoiceNode>
+public sealed class ChoiceNodeExecutor : BaseGraphNodeExecutor<ChoiceNode>
 {
 	protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(ChoiceNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 	{
@@ -36,7 +29,6 @@ public sealed class ChoiceNodeExecutor : GraphNodeExecutor<ChoiceNode>
 
 		if (context.ChoiceService == null)
 		{
-			Debug.LogWarning($"{BaseNodeExecutorConstants.LogPrefix} Choice service is not registered. Selecting first option as fallback for node '{node.Id}'.");
 			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId));
 		}
 

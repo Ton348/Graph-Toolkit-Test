@@ -1,4 +1,4 @@
-using Graph.Core.Editor;
+using GraphCore.Editor;
 
 [GameGraphNodeConverter]
 public sealed class RequestUnlockContactNodeConverter : GameGraphNodeConverterBase<RequestUnlockContactNodeModel, RequestUnlockContactNode>

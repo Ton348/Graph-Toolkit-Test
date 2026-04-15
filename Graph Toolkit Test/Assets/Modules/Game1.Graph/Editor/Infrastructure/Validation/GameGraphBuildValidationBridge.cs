@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using GraphCore.Editor;
 using UnityEngine;
 
 public static class GameGraphBuildValidationBridge
@@ -36,8 +37,6 @@ public static class GameGraphBuildValidationBridge
 			Debug.LogError(report);
 			return false;
 		}
-
-		Debug.LogWarning(report);
 		return true;
 	}
 

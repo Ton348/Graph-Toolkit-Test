@@ -1,4 +1,4 @@
-using Graph.Core.Editor;
+using GraphCore.Editor;
 
 // Copy this file, rename class and types, then map model -> runtime node fields.
 // Add [GameGraphNodeConverter] if you want auto-registration.

@@ -1,8 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.Threading;
-using Cysharp.Threading.Tasks;
-using GraphCore.BaseNodes.Runtime.Server;
+using System;
 
 public sealed class GraphExecutionContext
 {
@@ -21,6 +18,8 @@ public sealed class GraphExecutionContext
 	public IGraphCutsceneService CutsceneService => Services?.cutsceneService;
 	public IGraphCheckpointService CheckpointService => Services?.checkpointService;
 	public IGraphQuestService QuestService => Services?.questService;
+	public bool ImmediateChoiceAfterDialogue { get; set; }
+	public CommonGraph CurrentGraph { get; internal set; }
 
 	public void Set<T>(GraphContextKey<T> key, T value)
 	{

@@ -1,3 +1,4 @@
+using GraphCore.Editor;
 using UnityEditor;
 using Unity.GraphToolkit.Editor;
 

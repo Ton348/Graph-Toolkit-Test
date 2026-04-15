@@ -1,8 +1,8 @@
-using System;
-using System.Threading;
 using Cysharp.Threading.Tasks;
+using System.Threading;
+using System;
 
-public abstract class GraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : BaseGraphNode
+public abstract class BaseGraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : BaseGraphNode
 {
 	public Type NodeType => typeof(TNode);
 

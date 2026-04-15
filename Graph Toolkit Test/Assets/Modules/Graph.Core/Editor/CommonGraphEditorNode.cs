@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
 using Unity.GraphToolkit.Editor;
+using UnityEngine;
 
 [Serializable]
 public abstract class CommonGraphEditorNode : Node
@@ -34,12 +34,12 @@ public abstract class CommonGraphEditorNode : Node
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{
-		var titleOption = context.AddOption<string>(TITLE_OPTION)
+		_ = context.AddOption<string>(TITLE_OPTION)
 			.WithDisplayName("Название")
 			.WithDefaultValue(DefaultTitle)
 			.Build();
 
-		var descriptionOption = context.AddOption<string>(DESCRIPTION_OPTION)
+		INodeOption descriptionOption = context.AddOption<string>(DESCRIPTION_OPTION)
 			.WithDisplayName("Описание")
 			.WithDefaultValue(DefaultDescription)
 			.Build();
@@ -54,13 +54,13 @@ public abstract class CommonGraphEditorNode : Node
 			return;
 		}
 
-		var portModel = GetPortModel(option);
+		object portModel = GetPortModel(option);
 		if (portModel == null)
 		{
 			return;
 		}
 
-		var attributes = GetAttributes(portModel);
+		List<Attribute> attributes = GetAttributes(portModel);
 		if (attributes == null)
 		{
 			attributes = new List<Attribute>();

@@ -426,7 +426,7 @@ MonoBehaviour:
         m_EntryPoint:
           rid: 7634388946994331889
         m_Graph:
-          rid: 7634388946994331888
+          rid: 7634388971055743039
     - rid: 7634388946994331887
       type: {class: SectionModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -439,9 +439,6 @@ MonoBehaviour:
         m_Version: 2
         m_Items: []
         m_Title: 
-    - rid: 7634388946994331888
-      type: {class: CommonGraphEditorGraph, ns: , asm: Graph.Core.Editor}
-      data: 
     - rid: 7634388946994331889
       type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
       data:
@@ -2311,3 +2308,6 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: 
+    - rid: 7634388971055743039
+      type: {class: CommonGraphEditorGraph, ns: GraphCore.Editor, asm: Graph.Core.Editor}
+      data: 

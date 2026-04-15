@@ -1,6 +1,6 @@
 
 using System;
-using Graph.Core.Editor;
+using GraphCore.Editor;
 
 public sealed class GameGraphModule
 {

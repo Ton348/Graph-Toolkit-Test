@@ -1,4 +1,4 @@
-using Graph.Core.Editor;
+using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
 public static class GameGraphRuntimeCompiler

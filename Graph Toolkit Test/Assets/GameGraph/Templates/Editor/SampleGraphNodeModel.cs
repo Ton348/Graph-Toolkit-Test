@@ -1,4 +1,5 @@
 using System;
+using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
 // Copy this file, rename class and file, then map options/ports to your runtime node.
