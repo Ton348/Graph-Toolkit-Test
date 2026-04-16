@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using UnityEngine;
 
 namespace Game1.Graph.Runtime.Infrastructure

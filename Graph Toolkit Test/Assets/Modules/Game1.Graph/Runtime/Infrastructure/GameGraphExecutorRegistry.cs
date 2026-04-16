@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 namespace Game1.Graph.Runtime.Infrastructure
 {

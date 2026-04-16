@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public sealed class CommonGraph : ScriptableObject
 	{

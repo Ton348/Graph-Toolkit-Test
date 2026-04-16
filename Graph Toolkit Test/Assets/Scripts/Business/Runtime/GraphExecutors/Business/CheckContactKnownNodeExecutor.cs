@@ -2,7 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 [GameGraphNodeExecutorAttribute]
 public sealed class CheckContactKnownNodeExecutor : GameGraphTrueFalseNodeExecutor<CheckContactKnownNode>

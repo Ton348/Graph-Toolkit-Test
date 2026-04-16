@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace GraphCore.Editor
+namespace Graph.Core.Editor
 {
 	public static class CommonGraphRuntimeExporter
 	{

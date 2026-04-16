@@ -1,9 +1,8 @@
 using System;
-using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
-using GraphCore.Runtime;
+using Graph.Core.Editor;
 
 [Serializable]
 [UseWithGraph(typeof(CommonGraphEditorGraph))]

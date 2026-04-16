@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Nodes.Flow;
+using Graph.Core.Runtime.Nodes.Flow;
 using UnityEngine;
 
-namespace GraphCore.Runtime.Executors.Flow
+namespace Graph.Core.Runtime.Executors.Flow
 {
 	public sealed class RandomNodeExecutor : BaseGraphNodeExecutor<RandomNode>
 	{

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace GraphCore.Runtime.Nodes.Flow
+namespace Graph.Core.Runtime.Nodes.Flow
 {
 	[Serializable]
 	public sealed class RandomNode : BaseGraphNode

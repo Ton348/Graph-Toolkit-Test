@@ -3,7 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public sealed class CommonGraphRunner
 	{

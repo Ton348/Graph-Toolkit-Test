@@ -1,5 +1,6 @@
 {
   "name": "Graph.Core.Editor",
+  "rootNamespace": "Graph.Core.Editor",
   "references": [
     "Graph.Core.Runtime",
     "Unity.GraphToolkit.Editor",
@@ -16,6 +17,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "GraphCore.Editor"
+  "noEngineReferences": false
 }

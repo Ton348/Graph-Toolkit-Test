@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Reflection;
-using GraphCore.Runtime;
-using GraphCore.Runtime.Templates;
-using GraphCore.Runtime.Nodes.Server;
+using Graph.Core.Runtime;
+using Graph.Core.Runtime.Nodes.Server;
+using Graph.Core.Runtime.Templates;
 using UnityEngine;
 
 public class BusinessQuestGraph : ScriptableObject

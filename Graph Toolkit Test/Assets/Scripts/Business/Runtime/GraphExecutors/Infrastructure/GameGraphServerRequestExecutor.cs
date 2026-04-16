@@ -2,7 +2,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Templates;
 using Game1.Graph.Runtime.Templates.Executors;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 public abstract class GameGraphServerRequestExecutor<TNode> : GameGraphSuccessFailNodeExecutor<TNode>
 	where TNode : GameGraphSuccessFailNode

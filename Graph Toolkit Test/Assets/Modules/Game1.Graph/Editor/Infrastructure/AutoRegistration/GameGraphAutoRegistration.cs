@@ -6,7 +6,7 @@ using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Infrastructure.Validation;
 using Game1.Graph.Runtime.Validation;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 {

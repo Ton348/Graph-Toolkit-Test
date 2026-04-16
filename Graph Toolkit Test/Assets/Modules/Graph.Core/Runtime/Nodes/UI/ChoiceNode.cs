@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace GraphCore.Runtime.Nodes.UI
+namespace Graph.Core.Runtime.Nodes.UI
 {
 	[Serializable]
 	public sealed class ChoiceNode : BaseGraphNode

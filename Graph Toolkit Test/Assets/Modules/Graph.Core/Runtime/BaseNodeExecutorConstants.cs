@@ -1,4 +1,4 @@
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public static class BaseNodeExecutorConstants
 	{

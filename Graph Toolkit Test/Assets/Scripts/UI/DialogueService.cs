@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;

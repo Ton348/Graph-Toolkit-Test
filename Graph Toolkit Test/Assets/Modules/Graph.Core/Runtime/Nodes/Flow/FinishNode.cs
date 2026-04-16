@@ -1,6 +1,6 @@
 using System;
 
-namespace GraphCore.Runtime.Nodes.Flow
+namespace Graph.Core.Runtime.Nodes.Flow
 {
 	[Serializable]
 	public sealed class FinishNode : BaseGraphNode

@@ -1,7 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 namespace Game1.Graph.Runtime.Templates.Executors
 {

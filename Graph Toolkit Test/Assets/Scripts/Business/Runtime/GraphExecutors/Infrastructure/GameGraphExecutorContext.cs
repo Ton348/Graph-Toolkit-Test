@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 internal static class GameGraphExecutorContext
 {

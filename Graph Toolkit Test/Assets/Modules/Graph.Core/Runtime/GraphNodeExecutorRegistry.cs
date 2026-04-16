@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public sealed class GraphNodeExecutorRegistry
 	{

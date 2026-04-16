@@ -1,9 +1,9 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Executors.Templates;
-using GraphCore.Runtime.Nodes.Cinematics;
+using Graph.Core.Runtime.Executors.Templates;
+using Graph.Core.Runtime.Nodes.Cinematics;
 
-namespace GraphCore.Runtime.Executors.Cinematics
+namespace Graph.Core.Runtime.Executors.Cinematics
 {
 	public sealed class PlayCutsceneNodeExecutor : CoreGraphNextNodeExecutor<PlayCutsceneNode>
 	{

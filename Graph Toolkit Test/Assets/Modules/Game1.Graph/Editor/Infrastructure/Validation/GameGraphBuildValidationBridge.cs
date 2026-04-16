@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Text;
 using Game1.Graph.Runtime;
 using Game1.Graph.Runtime.Infrastructure.Validation;
-using GraphCore.Editor;
-using GraphCore.Runtime;
+using Graph.Core.Editor;
+using Graph.Core.Runtime;
 using UnityEngine;
 
 namespace Game1.Graph.Editor.Infrastructure.Validation

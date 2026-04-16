@@ -1,9 +1,9 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Executors.Templates;
-using GraphCore.Runtime.Nodes.World;
+using Graph.Core.Runtime.Executors.Templates;
+using Graph.Core.Runtime.Nodes.World;
 
-namespace GraphCore.Runtime.Executors.World
+namespace Graph.Core.Runtime.Executors.World
 {
 	public sealed class MapMarkerNodeExecutor : CoreGraphNextNodeExecutor<MapMarkerNode>
 	{

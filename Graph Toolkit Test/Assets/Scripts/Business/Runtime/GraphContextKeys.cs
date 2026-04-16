@@ -1,4 +1,4 @@
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using UnityEngine;
 
 public static class GraphContextKeys

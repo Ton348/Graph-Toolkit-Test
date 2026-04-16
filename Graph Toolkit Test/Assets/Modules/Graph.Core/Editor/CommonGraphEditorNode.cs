@@ -4,7 +4,7 @@ using System.Reflection;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 
-namespace GraphCore.Editor
+namespace Graph.Core.Editor
 {
 	[Serializable]
 	public abstract class CommonGraphEditorNode : Node

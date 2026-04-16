@@ -1,27 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using GraphCore.BaseNodes.Editor.Cinematics;
-using GraphCore.BaseNodes.Editor.Flow;
-using GraphCore.BaseNodes.Editor.Server;
-using GraphCore.BaseNodes.Editor.UI;
-using GraphCore.BaseNodes.Editor.Utility;
-using GraphCore.Editor.BaseNodes.Flow;
-using GraphCore.Editor.BaseNodes.Server;
-using GraphCore.Editor.BaseNodes.UI;
-using GraphCore.Editor.BaseNodes.World;
-using GraphCore.Runtime;
-using GraphCore.Runtime.Nodes.Cinematics;
-using GraphCore.Runtime.Nodes.Flow;
-using GraphCore.Runtime.Nodes.Server;
-using GraphCore.Runtime.Nodes.UI;
-using GraphCore.Runtime.Nodes.Utility;
-using GraphCore.Runtime.Nodes.World;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Editor.BaseNodes.Cinematics;
+using Graph.Core.Editor.BaseNodes.Flow;
+using Graph.Core.Editor.BaseNodes.Server;
+using Graph.Core.Editor.BaseNodes.UI;
+using Graph.Core.Editor.BaseNodes.Utility;
+using Graph.Core.Editor.BaseNodes.World;
+using Graph.Core.Runtime;
+using Graph.Core.Runtime.Nodes.Cinematics;
+using Graph.Core.Runtime.Nodes.Flow;
+using Graph.Core.Runtime.Nodes.Server;
+using Graph.Core.Runtime.Nodes.UI;
+using Graph.Core.Runtime.Nodes.Utility;
+using Graph.Core.Runtime.Nodes.World;
+using Graph.Core.Runtime.Templates;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 
-namespace GraphCore.Editor
+namespace Graph.Core.Editor
 {
 	public static class CommonGraphImporter
 	{

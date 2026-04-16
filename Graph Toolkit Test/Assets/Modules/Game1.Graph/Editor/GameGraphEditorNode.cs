@@ -1,7 +1,7 @@
 using System;
 using Game1.Graph.Editor.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure;
-using GraphCore.Editor;
+using Graph.Core.Editor;
 using Unity.GraphToolkit.Editor;
 
 namespace Game1.Graph.Editor

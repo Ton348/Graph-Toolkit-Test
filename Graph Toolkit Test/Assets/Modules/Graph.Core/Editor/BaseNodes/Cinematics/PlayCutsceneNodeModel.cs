@@ -1,8 +1,7 @@
 using System;
-using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Cinematics
+namespace Graph.Core.Editor.BaseNodes.Cinematics
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]

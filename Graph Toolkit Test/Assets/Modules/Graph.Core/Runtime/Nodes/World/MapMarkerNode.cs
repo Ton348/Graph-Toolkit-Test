@@ -1,7 +1,7 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Nodes.World
+namespace Graph.Core.Runtime.Nodes.World
 {
 	[Serializable]
 	public sealed class MapMarkerNode : CoreGraphNextNode

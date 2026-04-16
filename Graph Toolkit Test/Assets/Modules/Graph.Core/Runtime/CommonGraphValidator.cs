@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using GraphCore.Runtime.Nodes.Cinematics;
-using GraphCore.Runtime.Nodes.Flow;
-using GraphCore.Runtime.Nodes.Server;
-using GraphCore.Runtime.Nodes.UI;
-using GraphCore.Runtime.Nodes.Utility;
-using GraphCore.Runtime.Nodes.World;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Nodes.Cinematics;
+using Graph.Core.Runtime.Nodes.Flow;
+using Graph.Core.Runtime.Nodes.Server;
+using Graph.Core.Runtime.Nodes.UI;
+using Graph.Core.Runtime.Nodes.Utility;
+using Graph.Core.Runtime.Nodes.World;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public static class CommonGraphValidator
 	{

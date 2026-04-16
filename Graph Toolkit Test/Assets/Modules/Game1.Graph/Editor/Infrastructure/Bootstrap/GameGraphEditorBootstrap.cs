@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using Game1.Graph.Editor.Infrastructure.Validation;
 using Game1.Graph.Runtime;
-using GraphCore.Editor;
-using GraphCore.Runtime;
+using Graph.Core.Editor;
+using Graph.Core.Runtime;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 

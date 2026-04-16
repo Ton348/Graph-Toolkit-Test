@@ -1,4 +1,3 @@
-using GraphCore.Editor;
 using Game1.Graph.Editor;
 using Game1.Graph.Runtime;
 using Unity.GraphToolkit.Editor;
@@ -6,7 +5,9 @@ using UnityEditor;
 
 using Game1.Graph.Editor.Infrastructure.Bootstrap;
 using Game1.Graph.Editor.Infrastructure.Validation;
-using GraphCore.Runtime;
+using Graph.Core.Editor;
+using Graph.Core.Runtime;
+
 [InitializeOnLoad]
 public static class GameGraphEditorRuntimeBridge
 {

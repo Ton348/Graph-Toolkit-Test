@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using UnityEditor;
 
-namespace GraphCore.Editor
+namespace Graph.Core.Editor
 {
 	public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 	{

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 public static class ConditionEvaluator
 {

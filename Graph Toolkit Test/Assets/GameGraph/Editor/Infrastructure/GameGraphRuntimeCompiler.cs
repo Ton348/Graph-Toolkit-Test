@@ -1,11 +1,12 @@
-using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
 
 using Game1.Graph.Editor.Templates;
 using Game1.Graph.Runtime.Templates;
-using GraphCore.Runtime;
+using Graph.Core.Editor;
+using Graph.Core.Runtime;
+
 public static class GameGraphRuntimeCompiler
 {
 	public static CommonGraph Build(CommonGraphEditorGraph editorGraph)

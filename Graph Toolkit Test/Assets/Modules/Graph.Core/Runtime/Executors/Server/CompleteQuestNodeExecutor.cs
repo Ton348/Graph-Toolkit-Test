@@ -1,9 +1,9 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Executors.Templates;
-using GraphCore.Runtime.Nodes.Server;
+using Graph.Core.Runtime.Executors.Templates;
+using Graph.Core.Runtime.Nodes.Server;
 
-namespace GraphCore.Runtime.Executors.Server
+namespace Graph.Core.Runtime.Executors.Server
 {
 	public sealed class CompleteQuestNodeExecutor : CoreGraphSuccessFailNodeExecutor<CompleteQuestNode>
 	{

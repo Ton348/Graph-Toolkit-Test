@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Nodes.UI;
+using Graph.Core.Runtime.Nodes.UI;
 
-namespace GraphCore.Runtime.Executors.UI
+namespace Graph.Core.Runtime.Executors.UI
 {
 	public sealed class DialogueNodeExecutor : BaseGraphNodeExecutor<DialogueNode>
 	{

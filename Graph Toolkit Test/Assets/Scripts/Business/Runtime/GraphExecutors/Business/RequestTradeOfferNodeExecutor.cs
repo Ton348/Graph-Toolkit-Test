@@ -1,7 +1,7 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using UnityEngine;
 
 [GameGraphNodeExecutorAttribute]

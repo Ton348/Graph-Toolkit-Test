@@ -1,8 +1,8 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Executors.Templates
+namespace Graph.Core.Runtime.Executors.Templates
 {
 	public abstract class CoreGraphTrueFalseNodeExecutor<TNode> : BaseGraphNodeExecutor<TNode>
 		where TNode : CoreGraphTrueFalseNode

@@ -1,8 +1,8 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Executors.Templates
+namespace Graph.Core.Runtime.Executors.Templates
 {
 	public abstract class CoreGraphSuccessFailNodeExecutor<TNode> : BaseGraphNodeExecutor<TNode>
 		where TNode : CoreGraphSuccessFailNode

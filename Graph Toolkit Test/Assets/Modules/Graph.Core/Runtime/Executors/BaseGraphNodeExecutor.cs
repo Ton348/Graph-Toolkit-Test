@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 
-namespace GraphCore.Runtime.Executors
+namespace Graph.Core.Runtime.Executors
 {
 	public abstract class BaseGraphNodeExecutor<TNode> : IGraphNodeExecutor where TNode : BaseGraphNode
 	{
