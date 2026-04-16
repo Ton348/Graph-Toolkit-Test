@@ -2,7 +2,7 @@ using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.Editor.BaseNodes.World
+namespace GraphCore.BaseNodes.Editor.World
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
