@@ -1,8 +1,7 @@
 using Cysharp.Threading.Tasks;
-using System.Threading;
 using System;
+using System.Threading;
 using UnityEngine;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime
 {

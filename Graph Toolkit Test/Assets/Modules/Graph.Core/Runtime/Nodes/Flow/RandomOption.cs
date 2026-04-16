@@ -1,5 +1,4 @@
 using System;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime.Nodes.Flow
 {

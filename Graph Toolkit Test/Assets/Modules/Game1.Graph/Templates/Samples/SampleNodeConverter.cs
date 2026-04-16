@@ -1,7 +1,6 @@
-using Game1.Graph.Runtime;
+using Game1.Graph.Editor.Infrastructure.Converters;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 
-using Game1.Graph.Editor.Infrastructure.Converters;
 namespace Game1.Graph.Templates.Samples
 {
 	[GameGraphNodeConverter]

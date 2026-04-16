@@ -1,6 +1,5 @@
-using System.Collections.Generic;
 using System;
-using GraphCore.Runtime;
+using System.Collections.Generic;
 
 namespace GraphCore.Runtime.Nodes.Flow
 {

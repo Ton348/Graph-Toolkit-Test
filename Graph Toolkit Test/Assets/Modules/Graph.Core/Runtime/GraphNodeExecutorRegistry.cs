@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime
 {

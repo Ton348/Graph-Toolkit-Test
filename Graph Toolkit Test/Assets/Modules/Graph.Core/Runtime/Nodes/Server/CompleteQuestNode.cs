@@ -1,5 +1,4 @@
 using System;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime.Nodes.Server
 {
@@ -10,6 +9,7 @@ namespace GraphCore.Runtime.Nodes.Server
 		public string successNodeId;
 		public string failNodeId;
 
+		
 		public CompleteQuestNode()
 		{
 			Title = "Complete Quest";

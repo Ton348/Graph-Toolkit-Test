@@ -1,10 +1,9 @@
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime;
 using System.Threading;
-
-using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+
 namespace Game1.Graph.Templates.Samples
 {
 	[GameGraphNodeExecutorAttribute]

@@ -1,7 +1,6 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using GraphCore.Runtime;
-using Game1.Graph.Runtime;
 
 namespace Game1.Graph.Runtime.Infrastructure
 {

@@ -1,20 +1,15 @@
-using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Nodes.Server;
-using System.Collections.Generic;
-using System.Threading;
 using System;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime
 {
 	public sealed class GraphRuntimeServices : IGraphRuntimeServices
 	{
-		public IGraphDialogueService dialogueService { get; }
-		public IGraphChoiceService choiceService { get; }
-		public IGraphMapMarkerService mapMarkerService { get; }
-		public IGraphCutsceneService cutsceneService { get; }
-		public IGraphCheckpointService checkpointService { get; }
-		public IGraphQuestService questService { get; }
+		public IGraphDialogueService DialogueService { get; }
+		public IGraphChoiceService ChoiceService { get; }
+		public IGraphMapMarkerService MapMarkerService { get; }
+		public IGraphCutsceneService CutsceneService { get; }
+		public IGraphCheckpointService CheckpointService { get; }
+		public IGraphQuestService QuestService { get; }
 
 		public GraphRuntimeServices(
 			IGraphDialogueService dialogueService,
@@ -24,12 +19,12 @@ namespace GraphCore.Runtime
 			IGraphCheckpointService checkpointService,
 			IGraphQuestService questService)
 		{
-			this.dialogueService = dialogueService;
-			this.choiceService = choiceService;
-			this.mapMarkerService = mapMarkerService;
-			this.cutsceneService = cutsceneService;
-			this.checkpointService = checkpointService;
-			this.questService = questService;
+			DialogueService = dialogueService;
+			ChoiceService = choiceService;
+			MapMarkerService = mapMarkerService;
+			CutsceneService = cutsceneService;
+			CheckpointService = checkpointService;
+			QuestService = questService;
 		}
 	}
 }

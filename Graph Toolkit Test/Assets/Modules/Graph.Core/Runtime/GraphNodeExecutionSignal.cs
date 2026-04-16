@@ -1,4 +1,3 @@
-using GraphCore.Runtime;
 namespace GraphCore.Runtime
 {
 	public enum GraphNodeExecutionSignal

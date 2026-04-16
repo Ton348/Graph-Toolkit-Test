@@ -6,7 +6,6 @@ using GraphCore.Runtime.Nodes.Utility;
 using GraphCore.Runtime.Nodes.World;
 using System.Collections.Generic;
 using System.Linq;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime
 {

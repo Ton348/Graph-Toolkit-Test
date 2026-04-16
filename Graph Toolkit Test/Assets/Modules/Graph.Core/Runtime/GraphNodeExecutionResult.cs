@@ -1,4 +1,3 @@
-using GraphCore.Runtime;
 namespace GraphCore.Runtime
 {
 	public readonly struct GraphNodeExecutionResult

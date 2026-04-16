@@ -1,6 +1,5 @@
-using System.Collections.Generic;
 using System;
-using GraphCore.Runtime;
+using System.Collections.Generic;
 
 namespace GraphCore.Runtime
 {
@@ -15,12 +14,12 @@ namespace GraphCore.Runtime
 
 		public IGraphRuntimeServices Services { get; }
 
-		public IGraphDialogueService DialogueService => Services?.dialogueService;
-		public IGraphChoiceService ChoiceService => Services?.choiceService;
-		public IGraphMapMarkerService MapMarkerService => Services?.mapMarkerService;
-		public IGraphCutsceneService CutsceneService => Services?.cutsceneService;
-		public IGraphCheckpointService CheckpointService => Services?.checkpointService;
-		public IGraphQuestService QuestService => Services?.questService;
+		public IGraphDialogueService DialogueService => Services?.DialogueService;
+		public IGraphChoiceService ChoiceService => Services?.ChoiceService;
+		public IGraphMapMarkerService MapMarkerService => Services?.MapMarkerService;
+		public IGraphCutsceneService CutsceneService => Services?.CutsceneService;
+		public IGraphCheckpointService CheckpointService => Services?.CheckpointService;
+		public IGraphQuestService QuestService => Services?.QuestService;
 		public bool ImmediateChoiceAfterDialogue { get; set; }
 		public CommonGraph CurrentGraph { get; internal set; }
 

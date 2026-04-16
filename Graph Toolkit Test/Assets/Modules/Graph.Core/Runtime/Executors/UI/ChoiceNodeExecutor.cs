@@ -2,7 +2,6 @@ using Cysharp.Threading.Tasks;
 using GraphCore.Runtime.Nodes.UI;
 using System.Collections.Generic;
 using System.Threading;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime.Executors.UI
 {

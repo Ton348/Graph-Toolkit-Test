@@ -1,7 +1,6 @@
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime.Nodes.Cinematics;
 using System.Threading;
-using GraphCore.Runtime;
 
 namespace GraphCore.Runtime.Executors.Cinematics
 {
