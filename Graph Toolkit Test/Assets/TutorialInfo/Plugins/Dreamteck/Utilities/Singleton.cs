@@ -1,21 +1,21 @@
-using System.Linq;
-using UnityEngine;
-
 namespace Dreamteck
 {
-	public class Singleton<T> : PrivateSingleton<T> where T : Component
-	{
-		public static T instance
-		{
-			get
-			{
-				if (s_instance == null)
-				{
-					s_instance = FindObjectsOfType<T>().FirstOrDefault();
-				}
+    using System.Linq;
+    using UnityEngine;
 
-				return s_instance;
-			}
-		}
-	}
+    public class Singleton<T> : PrivateSingleton<T> where T : Component
+    {
+        public static T instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = Object.FindObjectsOfType<T>().FirstOrDefault();
+                }
+
+                return _instance;
+            }
+        }
+    }
 }

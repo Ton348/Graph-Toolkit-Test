@@ -1,84 +1,75 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Dreamteck.Splines
+﻿namespace Dreamteck.Splines
 {
-	[Serializable]
-	public class FollowerSpeedModifier : SplineSampleModifier
-	{
-		public List<SpeedKey> keys = new();
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-		public FollowerSpeedModifier()
-		{
-			keys = new List<SpeedKey>();
-		}
+    [System.Serializable]
+    public class FollowerSpeedModifier : SplineSampleModifier
+    {
+        [System.Serializable]
+        public class SpeedKey : Key
+        {
+            public enum Mode { Add, Multiply }
+            public float speed = 0f;
+            public Mode mode = Mode.Add;
 
-		public override bool hasKeys => keys.Count > 0;
+            public SpeedKey(double f, double t) : base(f, t)
+            {
+            }
+        }
 
-		public override List<Key> GetKeys()
-		{
-			var output = new List<Key>();
-			for (var i = 0; i < keys.Count; i++)
-			{
-				output.Add(keys[i]);
-			}
+        public override bool hasKeys => keys.Count > 0;
+        public List<SpeedKey> keys = new List<SpeedKey>();
 
-			return output;
-		}
+        public FollowerSpeedModifier()
+        {
+            keys = new List<SpeedKey>();
+        }
 
-		public override void SetKeys(List<Key> input)
-		{
-			keys = new List<SpeedKey>();
-			for (var i = 0; i < input.Count; i++)
-			{
-				//input[i]._modifier = this;
-				keys.Add((SpeedKey)input[i]);
-			}
-		}
+        public override List<Key> GetKeys()
+        {
+            List<Key> output = new List<Key>();
+            for (int i = 0; i < keys.Count; i++)
+            {
+                output.Add(keys[i]);
+            }
+            return output;
+        }
 
-		public void AddKey(double f, double t)
-		{
-			keys.Add(new SpeedKey(f, t));
-		}
+        public override void SetKeys(List<Key> input)
+        {
+            keys = new List<SpeedKey>();
+            for (int i = 0; i < input.Count; i++)
+            {
+                //input[i]._modifier = this;
+                keys.Add((SpeedKey)input[i]);
+            }
+        }
 
-		public override void Apply(ref SplineSample result)
-		{
-		}
+        public void AddKey(double f, double t)
+        {
+            keys.Add(new SpeedKey(f, t));
+        }
 
-		public float GetSpeed(float input, double percent)
-		{
-			for (var i = 0; i < keys.Count; i++)
-			{
-				float lerp = keys[i].Evaluate(percent);
-				if (keys[i].mode == SpeedKey.Mode.Add)
-				{
-					input += keys[i].speed * lerp;
-				}
-				else
-				{
-					input *= Mathf.Lerp(1f, keys[i].speed, lerp);
-				}
-			}
+        public override void Apply(ref SplineSample result)
+        {
+        }
 
-			return input;
-		}
-
-		[Serializable]
-		public class SpeedKey : Key
-		{
-			public enum Mode
-			{
-				Add,
-				Multiply
-			}
-
-			public float speed;
-			public Mode mode = Mode.Add;
-
-			public SpeedKey(double f, double t) : base(f, t)
-			{
-			}
-		}
-	}
+        public float GetSpeed(float input, double percent)
+        {
+            for (int i = 0; i < keys.Count; i++)
+            {
+                float lerp = keys[i].Evaluate(percent);
+                if(keys[i].mode == SpeedKey.Mode.Add)
+                {
+                    input += keys[i].speed * lerp;
+                } else
+                {
+                    input *= Mathf.Lerp(1f, keys[i].speed, lerp);
+                }
+            }
+            return input;
+        }
+    }
 }

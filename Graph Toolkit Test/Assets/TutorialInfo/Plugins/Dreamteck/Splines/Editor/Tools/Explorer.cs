@@ -1,273 +1,200 @@
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
 
 namespace Dreamteck.Splines.Editor
 {
-	public class Explorer : SplineTool
-	{
-		private bool m_mouseLeft;
-		private GUIStyle m_normalRow;
-		private List<SplineComputer> m_sceneSplines = new();
-		private Vector2 m_scroll = Vector2.zero;
-		private List<int> m_selected = new();
-		private GUIStyle m_selectedRow;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
+    using UnityEditor;
 
-		public override string GetName()
-		{
-			return "Spline Explorer";
-		}
+    public class Explorer : SplineTool
+    {
+        GUIStyle normalRow;
+        GUIStyle selectedRow;
+        List<SplineComputer> sceneSplines = new List<SplineComputer>();
+        List<int> selected = new List<int>();
+        Vector2 scroll = Vector2.zero;
+        bool mouseLeft = false;
 
-		protected override string GetPrefix()
-		{
-			return "SplineExplorer";
-		}
+        public override string GetName()
+        {
+            return "Spline Explorer";
+        }
 
-		public override void Open(EditorWindow window)
-		{
-			base.Open(window);
-			m_normalRow = new GUIStyle(GUI.skin.box);
-			m_normalRow.normal.background = null;
-			m_normalRow.alignment = TextAnchor.MiddleLeft;
-			m_selectedRow = new GUIStyle(m_normalRow);
-			m_selectedRow.normal.background = SplineEditorGui.white;
-			m_selectedRow.normal.textColor = SplinePrefs.highlightContentColor;
-			GetSceneSplines();
+        protected override string GetPrefix()
+        {
+            return "SplineExplorer";
+        }
+
+        public override void Open(EditorWindow window)
+        {
+            base.Open(window);
+            normalRow = new GUIStyle(GUI.skin.box);
+            normalRow.normal.background = null;
+            normalRow.alignment = TextAnchor.MiddleLeft;
+            selectedRow = new GUIStyle(normalRow);
+            selectedRow.normal.background = SplineEditorGUI.white;
+            selectedRow.normal.textColor = SplinePrefs.highlightContentColor;
+            GetSceneSplines();
 #if UNITY_2019_1_OR_NEWER
-			SceneView.duringSceneGui += OnScene;
+            SceneView.duringSceneGui += OnScene;
 #else
             SceneView.onSceneGUIDelegate += OnScene;
 #endif
-		}
 
-		public override void Close()
-		{
-			base.Close();
+        }
+
+        public override void Close()
+        {
+            base.Close();
 #if UNITY_2019_1_OR_NEWER
-			SceneView.duringSceneGui -= OnScene;
+            SceneView.duringSceneGui -= OnScene;
 #else
             SceneView.onSceneGUIDelegate -= OnScene;
 #endif
-		}
 
-		private void OnScene(SceneView current)
-		{
-			if (m_selected.Count > 1)
-			{
-				for (var i = 0; i < m_selected.Count; i++)
-				{
-					if (!m_sceneSplines[m_selected[i]].editorAlwaysDraw)
-					{
-						DssplineDrawer.DrawSplineComputer(m_sceneSplines[m_selected[i]]);
-					}
-				}
-			}
-		}
+        }
 
-		private void GetSceneSplines()
-		{
-			m_sceneSplines = new List<SplineComputer>(Resources.FindObjectsOfTypeAll<SplineComputer>());
-		}
+        void OnScene(SceneView current)
+        {
+            if(selected.Count > 1)
+            {
+                for (int i = 0; i < selected.Count; i++)
+                {
+                    if (!sceneSplines[selected[i]].editorAlwaysDraw)
+                    {
+                        DSSplineDrawer.DrawSplineComputer(sceneSplines[selected[i]]);
+                    }
+                }
+            }
+        }
 
-		public override void Draw(Rect rect)
-		{
-			switch (Event.current.type)
-			{
-				case EventType.MouseDown:
-					if (Event.current.button == 0)
-					{
-						m_mouseLeft = true;
-					}
+        void GetSceneSplines()
+        {
+            sceneSplines = new List<SplineComputer>(Resources.FindObjectsOfTypeAll<SplineComputer>());
+        }
 
-					break;
-				case EventType.MouseUp:
-					if (Event.current.button == 0)
-					{
-						m_mouseLeft = false;
-					}
+        public override void Draw(Rect rect)
+        {
+            switch (Event.current.type)
+            {
+                case EventType.MouseDown:
+                    if (Event.current.button == 0) mouseLeft = true; 
+                    break;
+                case EventType.MouseUp: if (Event.current.button == 0) mouseLeft = false; break;
+            }
 
-					break;
-			}
-
-			Rect lastRect;
-			m_scroll = EditorGUILayout.BeginScrollView(m_scroll, GUILayout.Width(rect.width),
-				GUILayout.Height(rect.height));
-			EditorGUILayout.BeginHorizontal(m_normalRow);
-			EditorGUILayout.LabelField("Name", EditorStyles.boldLabel, GUILayout.Width(rect.width - 200));
-			EditorGUILayout.LabelField("Color", EditorStyles.boldLabel, GUILayout.Width(65));
-			EditorGUILayout.LabelField("Draw", EditorStyles.boldLabel, GUILayout.Width(40));
-			EditorGUILayout.LabelField("Thickness", EditorStyles.boldLabel, GUILayout.Width(60));
-			EditorGUILayout.EndHorizontal();
-			EditorGUI.BeginChangeCheck();
-			for (var i = 0; i < m_sceneSplines.Count; i++)
-			{
-				bool isSelected = m_selected.Contains(i);
-				if (isSelected)
-				{
-					GUI.backgroundColor = SplinePrefs.highlightColor;
-				}
-
-				EditorGUILayout.BeginHorizontal(isSelected ? m_selectedRow : m_normalRow);
-				EditorGUILayout.LabelField(m_sceneSplines[i].name, isSelected ? m_selectedRow : m_normalRow,
-					GUILayout.Width(rect.width - 200));
-				GUI.backgroundColor = Color.white;
-				Color pathColor = m_sceneSplines[i].editorPathColor;
-				pathColor = EditorGUILayout.ColorField(pathColor, GUILayout.Width(65));
-				if (pathColor != m_sceneSplines[i].editorPathColor)
-				{
-					foreach (int index in m_selected)
-					{
-						m_sceneSplines[index].editorPathColor = pathColor;
-					}
-				}
-
-				bool alwaysDraw = m_sceneSplines[i].editorAlwaysDraw;
-				alwaysDraw = EditorGUILayout.Toggle(alwaysDraw, GUILayout.Width(40));
-				if (alwaysDraw != m_sceneSplines[i].editorAlwaysDraw)
-				{
-					foreach (int index in m_selected)
-					{
-						if (alwaysDraw)
-						{
-							DssplineDrawer.RegisterComputer(m_sceneSplines[index]);
-						}
-						else
-						{
-							DssplineDrawer.UnregisterComputer(m_sceneSplines[index]);
-						}
-					}
-				}
-
-				bool thickness = m_sceneSplines[i].editorDrawThickness;
-				thickness = EditorGUILayout.Toggle(thickness, GUILayout.Width(40));
-				if (thickness != m_sceneSplines[i].editorDrawThickness)
-				{
-					foreach (int index in m_selected)
-					{
-						m_sceneSplines[index].editorDrawThickness = thickness;
-					}
-				}
-
-				EditorGUILayout.EndHorizontal();
-				lastRect = GUILayoutUtility.GetLastRect();
-				if (m_mouseLeft)
-				{
-					if (lastRect.Contains(Event.current.mousePosition))
-					{
-						if (Event.current.control)
-						{
-							if (!m_selected.Contains(i))
-							{
-								m_selected.Add(i);
-							}
-						}
-						else if (m_selected.Count > 0 && Event.current.shift)
-						{
-							int closest = m_selected[0];
-							int delta = m_sceneSplines.Count;
-							for (var j = 0; j < m_selected.Count; j++)
-							{
-								int d = Mathf.Abs(i - m_selected[j]);
-								if (d < delta)
-								{
-									delta = d;
-									closest = m_selected[j];
-								}
-							}
-
-							if (closest < i)
-							{
-								for (int j = closest + 1; j <= i; j++)
-								{
-									if (m_selected.Contains(j))
-									{
-										continue;
-									}
-
-									m_selected.Add(j);
-								}
-							}
-							else
-							{
-								for (int j = closest - 1; j >= i; j--)
-								{
-									if (m_selected.Contains(j))
-									{
-										continue;
-									}
-
-									m_selected.Add(j);
-								}
-							}
-						}
-						else
-						{
-							m_selected = new List<int>(new[] { i });
-						}
-
-						var selectGo = new List<GameObject>();
-						foreach (int index in m_selected)
-						{
-							selectGo.Add(m_sceneSplines[index].gameObject);
-						}
-
-						Selection.objects = selectGo.ToArray();
-						Repaint();
-					}
-				}
-			}
-
-			if (EditorGUI.EndChangeCheck())
-			{
-				SceneView.RepaintAll();
-			}
-
-			EditorGUILayout.EndScrollView();
-			if (Event.current.type == EventType.KeyDown)
-			{
-				if (Event.current.keyCode == KeyCode.DownArrow)
-				{
-					if (m_selected.Count > 0)
-					{
-						m_selected = new List<int>(new[] { m_selected[0] });
-					}
-					else
-					{
-						m_selected[0]++;
-					}
-				}
-				else if (Event.current.keyCode == KeyCode.UpArrow)
-				{
-					if (m_selected.Count > 0)
-					{
-						m_selected = new List<int>(new[] { m_selected[m_selected.Count - 1] });
-					}
-					else
-					{
-						m_selected[0]++;
-					}
-				}
-
-				if (m_selected.Count == 0)
-				{
-					return;
-				}
-
-				if (m_selected[0] < 0)
-				{
-					m_selected[0] = m_sceneSplines.Count - 1;
-				}
-
-				if (m_selected[0] >= m_sceneSplines.Count)
-				{
-					m_selected[0] = 0;
-				}
-
-				if (m_sceneSplines.Count > 0)
-				{
-					Selection.activeGameObject = m_sceneSplines[m_selected[0]].gameObject;
-				}
-			}
-		}
-	}
+            Rect lastRect;
+            scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Width(rect.width), GUILayout.Height(rect.height));
+            EditorGUILayout.BeginHorizontal(normalRow);
+            EditorGUILayout.LabelField("Name", EditorStyles.boldLabel, GUILayout.Width(rect.width - 200));
+            EditorGUILayout.LabelField("Color", EditorStyles.boldLabel, GUILayout.Width(65));
+            EditorGUILayout.LabelField("Draw", EditorStyles.boldLabel, GUILayout.Width(40));
+            EditorGUILayout.LabelField("Thickness", EditorStyles.boldLabel, GUILayout.Width(60));
+            EditorGUILayout.EndHorizontal();
+            EditorGUI.BeginChangeCheck();
+            for (int i = 0; i < sceneSplines.Count; i++)
+            {
+                bool isSelected = selected.Contains(i);
+                if (isSelected) GUI.backgroundColor = SplinePrefs.highlightColor;
+                
+                EditorGUILayout.BeginHorizontal(isSelected ? selectedRow : normalRow);
+                EditorGUILayout.LabelField(sceneSplines[i].name, isSelected ? selectedRow : normalRow, GUILayout.Width(rect.width-200));
+                GUI.backgroundColor = Color.white;
+                Color pathColor = sceneSplines[i].editorPathColor;
+                pathColor = EditorGUILayout.ColorField(pathColor, GUILayout.Width(65));
+                if(pathColor != sceneSplines[i].editorPathColor)
+                {
+                    foreach (int index in selected) sceneSplines[index].editorPathColor = pathColor;
+                }
+                bool alwaysDraw = sceneSplines[i].editorAlwaysDraw;
+                alwaysDraw = EditorGUILayout.Toggle(alwaysDraw, GUILayout.Width(40));
+                if(alwaysDraw != sceneSplines[i].editorAlwaysDraw)
+                {
+                    foreach (int index in selected)
+                    {
+                        if (alwaysDraw)
+                        {
+                            DSSplineDrawer.RegisterComputer(sceneSplines[index]);
+                        }
+                        else
+                        {
+                            DSSplineDrawer.UnregisterComputer(sceneSplines[index]);
+                        }
+                    }
+                }
+                bool thickness = sceneSplines[i].editorDrawThickness;
+                thickness = EditorGUILayout.Toggle(thickness, GUILayout.Width(40));
+                if(thickness != sceneSplines[i].editorDrawThickness)
+                {
+                    foreach (int index in selected) sceneSplines[index].editorDrawThickness = thickness;
+                }
+                EditorGUILayout.EndHorizontal();
+                lastRect = GUILayoutUtility.GetLastRect();
+                if (mouseLeft)
+                {
+                    if (lastRect.Contains(Event.current.mousePosition))
+                    {
+                        if (Event.current.control)
+                        {
+                            if (!selected.Contains(i)) selected.Add(i);
+                        }
+                        else if (selected.Count > 0 && Event.current.shift)
+                        {
+                            int closest = selected[0];
+                            int delta = sceneSplines.Count;
+                            for (int j = 0; j < selected.Count; j++)
+                            {
+                                int d = Mathf.Abs(i - selected[j]);
+                                if (d < delta)
+                                {
+                                    delta = d;
+                                    closest = selected[j];
+                                }
+                            }
+                            if (closest < i)
+                            {
+                                for (int j = closest + 1; j <= i; j++)
+                                {
+                                    if (selected.Contains(j)) continue;
+                                    selected.Add(j);
+                                }
+                            }
+                            else
+                            {
+                                for (int j = closest - 1; j >= i; j--)
+                                {
+                                    if (selected.Contains(j)) continue;
+                                    selected.Add(j);
+                                }
+                            }
+                        }
+                        else selected = new List<int>(new int[] { i });
+                        List<GameObject> selectGo = new List<GameObject>();
+                        foreach(int index in selected) selectGo.Add(sceneSplines[index].gameObject);
+                        Selection.objects = selectGo.ToArray();
+                        Repaint();
+                    }
+                }
+            }
+            if (EditorGUI.EndChangeCheck()) SceneView.RepaintAll();
+            EditorGUILayout.EndScrollView();
+            if(Event.current.type == EventType.KeyDown)
+            {
+                if (Event.current.keyCode == KeyCode.DownArrow)
+                {
+                    if (selected.Count > 0) selected = new List<int>(new int[] { selected[0] });
+                    else selected[0]++;
+                }
+                else if (Event.current.keyCode == KeyCode.UpArrow)
+                {
+                    if (selected.Count > 0) selected = new List<int>(new int[] { selected[selected.Count - 1] });
+                    else selected[0]++;
+                }
+                if (selected.Count == 0) return;
+                if (selected[0] < 0) selected[0] = sceneSplines.Count - 1;
+                if (selected[0] >= sceneSplines.Count) selected[0] = 0;
+                if (sceneSplines.Count > 0) Selection.activeGameObject = sceneSplines[selected[0]].gameObject;
+            }
+        }
+    }
 }

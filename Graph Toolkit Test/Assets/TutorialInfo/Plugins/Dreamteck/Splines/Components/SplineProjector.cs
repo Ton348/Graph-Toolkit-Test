@@ -1,290 +1,252 @@
 using UnityEngine;
+using UnityEngine.Events;
+using System.Collections;
+using UnityEngine.Serialization;
 
 namespace Dreamteck.Splines
 {
-	[ExecuteInEditMode]
-	[AddComponentMenu("Dreamteck/Splines/Users/Spline Projector")]
-	public class SplineProjector : SplineTracer
-	{
-		public enum Mode
-		{
-			Accurate,
-			Cached
-		}
+    [ExecuteInEditMode]
+    [AddComponentMenu("Dreamteck/Splines/Users/Spline Projector")]
+    public class SplineProjector : SplineTracer
+    {
+        public enum Mode {Accurate, Cached}
+        public Mode mode
+        {
+            get { return _mode; }
+            set
+            {
+                if(value != _mode)
+                {
+                    _mode = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Mode m_mode = Mode.Cached;
+        public bool autoProject
+        {
+            get { return _autoProject; }
+            set
+            {
+                if(value != _autoProject)
+                {
+                    _autoProject = value;
+                    if (_autoProject) Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private bool m_autoProject = true;
+        public int subdivide
+        {
+            get { return _subdivide; }
+            set
+            {
+                if (value != _subdivide)
+                {
+                    _subdivide = value;
+                    if (_mode == Mode.Accurate) Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		[Range(3, 8)]
-		private int m_subdivide = 4;
+        public Transform projectTarget
+        {
+            get {
+                if (_projectTarget == null) return transform;
+                return _projectTarget; 
+            }
+            set
+            {
+                if (value != _projectTarget)
+                {
+                    _projectTarget = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Transform m_projectTarget;
+        public GameObject targetObject
+        {
+            get
+            {
+                if (_targetObject == null)
+                {
+                    if (applyTarget != null) //Temporary check to migrate SplineProjectors that use target
+                    {
+                        _targetObject = applyTarget.gameObject;
+                        applyTarget = null;
+                        return _targetObject;
+                    }
+                }
+                return _targetObject;
+            }
 
+            set
+            {
+                if (value != _targetObject)
+                {
+                    _targetObject = value;
+                    RefreshTargets();
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Transform m_applyTarget;
-
-		[SerializeField]
-		[HideInInspector]
-		private GameObject m_targetObject;
-
-		[SerializeField]
-		[HideInInspector]
-		public Vector2 offset;
-
-		[SerializeField]
-		[HideInInspector]
-		public Vector3 rotationOffset = Vector3.zero;
-
-		[SerializeField]
-		[HideInInspector]
-		private Vector3 m_lastPosition = Vector3.zero;
-
-		public Mode mode
-		{
-			get => m_mode;
-			set
-			{
-				if (value != m_mode)
-				{
-					m_mode = value;
-					Rebuild();
-				}
-			}
-		}
-
-		public bool autoProject
-		{
-			get => m_autoProject;
-			set
-			{
-				if (value != m_autoProject)
-				{
-					m_autoProject = value;
-					if (m_autoProject)
-					{
-						Rebuild();
-					}
-				}
-			}
-		}
-
-		public int subdivide
-		{
-			get => m_subdivide;
-			set
-			{
-				if (value != m_subdivide)
-				{
-					m_subdivide = value;
-					if (m_mode == Mode.Accurate)
-					{
-						Rebuild();
-					}
-				}
-			}
-		}
-
-		public Transform projectTarget
-		{
-			get
-			{
-				if (m_projectTarget == null)
-				{
-					return transform;
-				}
-
-				return m_projectTarget;
-			}
-			set
-			{
-				if (value != m_projectTarget)
-				{
-					m_projectTarget = value;
-					Rebuild();
-				}
-			}
-		}
-
-		public GameObject targetObject
-		{
-			get
-			{
-				if (m_targetObject == null)
-				{
-					if (m_applyTarget != null) //Temporary check to migrate SplineProjectors that use target
-					{
-						m_targetObject = m_applyTarget.gameObject;
-						m_applyTarget = null;
-						return m_targetObject;
-					}
-				}
-
-				return m_targetObject;
-			}
-
-			set
-			{
-				if (value != m_targetObject)
-				{
-					m_targetObject = value;
-					RefreshTargets();
-					Rebuild();
-				}
-			}
-		}
-
-		protected override void Reset()
-		{
-			base.Reset();
-			m_projectTarget = transform;
-		}
-
-		public event SplineReachHandler onEndReached;
-		public event SplineReachHandler onBeginningReached;
-
-		protected override Transform GetTransform()
-		{
-			if (targetObject == null)
-			{
-				return null;
-			}
-
-			return targetObject.transform;
-		}
-
-		protected override Rigidbody GetRigidbody()
-		{
-			if (targetObject == null)
-			{
-				return null;
-			}
-
-			return targetObject.GetComponent<Rigidbody>();
-		}
-
-		protected override Rigidbody2D GetRigidbody2D()
-		{
-			if (targetObject == null)
-			{
-				return null;
-			}
-
-			return targetObject.GetComponent<Rigidbody2D>();
-		}
+        [SerializeField]
+        [HideInInspector]
+        private Mode _mode = Mode.Cached;
+        [SerializeField]
+        [HideInInspector]
+        private bool _autoProject = true;
+        [SerializeField]
+        [HideInInspector]
+        [Range(3, 8)]
+        private int _subdivide = 4;
+        [SerializeField]
+        [HideInInspector]
+        private Transform _projectTarget;
 
 
-		protected override void LateRun()
-		{
-			base.LateRun();
-			if (autoProject)
-			{
-				if (projectTarget && m_lastPosition != projectTarget.position)
-				{
-					m_lastPosition = projectTarget.position;
-					CalculateProjection();
-				}
-			}
-		}
+        [SerializeField]
+        [HideInInspector]
+        private Transform applyTarget = null;
+        [SerializeField]
+        [HideInInspector]
+        private GameObject _targetObject;
 
-		protected override void PostBuild()
-		{
-			base.PostBuild();
-			CalculateProjection();
-		}
+        [SerializeField]
+        [HideInInspector]
+        public Vector2 _offset;
+        [SerializeField]
+        [HideInInspector]
+        public Vector3 _rotationOffset = Vector3.zero;
 
-		protected override void OnSplineChanged()
-		{
-			if (spline != null)
-			{
-				if (m_mode == Mode.Accurate)
-				{
-					spline.Project(m_projectTarget.position, ref m_result, clipFrom, clipTo,
-						SplineComputer.EvaluateMode.Calculate, subdivide);
-				}
-				else
-				{
-					spline.Project(m_projectTarget.position, ref m_result, clipFrom, clipTo);
-				}
+        public event SplineReachHandler onEndReached;
+        public event SplineReachHandler onBeginningReached;
 
-				m_result.percent = ClipPercent(m_result.percent);
-			}
-		}
+        [SerializeField]
+        [HideInInspector]
+        Vector3 lastPosition = Vector3.zero;
 
+        protected override void Reset()
+        {
+            base.Reset();
+            _projectTarget = transform;
+        }
 
-		private void Project()
-		{
-			if (m_mode == Mode.Accurate && spline != null)
-			{
-				spline.Project(m_projectTarget.position, ref m_result, clipFrom, clipTo,
-					SplineComputer.EvaluateMode.Calculate, subdivide);
-				m_result.percent = ClipPercent(m_result.percent);
-			}
-			else
-			{
-				Project(m_projectTarget.position, ref m_result);
-			}
-		}
+        protected override Transform GetTransform()
+        {
+            if (targetObject == null) return null;
+            return targetObject.transform;
+        }
 
-		public void CalculateProjection()
-		{
-			if (m_projectTarget == null)
-			{
-				return;
-			}
+        protected override Rigidbody GetRigidbody()
+        {
+            if (targetObject == null) return null;
+            return targetObject.GetComponent<Rigidbody>();
+        }
 
-			double lastPercent = m_result.percent;
-			Project();
-
-			if (onBeginningReached != null && m_result.percent <= clipFrom)
-			{
-				if (!Mathf.Approximately((float)lastPercent, (float)m_result.percent))
-				{
-					onBeginningReached();
-					if (samplesAreLooped)
-					{
-						CheckTriggers(lastPercent, 0.0);
-						CheckNodes(lastPercent, 0.0);
-						lastPercent = 1.0;
-					}
-				}
-			}
-			else if (onEndReached != null && m_result.percent >= clipTo)
-			{
-				if (!Mathf.Approximately((float)lastPercent, (float)m_result.percent))
-				{
-					onEndReached();
-					if (samplesAreLooped)
-					{
-						CheckTriggers(lastPercent, 1.0);
-						CheckNodes(lastPercent, 1.0);
-						lastPercent = 0.0;
-					}
-				}
-			}
-
-			CheckTriggers(lastPercent, m_result.percent);
-			CheckNodes(lastPercent, m_result.percent);
+        protected override Rigidbody2D GetRigidbody2D()
+        {
+            if (targetObject == null) return null;
+            return targetObject.GetComponent<Rigidbody2D>();
+        }
 
 
-			if (targetObject != null)
-			{
-				ApplyMotion();
-			}
+        protected override void LateRun()
+        {
+            base.LateRun();
+            if (autoProject)
+            {
+                if (projectTarget && lastPosition != projectTarget.position)
+                {
+                    lastPosition = projectTarget.position;
+                    CalculateProjection();
+                }
+            }
+         }
 
-			InvokeTriggers();
-			InvokeNodes();
-			m_lastPosition = projectTarget.position;
-		}
-	}
+        protected override void PostBuild()
+        {
+            base.PostBuild();
+            CalculateProjection();
+        }
+
+        protected override void OnSplineChanged()
+        {
+            if (spline != null)
+            {
+                if (_mode == Mode.Accurate)
+                {
+                    spline.Project(_projectTarget.position, ref _result, clipFrom, clipTo, SplineComputer.EvaluateMode.Calculate, subdivide);
+                } 
+                else
+                {
+                    spline.Project(_projectTarget.position, ref _result, clipFrom, clipTo);
+                }
+                _result.percent = ClipPercent(_result.percent);
+            }
+        }
+
+
+        private void Project()
+        {
+            if (_mode == Mode.Accurate && spline != null)
+            {
+                spline.Project(_projectTarget.position, ref _result, clipFrom, clipTo, SplineComputer.EvaluateMode.Calculate, subdivide);
+                _result.percent = ClipPercent(_result.percent);
+            }
+            else
+            {
+                Project(_projectTarget.position, ref _result);
+            }
+        }
+
+        public void CalculateProjection()
+        {
+            if (_projectTarget == null) return;
+            double lastPercent = _result.percent;
+            Project();
+
+            if (onBeginningReached != null && _result.percent <= clipFrom)
+            {
+                if (!Mathf.Approximately((float)lastPercent, (float)_result.percent))
+                {
+                    onBeginningReached();
+                    if (samplesAreLooped)
+                    {
+                        CheckTriggers(lastPercent, 0.0);
+                        CheckNodes(lastPercent, 0.0);
+                        lastPercent = 1.0;
+                    }
+                }
+            }
+            else if (onEndReached != null && _result.percent >= clipTo)
+            {
+                if (!Mathf.Approximately((float)lastPercent, (float)_result.percent))
+                {
+                    onEndReached();
+                    if (samplesAreLooped)
+                    {
+                        CheckTriggers(lastPercent, 1.0);
+                        CheckNodes(lastPercent, 1.0);
+                        lastPercent = 0.0;
+                    }
+                }
+            }
+
+            CheckTriggers(lastPercent, _result.percent);
+            CheckNodes(lastPercent, _result.percent);
+            
+
+            if (targetObject != null)
+            {
+                ApplyMotion();
+            }
+
+            InvokeTriggers();
+            InvokeNodes();
+            lastPosition = projectTarget.position;
+        }
+    }
 }

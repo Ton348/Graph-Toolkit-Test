@@ -1,36 +1,34 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	[CustomEditor(typeof(EdgeColliderGenerator))]
-	[CanEditMultipleObjects]
-	public class EdgeColliderGeneratorEditor : SplineUserEditor
-	{
-		protected override void BodyGui()
-		{
-			base.BodyGui();
-			var generator = (EdgeColliderGenerator)target;
+    using UnityEngine;
+    using System.Collections;
+    using UnityEditor;
 
-			serializedObject.Update();
-			SerializedProperty offset = serializedObject.FindProperty("_offset");
-			SerializedProperty updateRate = serializedObject.FindProperty("updateRate");
+    [CustomEditor(typeof(EdgeColliderGenerator))]
+    [CanEditMultipleObjects]
+    public class EdgeColliderGeneratorEditor : SplineUserEditor
+    {
+        protected override void BodyGUI()
+        {
+            base.BodyGUI();
+            EdgeColliderGenerator generator = (EdgeColliderGenerator)target;
 
-			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Polygon", EditorStyles.boldLabel);
+            serializedObject.Update();
+            SerializedProperty offset = serializedObject.FindProperty("_offset");
+            SerializedProperty updateRate = serializedObject.FindProperty("updateRate");
 
-			EditorGUI.BeginChangeCheck();
-			EditorGUILayout.PropertyField(offset, new GUIContent("Offset"));
-			EditorGUILayout.PropertyField(updateRate);
-			if (updateRate.floatValue < 0f)
-			{
-				updateRate.floatValue = 0f;
-			}
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Polygon", EditorStyles.boldLabel);
 
-			if (EditorGUI.EndChangeCheck())
-			{
-				serializedObject.ApplyModifiedProperties();
-			}
-		}
-	}
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(offset, new GUIContent("Offset"));
+            EditorGUILayout.PropertyField(updateRate);
+            if (updateRate.floatValue < 0f) updateRate.floatValue = 0f;
+            if (EditorGUI.EndChangeCheck())
+            {
+                serializedObject.ApplyModifiedProperties();
+            }
+        }
+
+    }
 }

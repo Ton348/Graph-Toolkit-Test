@@ -1,102 +1,75 @@
-using System;
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	public class SplineToolsWindow : EditorWindow
-	{
-		private const float s_menuWidth = 150f;
-		private static SplineTool[] s_tools;
-		private readonly Vector2 m_scroll = Vector2.zero;
-		private int m_toolIndex = -1;
+    using UnityEngine;
+    using System;
+    using System.Collections.Generic;
+    using UnityEditor;
 
-		private void Awake()
-		{
-			titleContent = new GUIContent("Spline Tools");
-			name = "Spline tools";
-			autoRepaintOnSceneChange = true;
+    public class SplineToolsWindow : EditorWindow
+    {
+        private static SplineTool[] tools;
+        private int toolIndex = -1;
+        private Vector2 scroll = Vector2.zero;
+        private const float menuWidth = 150f;
+        [MenuItem("Window/Dreamteck/Splines/Tools")]
+        static void Init()
+        {
+            SplineToolsWindow window = (SplineToolsWindow)EditorWindow.GetWindow(typeof(SplineToolsWindow));
+            window.Show();
+        }
 
-			List<Type> types = typeof(SplineTool).GetAllDerivedClasses();
-			s_tools = new SplineTool[types.Count];
-			var count = 0;
-			foreach (Type t in types)
-			{
-				s_tools[count] = (SplineTool)Activator.CreateInstance(t);
-				count++;
-			}
+        private void Awake()
+        {
+            titleContent = new GUIContent("Spline Tools");
+            name = "Spline tools";
+            autoRepaintOnSceneChange = true;
 
-			if (m_toolIndex >= 0 && m_toolIndex < s_tools.Length)
-			{
-				s_tools[m_toolIndex].Open(this);
-			}
-		}
+            List<Type> types = FindDerivedClasses.GetAllDerivedClasses(typeof(SplineTool));
+            tools = new SplineTool[types.Count];
+            int count = 0;
+            foreach (Type t in types)
+            {
+                tools[count] = (SplineTool)Activator.CreateInstance(t);
+                count++;
+            } 
+            if (toolIndex >= 0 && toolIndex < tools.Length) tools[toolIndex].Open(this);
+        }
 
-		private void OnDestroy()
-		{
-			if (m_toolIndex >= 0 && m_toolIndex < s_tools.Length)
-			{
-				s_tools[m_toolIndex].Close();
-			}
-		}
+        void OnDestroy()
+        {
+            if (toolIndex >= 0 && toolIndex < tools.Length) tools[toolIndex].Close();
+        }
 
-		[MenuItem("Window/Dreamteck/Splines/Tools")]
-		private static void Init()
-		{
-			var window = (SplineToolsWindow)GetWindow(typeof(SplineToolsWindow));
-			window.Show();
-		}
+        void OnGUI()
+        {
+            if (tools == null) Awake(); 
+            GUI.color = new Color(0f, 0f, 0f, 0.15f);
+            GUI.DrawTexture(new Rect(0, 0, menuWidth, position.height), SplineEditorGUI.white, ScaleMode.StretchToFill);
+            GUI.color = Color.white;
+            GUILayout.BeginHorizontal();
+            GUILayout.BeginScrollView(scroll, GUILayout.Width(menuWidth), GUILayout.Height(position.height-10));
+            if (tools == null) Init();
+            SplineEditorGUI.SetHighlightColors(SplinePrefs.highlightColor, SplinePrefs.highlightContentColor);
+            for (int i = 0; i < tools.Length; i ++)
+            {
+                if (SplineEditorGUI.EditorLayoutSelectableButton(new GUIContent(tools[i].GetName()), true, toolIndex == i))
+                {
+                    if (toolIndex >= 0 && toolIndex < tools.Length) tools[toolIndex].Close();
+                    toolIndex = i;
+                    if (toolIndex < tools.Length) tools[toolIndex].Open(this);
+                }
+            }
+            GUILayout.EndScrollView();
 
-		private void OnGui()
-		{
-			if (s_tools == null)
-			{
-				Awake();
-			}
-
-			GUI.color = new Color(0f, 0f, 0f, 0.15f);
-			GUI.DrawTexture(new Rect(0, 0, s_menuWidth, position.height), SplineEditorGui.white,
-				ScaleMode.StretchToFill);
-			GUI.color = Color.white;
-			GUILayout.BeginHorizontal();
-			GUILayout.BeginScrollView(m_scroll, GUILayout.Width(s_menuWidth), GUILayout.Height(position.height - 10));
-			if (s_tools == null)
-			{
-				Init();
-			}
-
-			SplineEditorGui.SetHighlightColors(SplinePrefs.highlightColor, SplinePrefs.highlightContentColor);
-			for (var i = 0; i < s_tools.Length; i++)
-			{
-				if (SplineEditorGui.EditorLayoutSelectableButton(new GUIContent(s_tools[i].GetName()), true,
-					    m_toolIndex == i))
-				{
-					if (m_toolIndex >= 0 && m_toolIndex < s_tools.Length)
-					{
-						s_tools[m_toolIndex].Close();
-					}
-
-					m_toolIndex = i;
-					if (m_toolIndex < s_tools.Length)
-					{
-						s_tools[m_toolIndex].Open(this);
-					}
-				}
-			}
-
-			GUILayout.EndScrollView();
-
-
-			if (m_toolIndex >= 0 && m_toolIndex < s_tools.Length)
-			{
-				GUILayout.BeginVertical();
-				s_tools[m_toolIndex]
-					.Draw(new Rect(s_menuWidth, 0, position.width - s_menuWidth - 5f, position.height - 10));
-				GUILayout.EndVertical();
-			}
-
-			GUILayout.EndHorizontal();
-		}
-	}
+           
+            if(toolIndex >= 0 && toolIndex < tools.Length)
+            {
+                GUILayout.BeginVertical();
+                tools[toolIndex].Draw(new Rect(menuWidth, 0, position.width - menuWidth - 5f, position.height - 10));
+                GUILayout.EndVertical();
+            }
+            GUILayout.EndHorizontal();
+        }
+        
+    }
 }

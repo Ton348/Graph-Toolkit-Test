@@ -1,559 +1,415 @@
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-using Random = System.Random;
-
 namespace Dreamteck.Splines.Editor
 {
-	public class ObjectSpawnTool : SplineTool
-	{
-		private readonly List<GameObject> m_objects = new();
+    using UnityEngine;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEditor;
+    using System.IO;
 
-		internal List<SpawnCollection> collections = new();
-		private bool m_applyRotation = true;
-		private bool m_applyScale;
-		private double m_clipFrom, m_clipTo = 1.0;
+    public class ObjectSpawnTool : SplineTool
+    {
+        internal class SpawnCollection
+        {
+            public class SpawnObject
+            {
+                public GameObject instance;
+                public GameObject source;
 
-		private Iteration m_iteration = Iteration.Ordered;
-		private Vector3 m_maxRotationOffset = Vector3.zero;
-		private Vector3 m_maxScaleMultiplier = Vector3.one;
-		private Vector3 m_minRotationOffset = Vector3.zero;
-		private Vector3 m_minScaleMultiplier = Vector3.one;
-		private Vector2 m_offset = Vector2.zero;
-		private int m_offsetSeed;
+                public SpawnObject(GameObject instance, GameObject source)
+                {
+                    this.instance = instance;
+                    this.source = source;
+                }
+            }
 
-		private Random m_orderRandom, m_offsetRandom, m_rotationRandom, m_scaleRandom;
-		private int m_orderSeed;
-		private float m_positionOffset;
-		private bool m_randomizeOffset;
-		private Vector2 m_randomSize = Vector2.one;
+            internal SplineComputer spline;
+            internal List<SpawnObject> objects = new List<SpawnObject>();
 
-		private SplineSample m_result;
-		private int m_rotationSeed;
-		private int m_scaleSeed;
-		private bool m_shellOffset = true;
-		private int m_spawnCount = 1;
-		private bool m_uniform;
-		private bool m_useRandomOffsetRotation;
+            internal void Clear()
+            {
+                for (int i = 0; i < objects.Count; i++) Object.DestroyImmediate(objects[i].instance);
+                objects.Clear();
+            }
 
-		public override string GetName()
-		{
-			return "Spawn Objects";
-		}
+            internal void Spawn(GameObject obj, Vector3 position, Quaternion rotation)
+            {
+                GameObject go = null;
+                bool isPrefab = PrefabUtility.GetPrefabAssetType(obj) != PrefabAssetType.NotAPrefab;
 
-		protected override string GetPrefix()
-		{
-			return "ObjectSpawnTool";
-		}
+                if (isPrefab) go = (GameObject)PrefabUtility.InstantiatePrefab(obj);
+                else go = Object.Instantiate(obj, position, rotation);
+                go.transform.parent = spline.transform;
+                objects.Add(new SpawnObject(go, obj));
+            }
 
-		public override void Close()
-		{
-			base.Close();
-			for (var i = 0; i < m_splines.Count; i++)
-			{
-				m_splines[i].onRebuild -= Rebuild;
-			}
+            internal void Destroy(int index)
+            {
+                Object.DestroyImmediate(objects[index].instance);
+                objects.RemoveAt(index);
+            }
 
-			if (m_promptSave)
-			{
-				if (EditorUtility.DisplayDialog("Save changes?",
-					    "You are about to close the Object Spawn Tool, do you want to save the generated objects?",
-					    "Yes", "No"))
-				{
-					Save();
-				}
-				else
-				{
-					Cancel();
-				}
-			}
-			else
-			{
-				Cancel();
-			}
+            internal SpawnCollection(SplineComputer spline)
+            {
+                this.spline = spline;
+            }
+        }
 
-			m_promptSave = false;
+        internal List<SpawnCollection> collections = new List<SpawnCollection>();
+        double clipFrom = 0.0, clipTo = 1.0;
+        List<GameObject> objects = new List<GameObject>();
+        int spawnCount = 1;
+        enum Iteration { Ordered, Random }
+        Iteration iteration = Iteration.Ordered;
+        private int offsetSeed = 0;
+        private int rotationSeed = 0;
+        private int scaleSeed = 0;
+        private int orderSeed = 0;
+        private float positionOffset = 0f;
+        private Vector2 randomSize = Vector2.one;
+        private Vector2 offset = Vector2.zero;
+        private Vector3 minRotationOffset = Vector3.zero;
+        private Vector3 maxRotationOffset = Vector3.zero;
+        private Vector3 minScaleMultiplier = Vector3.one;
+        private Vector3 maxScaleMultiplier = Vector3.one;
+        private bool randomizeOffset = false;
+        private bool useRandomOffsetRotation = false;
+        private bool shellOffset = true;
+        private bool applyRotation = true;
+        private bool applyScale = false;
+        bool uniform = false;
+
+        SplineSample result = new SplineSample();
+
+        System.Random orderRandom, offsetRandom, rotationRandom, scaleRandom;
+
+        public override string GetName()
+        {
+            return "Spawn Objects";
+        }
+
+        protected override string GetPrefix()
+        {
+            return "ObjectSpawnTool";
+        }
+
+        public override void Close()
+        {
+            base.Close();
+            for (int i = 0; i < splines.Count; i++) splines[i].onRebuild -= Rebuild;
+            if (promptSave)
+            {
+                if (EditorUtility.DisplayDialog("Save changes?", "You are about to close the Object Spawn Tool, do you want to save the generated objects?", "Yes", "No")) Save();
+                else Cancel();
+            }
+            else Cancel();
+            promptSave = false;
 #if UNITY_2019_1_OR_NEWER
-			SceneView.duringSceneGui -= OnScene;
+            SceneView.duringSceneGui -= OnScene;
 #else
             SceneView.onSceneGUIDelegate -= OnScene;
 #endif
-		}
 
-		public override void Open(EditorWindow window)
-		{
-			base.Open(window);
-			GetSplines();
-			collections.Clear();
-			for (var i = 0; i < m_splines.Count; i++)
-			{
-				collections.Add(new SpawnCollection(m_splines[i]));
-				m_splines[i].onRebuild += Rebuild;
-			}
+        }
 
-			Rebuild();
+        public override void Open(EditorWindow window)
+        {
+            base.Open(window);
+            GetSplines();
+            collections.Clear();
+            for (int i = 0; i < splines.Count; i++)
+            {
+                collections.Add(new SpawnCollection(splines[i]));
+                splines[i].onRebuild += Rebuild;
+            }
+            Rebuild();
 #if UNITY_2019_1_OR_NEWER
-			SceneView.duringSceneGui += OnScene;
+            SceneView.duringSceneGui += OnScene;
 #else
             SceneView.onSceneGUIDelegate += OnScene;
 #endif
-		}
 
-		private void OnScene(SceneView current)
-		{
-			for (var i = 0; i < collections.Count; i++)
-			{
-				if (collections[i].spline != null)
-				{
-					DssplineDrawer.DrawSplineComputer(collections[i].spline);
-				}
-			}
-		}
+        }
 
-		protected override void OnSplineAdded(SplineComputer spline)
-		{
-			base.OnSplineAdded(spline);
-			collections.Add(new SpawnCollection(spline));
-			spline.onRebuild += Rebuild;
-			Rebuild();
-		}
+        void OnScene(SceneView current)
+        {
+            for (int i = 0; i < collections.Count; i++)
+            {
+                if (collections[i].spline != null) DSSplineDrawer.DrawSplineComputer(collections[i].spline);
+            }
+        }
 
-		protected override void OnSplineRemoved(SplineComputer spline)
-		{
-			base.OnSplineRemoved(spline);
-			for (var i = 0; i < collections.Count; i++)
-			{
-				if (collections[i].spline == spline)
-				{
-					collections[i].Clear();
-					collections.RemoveAt(i);
-					spline.onRebuild -= Rebuild;
-					Rebuild();
-					return;
-				}
-			}
-		}
+        protected override void OnSplineAdded(SplineComputer spline)
+        {
+            base.OnSplineAdded(spline);
+            collections.Add(new SpawnCollection(spline));
+            spline.onRebuild += Rebuild;
+            Rebuild();
+        }
 
-		public override void Draw(Rect windowRect)
-		{
-			base.Draw(windowRect);
-			if (m_splines.Count == 0)
-			{
-				EditorGUILayout.HelpBox("No spline selected! Select an object with a SplineComputer component.",
-					MessageType.Warning);
-				return;
-			}
+        protected override void OnSplineRemoved(SplineComputer spline)
+        {
+            base.OnSplineRemoved(spline);
+            for (int i = 0; i < collections.Count; i++)
+            {
+                if (collections[i].spline == spline)
+                {
+                    collections[i].Clear();
+                    collections.RemoveAt(i);
+                    spline.onRebuild -= Rebuild;
+                    Rebuild();
+                    return;
+                }
+            }
+        }
 
-			EditorGUI.BeginChangeCheck();
-			ClipUI(ref m_clipFrom, ref m_clipTo);
-			m_uniform = EditorGUILayout.Toggle("Uniform Samples", m_uniform);
-			EditorGUILayout.Space();
-			float labelWidth = EditorGUIUtility.labelWidth;
-			float fieldWidth = EditorGUIUtility.fieldWidth;
-			EditorGUIUtility.labelWidth = 0;
-			EditorGUIUtility.fieldWidth = 0;
+        public override void Draw(Rect windowRect)
+        {
+            base.Draw(windowRect);
+            if (splines.Count == 0)
+            {
+                EditorGUILayout.HelpBox("No spline selected! Select an object with a SplineComputer component.", MessageType.Warning);
+                return;
+            }
+            EditorGUI.BeginChangeCheck();
+            ClipUI(ref clipFrom, ref clipTo);
+            uniform = EditorGUILayout.Toggle("Uniform Samples", uniform);
+            EditorGUILayout.Space();
+            float labelWidth = EditorGUIUtility.labelWidth;
+            float fieldWidth = EditorGUIUtility.fieldWidth;
+            EditorGUIUtility.labelWidth = 0;
+            EditorGUIUtility.fieldWidth = 0;
 
-			EditorGUILayout.BeginVertical();
-			for (var i = 0; i < m_objects.Count; i++)
-			{
-				EditorGUILayout.BeginHorizontal();
-				m_objects[i] = (GameObject)EditorGUILayout.ObjectField(m_objects[i], typeof(GameObject), true);
-				if (GUILayout.Button("x", GUILayout.Width(20)))
-				{
-					m_objects.RemoveAt(i);
-					i--;
-					Rebuild();
-					Repaint();
-					continue;
-				}
+            EditorGUILayout.BeginVertical();
+            for (int i = 0; i < objects.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                objects[i] = (GameObject)EditorGUILayout.ObjectField(objects[i], typeof(GameObject), true);
+                if (GUILayout.Button("x", GUILayout.Width(20)))
+                {
+                    objects.RemoveAt(i);
+                    i--;
+                    Rebuild();
+                    Repaint();
+                    continue;
+                }
+                if (i > 0)
+                {
+                    if (GUILayout.Button("▲", GUILayout.Width(20)))
+                    {
+                        GameObject temp = objects[i - 1];
+                        objects[i - 1] = objects[i];
+                        objects[i] = temp;
+                        Rebuild();
+                    }
+                }
+                if (i < objects.Count - 1)
+                {
+                    if (GUILayout.Button("▼", GUILayout.Width(20)))
+                    {
+                        GameObject temp = objects[i + 1];
+                        objects[i + 1] = objects[i];
+                        objects[i] = temp;
+                        Rebuild();
+                    }
+                }
+                EditorGUILayout.EndHorizontal();
+            }
+            EditorGUILayout.EndVertical();
+            GameObject newObj = null;
+            newObj = (GameObject)EditorGUILayout.ObjectField("Add Object", newObj, typeof(GameObject), true);
+            if (newObj != null)
+            {
+                objects.Add(newObj);
+                Rebuild();
+            }
+            EditorGUILayout.Space();
 
-				if (i > 0)
-				{
-					if (GUILayout.Button("▲", GUILayout.Width(20)))
-					{
-						GameObject temp = m_objects[i - 1];
-						m_objects[i - 1] = m_objects[i];
-						m_objects[i] = temp;
-						Rebuild();
-					}
-				}
+            EditorGUIUtility.labelWidth = labelWidth;
+            EditorGUIUtility.fieldWidth = fieldWidth;
+            bool hasObj = false;
+            for (int i = 0; i < objects.Count; i++)
+            {
+                if (objects[i] != null)
+                {
+                    hasObj = true;
+                    break;
+                }
+            }
 
-				if (i < m_objects.Count - 1)
-				{
-					if (GUILayout.Button("▼", GUILayout.Width(20)))
-					{
-						GameObject temp = m_objects[i + 1];
-						m_objects[i + 1] = m_objects[i];
-						m_objects[i] = temp;
-						Rebuild();
-					}
-				}
+            if (hasObj) spawnCount = EditorGUILayout.IntField("Spawn count", spawnCount);
+            else spawnCount = 0;
+            iteration = (Iteration)EditorGUILayout.EnumPopup("Iteration", iteration);
+            if (iteration == Iteration.Random) orderSeed = EditorGUILayout.IntField("Order Seed", orderSeed);
 
-				EditorGUILayout.EndHorizontal();
-			}
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Transform", EditorStyles.boldLabel);
+            applyRotation = EditorGUILayout.Toggle("Apply Rotation", applyRotation);
+            if (applyRotation)
+            {
+                EditorGUI.indentLevel++;
+                minRotationOffset = EditorGUILayout.Vector3Field("Min. Rotation Offset", minRotationOffset);
+                maxRotationOffset = EditorGUILayout.Vector3Field("Max. Rotation Offset", maxRotationOffset);
+                rotationSeed = EditorGUILayout.IntField("Rotation Seed", rotationSeed);
+                EditorGUI.indentLevel--;
+            }
+            applyScale = EditorGUILayout.Toggle("Apply Scale", applyScale);
+            if (applyScale)
+            {
+                EditorGUI.indentLevel++;
+                minScaleMultiplier = EditorGUILayout.Vector3Field("Min. Scale Multiplier", minScaleMultiplier);
+                maxScaleMultiplier = EditorGUILayout.Vector3Field("Max. Scale Multiplier", maxScaleMultiplier);
+                scaleSeed = EditorGUILayout.IntField("Scale Seed", scaleSeed);
+                EditorGUI.indentLevel--;
+            }
 
-			EditorGUILayout.EndVertical();
-			GameObject newObj = null;
-			newObj = (GameObject)EditorGUILayout.ObjectField("Add Object", newObj, typeof(GameObject), true);
-			if (newObj != null)
-			{
-				m_objects.Add(newObj);
-				Rebuild();
-			}
+            positionOffset = EditorGUILayout.Slider("Evaluate Offset", positionOffset, -1f, 1f);
 
-			EditorGUILayout.Space();
+            offset = EditorGUILayout.Vector2Field("Offset", offset);
+            randomizeOffset = EditorGUILayout.Toggle("Randomize Offset", randomizeOffset);
+            if (randomizeOffset)
+            {
+                randomSize = EditorGUILayout.Vector2Field("Size", randomSize);
+                offsetSeed = EditorGUILayout.IntField("Offset Seed", offsetSeed);
+                shellOffset = EditorGUILayout.Toggle("Shell", shellOffset);
+                useRandomOffsetRotation = EditorGUILayout.Toggle("Apply offset rotation", useRandomOffsetRotation);
+            }
 
-			EditorGUIUtility.labelWidth = labelWidth;
-			EditorGUIUtility.fieldWidth = fieldWidth;
-			var hasObj = false;
-			for (var i = 0; i < m_objects.Count; i++)
-			{
-				if (m_objects[i] != null)
-				{
-					hasObj = true;
-					break;
-				}
-			}
+            if (EditorGUI.EndChangeCheck())
+            {
+                promptSave = true;
+                Rebuild();
+            }
 
-			if (hasObj)
-			{
-				m_spawnCount = EditorGUILayout.IntField("Spawn count", m_spawnCount);
-			}
-			else
-			{
-				m_spawnCount = 0;
-			}
+            EditorGUILayout.BeginHorizontal();
+            if(collections.Count > 0)
+            {
+                if (GUILayout.Button("Save"))
+                {
+                    Save();
+                }
+                if (GUILayout.Button("Cancel"))
+                {
+                    Cancel();
+                }
+            } else
+            {
+                if (GUILayout.Button("New")) Open(windowInstance);
+            }
+            EditorGUILayout.EndHorizontal();
+        }
 
-			m_iteration = (Iteration)EditorGUILayout.EnumPopup("Iteration", m_iteration);
-			if (m_iteration == Iteration.Random)
-			{
-				m_orderSeed = EditorGUILayout.IntField("Order Seed", m_orderSeed);
-			}
+        protected override void Save()
+        {
+            base.Save();
+            //register created object undo for each object in collections
+            collections.Clear();
+            //Set scene dirty
+        }
 
-			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Transform", EditorStyles.boldLabel);
-			m_applyRotation = EditorGUILayout.Toggle("Apply Rotation", m_applyRotation);
-			if (m_applyRotation)
-			{
-				EditorGUI.indentLevel++;
-				m_minRotationOffset = EditorGUILayout.Vector3Field("Min. Rotation Offset", m_minRotationOffset);
-				m_maxRotationOffset = EditorGUILayout.Vector3Field("Max. Rotation Offset", m_maxRotationOffset);
-				m_rotationSeed = EditorGUILayout.IntField("Rotation Seed", m_rotationSeed);
-				EditorGUI.indentLevel--;
-			}
+        protected override void Cancel()
+        {
+            base.Cancel();
+            foreach (SpawnCollection collection in collections) collection.Clear();
+            collections.Clear();
+        }
 
-			m_applyScale = EditorGUILayout.Toggle("Apply Scale", m_applyScale);
-			if (m_applyScale)
-			{
-				EditorGUI.indentLevel++;
-				m_minScaleMultiplier = EditorGUILayout.Vector3Field("Min. Scale Multiplier", m_minScaleMultiplier);
-				m_maxScaleMultiplier = EditorGUILayout.Vector3Field("Max. Scale Multiplier", m_maxScaleMultiplier);
-				m_scaleSeed = EditorGUILayout.IntField("Scale Seed", m_scaleSeed);
-				EditorGUI.indentLevel--;
-			}
+        void InitializeRandomization()
+        {
+            orderRandom = new System.Random(orderSeed);
+            if (randomizeOffset) offsetRandom = new System.Random(offsetSeed);
+            if(applyRotation) rotationRandom = new System.Random(rotationSeed);
+            if(applyScale) scaleRandom = new System.Random(scaleSeed);
+        }
 
-			m_positionOffset = EditorGUILayout.Slider("Evaluate Offset", m_positionOffset, -1f, 1f);
+        protected override void Rebuild()
+        {
+            base.Rebuild();
+            if (objects.Count == 0) return;
+            InitializeRandomization();
+            foreach (SpawnCollection c in collections)
+            {
+                if(c == null) continue;
+                if (c.spline == null || spawnCount <= 0)
+                {
+                    c.Clear();
+                    continue;
+                }
+                HandleCollection(c);
+            }
+        }
 
-			m_offset = EditorGUILayout.Vector2Field("Offset", m_offset);
-			m_randomizeOffset = EditorGUILayout.Toggle("Randomize Offset", m_randomizeOffset);
-			if (m_randomizeOffset)
-			{
-				m_randomSize = EditorGUILayout.Vector2Field("Size", m_randomSize);
-				m_offsetSeed = EditorGUILayout.IntField("Offset Seed", m_offsetSeed);
-				m_shellOffset = EditorGUILayout.Toggle("Shell", m_shellOffset);
-				m_useRandomOffsetRotation = EditorGUILayout.Toggle("Apply offset rotation", m_useRandomOffsetRotation);
-			}
+        void HandleCollection(SpawnCollection collection)
+        {
+            collection.Clear();
+            if (collection.spline == null) return;
+            while(collection.objects.Count > spawnCount && collection.objects.Count >= 0) collection.Destroy(collection.objects.Count - 1);
+            int orderIndex = 0;
+            while (collection.objects.Count < spawnCount)
+            {
+                switch (iteration)
+                {
+                    case Iteration.Ordered:
+                        collection.Spawn(objects[orderIndex], Vector3.zero, Quaternion.identity);
+                        orderIndex++;
+                        if (orderIndex >= objects.Count) orderIndex = 0;
+                        break;
+                    case Iteration.Random:
+                        collection.Spawn(objects[orderRandom.Next(objects.Count)], Vector3.zero, Quaternion.identity);
+                        break;
+                }
+            }
+            float splineLength = 0f;
+            if (uniform) splineLength = collection.spline.CalculateLength() * (float)(clipTo - clipFrom);
+            for (int i = 0; i < spawnCount; i++)
+            {
+                double percent = 0.0;
+                if(spawnCount > 1) percent = (double)i / (spawnCount - 1);
+                double evaluate = 0.0;
+                if (uniform) evaluate = collection.spline.Travel(clipFrom, splineLength * (float)percent, Spline.Direction.Forward);
+                else evaluate = DMath.Lerp(clipFrom, clipTo, percent);
+                //Handle uniform splines
+                evaluate += positionOffset;
+                if (evaluate > 1f) evaluate -= 1f;
+                else if (evaluate < 0f) evaluate += 1f;
+                collection.spline.Evaluate(evaluate, ref result);
+                HandleObject(collection.objects[i]);
+            }
+        }
 
-			if (EditorGUI.EndChangeCheck())
-			{
-				m_promptSave = true;
-				Rebuild();
-			}
+        void HandleObject(SpawnCollection.SpawnObject obj)
+        {
+            Transform instanceTransform = obj.instance.transform;
+            Transform sourceTransform = obj.source.transform;
+            Vector3 right = result.right;
+            instanceTransform.position = result.position;
+            instanceTransform.position += -right * offset.x + result.up * offset.y;
+            Quaternion offsetRot = Quaternion.Euler(minRotationOffset);
 
-			EditorGUILayout.BeginHorizontal();
-			if (collections.Count > 0)
-			{
-				if (GUILayout.Button("Save"))
-				{
-					Save();
-				}
+            if (applyRotation)
+            {
+                offsetRot = Quaternion.Euler(Mathf.Lerp(minRotationOffset.x, maxRotationOffset.x, (float)rotationRandom.NextDouble()), Mathf.Lerp(minRotationOffset.y, maxRotationOffset.y, (float)rotationRandom.NextDouble()), Mathf.Lerp(minRotationOffset.z, maxRotationOffset.z, (float)rotationRandom.NextDouble()));
+                instanceTransform.rotation = result.rotation * offsetRot;
+            }
 
-				if (GUILayout.Button("Cancel"))
-				{
-					Cancel();
-				}
-			}
-			else
-			{
-				if (GUILayout.Button("New"))
-				{
-					Open(m_windowInstance);
-				}
-			}
+            if (randomizeOffset)
+            {
+                float distance = (float)offsetRandom.NextDouble();
+                float angleInRadians = (float)offsetRandom.NextDouble() * 360f * Mathf.Deg2Rad;
+                Vector2 randomCircle = new Vector2(distance * Mathf.Cos(angleInRadians), distance * Mathf.Sin(angleInRadians));
+                if (shellOffset) randomCircle.Normalize();
+                else randomCircle = Vector2.ClampMagnitude(randomCircle, 1f);
+                instanceTransform.position += randomCircle.x * right * randomSize.x * result.size * 0.5f + randomCircle.y * result.up * randomSize.y * result.size * 0.5f;
+                if (useRandomOffsetRotation) instanceTransform.rotation = Quaternion.LookRotation(result.forward, instanceTransform.position - result.position) * offsetRot;
+            }
 
-			EditorGUILayout.EndHorizontal();
-		}
-
-		protected override void Save()
-		{
-			base.Save();
-			//register created object undo for each object in collections
-			collections.Clear();
-			//Set scene dirty
-		}
-
-		protected override void Cancel()
-		{
-			base.Cancel();
-			foreach (SpawnCollection collection in collections)
-			{
-				collection.Clear();
-			}
-
-			collections.Clear();
-		}
-
-		private void InitializeRandomization()
-		{
-			m_orderRandom = new Random(m_orderSeed);
-			if (m_randomizeOffset)
-			{
-				m_offsetRandom = new Random(m_offsetSeed);
-			}
-
-			if (m_applyRotation)
-			{
-				m_rotationRandom = new Random(m_rotationSeed);
-			}
-
-			if (m_applyScale)
-			{
-				m_scaleRandom = new Random(m_scaleSeed);
-			}
-		}
-
-		protected override void Rebuild()
-		{
-			base.Rebuild();
-			if (m_objects.Count == 0)
-			{
-				return;
-			}
-
-			InitializeRandomization();
-			foreach (SpawnCollection c in collections)
-			{
-				if (c == null)
-				{
-					continue;
-				}
-
-				if (c.spline == null || m_spawnCount <= 0)
-				{
-					c.Clear();
-					continue;
-				}
-
-				HandleCollection(c);
-			}
-		}
-
-		private void HandleCollection(SpawnCollection collection)
-		{
-			collection.Clear();
-			if (collection.spline == null)
-			{
-				return;
-			}
-
-			while (collection.objects.Count > m_spawnCount && collection.objects.Count >= 0)
-			{
-				collection.Destroy(collection.objects.Count - 1);
-			}
-
-			var orderIndex = 0;
-			while (collection.objects.Count < m_spawnCount)
-			{
-				switch (m_iteration)
-				{
-					case Iteration.Ordered:
-						collection.Spawn(m_objects[orderIndex], Vector3.zero, Quaternion.identity);
-						orderIndex++;
-						if (orderIndex >= m_objects.Count)
-						{
-							orderIndex = 0;
-						}
-
-						break;
-					case Iteration.Random:
-						collection.Spawn(m_objects[m_orderRandom.Next(m_objects.Count)], Vector3.zero,
-							Quaternion.identity);
-						break;
-				}
-			}
-
-			var splineLength = 0f;
-			if (m_uniform)
-			{
-				splineLength = collection.spline.CalculateLength() * (float)(m_clipTo - m_clipFrom);
-			}
-
-			for (var i = 0; i < m_spawnCount; i++)
-			{
-				var percent = 0.0;
-				if (m_spawnCount > 1)
-				{
-					percent = (double)i / (m_spawnCount - 1);
-				}
-
-				var evaluate = 0.0;
-				if (m_uniform)
-				{
-					evaluate = collection.spline.Travel(m_clipFrom, splineLength * (float)percent);
-				}
-				else
-				{
-					evaluate = Dmath.Lerp(m_clipFrom, m_clipTo, percent);
-				}
-
-				//Handle uniform splines
-				evaluate += m_positionOffset;
-				if (evaluate > 1f)
-				{
-					evaluate -= 1f;
-				}
-				else if (evaluate < 0f)
-				{
-					evaluate += 1f;
-				}
-
-				collection.spline.Evaluate(evaluate, ref m_result);
-				HandleObject(collection.objects[i]);
-			}
-		}
-
-		private void HandleObject(SpawnCollection.SpawnObject obj)
-		{
-			Transform instanceTransform = obj.instance.transform;
-			Transform sourceTransform = obj.source.transform;
-			Vector3 right = m_result.right;
-			instanceTransform.position = m_result.position;
-			instanceTransform.position += -right * m_offset.x + m_result.up * m_offset.y;
-			Quaternion offsetRot = Quaternion.Euler(m_minRotationOffset);
-
-			if (m_applyRotation)
-			{
-				offsetRot = Quaternion.Euler(
-					Mathf.Lerp(m_minRotationOffset.x, m_maxRotationOffset.x, (float)m_rotationRandom.NextDouble()),
-					Mathf.Lerp(m_minRotationOffset.y, m_maxRotationOffset.y, (float)m_rotationRandom.NextDouble()),
-					Mathf.Lerp(m_minRotationOffset.z, m_maxRotationOffset.z, (float)m_rotationRandom.NextDouble()));
-				instanceTransform.rotation = m_result.rotation * offsetRot;
-			}
-
-			if (m_randomizeOffset)
-			{
-				var distance = (float)m_offsetRandom.NextDouble();
-				float angleInRadians = (float)m_offsetRandom.NextDouble() * 360f * Mathf.Deg2Rad;
-				var randomCircle = new Vector2(distance * Mathf.Cos(angleInRadians),
-					distance * Mathf.Sin(angleInRadians));
-				if (m_shellOffset)
-				{
-					randomCircle.Normalize();
-				}
-				else
-				{
-					randomCircle = Vector2.ClampMagnitude(randomCircle, 1f);
-				}
-
-				instanceTransform.position += randomCircle.x * right * m_randomSize.x * m_result.size * 0.5f +
-				                              randomCircle.y * m_result.up * m_randomSize.y * m_result.size * 0.5f;
-				if (m_useRandomOffsetRotation)
-				{
-					instanceTransform.rotation =
-						Quaternion.LookRotation(m_result.forward, instanceTransform.position - m_result.position) *
-						offsetRot;
-				}
-			}
-
-			if (m_applyScale)
-			{
-				Vector3 scale = sourceTransform.localScale * m_result.size;
-				scale.x *= Mathf.Lerp(m_minScaleMultiplier.x, m_maxScaleMultiplier.x,
-					(float)m_scaleRandom.NextDouble());
-				scale.y *= Mathf.Lerp(m_minScaleMultiplier.y, m_maxScaleMultiplier.y,
-					(float)m_scaleRandom.NextDouble());
-				scale.z *= Mathf.Lerp(m_minScaleMultiplier.z, m_maxScaleMultiplier.z,
-					(float)m_scaleRandom.NextDouble());
-				instanceTransform.localScale = scale;
-			}
-			else
-			{
-				instanceTransform.localScale = sourceTransform.localScale;
-			}
-		}
-
-		internal class SpawnCollection
-		{
-			internal List<SpawnObject> objects = new();
-
-			internal SplineComputer spline;
-
-			internal SpawnCollection(SplineComputer spline)
-			{
-				this.spline = spline;
-			}
-
-			internal void Clear()
-			{
-				for (var i = 0; i < objects.Count; i++)
-				{
-					Object.DestroyImmediate(objects[i].instance);
-				}
-
-				objects.Clear();
-			}
-
-			internal void Spawn(GameObject obj, Vector3 position, Quaternion rotation)
-			{
-				GameObject go = null;
-				bool isPrefab = PrefabUtility.GetPrefabAssetType(obj) != PrefabAssetType.NotAPrefab;
-
-				if (isPrefab)
-				{
-					go = (GameObject)PrefabUtility.InstantiatePrefab(obj);
-				}
-				else
-				{
-					go = Object.Instantiate(obj, position, rotation);
-				}
-
-				go.transform.parent = spline.transform;
-				objects.Add(new SpawnObject(go, obj));
-			}
-
-			internal void Destroy(int index)
-			{
-				Object.DestroyImmediate(objects[index].instance);
-				objects.RemoveAt(index);
-			}
-
-			public class SpawnObject
-			{
-				public GameObject instance;
-				public GameObject source;
-
-				public SpawnObject(GameObject instance, GameObject source)
-				{
-					this.instance = instance;
-					this.source = source;
-				}
-			}
-		}
-
-		private enum Iteration
-		{
-			Ordered,
-			Random
-		}
-	}
+            if (applyScale)
+            {
+                Vector3 scale = sourceTransform.localScale * result.size;
+                scale.x *= Mathf.Lerp(minScaleMultiplier.x, maxScaleMultiplier.x, (float)scaleRandom.NextDouble());
+                scale.y *= Mathf.Lerp(minScaleMultiplier.y, maxScaleMultiplier.y, (float)scaleRandom.NextDouble());
+                scale.z *= Mathf.Lerp(minScaleMultiplier.z, maxScaleMultiplier.z, (float)scaleRandom.NextDouble());
+                instanceTransform.localScale = scale;
+            } else instanceTransform.localScale = sourceTransform.localScale;
+        }
+    }
 }

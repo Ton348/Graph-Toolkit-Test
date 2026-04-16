@@ -1120,13 +1120,13 @@
       <Project>{63b4d853-b99a-130c-9019-2bddf6fb006b}</Project>
       <Name>Graph.Core.Editor</Name>
     </ProjectReference>
-    <ProjectReference Include="Game1.Graph.Runtime.csproj">
-      <Project>{0d77301b-94a4-65ae-6091-f4062af0e1ce}</Project>
-      <Name>Game1.Graph.Runtime</Name>
-    </ProjectReference>
     <ProjectReference Include="Sample.Runtime.csproj">
       <Project>{879ce974-1b1b-31a5-55fe-75b2b7cdb948}</Project>
       <Name>Sample.Runtime</Name>
+    </ProjectReference>
+    <ProjectReference Include="Game1.Graph.Runtime.csproj">
+      <Project>{0d77301b-94a4-65ae-6091-f4062af0e1ce}</Project>
+      <Name>Game1.Graph.Runtime</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

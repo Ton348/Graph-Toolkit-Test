@@ -1,73 +1,73 @@
-using UnityEngine;
-using Random = System.Random;
-
 namespace Dreamteck.Utilities
 {
-	public class Randomizer
-	{
-		private readonly int m_seed;
+    using UnityEngine;
 
-		public Randomizer(int seed)
-		{
-			m_seed = seed;
-			random = new Random(m_seed);
-		}
+    public class Randomizer
+    {
+        private int _seed;
+        private System.Random _random;
 
-		public Random random { get; private set; }
+        public System.Random random => _random;
 
-		public float Random01()
-		{
-			return (float)random.NextDouble();
-		}
+        public Randomizer(int seed)
+        {
+            _seed = seed;
+            _random = new System.Random(_seed);
+        }
 
-		public float Random(float min, float max)
-		{
-			return (float)Dmath.Lerp(min, max, random.NextDouble());
-		}
+        public float Random01()
+        {
+            return (float)_random.NextDouble();
+        }
 
-		public int Random(int min, int max)
-		{
-			return (int)Dmath.Lerp(min, max, random.NextDouble());
-		}
+        public float Random(float min, float max)
+        {
+            return (float)DMath.Lerp(min, max, _random.NextDouble());
+        }
 
-		public Vector2 RandomVector2(float min, float max)
-		{
-			return new Vector2(Random(min, max), Random(min, max));
-		}
+        public int Random(int min, int max)
+        {
+            return (int)DMath.Lerp(min, max, _random.NextDouble());
+        }
 
-		public Vector3 RandomVector3(float min, float max)
-		{
-			return new Vector3(Random(min, max), Random(min, max), Random(min, max));
-		}
+        public Vector2 RandomVector2(float min, float max)
+        {
+            return new Vector2(Random(min, max), Random(min, max));
+        }
 
-		public Vector3 OnUnitSphere()
-		{
-			return Quaternion.Euler(Random(0f, 360f), Random(0f, 360f), Random(0f, 360f)) * Vector3.forward;
-		}
+        public Vector3 RandomVector3(float min, float max)
+        {
+            return new Vector3(Random(min, max), Random(min, max), Random(min, max));
+        }
 
-		public Vector3 OnUnitCircle()
-		{
-			return Quaternion.AngleAxis(Random(0f, 360f), Vector3.forward) * Vector3.up;
-		}
+        public Vector3 OnUnitSphere()
+        {
+            return Quaternion.Euler(Random(0f, 360f), Random(0f, 360f), Random(0f, 360f)) * Vector3.forward;
+        }
 
-		public Vector3 InsideUnitSphere()
-		{
-			return OnUnitSphere() * Random01();
-		}
+        public Vector3 OnUnitCircle()
+        {
+            return Quaternion.AngleAxis(Random(0f, 360f), Vector3.forward) * Vector3.up;
+        }
 
-		public Vector3 InsideUnitCircle()
-		{
-			return OnUnitCircle() * Random01();
-		}
+        public Vector3 InsideUnitSphere()
+        {
+            return OnUnitSphere() * Random01();
+        }
 
-		public void Reset()
-		{
-			random = new Random(m_seed);
-		}
+        public Vector3 InsideUnitCircle()
+        {
+            return OnUnitCircle() * Random01();
+        }
 
-		public void Reset(int seed)
-		{
-			random = new Random(seed);
-		}
-	}
+        public void Reset()
+        {
+            _random = new System.Random(_seed);
+        }
+
+        public void Reset(int seed)
+        {
+            _random = new System.Random(seed);
+        }
+    }
 }

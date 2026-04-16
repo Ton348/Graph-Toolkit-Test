@@ -2,305 +2,275 @@ using UnityEngine;
 
 namespace Dreamteck.Splines
 {
-	[AddComponentMenu("Dreamteck/Splines/Users/Spline Positioner")]
-	[ExecuteInEditMode]
-	public class SplinePositioner : SplineTracer
-	{
-		public enum Mode
-		{
-			Percent,
-			Distance
-		}
+    [AddComponentMenu("Dreamteck/Splines/Users/Spline Positioner")]
+    [ExecuteInEditMode]
+    public class SplinePositioner : SplineTracer
+    {
+        public enum Mode { Percent, Distance }
 
-		[SerializeField]
-		[HideInInspector]
-		private GameObject m_targetObject;
+        public GameObject targetObject
+        {
+            get
+            {
+                if (_targetObject == null) return gameObject;
+                return _targetObject;
+            }
 
-		[SerializeField]
-		[HideInInspector]
-		private SplineTracer m_followTarget;
+            set
+            {
+                if (value != _targetObject)
+                {
+                    _targetObject = value;
+                    RefreshTargets();
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private float m_followTargetDistance;
+        public SplineTracer followTarget
+        {
+            get { return _followTarget; }
+            set
+            {
+                if(value != _followTarget)
+                {
+                    if(_followTarget != null)
+                    {
+                        _followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
+                    }
+                    if(value == this)
+                    {
+                        Debug.Log("You should not be assigning a self-reference to the followTarget field.");
+                        return;
+                    }
+                    _followTarget = value;
+                    if(_followTarget != null)
+                    {
+                        _followTarget.onMotionApplied += OnFollowTargetMotionApplied;
+                        OnFollowTargetMotionApplied();
+                    }
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private bool m_followLoop;
+        public float followTargetDistance
+        {
+            get { return _followTargetDistance;  }
+            set
+            {
+                if(value != _followTargetDistance)
+                {
+                    _followTargetDistance = value;
+                    if(followTarget != null)
+                    {
+                        OnFollowTargetMotionApplied();
+                    }
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Spline.Direction m_followTargetDirection = Spline.Direction.Backward;
+        public bool followLoop
+        {
+            get { return _followLoop; }
+            set
+            {
+                if (value != _followLoop)
+                {
+                    _followLoop = value;
+                    if (followTarget != null)
+                    {
+                        OnFollowTargetMotionApplied();
+                    }
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private float m_position;
+        public Spline.Direction followTargetDirection
+        {
+            get { return _followTargetDirection; }
+            set
+            {
+                if (value != _followTargetDirection)
+                {
+                    _followTargetDirection = value;
+                    if (followTarget != null)
+                    {
+                        OnFollowTargetMotionApplied();
+                    }
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Mode m_mode = Mode.Percent;
+        public double position
+        {
+            get
+            {
+                return _result.percent;
+            }
+            set
+            {
+                if (value != _position)
+                {
+                    _position = (float)value;
+                    if (mode == Mode.Distance)
+                    {
+                        SetDistance(_position, true, true);
+                    }
+                    else
+                    {
+                        SetPercent(value, true, true);
+                    }
+                }
+            }
+        }
 
-		private float m_lastPosition;
+        public Mode mode
+        {
+            get { return _mode;  }
+            set
+            {
+                if (value != _mode)
+                {
+                    _mode = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		public GameObject targetObject
-		{
-			get
-			{
-				if (m_targetObject == null)
-				{
-					return gameObject;
-				}
+        [SerializeField]
+        [HideInInspector]
+        private GameObject _targetObject;
+        [SerializeField]
+        [HideInInspector]
+        private SplineTracer _followTarget;
+        [SerializeField]
+        [HideInInspector]
+        private float _followTargetDistance;
+        [SerializeField]
+        [HideInInspector]
+        private bool _followLoop;
+        [SerializeField]
+        [HideInInspector]
+        private Spline.Direction _followTargetDirection = Spline.Direction.Backward;
+        [SerializeField]
+        [HideInInspector]
+        private float _position = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private Mode _mode = Mode.Percent;
+        private float _lastPosition = 0f;
 
-				return m_targetObject;
-			}
+        private void OnFollowTargetMotionApplied()
+        {
+            float moved;
+            double percent = Travel(followTarget.result.percent, _followTargetDistance, _followTargetDirection, out moved);
+            if (_followLoop)
+            {
+                if (_followTargetDistance - moved > 0.000001f)
+                {
+                    if (percent <= 0.000001)
+                    {
+                        percent = Travel(1.0, _followTargetDistance - moved, _followTargetDirection, out moved);
+                    }
+                    else if (percent >= 0.999999)
+                    {
+                        percent = Travel(0.0, _followTargetDistance - moved, _followTargetDirection, out moved);
+                    }
+                }
+            }
+            SetPercent(percent, true);
+        }
 
-			set
-			{
-				if (value != m_targetObject)
-				{
-					m_targetObject = value;
-					RefreshTargets();
-					Rebuild();
-				}
-			}
-		}
+        protected override void Awake()
+        {
+            base.Awake();
+            if(_followTarget != null)
+            {
+                _followTarget.onMotionApplied += OnFollowTargetMotionApplied;
+            }
+        }
 
-		public SplineTracer followTarget
-		{
-			get => m_followTarget;
-			set
-			{
-				if (value != m_followTarget)
-				{
-					if (m_followTarget != null)
-					{
-						m_followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
-					}
-
-					if (value == this)
-					{
-						Debug.Log("You should not be assigning a self-reference to the followTarget field.");
-						return;
-					}
-
-					m_followTarget = value;
-					if (m_followTarget != null)
-					{
-						m_followTarget.onMotionApplied += OnFollowTargetMotionApplied;
-						OnFollowTargetMotionApplied();
-					}
-				}
-			}
-		}
-
-		public float followTargetDistance
-		{
-			get => m_followTargetDistance;
-			set
-			{
-				if (value != m_followTargetDistance)
-				{
-					m_followTargetDistance = value;
-					if (followTarget != null)
-					{
-						OnFollowTargetMotionApplied();
-					}
-				}
-			}
-		}
-
-		public bool followLoop
-		{
-			get => m_followLoop;
-			set
-			{
-				if (value != m_followLoop)
-				{
-					m_followLoop = value;
-					if (followTarget != null)
-					{
-						OnFollowTargetMotionApplied();
-					}
-				}
-			}
-		}
-
-		public Spline.Direction followTargetDirection
-		{
-			get => m_followTargetDirection;
-			set
-			{
-				if (value != m_followTargetDirection)
-				{
-					m_followTargetDirection = value;
-					if (followTarget != null)
-					{
-						OnFollowTargetMotionApplied();
-					}
-				}
-			}
-		}
-
-		public double position
-		{
-			get => m_result.percent;
-			set
-			{
-				if (value != m_position)
-				{
-					m_position = (float)value;
-					if (mode == Mode.Distance)
-					{
-						SetDistance(m_position, true, true);
-					}
-					else
-					{
-						SetPercent(value, true, true);
-					}
-				}
-			}
-		}
-
-		public Mode mode
-		{
-			get => m_mode;
-			set
-			{
-				if (value != m_mode)
-				{
-					m_mode = value;
-					Rebuild();
-				}
-			}
-		}
-
-		protected override void Awake()
-		{
-			base.Awake();
-			if (m_followTarget != null)
-			{
-				m_followTarget.onMotionApplied += OnFollowTargetMotionApplied;
-			}
-		}
-
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-			if (m_followTarget != null)
-			{
-				m_followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
-			}
-		}
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            if (_followTarget != null)
+            {
+                _followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
+            }
+        }
 
 
-		protected override void OnDidApplyAnimationProperties()
-		{
-			if (m_lastPosition != m_position)
-			{
-				m_lastPosition = m_position;
-				if (mode == Mode.Distance)
-				{
-					SetDistance(m_position, true);
-				}
-				else
-				{
-					SetPercent(m_position, true);
-				}
-			}
+        protected override void OnDidApplyAnimationProperties()
+        {
+            if (_lastPosition != _position)
+            {
+                _lastPosition = _position;
+                if (mode == Mode.Distance)
+                {
+                    SetDistance(_position, true);
+                }
+                else
+                {
+                    SetPercent(_position, true);
+                }
+            }
+            base.OnDidApplyAnimationProperties();
+        }
 
-			base.OnDidApplyAnimationProperties();
-		}
+        protected override Transform GetTransform()
+        {
+            return targetObject.transform;
+        }
 
-		private void OnFollowTargetMotionApplied()
-		{
-			float moved;
-			double percent = Travel(followTarget.result.percent, m_followTargetDistance, m_followTargetDirection,
-				out moved);
-			if (m_followLoop)
-			{
-				if (m_followTargetDistance - moved > 0.000001f)
-				{
-					if (percent <= 0.000001)
-					{
-						percent = Travel(1.0, m_followTargetDistance - moved, m_followTargetDirection, out moved);
-					}
-					else if (percent >= 0.999999)
-					{
-						percent = Travel(0.0, m_followTargetDistance - moved, m_followTargetDirection, out moved);
-					}
-				}
-			}
+        protected override Rigidbody GetRigidbody()
+        {
+            return targetObject.GetComponent<Rigidbody>();
+        }
 
-			SetPercent(percent, true);
-		}
+        protected override Rigidbody2D GetRigidbody2D()
+        {
+            return targetObject.GetComponent<Rigidbody2D>();
+        }
 
-		protected override Transform GetTransform()
-		{
-			return targetObject.transform;
-		}
+        protected override void PostBuild()
+        {
+            base.PostBuild();
+            if (mode == Mode.Distance) SetDistance((float)_position, true);
+            else SetPercent(_position, true);
+        }
 
-		protected override Rigidbody GetRigidbody()
-		{
-			return targetObject.GetComponent<Rigidbody>();
-		}
+        public override void SetPercent(double percent, bool checkTriggers = false, bool handleJunctions = false)
+        {
+            base.SetPercent(percent, checkTriggers, handleJunctions);
+            _position = (float)percent;
 
-		protected override Rigidbody2D GetRigidbody2D()
-		{
-			return targetObject.GetComponent<Rigidbody2D>();
-		}
+            if (!handleJunctions) return;
 
-		protected override void PostBuild()
-		{
-			base.PostBuild();
-			if (mode == Mode.Distance)
-			{
-				SetDistance(m_position, true);
-			}
-			else
-			{
-				SetPercent(m_position, true);
-			}
-		}
+            InvokeNodes();
+        }
 
-		public override void SetPercent(double percent, bool checkTriggers = false, bool handleJunctions = false)
-		{
-			base.SetPercent(percent, checkTriggers, handleJunctions);
-			m_position = (float)percent;
+        public override void SetDistance(float distance, bool checkTriggers = false, bool handleJunctions = false)
+        {
+            double lastPercent = _result.percent;
+            double travel = Travel(0.0, distance, Spline.Direction.Forward);
+            Evaluate(travel, ref _result);
+            ApplyMotion();
 
-			if (!handleJunctions)
-			{
-				return;
-			}
+            if (checkTriggers)
+            {
+                CheckTriggers(lastPercent, _result.percent);
+                InvokeTriggers();
+            }
+            if (handleJunctions)
+            {
+                CheckNodes(lastPercent, _result.percent);
+            }
 
-			InvokeNodes();
-		}
+            _position = mode == Mode.Distance ? distance : (float)travel;
 
-		public override void SetDistance(float distance, bool checkTriggers = false, bool handleJunctions = false)
-		{
-			double lastPercent = m_result.percent;
-			double travel = Travel(0.0, distance);
-			Evaluate(travel, ref m_result);
-			ApplyMotion();
+            if (!handleJunctions) return;
 
-			if (checkTriggers)
-			{
-				CheckTriggers(lastPercent, m_result.percent);
-				InvokeTriggers();
-			}
-
-			if (handleJunctions)
-			{
-				CheckNodes(lastPercent, m_result.percent);
-			}
-
-			m_position = mode == Mode.Distance ? distance : (float)travel;
-
-			if (!handleJunctions)
-			{
-				return;
-			}
-
-			InvokeNodes();
-		}
-	}
+            InvokeNodes();
+        }
+    }
 }

@@ -1,300 +1,271 @@
-using System.Collections.Generic;
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	[CustomEditor(typeof(SplineComputer), true)]
-	[CanEditMultipleObjects]
-	public class SplineComputerEditor : UnityEditor.Editor
-	{
-		public static bool hold;
-		public SplineComputer spline;
-		public SplineComputer[] splines = new SplineComputer[0];
-		private readonly List<int> m_selectedPoints = new();
+    using UnityEngine;
+    using System.Collections.Generic;
+    using UnityEditor;
 
-		protected bool m_closedOnMirror = false;
-		private ComputerEditor m_computerEditor;
-		private SplineComputerDebugEditor m_debugEditor;
+    [CustomEditor(typeof(SplineComputer), true)]
+    [CanEditMultipleObjects]
+    public partial class SplineComputerEditor : Editor 
+    {
+        public SplineComputer spline;
+        public SplineComputer[] splines = new SplineComputer[0];
+        public static bool hold = false;
 
-		private DreamteckSplinesEditor m_pathEditor;
-		private bool m_rebuildSpline;
-		private SplineTriggersEditor m_triggersEditor;
+        public int[] pointSelection
+        {
+            get
+            {
+                return _selectedPoints.ToArray();
+            }
+        }
 
-		public int[] pointSelection => m_selectedPoints.ToArray();
+        public int selectedPointsCount
+        {
+            get { return _selectedPoints.Count; }
+            set { }
+        }
 
-		public int selectedPointsCount
-		{
-			get => m_selectedPoints.Count;
-			set { }
-		}
+        protected bool closedOnMirror = false;
 
-		private void OnEnable()
-		{
-			splines = new SplineComputer[targets.Length];
-			for (var i = 0; i < splines.Length; i++)
-			{
-				splines[i] = (SplineComputer)targets[i];
-				splines[i].EditorAwake();
-				if (splines[i].editorAlwaysDraw)
-				{
-					DssplineDrawer.RegisterComputer(splines[i]);
-				}
-			}
+        private DreamteckSplinesEditor _pathEditor;
+        private ComputerEditor _computerEditor;
+        private SplineTriggersEditor _triggersEditor;
+        private SplineComputerDebugEditor _debugEditor;
+        private bool _rebuildSpline = false;
+        private List<int> _selectedPoints = new List<int>();
 
-			spline = splines[0];
-			InitializeSplineEditor();
-			InitializeComputerEditor();
-			m_debugEditor = new SplineComputerDebugEditor(spline, serializedObject, m_pathEditor);
-			m_debugEditor.undoHandler += RecordUndo;
-			m_debugEditor.repaintHandler += OnRepaint;
-			m_triggersEditor = new SplineTriggersEditor(spline, serializedObject);
-			m_triggersEditor.undoHandler += RecordUndo;
-			m_triggersEditor.repaintHandler += OnRepaint;
-			hold = false;
+
+        [MenuItem("GameObject/3D Object/Spline Computer")]
+        private static void NewEmptySpline()
+        {
+            int count = GameObject.FindObjectsOfType<SplineComputer>().Length;
+            string objName = "Spline";
+            if (count > 0) objName += " " + count;
+            GameObject obj = new GameObject(objName);
+            obj.AddComponent<SplineComputer>();
+            if (Selection.activeGameObject != null)
+            {
+                if (EditorUtility.DisplayDialog("Make child?", "Do you want to make the new spline a child of " + Selection.activeGameObject.name + "?", "Yes", "No"))
+                {
+                    obj.transform.parent = Selection.activeGameObject.transform;
+                    obj.transform.localPosition = Vector3.zero;
+                    obj.transform.localRotation = Quaternion.identity;
+                }
+            }
+            Selection.activeGameObject = obj;
+        }
+
+        [MenuItem("GameObject/3D Object/Spline Node")]
+        private static void NewSplineNode()
+        {
+            int count = Object.FindObjectsOfType<Node>().Length;
+            string objName = "Node";
+            if (count > 0) objName += " " + count;
+            GameObject obj = new GameObject(objName);
+            obj.AddComponent<Node>();
+            if(Selection.activeGameObject != null)
+            {
+                if(EditorUtility.DisplayDialog("Make child?", "Do you want to make the new node a child of " + Selection.activeGameObject.name + "?", "Yes", "No"))
+                {
+                    obj.transform.parent = Selection.activeGameObject.transform;
+                    obj.transform.localPosition = Vector3.zero;
+                    obj.transform.localRotation = Quaternion.identity;
+                }
+            }
+            Selection.activeGameObject = obj;
+        }
+
+        public void UndoRedoPerformed()
+        {
+            _pathEditor.UndoRedoPerformed();
+            spline.EditorUpdateConnectedNodes();
+            spline.Rebuild();
+        }
+
+        private void OnEnable()
+        {
+            splines = new SplineComputer[targets.Length];
+            for (int i = 0; i < splines.Length; i++)
+            {
+                splines[i] = (SplineComputer)targets[i];
+                splines[i].EditorAwake();
+                if (splines[i].editorAlwaysDraw)
+                {
+                    DSSplineDrawer.RegisterComputer(splines[i]);
+                }
+            }
+            spline = splines[0];
+            InitializeSplineEditor();
+            InitializeComputerEditor();
+            _debugEditor = new SplineComputerDebugEditor(spline, serializedObject, _pathEditor);
+            _debugEditor.undoHandler += RecordUndo;
+            _debugEditor.repaintHandler += OnRepaint;
+            _triggersEditor = new SplineTriggersEditor(spline, serializedObject);
+            _triggersEditor.undoHandler += RecordUndo;
+            _triggersEditor.repaintHandler += OnRepaint;
+            hold = false;
 #if UNITY_2019_1_OR_NEWER
-			SceneView.beforeSceneGui += BeforeSceneGui;
-			SceneView.duringSceneGui += DuringSceneGui;
+            SceneView.beforeSceneGui += BeforeSceneGUI;
+            SceneView.duringSceneGui += DuringSceneGUI;
 #else
             SceneView.onSceneGUIDelegate += BeforeSceneGUI;
             SceneView.onSceneGUIDelegate += DuringSceneGUI;
 #endif
-			Undo.undoRedoPerformed += UndoRedoPerformed;
-		}
+            Undo.undoRedoPerformed += UndoRedoPerformed;
+        }
 
-		private void OnDisable()
-		{
-			Undo.undoRedoPerformed -= UndoRedoPerformed;
+        private void BeforeSceneGUI(SceneView current)
+        {
+            _pathEditor.BeforeSceneGUI(current);
+
+            if (Event.current.type == EventType.MouseUp)
+            {
+                if (Event.current.button == 0)
+                {
+                    for (int i = 0; i < splines.Length; i++)
+                    {
+                        if (splines[i].editorUpdateMode == SplineComputer.EditorUpdateMode.OnMouseUp)
+                        {
+                            splines[i].RebuildImmediate();
+                        }
+                    }
+                }
+            }
+        }
+
+        private void InitializeSplineEditor()
+        {
+            _pathEditor = new DreamteckSplinesEditor(spline, serializedObject);
+            _pathEditor.undoHandler = RecordUndo;
+            _pathEditor.repaintHandler = OnRepaint;
+            _pathEditor.editSpace = (SplineEditor.Space)SplinePrefs.pointEditSpace;
+        }
+
+        private void InitializeComputerEditor()
+        {
+            _computerEditor = new ComputerEditor(splines, serializedObject, _pathEditor);
+            _computerEditor.undoHandler = RecordUndo;
+            _computerEditor.repaintHandler = OnRepaint;
+        }
+
+        private void RecordUndo(string title)
+        {
+            for (int i = 0; i < splines.Length; i++)
+            {
+                Undo.RecordObject(splines[i], title);
+            }
+        }
+
+        private void OnRepaint()
+        {
+            SceneView.RepaintAll();
+            Repaint();
+        }
+
+        private void OnDisable()
+        {
+            Undo.undoRedoPerformed -= UndoRedoPerformed;
 #if UNITY_2019_1_OR_NEWER
-			SceneView.beforeSceneGui -= BeforeSceneGui;
-			SceneView.duringSceneGui -= DuringSceneGui;
+            SceneView.beforeSceneGui -= BeforeSceneGUI;
+            SceneView.duringSceneGui -= DuringSceneGUI;
 #else
             SceneView.onSceneGUIDelegate -= BeforeSceneGUI;
             SceneView.onSceneGUIDelegate -= DuringSceneGUI;
 #endif
-			m_pathEditor.Destroy();
-			m_computerEditor.Destroy();
-			m_debugEditor.Destroy();
-			m_triggersEditor.Destroy();
-		}
+            _pathEditor.Destroy();
+            _computerEditor.Destroy();
+            _debugEditor.Destroy();
+            _triggersEditor.Destroy();
+        }
+
+        public override void OnInspectorGUI()
+        {
+            if (_debugEditor.editorUpdateMode == SplineComputer.EditorUpdateMode.OnMouseUp)
+            {
+                if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
+                {
+                    _rebuildSpline = true;
+                }
+                if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
+                {
+                    _rebuildSpline = true;
+                }
+            }
+            base.OnInspectorGUI();
+            spline = (SplineComputer)target;
+
+            if (splines.Length == 1)
+            {
+                SplineEditorGUI.BeginContainerBox(ref _pathEditor.open, "Edit");
+                if (_pathEditor.open)
+                {
+                    SplineEditor.Space lastSpace = _pathEditor.editSpace;
+                    _pathEditor.DrawInspector();
+                    if (lastSpace != _pathEditor.editSpace)
+                    {
+                        SplinePrefs.pointEditSpace = (SplineComputer.Space)_pathEditor.editSpace;
+                        SplinePrefs.SavePrefs();
+                    }
+                }
+                else if (_pathEditor.lastEditorTool != Tool.None && Tools.current == Tool.None)
+                {
+                    Tools.current = _pathEditor.lastEditorTool;
+                }
+                SplineEditorGUI.EndContainerBox();
+            }
+
+            SplineEditorGUI.BeginContainerBox(ref _computerEditor.open, "Spline Computer");
+            if (_computerEditor.open)
+            {
+                _computerEditor.DrawInspector();
+            }
+            SplineEditorGUI.EndContainerBox();
+
+            if (splines.Length == 1)
+            {
+                SplineEditorGUI.BeginContainerBox(ref _triggersEditor.open, "Triggers");
+                if (_triggersEditor.open) _triggersEditor.DrawInspector();
+                SplineEditorGUI.EndContainerBox();
+            }
+
+            SplineEditorGUI.BeginContainerBox(ref _debugEditor.open, "Editor Properties");
+            if (_debugEditor.open) _debugEditor.DrawInspector();
+            SplineEditorGUI.EndContainerBox();
+
+            if (GUI.changed)
+            {
+                EditorUtility.SetDirty(spline);
+            }
 
 
-		[MenuItem("GameObject/3D Object/Spline Computer")]
-		private static void NewEmptySpline()
-		{
-			int count = FindObjectsOfType<SplineComputer>().Length;
-			var objName = "Spline";
-			if (count > 0)
-			{
-				objName += " " + count;
-			}
+            if (Event.current.type == EventType.Layout && _rebuildSpline)
+            {
+                for (int i = 0; i < splines.Length; i++)
+                {
+                    if (splines[i].editorUpdateMode == SplineComputer.EditorUpdateMode.OnMouseUp)
+                    {
+                        splines[i].RebuildImmediate(true);
+                    }
+                }
+                _rebuildSpline = false;
+            }
 
-			var obj = new GameObject(objName);
-			obj.AddComponent<SplineComputer>();
-			if (Selection.activeGameObject != null)
-			{
-				if (EditorUtility.DisplayDialog("Make child?",
-					    "Do you want to make the new spline a child of " + Selection.activeGameObject.name + "?", "Yes",
-					    "No"))
-				{
-					obj.transform.parent = Selection.activeGameObject.transform;
-					obj.transform.localPosition = Vector3.zero;
-					obj.transform.localRotation = Quaternion.identity;
-				}
-			}
+        }
 
-			Selection.activeGameObject = obj;
-		}
+        public bool IsPointSelected(int index)
+        {
+            return _selectedPoints.Contains(index);
+        }
 
-		[MenuItem("GameObject/3D Object/Spline Node")]
-		private static void NewSplineNode()
-		{
-			int count = FindObjectsOfType<Node>().Length;
-			var objName = "Node";
-			if (count > 0)
-			{
-				objName += " " + count;
-			}
-
-			var obj = new GameObject(objName);
-			obj.AddComponent<Node>();
-			if (Selection.activeGameObject != null)
-			{
-				if (EditorUtility.DisplayDialog("Make child?",
-					    "Do you want to make the new node a child of " + Selection.activeGameObject.name + "?", "Yes",
-					    "No"))
-				{
-					obj.transform.parent = Selection.activeGameObject.transform;
-					obj.transform.localPosition = Vector3.zero;
-					obj.transform.localRotation = Quaternion.identity;
-				}
-			}
-
-			Selection.activeGameObject = obj;
-		}
-
-		public void UndoRedoPerformed()
-		{
-			m_pathEditor.UndoRedoPerformed();
-			spline.EditorUpdateConnectedNodes();
-			spline.Rebuild();
-		}
-
-		private void BeforeSceneGui(SceneView current)
-		{
-			m_pathEditor.BeforeSceneGui(current);
-
-			if (Event.current.type == EventType.MouseUp)
-			{
-				if (Event.current.button == 0)
-				{
-					for (var i = 0; i < splines.Length; i++)
-					{
-						if (splines[i].editorUpdateMode == SplineComputer.EditorUpdateMode.OnMouseUp)
-						{
-							splines[i].RebuildImmediate();
-						}
-					}
-				}
-			}
-		}
-
-		private void InitializeSplineEditor()
-		{
-			m_pathEditor = new DreamteckSplinesEditor(spline, serializedObject);
-			m_pathEditor.undoHandler = RecordUndo;
-			m_pathEditor.repaintHandler = OnRepaint;
-			m_pathEditor.editSpace = (SplineEditor.Space)SplinePrefs.pointEditSpace;
-		}
-
-		private void InitializeComputerEditor()
-		{
-			m_computerEditor = new ComputerEditor(splines, serializedObject, m_pathEditor);
-			m_computerEditor.undoHandler = RecordUndo;
-			m_computerEditor.repaintHandler = OnRepaint;
-		}
-
-		private void RecordUndo(string title)
-		{
-			for (var i = 0; i < splines.Length; i++)
-			{
-				Undo.RecordObject(splines[i], title);
-			}
-		}
-
-		private void OnRepaint()
-		{
-			SceneView.RepaintAll();
-			Repaint();
-		}
-
-		public override void OnInspectorGUI()
-		{
-			if (m_debugEditor.editorUpdateMode == SplineComputer.EditorUpdateMode.OnMouseUp)
-			{
-				if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
-				{
-					m_rebuildSpline = true;
-				}
-
-				if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return ||
-				                                                Event.current.keyCode == KeyCode.KeypadEnter))
-				{
-					m_rebuildSpline = true;
-				}
-			}
-
-			base.OnInspectorGUI();
-			spline = (SplineComputer)target;
-
-			if (splines.Length == 1)
-			{
-				SplineEditorGui.BeginContainerBox(ref m_pathEditor.open, "Edit");
-				if (m_pathEditor.open)
-				{
-					SplineEditor.Space lastSpace = m_pathEditor.editSpace;
-					m_pathEditor.DrawInspector();
-					if (lastSpace != m_pathEditor.editSpace)
-					{
-						SplinePrefs.pointEditSpace = (SplineComputer.Space)m_pathEditor.editSpace;
-						SplinePrefs.SavePrefs();
-					}
-				}
-				else if (m_pathEditor.lastEditorTool != Tool.None && Tools.current == Tool.None)
-				{
-					Tools.current = m_pathEditor.lastEditorTool;
-				}
-
-				SplineEditorGui.EndContainerBox();
-			}
-
-			SplineEditorGui.BeginContainerBox(ref m_computerEditor.open, "Spline Computer");
-			if (m_computerEditor.open)
-			{
-				m_computerEditor.DrawInspector();
-			}
-
-			SplineEditorGui.EndContainerBox();
-
-			if (splines.Length == 1)
-			{
-				SplineEditorGui.BeginContainerBox(ref m_triggersEditor.open, "Triggers");
-				if (m_triggersEditor.open)
-				{
-					m_triggersEditor.DrawInspector();
-				}
-
-				SplineEditorGui.EndContainerBox();
-			}
-
-			SplineEditorGui.BeginContainerBox(ref m_debugEditor.open, "Editor Properties");
-			if (m_debugEditor.open)
-			{
-				m_debugEditor.DrawInspector();
-			}
-
-			SplineEditorGui.EndContainerBox();
-
-			if (GUI.changed)
-			{
-				EditorUtility.SetDirty(spline);
-			}
-
-
-			if (Event.current.type == EventType.Layout && m_rebuildSpline)
-			{
-				for (var i = 0; i < splines.Length; i++)
-				{
-					if (splines[i].editorUpdateMode == SplineComputer.EditorUpdateMode.OnMouseUp)
-					{
-						splines[i].RebuildImmediate(true);
-					}
-				}
-
-				m_rebuildSpline = false;
-			}
-		}
-
-		public bool IsPointSelected(int index)
-		{
-			return m_selectedPoints.Contains(index);
-		}
-
-		private void DuringSceneGui(SceneView currentSceneView)
-		{
-			m_debugEditor.DrawScene(currentSceneView);
-			m_computerEditor.drawComputer = !(m_pathEditor.currentModule is CreatePointModule);
-			m_computerEditor.drawPivot = m_pathEditor.open && spline.editorDrawPivot;
-			m_computerEditor.DrawScene(currentSceneView);
-			if (splines.Length == 1 && m_triggersEditor.open)
-			{
-				m_triggersEditor.DrawScene(currentSceneView);
-			}
-
-			if (splines.Length == 1 && m_pathEditor.open)
-			{
-				m_pathEditor.DrawScene(currentSceneView);
-			}
-		}
-	}
+        private void DuringSceneGUI(SceneView currentSceneView)
+        {
+            _debugEditor.DrawScene(currentSceneView);
+            _computerEditor.drawComputer = !(_pathEditor.currentModule is CreatePointModule);
+            _computerEditor.drawPivot = _pathEditor.open && spline.editorDrawPivot;
+            _computerEditor.DrawScene(currentSceneView);
+            if (splines.Length == 1 && _triggersEditor.open) _triggersEditor.DrawScene(currentSceneView);
+            if (splines.Length == 1 && _pathEditor.open) _pathEditor.DrawScene(currentSceneView);
+        }
+    }
 }

@@ -1,366 +1,317 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections;
 
 namespace Dreamteck
 {
-	[Serializable]
-	public class TsTransform
-	{
-		[SerializeField]
-		[HideInInspector]
-		private Transform m_transform;
+    [System.Serializable]
+    public class TS_Transform
+    {
+        public Vector3 position
+        {
+            get { return new Vector3(posX, posY, posZ); }
+            set
+            {
+                setPosition = true;
+                setLocalPosition = false;
+                posX = value.x;
+                posY = value.y;
+                posZ = value.z;
+            }
+        }
+        public Quaternion rotation
+        {
+            get { return new Quaternion(rotX, rotY, rotZ, rotW); }
+            set
+            {
+                setRotation = true;
+                setLocalRotation = false;
+                rotX = value.x;
+                rotY = value.y;
+                rotZ = value.z;
+                rotW = value.w;
+            }
+        }
+        public Vector3 scale
+        {
+            get { return new Vector3(scaleX, scaleY, scaleZ); }
+            set
+            {
+                setScale = true;
+                scaleX = value.x;
+                scaleY = value.y;
+                scaleZ = value.z;
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_posX;
+        public Vector3 lossyScale
+        {
+            get { return new Vector3(lossyScaleX, lossyScaleY, lossyScaleZ); }
+            set
+            {
+                setScale = true;
+                lossyScaleX = value.x;
+                lossyScaleY = value.y;
+                lossyScaleZ = value.z;
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_posY;
+        public Vector3 localPosition
+        {
+            get { return new Vector3(lposX, lposY, lposZ); }
+            set
+            {
+                setLocalPosition = true;
+                setPosition = false;
+                lposX = value.x;
+                lposY = value.y;
+                lposZ = value.z;
+            }
+        }
+        public Quaternion localRotation
+        {
+            get { return new Quaternion(lrotX, lrotY, lrotZ, lrotW); }
+            set
+            {
+                setLocalRotation = true;
+                setRotation = false;
+                lrotX = value.x;
+                lrotY = value.y;
+                lrotZ = value.z;
+                lrotW = value.w;
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_posZ;
+        private bool setPosition = false;
+        private bool setRotation = false;
+        private bool setScale = false;
+        private bool setLocalPosition = false;
+        private bool setLocalRotation = false;
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_scaleX = 1f;
+        public Transform transform
+        {
+            get
+            {
+                return _transform;
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_scaleY = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private Transform _transform;
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_scaleZ = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float posX = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float posY = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float posZ = 0f;
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lossyScaleX = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float scaleX = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float scaleY = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float scaleZ = 1f;
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lossyScaleY = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lossyScaleX = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lossyScaleY = 1f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lossyScaleZ = 1f;
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lossyScaleZ = 1f;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_rotX;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_rotY;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_rotZ;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_rotW;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float rotX = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float rotY = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float rotZ = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float rotW = 0f;
 
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lposX;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lposX = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lposY = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lposZ = 0f;
 
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lposY;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lposZ;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lrotX;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lrotY;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lrotZ;
-
-		[SerializeField]
-		[HideInInspector]
-		private volatile float m_lrotW;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lrotX = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lrotY = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lrotZ = 0f;
+        [SerializeField]
+        [HideInInspector]
+        private volatile float lrotW = 0f;
 #if UNITY_EDITOR
-		private volatile bool m_isPlaying;
+        private volatile bool isPlaying = false;
 #endif
-		private bool m_setLocalPosition;
-		private bool m_setLocalRotation;
 
-		private bool m_setPosition;
-		private bool m_setRotation;
-		private bool m_setScale;
+        public TS_Transform(Transform input)
+        {
+            SetTransform(input);
+        }
 
-		public TsTransform(Transform input)
-		{
-			SetTransform(input);
-		}
-
-		public Vector3 position
-		{
-			get => new(m_posX, m_posY, m_posZ);
-			set
-			{
-				m_setPosition = true;
-				m_setLocalPosition = false;
-				m_posX = value.x;
-				m_posY = value.y;
-				m_posZ = value.z;
-			}
-		}
-
-		public Quaternion rotation
-		{
-			get => new(m_rotX, m_rotY, m_rotZ, m_rotW);
-			set
-			{
-				m_setRotation = true;
-				m_setLocalRotation = false;
-				m_rotX = value.x;
-				m_rotY = value.y;
-				m_rotZ = value.z;
-				m_rotW = value.w;
-			}
-		}
-
-		public Vector3 scale
-		{
-			get => new(m_scaleX, m_scaleY, m_scaleZ);
-			set
-			{
-				m_setScale = true;
-				m_scaleX = value.x;
-				m_scaleY = value.y;
-				m_scaleZ = value.z;
-			}
-		}
-
-		public Vector3 lossyScale
-		{
-			get => new(m_lossyScaleX, m_lossyScaleY, m_lossyScaleZ);
-			set
-			{
-				m_setScale = true;
-				m_lossyScaleX = value.x;
-				m_lossyScaleY = value.y;
-				m_lossyScaleZ = value.z;
-			}
-		}
-
-		public Vector3 localPosition
-		{
-			get => new(m_lposX, m_lposY, m_lposZ);
-			set
-			{
-				m_setLocalPosition = true;
-				m_setPosition = false;
-				m_lposX = value.x;
-				m_lposY = value.y;
-				m_lposZ = value.z;
-			}
-		}
-
-		public Quaternion localRotation
-		{
-			get => new(m_lrotX, m_lrotY, m_lrotZ, m_lrotW);
-			set
-			{
-				m_setLocalRotation = true;
-				m_setRotation = false;
-				m_lrotX = value.x;
-				m_lrotY = value.y;
-				m_lrotZ = value.z;
-				m_lrotW = value.w;
-			}
-		}
-
-		public Transform transform => m_transform;
-
-		/// <summary>
-		///     Update the TS_Transform. Call this regularly on every frame you need it to update. Should ALWAYS be called from the
-		///     main thread
-		/// </summary>
-		public void Update()
-		{
-			if (transform == null)
-			{
-				return;
-			}
+        /// <summary>
+        /// Update the TS_Transform. Call this regularly on every frame you need it to update. Should ALWAYS be called from the main thread
+        /// </summary>
+        public void Update()
+        {
+            if (transform == null) return;
 #if UNITY_EDITOR
-			m_isPlaying = Application.isPlaying;
+            isPlaying = Application.isPlaying;
 #endif
-			if (m_setPosition)
-			{
-				m_transform.position = position;
-			}
-			else if (m_setLocalPosition)
-			{
-				m_transform.localPosition = localPosition;
-			}
-			else
-			{
-				position = m_transform.position;
-				localPosition = m_transform.localPosition;
-			}
+            if (setPosition) _transform.position = position;
+            else if (setLocalPosition) _transform.localPosition = localPosition;
+            else
+            {
+                position = _transform.position;
+                localPosition = _transform.localPosition;
+            }
 
-			if (m_setScale)
-			{
-				m_transform.localScale = scale;
-			}
-			else
-			{
-				scale = m_transform.localScale;
-			}
+            if (setScale) _transform.localScale = scale;
+            else scale = _transform.localScale;
+            lossyScale = _transform.lossyScale;
+            
 
-			lossyScale = m_transform.lossyScale;
+            if (setRotation) _transform.rotation = rotation;
+            else if (setLocalRotation) _transform.localRotation = localRotation;
+            else
+            {
+                rotation = _transform.rotation;
+                localRotation = _transform.localRotation;
+            }
+            setPosition = setLocalPosition = setRotation = setLocalRotation = setScale = false;
+        }
 
+        /// <summary>
+        /// Set the transform reference. Should ALWAYS be called from the main thread
+        /// </summary>
+        /// <param name="input">Transform reference</param>
+        public void SetTransform(Transform input)
+        {
+            _transform = input;
+            setPosition = setLocalPosition = setRotation = setLocalRotation = setScale = false;
+            Update();
+        }
 
-			if (m_setRotation)
-			{
-				m_transform.rotation = rotation;
-			}
-			else if (m_setLocalRotation)
-			{
-				m_transform.localRotation = localRotation;
-			}
-			else
-			{
-				rotation = m_transform.rotation;
-				localRotation = m_transform.localRotation;
-			}
+        /// <summary>
+        /// Returns true if there's any change in the transform. Should ALWAYS be called from the main thread
+        /// </summary>
+        /// <returns></returns>
+        public bool HasChange()
+        {
+            return HasPositionChange() || HasRotationChange() || HasScaleChange();
+        }
 
-			m_setPosition = m_setLocalPosition = m_setRotation = m_setLocalRotation = m_setScale = false;
-		}
+        /// <summary>
+        /// Returns true if there's a change in the position. Should ALWAYS be called from the main thread
+        /// </summary>
+        /// <returns></returns>
+        public bool HasPositionChange()
+        {
+            return posX != _transform.position.x || posY != _transform.position.y || posZ != _transform.position.z;
+        }
 
-		/// <summary>
-		///     Set the transform reference. Should ALWAYS be called from the main thread
-		/// </summary>
-		/// <param name="input">Transform reference</param>
-		public void SetTransform(Transform input)
-		{
-			m_transform = input;
-			m_setPosition = m_setLocalPosition = m_setRotation = m_setLocalRotation = m_setScale = false;
-			Update();
-		}
+        /// <summary>
+        /// Returns true if there is a change in the rotation. Should ALWAYS be called from the main thread
+        /// </summary>
+        /// <returns></returns>
+        public bool HasRotationChange()
+        {
+            return rotX != _transform.rotation.x || rotY != _transform.rotation.y || rotZ != _transform.rotation.z || rotW != _transform.rotation.w;
+        }
 
-		/// <summary>
-		///     Returns true if there's any change in the transform. Should ALWAYS be called from the main thread
-		/// </summary>
-		/// <returns></returns>
-		public bool HasChange()
-		{
-			return HasPositionChange() || HasRotationChange() || HasScaleChange();
-		}
+        /// <summary>
+        /// Returns true if there is a change in the scale. Should ALWAYS be called from the main thread
+        /// </summary>
+        /// <returns></returns>
+        public bool HasScaleChange()
+        {
+            return lossyScaleX != _transform.lossyScale.x || lossyScaleY != _transform.lossyScale.y || lossyScaleZ != _transform.lossyScale.z;
+        }
 
-		/// <summary>
-		///     Returns true if there's a change in the position. Should ALWAYS be called from the main thread
-		/// </summary>
-		/// <returns></returns>
-		public bool HasPositionChange()
-		{
-			return m_posX != m_transform.position.x || m_posY != m_transform.position.y ||
-			       m_posZ != m_transform.position.z;
-		}
-
-		/// <summary>
-		///     Returns true if there is a change in the rotation. Should ALWAYS be called from the main thread
-		/// </summary>
-		/// <returns></returns>
-		public bool HasRotationChange()
-		{
-			return m_rotX != m_transform.rotation.x || m_rotY != m_transform.rotation.y ||
-			       m_rotZ != m_transform.rotation.z || m_rotW != m_transform.rotation.w;
-		}
-
-		/// <summary>
-		///     Returns true if there is a change in the scale. Should ALWAYS be called from the main thread
-		/// </summary>
-		/// <returns></returns>
-		public bool HasScaleChange()
-		{
-			return m_lossyScaleX != m_transform.lossyScale.x || m_lossyScaleY != m_transform.lossyScale.y ||
-			       m_lossyScaleZ != m_transform.lossyScale.z;
-		}
-
-		/// <summary>
-		///     Thread-safe TransformPoint
-		/// </summary>
-		/// <param name="point"></param>
-		/// <returns></returns>
-		public Vector3 TransformPoint(Vector3 point)
-		{
+        /// <summary>
+        /// Thread-safe TransformPoint
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vector3 TransformPoint(Vector3 point)
+        {
 #if UNITY_EDITOR
-			if (!m_isPlaying)
-			{
-				return transform.TransformPoint(point);
-			}
+            if (!isPlaying) return transform.TransformPoint(point);
 #endif
-			var scaled = new Vector3(point.x * m_lossyScaleX, point.y * m_lossyScaleY, point.z * m_lossyScaleZ);
-			Vector3 rotated = rotation * scaled;
-			return position + rotated;
-		}
+            Vector3 scaled = new Vector3(point.x * lossyScaleX, point.y * lossyScaleY, point.z * lossyScaleZ);
+            Vector3 rotated = rotation * scaled;
+            return position + rotated;
+        }
 
-		/// <summary>
-		///     Thread-safe TransformDirection
-		/// </summary>
-		/// <param name="direction"></param>
-		/// <returns></returns>
-		public Vector3 TransformDirection(Vector3 direction)
-		{
+        /// <summary>
+        /// Thread-safe TransformDirection
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public Vector3 TransformDirection(Vector3 direction)
+        {
 #if UNITY_EDITOR
-			if (!m_isPlaying)
-			{
-				return transform.TransformDirection(direction);
-			}
+            if (!isPlaying) return transform.TransformDirection(direction);
 #endif
-			return TransformPoint(direction) - position;
-		}
+            return TransformPoint(direction) - position;
+        }
 
-		/// <summary>
-		///     Thread-safe InverseTransformPoint
-		/// </summary>
-		/// <param name="point"></param>
-		/// <returns></returns>
-		public Vector3 InverseTransformPoint(Vector3 point)
-		{
+        /// <summary>
+        /// Thread-safe InverseTransformPoint
+        /// </summary>
+        /// <param name="point"></param>
+        /// <returns></returns>
+        public Vector3 InverseTransformPoint(Vector3 point)
+        {
 #if UNITY_EDITOR
-			if (!m_isPlaying)
-			{
-				return transform.InverseTransformPoint(point);
-			}
+            if (!isPlaying) return transform.InverseTransformPoint(point);
 #endif
-			return InverseTransformDirection(point - position);
-		}
+            return InverseTransformDirection(point - position);
+        }
 
-		/// <summary>
-		///     Thread-safe InverseTransformDirection
-		/// </summary>
-		/// <param name="direction"></param>
-		/// <returns></returns>
-		public Vector3 InverseTransformDirection(Vector3 direction)
-		{
+        /// <summary>
+        /// Thread-safe InverseTransformDirection
+        /// </summary>
+        /// <param name="direction"></param>
+        /// <returns></returns>
+        public Vector3 InverseTransformDirection(Vector3 direction)
+        {
 #if UNITY_EDITOR
-			if (!m_isPlaying)
-			{
-				return transform.InverseTransformDirection(direction);
-			}
+            if (!isPlaying) return transform.InverseTransformDirection(direction);
 #endif
-			Vector3 rotated = Quaternion.Inverse(rotation) * direction;
-			return new Vector3(rotated.x / m_lossyScaleX, rotated.y / m_lossyScaleY, rotated.z / m_lossyScaleZ);
-		}
+            Vector3 rotated = Quaternion.Inverse(rotation) * direction;
+            return new Vector3(rotated.x / lossyScaleX, rotated.y / lossyScaleY, rotated.z / lossyScaleZ);
+        }
 
-		public T GetComponent<T>()
-		{
-			return m_transform.GetComponent<T>();
-		}
-	}
+        public T GetComponent<T>()
+        {
+            return _transform.GetComponent<T>();
+        }
+
+    }
 }
