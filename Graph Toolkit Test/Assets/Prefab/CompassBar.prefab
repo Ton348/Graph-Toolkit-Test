@@ -89,14 +89,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c9865aadb1104bd190f8ba1eb4f3d39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompassUIController
-  compassManager: {fileID: 0}
-  compassBar: {fileID: 4878201732167722802}
-  markersContainer: {fileID: 8118471370078445048}
-  markerPrefab: {fileID: -6503408261323146138, guid: daba8b8b8ae814f9c997e986845d7526, type: 3}
-  ticksContainer: {fileID: 0}
-  tickPrefab: {fileID: 0}
-  maxVisibleAngle: 90
-  tickDefinitions: []
+  m_compassManager: {fileID: 0}
+  m_compassBar: {fileID: 4878201732167722802}
+  m_markersContainer: {fileID: 8118471370078445048}
+  m_markerPrefab: {fileID: -6503408261323146138, guid: daba8b8b8ae814f9c997e986845d7526, type: 3}
+  m_ticksContainer: {fileID: 0}
+  m_tickPrefab: {fileID: 0}
+  m_maxVisibleAngle: 90
+  m_tickDefinitions: []
 --- !u!1 &6942989561882151909
 GameObject:
   m_ObjectHideFlags: 0
