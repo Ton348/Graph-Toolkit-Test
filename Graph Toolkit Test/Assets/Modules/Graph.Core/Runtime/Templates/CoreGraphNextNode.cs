@@ -1,10 +1,10 @@
 using System;
 using UnityEngine.Serialization;
 
-namespace Game1.Graph.Runtime.Templates
+namespace GraphCore.Runtime.Templates
 {
 	[Serializable]
-	public abstract class GameGraphNextNode : GameGraphNode
+	public abstract class CoreGraphNextNode : CoreGraphNode
 	{
 		[FormerlySerializedAs("nextNodeId")]
 		public string nextNodeId;

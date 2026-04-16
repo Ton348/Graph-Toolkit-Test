@@ -9,9 +9,6 @@ namespace GraphCore.Runtime
 		[FormerlySerializedAs("id")]
 		public string nodeId;
 
-		[FormerlySerializedAs("nextNodeId")]
-		public string nextNodeId;
-
 		[FormerlySerializedAs("Title")]
 		public string title;
 

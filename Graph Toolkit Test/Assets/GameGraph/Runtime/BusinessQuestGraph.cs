@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using System.Reflection;
 using GraphCore.Runtime;
+using GraphCore.Runtime.Templates;
 using GraphCore.Runtime.Nodes.Server;
 using UnityEngine;
 
@@ -40,7 +42,18 @@ public class BusinessQuestGraph : ScriptableObject
 			return null;
 		}
 
-		return GetNodeById(node.nextNodeId);
+		if (node is CoreGraphNextNode nextNode)
+		{
+			return GetNodeById(nextNode.nextNodeId);
+		}
+
+		FieldInfo field = node.GetType().GetField("nextNodeId", BindingFlags.Public | BindingFlags.Instance);
+		if (field != null && field.FieldType == typeof(string))
+		{
+			return GetNodeById(field.GetValue(node) as string);
+		}
+
+		return null;
 	}
 
 	public CheckpointNode GetCheckpointNodeById(string checkpointId)

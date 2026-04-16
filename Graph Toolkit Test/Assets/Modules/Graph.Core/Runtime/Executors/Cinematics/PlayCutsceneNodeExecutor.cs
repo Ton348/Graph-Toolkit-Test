@@ -1,12 +1,13 @@
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime.Nodes.Cinematics;
+using GraphCore.Runtime.Executors.Templates;
 using System.Threading;
 
 namespace GraphCore.Runtime.Executors.Cinematics
 {
-	public sealed class PlayCutsceneNodeExecutor : BaseGraphNodeExecutor<PlayCutsceneNode>
+	public sealed class PlayCutsceneNodeExecutor : CoreGraphNextNodeExecutor<PlayCutsceneNode>
 	{
-		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(PlayCutsceneNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(PlayCutsceneNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
 			if (context.CutsceneService == null)
 			{

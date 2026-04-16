@@ -1,9 +1,10 @@
 using System;
+using GraphCore.Runtime.Templates;
 
 namespace GraphCore.Runtime.Nodes.Utility
 {
 	[Serializable]
-	public sealed class LogNode : BaseGraphNode
+	public sealed class LogNode : CoreGraphNextNode
 	{
 		public string message;
 

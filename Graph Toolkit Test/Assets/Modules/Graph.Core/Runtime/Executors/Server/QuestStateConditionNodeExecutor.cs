@@ -1,26 +1,26 @@
 using Cysharp.Threading.Tasks;
+using GraphCore.Runtime.Executors.Templates;
 using GraphCore.Runtime.Nodes.Server;
 using System.Threading;
 
 namespace GraphCore.Runtime.Executors.Server
 {
-	public sealed class QuestStateConditionNodeExecutor : BaseGraphNodeExecutor<QuestStateConditionNode>
+	public sealed class QuestStateConditionNodeExecutor : CoreGraphTrueFalseNodeExecutor<QuestStateConditionNode>
 	{
-		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(QuestStateConditionNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override UniTask<bool> EvaluateConditionAsync(QuestStateConditionNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
 			if (context.QuestService == null)
 			{
-				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.falseNodeId));
+				return UniTask.FromResult(false);
 			}
 
 			return ExecuteWithServiceAsync(node, context.QuestService, cancellationToken);
 		}
 
-		private static async UniTask<GraphNodeExecutionResult> ExecuteWithServiceAsync(QuestStateConditionNode node, IGraphQuestService questService, CancellationToken cancellationToken)
+		private static async UniTask<bool> ExecuteWithServiceAsync(QuestStateConditionNode node, IGraphQuestService questService, CancellationToken cancellationToken)
 		{
 			QuestState actualState = await questService.GetQuestStateAsync(node.questId, cancellationToken);
-			bool isMatch = actualState == node.state;
-			return GraphNodeExecutionResult.ContinueTo(isMatch ? node.trueNodeId : node.falseNodeId);
+			return actualState == node.state;
 		}
 	}
 }

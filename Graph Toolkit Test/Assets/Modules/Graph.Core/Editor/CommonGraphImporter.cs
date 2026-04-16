@@ -11,8 +11,10 @@ using GraphCore.Runtime.Nodes.Server;
 using GraphCore.Runtime.Nodes.UI;
 using GraphCore.Runtime.Nodes.Utility;
 using GraphCore.Runtime.Nodes.World;
+using GraphCore.Runtime.Templates;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 
@@ -252,7 +254,27 @@ namespace GraphCore.Editor
 				return;
 			}
 
-			runtimeNode.nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+			if (runtimeNode is CoreGraphNextNode coreGraphNextNode)
+			{
+				coreGraphNextNode.nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+				return;
+			}
+
+			TrySetNextNodeId(runtimeNode, GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap));
+		}
+
+		private static void TrySetNextNodeId(BaseGraphNode node, string nextNodeId)
+		{
+			if (node == null)
+			{
+				return;
+			}
+
+			FieldInfo field = node.GetType().GetField("nextNodeId", BindingFlags.Public | BindingFlags.Instance);
+			if (field != null && field.FieldType == typeof(string))
+			{
+				field.SetValue(node, nextNodeId);
+			}
 		}
 
 		public static string GetConnectedNodeIdByOutputIndex(INode node, int outputIndex, IReadOnlyDictionary<INode, string> idMap)

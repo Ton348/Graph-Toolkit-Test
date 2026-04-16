@@ -4,8 +4,10 @@ using GraphCore.Runtime.Nodes.Server;
 using GraphCore.Runtime.Nodes.UI;
 using GraphCore.Runtime.Nodes.Utility;
 using GraphCore.Runtime.Nodes.World;
+using GraphCore.Runtime.Templates;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace GraphCore.Runtime
 {
@@ -50,7 +52,10 @@ namespace GraphCore.Runtime
 					continue;
 				}
 
-				ValidateBaseNext(lookup, node, node.nextNodeId, result);
+				if (TryGetNextNodeId(node, out string nextNodeId))
+				{
+					ValidateBaseNext(lookup, node, nextNodeId, result);
+				}
 
 				if (node is CheckpointNode checkpointNode)
 				{
@@ -340,9 +345,9 @@ namespace GraphCore.Runtime
 
 		private static IEnumerable<string> EnumerateOutgoingLinks(BaseGraphNode node)
 		{
-			if (!string.IsNullOrWhiteSpace(node.nextNodeId))
+			if (TryGetNextNodeId(node, out string nextNodeId) && !string.IsNullOrWhiteSpace(nextNodeId))
 			{
-				yield return node.nextNodeId;
+				yield return nextNodeId;
 			}
 
 			if (node is CheckpointNode checkpointNode)
@@ -392,6 +397,30 @@ namespace GraphCore.Runtime
 					}
 				}
 			}
+		}
+
+		private static bool TryGetNextNodeId(BaseGraphNode node, out string nextNodeId)
+		{
+			nextNodeId = null;
+			if (node == null)
+			{
+				return false;
+			}
+
+			if (node is CoreGraphNextNode coreGraphNextNode)
+			{
+				nextNodeId = coreGraphNextNode.nextNodeId;
+				return true;
+			}
+
+			FieldInfo field = node.GetType().GetField("nextNodeId", BindingFlags.Public | BindingFlags.Instance);
+			if (field == null || field.FieldType != typeof(string))
+			{
+				return false;
+			}
+
+			nextNodeId = field.GetValue(node) as string;
+			return true;
 		}
 	}
 }

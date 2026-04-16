@@ -1,9 +1,10 @@
 using System;
+using GraphCore.Runtime.Templates;
 
 namespace GraphCore.Runtime.Nodes.Cinematics
 {
 	[Serializable]
-	public sealed class PlayCutsceneNode : BaseGraphNode
+	public sealed class PlayCutsceneNode : CoreGraphNextNode
 	{
 		public string cutsceneReference;
 

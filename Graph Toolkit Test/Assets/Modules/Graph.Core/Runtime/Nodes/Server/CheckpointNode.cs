@@ -1,14 +1,13 @@
 using System;
+using GraphCore.Runtime.Templates;
 
 namespace GraphCore.Runtime.Nodes.Server
 {
 	[Serializable]
-	public sealed class CheckpointNode : BaseGraphNode
+	public sealed class CheckpointNode : CoreGraphSuccessFailNode
 	{
 		public string checkpointId;
 		public CheckpointAction action;
-		public string successNodeId;
-		public string failNodeId;
 
 		public CheckpointNode()
 		{
