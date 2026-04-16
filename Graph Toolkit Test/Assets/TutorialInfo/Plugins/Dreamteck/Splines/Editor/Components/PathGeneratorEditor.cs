@@ -8,9 +8,9 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class PathGeneratorEditor : MeshGenEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             PathGenerator pathGenerator = (PathGenerator)target;
             serializedObject.Update();
             SerializedProperty slices = serializedObject.FindProperty("_slices");
@@ -41,7 +41,7 @@ namespace Dreamteck.Splines.Editor
             if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
             
 
-            UVControls(pathGenerator);
+            Uvcontrols(pathGenerator);
         }
     }
 }

@@ -7,18 +7,18 @@
 
     public class EditorModule
     {
-        protected string prefPrefix = "";
+        protected string m_prefPrefix = "";
 
-        private bool _changed = false;
+        private bool m_changed = false;
 
-        public bool hasChanged { get { return _changed; } }
+        public bool hasChanged { get { return m_changed; } }
 
-        protected SceneView _currentSceneView;
+        protected SceneView m_currentSceneView;
 
 
         protected void RegisterChange()
         {
-            _changed = true;
+            m_changed = true;
         }
 
         public virtual void Select()
@@ -33,12 +33,12 @@
 
         public virtual void BeforeSceneDraw(SceneView current)
         {
-            _currentSceneView = current;
+            m_currentSceneView = current;
         }
 
         public void DrawScene()
         {
-            _changed = false;
+            m_changed = false;
             OnDrawScene();
         }
 
@@ -48,7 +48,7 @@
 
         public void DrawInspector()
         {
-            _changed = false;
+            m_changed = false;
             OnDrawInspector();
         }
 
@@ -76,50 +76,50 @@
 
         protected void SaveBool(string variableName, bool value)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            EditorPrefs.SetBool(prefPrefix + "." + variableName, value);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            EditorPrefs.SetBool(m_prefPrefix + "." + variableName, value);
         }
 
         protected void SaveInt(string variableName, int value)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            EditorPrefs.SetInt(prefPrefix + "." + variableName, value);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            EditorPrefs.SetInt(m_prefPrefix + "." + variableName, value);
         }
 
         protected void SaveFloat(string variableName, float value)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            EditorPrefs.SetFloat(prefPrefix + "." + variableName, value);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            EditorPrefs.SetFloat(m_prefPrefix + "." + variableName, value);
         }
 
         protected void SaveString(string variableName, string value)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            EditorPrefs.SetString(prefPrefix + "." + variableName, value);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            EditorPrefs.SetString(m_prefPrefix + "." + variableName, value);
         }
 
         protected bool LoadBool(string variableName)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            return EditorPrefs.GetBool(prefPrefix + "." + variableName, false);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            return EditorPrefs.GetBool(m_prefPrefix + "." + variableName, false);
         }
 
         protected int LoadInt(string variableName, int defaultValue = 0)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            return EditorPrefs.GetInt(prefPrefix + "." + variableName, defaultValue);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            return EditorPrefs.GetInt(m_prefPrefix + "." + variableName, defaultValue);
         }
 
         protected float LoadFloat(string variableName, float d = 0f)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            return EditorPrefs.GetFloat(prefPrefix + "." + variableName, d);
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            return EditorPrefs.GetFloat(m_prefPrefix + "." + variableName, d);
         }
 
         protected string LoadString(string variableName)
         {
-            if (prefPrefix == "") prefPrefix = GetType().ToString();
-            return EditorPrefs.GetString(prefPrefix + "." + variableName, "");
+            if (m_prefPrefix == "") m_prefPrefix = GetType().ToString();
+            return EditorPrefs.GetString(m_prefPrefix + "." + variableName, "");
         }
 
         public virtual void SaveState()

@@ -11,11 +11,11 @@ namespace Dreamteck.Splines.Editor
     public static class PluginInfo
     {
         public static string version = "3.0.6";
-        private static bool open = false;
+        private static bool s_open = false;
 
         static PluginInfo()
         {
-            if (open) return;
+            if (s_open) return;
             bool showInfo = EditorPrefs.GetString("Dreamteck.Splines.Info.version", "") != version;
 
             if (!showInfo)
@@ -60,7 +60,7 @@ namespace Dreamteck.Splines.Editor
         {
             EditorApplication.update -= OpenWindowOnUpdate;
             EditorWindow.GetWindow<WelcomeScreen>(true);
-            open = true;
+            s_open = true;
         }
     }
 
@@ -74,10 +74,10 @@ namespace Dreamteck.Splines.Editor
 
     public class WelcomeScreen : WelcomeWindow
     {
-        protected override Vector2 _windowSize => new Vector2(450, 620);
-        private ModuleInstaller _tmproInstaller;
-        private ModuleInstaller _playmakerInstaller;
-        private ModuleInstaller _examplesInstaller;
+        protected override Vector2 windowSize => new Vector2(450, 620);
+        private ModuleInstaller m_tmproInstaller;
+        private ModuleInstaller m_playmakerInstaller;
+        private ModuleInstaller m_examplesInstaller;
 
         [MenuItem("Window/Dreamteck/Splines/Start Screen")]
         public static void OpenWindow()
@@ -87,7 +87,7 @@ namespace Dreamteck.Splines.Editor
 
         protected override void GetHeader()
         {
-            header = ResourceUtility.EditorLoadTexture("Splines/Editor/Icons", "plugin_header");
+            m_header = ResourceUtility.EditorLoadTexture("Splines/Editor/Icons", "plugin_header");
         }
 
         public override void Load()
@@ -95,35 +95,35 @@ namespace Dreamteck.Splines.Editor
             base.Load();
 
             SetTitle("Dreamteck Splines " + PluginInfo.version, "");
-            panels = new WindowPanel[7];
-            panels[0] = new WindowPanel("Home", true, 0.25f);
-            panels[1] = new WindowPanel("Changelog", false, panels[0], 0.25f);
-            panels[2] = new WindowPanel("Learn", false, panels[0], 0.25f);
-            panels[3] = new WindowPanel("Support", false, panels[0], 0.25f);
-            panels[4] = new WindowPanel("Examples", false, panels[2], 0.25f);
-            panels[5] = new WindowPanel("Playmaker", false, panels[0], 0.25f);
-            panels[6] = new WindowPanel("Text Mesh Pro", false, panels[0], 0.25f);
+            m_panels = new WindowPanel[7];
+            m_panels[0] = new WindowPanel("Home", true, 0.25f);
+            m_panels[1] = new WindowPanel("Changelog", false, m_panels[0], 0.25f);
+            m_panels[2] = new WindowPanel("Learn", false, m_panels[0], 0.25f);
+            m_panels[3] = new WindowPanel("Support", false, m_panels[0], 0.25f);
+            m_panels[4] = new WindowPanel("Examples", false, m_panels[2], 0.25f);
+            m_panels[5] = new WindowPanel("Playmaker", false, m_panels[0], 0.25f);
+            m_panels[6] = new WindowPanel("Text Mesh Pro", false, m_panels[0], 0.25f);
 
-            panels[0].elements.Add(new WindowPanel.Space(400, 10));
-            panels[0].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "changelog", "What's new?", "See all new features, important changes and bugfixes in " + PluginInfo.version, new ActionLink(panels[1], panels[0])));
-            panels[0].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "get_started", "Get Started + Packages", "Learn how to use Dreamteck Splines and install core packages", new ActionLink(panels[2], panels[0])));
-            panels[0].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "support", "Community", "Got a problem or a feature request? Join the community!", new ActionLink(panels[3], panels[0])));
+            m_panels[0].elements.Add(new WindowPanel.Space(400, 10));
+            m_panels[0].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "changelog", "What's new?", "See all new features, important changes and bugfixes in " + PluginInfo.version, new ActionLink(m_panels[1], m_panels[0])));
+            m_panels[0].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "get_started", "Get Started + Packages", "Learn how to use Dreamteck Splines and install core packages", new ActionLink(m_panels[2], m_panels[0])));
+            m_panels[0].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "support", "Community", "Got a problem or a feature request? Join the community!", new ActionLink(m_panels[3], m_panels[0])));
 
-            _bannerData = LoadBannersData("https://dreamteck.io/plugins/splines/welcome.json", "Dreamteck.Splines.welcomeScreenVersion");
+            m_bannerData = LoadBannersData("https://dreamteck.io/plugins/splines/welcome.json", "Dreamteck.Splines.welcomeScreenVersion");
 
-            if (_bannerData != null)
+            if (m_bannerData != null)
             {
-                _textureWebRequests = new List<UnityWebRequest>();
+                m_textureWebRequests = new List<UnityWebRequest>();
 
-                for (int i = 0; i < _bannerData.banners.Length; i++)
+                for (int i = 0; i < m_bannerData.banners.Length; i++)
                 {
-                    var request = UnityWebRequestTexture.GetTexture(_bannerData.banners[i].bannerUrl);
+                    var request = UnityWebRequestTexture.GetTexture(m_bannerData.banners[i].bannerUrl);
                     request.SendWebRequest();
-                    _textureWebRequests.Add(request);
-                    _hasSentImageRequest = true;
+                    m_textureWebRequests.Add(request);
+                    m_hasSentImageRequest = true;
                 }
 
-                if (_hasSentImageRequest)
+                if (m_hasSentImageRequest)
                 {
                     EditorApplication.update -= OnEditorUpdate;
                     EditorApplication.update += OnEditorUpdate;
@@ -148,85 +148,85 @@ namespace Dreamteck.Splines.Editor
                     }
                 }
             }
-            panels[1].elements.Add(new WindowPanel.Space(400, 20));
-            panels[1].elements.Add(new WindowPanel.ScrollText(400, 500, changelogText));
+            m_panels[1].elements.Add(new WindowPanel.Space(400, 20));
+            m_panels[1].elements.Add(new WindowPanel.ScrollText(400, 500, changelogText));
 
-            panels[2].elements.Add(new WindowPanel.Space(400, 10));
-            panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "manual", "User Manual", "Read a thorough documentation of the whole package along with a list of API methods.", new ActionLink("https://dreamteck-splines.netlify.app/")));
-            panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "tutorials", "Video Tutorials", "Watch a series of Youtube videos to get started.", new ActionLink("https://www.youtube.com/playlist?list=PLkZqalQdFIQ6zym8RwSWWl3PZJuUdvNK6")));
-            panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "examples", "Examples", "Install example scenes", new ActionLink(panels[4], panels[2])));
+            m_panels[2].elements.Add(new WindowPanel.Space(400, 10));
+            m_panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "manual", "User Manual", "Read a thorough documentation of the whole package along with a list of API methods.", new ActionLink("https://dreamteck-splines.netlify.app/")));
+            m_panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "tutorials", "Video Tutorials", "Watch a series of Youtube videos to get started.", new ActionLink("https://www.youtube.com/playlist?list=PLkZqalQdFIQ6zym8RwSWWl3PZJuUdvNK6")));
+            m_panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "examples", "Examples", "Install example scenes", new ActionLink(m_panels[4], m_panels[2])));
 
-            panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "playmaker", "Playmaker Actions", "Install Playmaker actions for Dreamteck Splines", new ActionLink(panels[5], panels[2])));
-            panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "tmpro", "Text Mesh Pro Support", "Manage components for working with Text Mesh Pro", new ActionLink(panels[6], panels[2])));
+            m_panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "playmaker", "Playmaker Actions", "Install Playmaker actions for Dreamteck Splines", new ActionLink(m_panels[5], m_panels[2])));
+            m_panels[2].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "tmpro", "Text Mesh Pro Support", "Manage components for working with Text Mesh Pro", new ActionLink(m_panels[6], m_panels[2])));
 
-            panels[3].elements.Add(new WindowPanel.Space(400, 10));
-            panels[3].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "discord", "Discord Server", "Join our Discord community and chat with other developers who use Splines.", new ActionLink("https://discord.gg/bkYDq8v")));
+            m_panels[3].elements.Add(new WindowPanel.Space(400, 10));
+            m_panels[3].elements.Add(new WindowPanel.Thumbnail("Utilities/Editor/Images", "discord", "Discord Server", "Join our Discord community and chat with other developers who use Splines.", new ActionLink("https://discord.gg/bkYDq8v")));
 
-            panels[4].elements.Add(new WindowPanel.Space(400, 10));
-            panels[4].elements.Add(new WindowPanel.Button(400, 30, "Install Examples", new ActionLink(InstallExamples)));
-            panels[4].elements.Add(new WindowPanel.Button(400, 30, "Uninstall Examples", new ActionLink(UnInstallExamples)));
+            m_panels[4].elements.Add(new WindowPanel.Space(400, 10));
+            m_panels[4].elements.Add(new WindowPanel.Button(400, 30, "Install Examples", new ActionLink(InstallExamples)));
+            m_panels[4].elements.Add(new WindowPanel.Button(400, 30, "Uninstall Examples", new ActionLink(UnInstallExamples)));
 
-            panels[5].elements.Add(new WindowPanel.Space(400, 10));
+            m_panels[5].elements.Add(new WindowPanel.Space(400, 10));
 
-            panels[6].elements.Add(new WindowPanel.Button(400, 30, "Install TMPro Support", new ActionLink(InstallTMPro)));
-            panels[6].elements.Add(new WindowPanel.Button(400, 30, "Uninstall TMPro Support", new ActionLink(UninstallTMPro)));
+            m_panels[6].elements.Add(new WindowPanel.Button(400, 30, "Install TMPro Support", new ActionLink(InstallTmpro)));
+            m_panels[6].elements.Add(new WindowPanel.Button(400, 30, "Uninstall TMPro Support", new ActionLink(UninstallTmpro)));
 
-            panels[5].elements.Add(new WindowPanel.Button(400, 30, "Install Actions", new ActionLink(InstallPlaymaker)));
-            panels[5].elements.Add(new WindowPanel.Button(400, 30, "Uninstall Actions", new ActionLink(UninstallPlaymaker)));
+            m_panels[5].elements.Add(new WindowPanel.Button(400, 30, "Install Actions", new ActionLink(InstallPlaymaker)));
+            m_panels[5].elements.Add(new WindowPanel.Button(400, 30, "Uninstall Actions", new ActionLink(UninstallPlaymaker)));
 
-            _playmakerInstaller = new ModuleInstaller("Splines", "PlaymakerActions");
-            _playmakerInstaller.AddUninstallDirectory("Splines/PlaymakerActions");
+            m_playmakerInstaller = new ModuleInstaller("Splines", "PlaymakerActions");
+            m_playmakerInstaller.AddUninstallDirectory("Splines/PlaymakerActions");
 
-            _examplesInstaller = new ModuleInstaller("Splines", "Examples");
-            _examplesInstaller.AddUninstallDirectory("Splines/Examples");
+            m_examplesInstaller = new ModuleInstaller("Splines", "Examples");
+            m_examplesInstaller.AddUninstallDirectory("Splines/Examples");
 
-            _tmproInstaller = new ModuleInstaller("Splines", "TMPro");
-            _tmproInstaller.AddAssemblyLink("Splines", "Dreamteck.Splines", "Unity.TextMeshPro");
-            _tmproInstaller.AddScriptingDefine("DREAMTECK_SPLINES_TMPRO");
-            _tmproInstaller.AddUninstallDirectory("Splines/Components/TMPro");
-            _tmproInstaller.AddUninstallDirectory("Splines/Editor/Components/TMPro");
+            m_tmproInstaller = new ModuleInstaller("Splines", "TMPro");
+            m_tmproInstaller.AddAssemblyLink("Splines", "Dreamteck.Splines", "Unity.TextMeshPro");
+            m_tmproInstaller.AddScriptingDefine("DREAMTECK_SPLINES_TMPRO");
+            m_tmproInstaller.AddUninstallDirectory("Splines/Components/TMPro");
+            m_tmproInstaller.AddUninstallDirectory("Splines/Editor/Components/TMPro");
         }
 
         protected override void DrawFooter()
         {
-            panels[0].elements.Add(new WindowPanel.Space(400, 10));
-            panels[0].elements.Add(new WindowPanel.Label("This window will not appear again automatically. To open it manually go to Window/Dreamteck/Splines/Start Screen", wrapText, new Color(1f, 1f, 1f, 0.5f), 400, 50));
+            m_panels[0].elements.Add(new WindowPanel.Space(400, 10));
+            m_panels[0].elements.Add(new WindowPanel.Label("This window will not appear again automatically. To open it manually go to Window/Dreamteck/Splines/Start Screen", s_wrapText, new Color(1f, 1f, 1f, 0.5f), 400, 50));
         }
 
         private void InstallExamples()
         {
-            _examplesInstaller.Install();
-            panels[5].Back();
+            m_examplesInstaller.Install();
+            m_panels[5].Back();
         }
 
         private void UnInstallExamples()
         {
-            _examplesInstaller.Uninstall();
-            panels[5].Back();
+            m_examplesInstaller.Uninstall();
+            m_panels[5].Back();
         }
 
-        private void InstallTMPro()
+        private void InstallTmpro()
         {
-            _tmproInstaller.Install();
-            panels[6].Back();
+            m_tmproInstaller.Install();
+            m_panels[6].Back();
         }
 
-        private void UninstallTMPro()
+        private void UninstallTmpro()
         {
-            _tmproInstaller.Uninstall();
-            panels[6].Back();
+            m_tmproInstaller.Uninstall();
+            m_panels[6].Back();
         }
 
         private void InstallPlaymaker()
         {
-            _playmakerInstaller.Install();
-            panels[5].Back();
+            m_playmakerInstaller.Install();
+            m_panels[5].Back();
         }
 
         private void UninstallPlaymaker()
         {
-            _playmakerInstaller.Uninstall();
-            panels[5].Back();
+            m_playmakerInstaller.Uninstall();
+            m_panels[5].Back();
         }
 
         private static void AddAssemblyReference(string dreamteckAssemblyName, string addedAssemblyName)
@@ -239,7 +239,7 @@ namespace Dreamteck.Splines.Editor
                 data = reader.ReadToEnd();
             }
 
-            var asmDef = AssemblyDefinition.CreateFromJSON(data);
+            var asmDef = AssemblyDefinition.CreateFromJson(data);
             foreach (var reference in asmDef.references)
             {
                 if (reference == addedAssemblyName) return;
@@ -269,7 +269,7 @@ namespace Dreamteck.Splines.Editor
         public string[] versionDefines;
         public bool noEngineReferences;
 
-        public static AssemblyDefinition CreateFromJSON(string json)
+        public static AssemblyDefinition CreateFromJson(string json)
         {
             return JsonUtility.FromJson<AssemblyDefinition>(json);
         }

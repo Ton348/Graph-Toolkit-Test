@@ -14,7 +14,7 @@ public class MapMarkerService : MonoBehaviour
     public GameObject markerPrefab;
     public List<MarkerTarget> markerTargets = new List<MarkerTarget>();
 
-    private readonly Dictionary<string, GameObject> activeMarkers = new Dictionary<string, GameObject>();
+    private readonly Dictionary<string, GameObject> m_activeMarkers = new Dictionary<string, GameObject>();
 
     public void ShowMarker(string markerId, Transform targetTransform, string title)
     {
@@ -24,19 +24,19 @@ public class MapMarkerService : MonoBehaviour
             return;
         }
 
-        if (activeMarkers.ContainsKey(markerId))
+        if (m_activeMarkers.ContainsKey(markerId))
         {
             return;
         }
 
         GameObject marker = Instantiate(markerPrefab, target.position, Quaternion.identity, target);
         SetMarkerTitle(marker, title);
-        activeMarkers[markerId] = marker;
+        m_activeMarkers[markerId] = marker;
     }
 
     public void HideMarker(string markerId)
     {
-        if (!activeMarkers.TryGetValue(markerId, out GameObject marker))
+        if (!m_activeMarkers.TryGetValue(markerId, out GameObject marker))
         {
             return;
         }
@@ -46,7 +46,7 @@ public class MapMarkerService : MonoBehaviour
             Destroy(marker);
         }
 
-        activeMarkers.Remove(markerId);
+        m_activeMarkers.Remove(markerId);
     }
 
     public Transform GetTarget(string markerId)

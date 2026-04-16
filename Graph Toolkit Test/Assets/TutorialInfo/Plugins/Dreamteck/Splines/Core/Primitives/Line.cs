@@ -18,13 +18,13 @@ namespace Dreamteck.Splines.Primitives
         protected override void Generate()
         {
             base.Generate();
-            closed = false;
+            m_closed = false;
             CreatePoints(segments + 1, SplinePoint.Type.SmoothMirrored);
             Vector3 origin = Vector3.zero;
             if (mirror) origin = -Vector3.up * length * 0.5f;
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < m_points.Length; i++)
             {
-                points[i].position = origin + Vector3.up * length * ((float)i / (points.Length - 1));
+                m_points[i].position = origin + Vector3.up * length * ((float)i / (m_points.Length - 1));
             }
         }
     }

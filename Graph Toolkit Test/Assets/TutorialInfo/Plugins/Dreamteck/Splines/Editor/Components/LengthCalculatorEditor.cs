@@ -10,15 +10,15 @@ namespace Dreamteck.Splines.Editor
     {
         public override void OnInspectorGUI()
         {
-            showAveraging = false;
+            m_showAveraging = false;
             base.OnInspectorGUI();
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Length Calculator", EditorStyles.boldLabel);
-            base.BodyGUI();
+            base.BodyGui();
             LengthCalculator calculator = (LengthCalculator)target;
             for (int i = 0; i < targets.Length; i++)
             {

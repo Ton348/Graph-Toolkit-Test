@@ -18,26 +18,26 @@ namespace Dreamteck.Splines
         public float cycleDuration = 1f;
         public SplineComputer spline
         {
-            get { return _spline; }
+            get { return m_spline; }
             set
             {
                 if (Application.isPlaying)
                 {
-                    if(channels.Length > 0 && value.pointCount != channels[0].points.Length)
+                    if(m_channels.Length > 0 && value.pointCount != m_channels[0].points.Length)
                     {
-                        value.SetPoints(channels[0].points, space);
+                        value.SetPoints(m_channels[0].points, space);
                     }
                 }
-                _spline = value;
+                m_spline = value;
             }
         }
 
         [SerializeField]
         [HideInInspector]
-        private SplineComputer _spline;
-        private SplinePoint[] points = new SplinePoint[0];
-        private float cycleValue = 0f;
-        private short cycleDirection = 1;
+        private SplineComputer m_spline;
+        private SplinePoint[] m_points = new SplinePoint[0];
+        private float m_cycleValue = 0f;
+        private short m_cycleDirection = 1;
 
 
         [System.Serializable]
@@ -55,7 +55,7 @@ namespace Dreamteck.Splines
         [HideInInspector]
         [SerializeField]
         [UnityEngine.Serialization.FormerlySerializedAs("morphStates")]
-        private Channel[] channels = new Channel[0];
+        private Channel[] m_channels = new Channel[0];
 
         private void Reset()
         {
@@ -80,53 +80,53 @@ namespace Dreamteck.Splines
         void RunUpdate()
         {
             if (!cycle) return;
-            if (cycleMode != CycleMode.PingPong) cycleDirection = 1;
-            cycleValue += Time.deltaTime / cycleDuration * cycleDirection;
+            if (cycleMode != CycleMode.PingPong) m_cycleDirection = 1;
+            m_cycleValue += Time.deltaTime / cycleDuration * m_cycleDirection;
             switch (cycleMode)
             {
                 case CycleMode.Default:
-                    if (cycleValue > 1f) cycleValue = 1f;
+                    if (m_cycleValue > 1f) m_cycleValue = 1f;
                     break;
                 case CycleMode.Loop:
-                    if (cycleValue > 1f) cycleValue -= Mathf.Floor(cycleValue);
+                    if (m_cycleValue > 1f) m_cycleValue -= Mathf.Floor(m_cycleValue);
                     break;
                 case CycleMode.PingPong:
-                    if (cycleValue > 1f)
+                    if (m_cycleValue > 1f)
                     {
-                        cycleValue = 1f - (cycleValue - Mathf.Floor(cycleValue));
-                        cycleDirection = -1;
-                    } else if (cycleValue < 0f)
+                        m_cycleValue = 1f - (m_cycleValue - Mathf.Floor(m_cycleValue));
+                        m_cycleDirection = -1;
+                    } else if (m_cycleValue < 0f)
                     {
-                        cycleValue = -cycleValue - Mathf.Floor(-cycleValue);
-                        cycleDirection = 1;
+                        m_cycleValue = -m_cycleValue - Mathf.Floor(-m_cycleValue);
+                        m_cycleDirection = 1;
                     }
                     break;
             }
-            SetWeight(cycleValue, cycleMode == CycleMode.Loop);
+            SetWeight(m_cycleValue, cycleMode == CycleMode.Loop);
         }
 
         public void SetCycle(float value)
         {
-            cycleValue = Mathf.Clamp01(value);
+            m_cycleValue = Mathf.Clamp01(value);
         }
 
         public void SetWeight(int index, float weight)
         {
-            channels[index].percent = Mathf.Clamp01(weight);
+            m_channels[index].percent = Mathf.Clamp01(weight);
             UpdateMorph();
         }
 
         public void SetWeight(string name, float weight)
         {
             int index = GetChannelIndex(name);
-            channels[index].percent = Mathf.Clamp01(weight);
+            m_channels[index].percent = Mathf.Clamp01(weight);
             UpdateMorph();
         }
 
         public void SetWeight(float percent, bool loop = false)
         {
-            float channelValue = percent * (loop ? channels.Length : channels.Length - 1);
-            for (int i = 0; i < channels.Length; i++)
+            float channelValue = percent * (loop ? m_channels.Length : m_channels.Length - 1);
+            for (int i = 0; i < m_channels.Length; i++)
             {
                 float delta = Mathf.Abs(i - channelValue);
                 if (delta > 1f)
@@ -145,9 +145,9 @@ namespace Dreamteck.Splines
                     }
                 }
             }
-            if (loop && channelValue >= channels.Length - 1)
+            if (loop && channelValue >= m_channels.Length - 1)
             {
-                SetWeight(0, channelValue - (channels.Length - 1));
+                SetWeight(0, channelValue - (m_channels.Length - 1));
             }
         }
 
@@ -158,63 +158,63 @@ namespace Dreamteck.Splines
 
         public void CaptureSnapshot(int index)
         {
-            if (_spline == null) return;
-            if ((channels.Length > 0 && _spline.pointCount != channels[0].points.Length && index != 0))
+            if (m_spline == null) return;
+            if ((m_channels.Length > 0 && m_spline.pointCount != m_channels[0].points.Length && index != 0))
             {
-                Debug.LogError("Point count must be the same as " + _spline.pointCount);
+                Debug.LogError("Point count must be the same as " + m_spline.pointCount);
                 return;
             }
-            channels[index].points = _spline.GetPoints(space);
+            m_channels[index].points = m_spline.GetPoints(space);
             UpdateMorph();
         }
 
         public void Clear()
         {
-            channels = new Channel[0];
+            m_channels = new Channel[0];
         }
 
         public SplinePoint[] GetSnapshot(int index)
         {
-            return channels[index].points;
+            return m_channels[index].points;
         }
         public void SetSnapshot(int index, SplinePoint[] points)
         {
-            channels[index].points = points;
+            m_channels[index].points = points;
         }
 
 
         public SplinePoint[] GetSnapshot(string name)
         {
             int index = GetChannelIndex(name);
-            return channels[index].points;
+            return m_channels[index].points;
         }
 
         public float GetWeight(int index)
         {
-            return channels[index].percent;
+            return m_channels[index].percent;
         }
 
         public float GetWeight(string name)
         {
             int index = GetChannelIndex(name);
-            return channels[index].percent;
+            return m_channels[index].percent;
         }
 
         public void AddChannel(string name)
         {
-            if (_spline == null) return;
-            if (channels.Length > 0 && _spline.pointCount != channels[0].points.Length)
+            if (m_spline == null) return;
+            if (m_channels.Length > 0 && m_spline.pointCount != m_channels[0].points.Length)
             {
-                Debug.LogError("Point count must be the same as " + channels[0].points.Length);
+                Debug.LogError("Point count must be the same as " + m_channels[0].points.Length);
                 return;
             }
             Channel newMorph = new Channel();
-            newMorph.points = _spline.GetPoints(space);
+            newMorph.points = m_spline.GetPoints(space);
             newMorph.name = name;
             newMorph.curve = new AnimationCurve();
             newMorph.curve.AddKey(new Keyframe(0, 0, 0, 1));
             newMorph.curve.AddKey(new Keyframe(1, 1, 1, 0));
-            ArrayUtility.Add(ref channels, newMorph);
+            ArrayUtility.Add(ref m_channels, newMorph);
             UpdateMorph();
         }
 
@@ -226,23 +226,23 @@ namespace Dreamteck.Splines
 
         public void RemoveChannel(int index)
         {
-            if (index < 0 || index >= channels.Length) return;
-            Channel[] newStates = new Channel[channels.Length - 1];
-            for (int i = 0; i < channels.Length; i++)
+            if (index < 0 || index >= m_channels.Length) return;
+            Channel[] newStates = new Channel[m_channels.Length - 1];
+            for (int i = 0; i < m_channels.Length; i++)
             {
                 if (i == index) continue;
-                else if (i < index) newStates[i] = channels[i];
-                else if (i >= index) newStates[i - 1] = channels[i];
+                else if (i < index) newStates[i] = m_channels[i];
+                else if (i >= index) newStates[i - 1] = m_channels[i];
             }
-            channels = newStates;
+            m_channels = newStates;
             UpdateMorph();
         }
 
         private int GetChannelIndex(string name)
         {
-            for (int i = 0; i < channels.Length; i++)
+            for (int i = 0; i < m_channels.Length; i++)
             {
-                if (channels[i].name == name)
+                if (m_channels[i].name == name)
                 {
                     return i;
                 }
@@ -253,70 +253,70 @@ namespace Dreamteck.Splines
 
         public int GetChannelCount()
         {
-            if (channels == null) return 0;
-            return channels.Length;
+            if (m_channels == null) return 0;
+            return m_channels.Length;
         }
 
         public Channel GetChannel(int index)
         {
-            return channels[index];
+            return m_channels[index];
         }
 
         public Channel GetChannel(string name)
         {
-            return channels[GetChannelIndex(name)];
+            return m_channels[GetChannelIndex(name)];
         }
 
         public void UpdateMorph()
         {
-            if (_spline == null) return;
-            if (channels.Length == 0) return;
-            if(points.Length != channels[0].points.Length)
+            if (m_spline == null) return;
+            if (m_channels.Length == 0) return;
+            if(m_points.Length != m_channels[0].points.Length)
             {
-                points = new SplinePoint[channels[0].points.Length];
+                m_points = new SplinePoint[m_channels[0].points.Length];
             }
 
-            for (int i = 0; i < channels.Length; i++)
+            for (int i = 0; i < m_channels.Length; i++)
             {
-                for (int j = 0; j < points.Length; j++)
+                for (int j = 0; j < m_points.Length; j++)
                 {
                     if(i == 0)
                     {
-                        points[j] = channels[0].points[j];
+                        m_points[j] = m_channels[0].points[j];
                         continue;
                     }
 
-                    float percent = channels[i].curve.Evaluate(channels[i].percent);
-                    if (channels[i].interpolation == Channel.Interpolation.Linear)
+                    float percent = m_channels[i].curve.Evaluate(m_channels[i].percent);
+                    if (m_channels[i].interpolation == Channel.Interpolation.Linear)
                     {
-                        points[j].position += (channels[i].points[j].position - channels[0].points[j].position) * percent;
-                        points[j].tangent += (channels[i].points[j].tangent - channels[0].points[j].tangent) * percent;
-                        points[j].tangent2 += (channels[i].points[j].tangent2 - channels[0].points[j].tangent2) * percent;
-                        points[j].normal += (channels[i].points[j].normal - channels[0].points[j].normal) * percent;
+                        m_points[j].position += (m_channels[i].points[j].position - m_channels[0].points[j].position) * percent;
+                        m_points[j].tangent += (m_channels[i].points[j].tangent - m_channels[0].points[j].tangent) * percent;
+                        m_points[j].tangent2 += (m_channels[i].points[j].tangent2 - m_channels[0].points[j].tangent2) * percent;
+                        m_points[j].normal += (m_channels[i].points[j].normal - m_channels[0].points[j].normal) * percent;
                     } else
                     {
-                        points[j].position = Vector3.Slerp(points[j].position, points[j].position + (channels[i].points[j].position - channels[0].points[j].position), percent);
-                        points[j].tangent = Vector3.Slerp(points[j].tangent, points[j].tangent + (channels[i].points[j].tangent - channels[0].points[j].tangent), percent);
-                        points[j].tangent2 = Vector3.Slerp(points[j].tangent2, points[j].tangent2 + (channels[i].points[j].tangent2 - channels[0].points[j].tangent2), percent);
-                        points[j].normal = Vector3.Slerp(points[j].normal, points[j].normal + (channels[i].points[j].normal - channels[0].points[j].normal), percent);
+                        m_points[j].position = Vector3.Slerp(m_points[j].position, m_points[j].position + (m_channels[i].points[j].position - m_channels[0].points[j].position), percent);
+                        m_points[j].tangent = Vector3.Slerp(m_points[j].tangent, m_points[j].tangent + (m_channels[i].points[j].tangent - m_channels[0].points[j].tangent), percent);
+                        m_points[j].tangent2 = Vector3.Slerp(m_points[j].tangent2, m_points[j].tangent2 + (m_channels[i].points[j].tangent2 - m_channels[0].points[j].tangent2), percent);
+                        m_points[j].normal = Vector3.Slerp(m_points[j].normal, m_points[j].normal + (m_channels[i].points[j].normal - m_channels[0].points[j].normal), percent);
                     }
 
-                    points[j].color += (channels[i].points[j].color - channels[0].points[j].color) * percent;
-                    points[j].size += (channels[i].points[j].size - channels[0].points[j].size) * percent;
+                    m_points[j].color += (m_channels[i].points[j].color - m_channels[0].points[j].color) * percent;
+                    m_points[j].size += (m_channels[i].points[j].size - m_channels[0].points[j].size) * percent;
 
-                    if(points[j].type == SplinePoint.Type.SmoothMirrored) points[j].type = channels[i].points[j].type;
-                    else if(points[j].type == SplinePoint.Type.SmoothFree)
+                    if(m_points[j].type == SplinePoint.Type.SmoothMirrored) m_points[j].type = m_channels[i].points[j].type;
+                    else if(m_points[j].type == SplinePoint.Type.SmoothFree)
                     {
-                        if (channels[i].points[j].type == SplinePoint.Type.Broken) points[j].type = SplinePoint.Type.Broken;
+                        if (m_channels[i].points[j].type == SplinePoint.Type.Broken) m_points[j].type = SplinePoint.Type.Broken;
                     }
                 }
             }
 
-            for (int i = 0; i < points.Length; i++)
+            for (int i = 0; i < m_points.Length; i++)
             {
-                points[i].normal.Normalize();
+                m_points[i].normal.Normalize();
             }
-            _spline.SetPoints(points, space);
+            m_spline.SetPoints(m_points, space);
         }
     }
 }

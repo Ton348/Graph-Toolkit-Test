@@ -15,13 +15,13 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Ngon();
+            m_primitive = new Ngon();
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Ngon ngon = (Ngon)primitive;
+            base.OnGui();
+            Ngon ngon = (Ngon)m_primitive;
             ngon.radius = EditorGUILayout.FloatField("Radius", ngon.radius);
             ngon.sides = EditorGUILayout.IntField("Sides", ngon.sides);
             if (ngon.sides < 3) ngon.sides = 3;

@@ -5,32 +5,32 @@ namespace Dreamteck.Splines.Editor
     using UnityEngine;
     using UnityEditor;
 
-    public class DSCreatePointModule : CreatePointModule
+    public class DscreatePointModule : CreatePointModule
     {
-        DreamteckSplinesEditor dsEditor;
-        private bool createNode = false;
+        DreamteckSplinesEditor m_dsEditor;
+        private bool m_createNode = false;
 
-        public DSCreatePointModule(SplineEditor editor) : base(editor)
+        public DscreatePointModule(SplineEditor editor) : base(editor)
         {
-            dsEditor = (DreamteckSplinesEditor)editor;
+            m_dsEditor = (DreamteckSplinesEditor)editor;
         }
 
         public override void LoadState()
         {
             base.LoadState();
-            createNode = LoadBool("createNode");
+            m_createNode = LoadBool("createNode");
         }
 
         public override void SaveState()
         {
             base.SaveState();
-            SaveBool("createNode", createNode);
+            SaveBool("createNode", m_createNode);
         }
 
         protected override void OnDrawInspector()
         {
             base.OnDrawInspector();
-            createNode = EditorGUILayout.Toggle("Create Node", createNode);
+            m_createNode = EditorGUILayout.Toggle("Create Node", m_createNode);
         }
 
         protected override void CreateSplinePoint(Vector3 position, Vector3 normal)
@@ -38,9 +38,9 @@ namespace Dreamteck.Splines.Editor
             GUIUtility.hotControl = GUIUtility.GetControlID(FocusType.Passive);
             List<int> indices = new List<int>();
             List<Node> nodes = new List<Node>();
-            SplineComputer spline = dsEditor.spline;
+            SplineComputer spline = m_dsEditor.spline;
 
-            dsEditor.CacheTriggerPositions();
+            m_dsEditor.CacheTriggerPositions();
 
             if (!isClosed && points.Length >= 3)
             {
@@ -50,7 +50,7 @@ namespace Dreamteck.Splines.Editor
                 {
                     if (EditorUtility.DisplayDialog("Close spline?", "Do you want to make the spline path closed ?", "Yes", "No"))
                     {
-                        editor.SetSplineClosed(true);
+                        m_editor.SetSplineClosed(true);
                         spline.EditorSetAllPointsDirty();
                         RegisterChange();
                         SceneView.currentDrawingSceneView.Focus();
@@ -70,17 +70,17 @@ namespace Dreamteck.Splines.Editor
                 }
             }
 
-            dsEditor.ApplyModifiedProperties(true);
-            dsEditor.WriteTriggerPositions();
+            m_dsEditor.ApplyModifiedProperties(true);
+            m_dsEditor.WriteTriggerPositions();
             RegisterChange();
             if (appendMode == AppendMode.Beginning)
             {
                 spline.ShiftNodes(0, spline.pointCount - 1, 1);
             }
 
-            if (createNode)
+            if (m_createNode)
             {
-                dsEditor.ApplyModifiedProperties();
+                m_dsEditor.ApplyModifiedProperties();
                 if (appendMode == 0)
                 {
                     CreateNodeForPoint(0);
@@ -96,45 +96,45 @@ namespace Dreamteck.Splines.Editor
         {
             base.InsertMode(screenCoordinates);
             double percent = ProjectScreenSpace(screenCoordinates);
-            editor.evaluate(percent, ref evalResult);
-            if (editor.eventModule.mouseRight)
+            m_editor.evaluate(percent, ref m_evalResult);
+            if (m_editor.eventModule.mouseRight)
             {
-                SplineEditorHandles.DrawCircle(evalResult.position, Quaternion.LookRotation(editorCamera.transform.position - evalResult.position), HandleUtility.GetHandleSize(evalResult.position) * 0.2f);
+                SplineEditorHandles.DrawCircle(m_evalResult.position, Quaternion.LookRotation(m_editorCamera.transform.position - m_evalResult.position), HandleUtility.GetHandleSize(m_evalResult.position) * 0.2f);
                 return;
             }
-            if (SplineEditorHandles.CircleButton(evalResult.position, Quaternion.LookRotation(editorCamera.transform.position - evalResult.position), HandleUtility.GetHandleSize(evalResult.position) * 0.2f, 1.5f, color))
+            if (SplineEditorHandles.CircleButton(m_evalResult.position, Quaternion.LookRotation(m_editorCamera.transform.position - m_evalResult.position), HandleUtility.GetHandleSize(m_evalResult.position) * 0.2f, 1.5f, color))
             {
-                dsEditor.CacheTriggerPositions();
-                SplinePoint newPoint = new SplinePoint(evalResult.position, evalResult.position);
-                newPoint.size = evalResult.size;
-                newPoint.color = evalResult.color;
-                newPoint.normal = evalResult.up;
+                m_dsEditor.CacheTriggerPositions();
+                SplinePoint newPoint = new SplinePoint(m_evalResult.position, m_evalResult.position);
+                newPoint.size = m_evalResult.size;
+                newPoint.color = m_evalResult.color;
+                newPoint.normal = m_evalResult.up;
                 
                 
-                int pointIndex = dsEditor.spline.PercentToPointIndex(percent);
-                editor.AddPointAt(pointIndex + 1);
+                int pointIndex = m_dsEditor.spline.PercentToPointIndex(percent);
+                m_editor.AddPointAt(pointIndex + 1);
                 points[pointIndex + 1].SetPoint(newPoint);
-                SplineComputer spline = dsEditor.spline;
-                lastCreated = points.Length - 1;
-                editor.ApplyModifiedProperties(true);
+                SplineComputer spline = m_dsEditor.spline;
+                m_lastCreated = points.Length - 1;
+                m_editor.ApplyModifiedProperties(true);
                 spline.ShiftNodes(pointIndex + 1, spline.pointCount - 1, 1);
-                if (createNode) CreateNodeForPoint(pointIndex + 1);
+                if (m_createNode) CreateNodeForPoint(pointIndex + 1);
                 RegisterChange();
-                dsEditor.WriteTriggerPositions();
+                m_dsEditor.WriteTriggerPositions();
             }
         }
 
         void CreateNodeForPoint(int index)
         {
             GameObject obj = new GameObject("Node_" + (points.Length - 1));
-            obj.transform.parent = dsEditor.spline.transform;
+            obj.transform.parent = m_dsEditor.spline.transform;
             Node node = obj.AddComponent<Node>();
             node.transform.localRotation = Quaternion.identity;
             node.transform.position = points[index].position;
             Undo.SetCurrentGroupName("Create Node For Point " + index);
             Undo.RegisterCreatedObjectUndo(obj, "Create Node object");
-            Undo.RegisterCompleteObjectUndo(dsEditor.spline, "Link Node");
-            dsEditor.spline.ConnectNode(node, index);
+            Undo.RegisterCompleteObjectUndo(m_dsEditor.spline, "Link Node");
+            m_dsEditor.spline.ConnectNode(node, index);
         }
     }
 }

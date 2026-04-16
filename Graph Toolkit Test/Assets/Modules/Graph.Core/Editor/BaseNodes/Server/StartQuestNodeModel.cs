@@ -12,8 +12,8 @@ namespace GraphCore.BaseNodes.Editor.Server
 		public const string SuccessPort = "Success";
 		public const string FailPort = "Fail";
 
-		protected override string DefaultTitle => "Активировать квест";
-		protected override string DefaultDescription => "Активирует квест в профиле игрока";
+		protected override string defaultTitle => "Активировать квест";
+		protected override string defaultDescription => "Активирует квест в профиле игрока";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

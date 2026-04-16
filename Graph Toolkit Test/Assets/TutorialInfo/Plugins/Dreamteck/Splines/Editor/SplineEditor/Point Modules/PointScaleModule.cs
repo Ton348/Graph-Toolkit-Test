@@ -49,19 +49,19 @@ namespace Dreamteck.Splines.Editor
         protected override void OnDrawScene()
         {
             if (selectedPoints.Count == 0) return;
-            if (eventModule.mouseLeftUp)
+            if (m_eventModule.mouseLeftUp)
             {
                 Reset();
             }
             Vector3 lastScale = scale;
             Vector3 c = selectionCenter;
-            scale = Handles.ScaleHandle(scale, c, rotation, HandleUtility.GetHandleSize(c));
+            scale = Handles.ScaleHandle(scale, c, m_rotation, HandleUtility.GetHandleSize(c));
             if (lastScale != scale)
             {
                 PrepareTransform();
                 for (int i = 0; i < selectedPoints.Count; i++)
                 {
-                    var point = localPoints[selectedPoints[i]];
+                    var point = m_localPoints[selectedPoints[i]];
                     TransformPoint(ref point, false, scaleTangents, scaleSize);
                     points[selectedPoints[i]].SetPoint(point);
                 }

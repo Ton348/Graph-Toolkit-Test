@@ -23,7 +23,7 @@ namespace Dreamteck.Splines {
         {
             get
             {
-                return closed && points.Length >= 3;
+                return m_closed && points.Length >= 3;
             }
         }
         /// <summary>
@@ -43,35 +43,35 @@ namespace Dreamteck.Splines {
        public int iterations
         {
             get {
-                if (type == Type.Linear) return closed ? points.Length + 1 : points.Length;
-                int segments = closed ? points.Length : points.Length - 1;
+                if (type == Type.Linear) return m_closed ? points.Length + 1 : points.Length;
+                int segments = m_closed ? points.Length : points.Length - 1;
                 return sampleRate * segments - segments + 1;
             }
         }
 
         public float knotParametrization
         {
-            get { return _knotParametrization; }
+            get { return m_knotParametrization; }
             set
             {
-                _knotParametrization = Mathf.Clamp01(value);
+                m_knotParametrization = Mathf.Clamp01(value);
             }
         }
 
-        private static Vector3[] P = new Vector3[4];
-        private static Vector3 A1;
-        private static Vector3 A2;
-        private static Vector3 A3;
-        private static Vector3 B1;
-        private static Vector3 B2;
-        private static float t1;
-        private static float t2;
-        private static float t3;
+        private static Vector3[] s_p = new Vector3[4];
+        private static Vector3 s_a1;
+        private static Vector3 s_a2;
+        private static Vector3 s_a3;
+        private static Vector3 s_b1;
+        private static Vector3 s_b2;
+        private static float s_t1;
+        private static float s_t2;
+        private static float s_t3;
 
         [SerializeField]
-        private bool closed = false;
+        private bool m_closed = false;
         [SerializeField, Range(0f, 1f)]
-        private float _knotParametrization;
+        private float m_knotParametrization;
 
         public Spline(Type type){
 			this.type = type;
@@ -95,17 +95,17 @@ namespace Dreamteck.Splines {
         public float CalculateLength(double from = 0.0, double to = 1.0, double resolution = 1.0)
         {
             if (points.Length == 0) return 0f;
-            resolution = DMath.Clamp01(resolution);
+            resolution = Dmath.Clamp01(resolution);
             if (resolution == 0.0) return 0f;
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp01(to);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp01(to);
             if (to < from) to = from;
             double percent = from;
             Vector3 lastPos = EvaluatePosition(percent);
             float sum = 0f;
             while (true)
             {
-                percent = DMath.Move(percent, to, moveStep / resolution);
+                percent = Dmath.Move(percent, to, moveStep / resolution);
                 Vector3 pos = EvaluatePosition(percent);
                 sum += (pos - lastPos).magnitude;
                 lastPos = pos;
@@ -125,7 +125,7 @@ namespace Dreamteck.Splines {
         public double Project(Vector3 position, int subdivide = 4, double from = 0.0, double to = 1.0)
         {
             if (points.Length == 0) return 0.0;
-            if (closed && from == 0.0 && to == 1.0) //Handle looped splines
+            if (m_closed && from == 0.0 && to == 1.0) //Handle looped splines
             {
                 double closest = GetClosestPoint(subdivide, position, from, to, Mathf.RoundToInt(Mathf.Max(iterations / points.Length, 10)) * 5);
                 if (closest < moveStep)
@@ -152,9 +152,9 @@ namespace Dreamteck.Splines {
         public bool Raycast(out RaycastHit hit, out double hitPercent, LayerMask layerMask, double resolution = 1.0, double from = 0.0, double to = 1.0, QueryTriggerInteraction hitTriggers = QueryTriggerInteraction.UseGlobal
         )
         {
-            resolution = DMath.Clamp01(resolution);
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp01(to);
+            resolution = Dmath.Clamp01(resolution);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp01(to);
             double percent = from;
             Vector3 fromPos = EvaluatePosition(percent);
             hitPercent = 0f;
@@ -167,12 +167,12 @@ namespace Dreamteck.Splines {
             while (true)
             {
                 double prevPercent = percent;
-                percent = DMath.Move(percent, to, moveStep / resolution);
+                percent = Dmath.Move(percent, to, moveStep / resolution);
                 Vector3 toPos = EvaluatePosition(percent);
                 if (Physics.Linecast(fromPos, toPos, out hit, layerMask, hitTriggers))
                 {
                     double segmentPercent = (hit.point - fromPos).sqrMagnitude / (toPos - fromPos).sqrMagnitude;
-                    hitPercent = DMath.Lerp(prevPercent, percent, segmentPercent);
+                    hitPercent = Dmath.Lerp(prevPercent, percent, segmentPercent);
                     return true;
                 }
                 fromPos = toPos;
@@ -196,9 +196,9 @@ namespace Dreamteck.Splines {
         public bool RaycastAll(out RaycastHit[] hits, out double[] hitPercents, LayerMask layerMask, double resolution = 1.0, double from = 0.0, double to = 1.0, QueryTriggerInteraction hitTriggers = QueryTriggerInteraction.UseGlobal
             )
         {
-            resolution = DMath.Clamp01(resolution);
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp01(to);
+            resolution = Dmath.Clamp01(resolution);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp01(to);
             double percent = from;
             Vector3 fromPos = EvaluatePosition(percent);
             List<RaycastHit> hitList = new List<RaycastHit>();
@@ -213,14 +213,14 @@ namespace Dreamteck.Splines {
             while (true)
             {
                 double prevPercent = percent;
-                percent = DMath.Move(percent, to, moveStep / resolution);
+                percent = Dmath.Move(percent, to, moveStep / resolution);
                 Vector3 toPos = EvaluatePosition(percent);
                 RaycastHit[] h = Physics.RaycastAll(fromPos, toPos - fromPos, Vector3.Distance(fromPos, toPos), layerMask, hitTriggers);
                 for (int i = 0; i < h.Length; i++)
                 {
                     hasHit = true;
                     double segmentPercent = (h[i].point - fromPos).sqrMagnitude / (toPos - fromPos).sqrMagnitude;
-                    percentList.Add(DMath.Lerp(prevPercent, percent, segmentPercent));
+                    percentList.Add(Dmath.Lerp(prevPercent, percent, segmentPercent));
                     hitList.Add(h[i]);
                 }
                 fromPos = toPos;
@@ -238,11 +238,11 @@ namespace Dreamteck.Splines {
         /// <returns></returns>
         public double GetPointPercent(int pointIndex)
         {
-            if (closed)
+            if (m_closed)
             {
-                return DMath.Clamp01((double)pointIndex / points.Length);
+                return Dmath.Clamp01((double)pointIndex / points.Length);
             }
-            return DMath.Clamp01((double)pointIndex / (points.Length - 1));
+            return Dmath.Clamp01((double)pointIndex / (points.Length - 1));
         }
 
         /// <summary>
@@ -301,10 +301,10 @@ namespace Dreamteck.Splines {
                 sample = new SplineSample();
                 return;
             }
-            percent = DMath.Clamp01(percent);
-            if (closed && points.Length <= 2)
+            percent = Dmath.Clamp01(percent);
+            if (m_closed && points.Length <= 2)
             {
-                closed = false;
+                m_closed = false;
             }
             if (points.Length == 1)
             {
@@ -318,13 +318,13 @@ namespace Dreamteck.Splines {
             }
 
             double doubleIndex = (points.Length - 1) * percent;
-            if (closed)
+            if (m_closed)
             {
                 doubleIndex = points.Length * percent;
             }
-            int fromIndex = DMath.FloorInt(doubleIndex);
+            int fromIndex = Dmath.FloorInt(doubleIndex);
             int toIndex = fromIndex + 1;
-            if (closed)
+            if (m_closed)
             {
                 if (fromIndex >= points.Length - 1)
                 {
@@ -377,7 +377,7 @@ namespace Dreamteck.Splines {
                 else
                 {
                     Vector3 back = Vector3.zero, front = Vector3.zero;
-                    if (closed)
+                    if (m_closed)
                     {
                         if (percent < step) EvaluatePosition(1.0 - (step - percent), ref back);
                         else  EvaluatePosition(percent - step, ref back);
@@ -423,11 +423,11 @@ namespace Dreamteck.Splines {
                 samples = new SplineSample[0];
                 return;
             }
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp(to, from, 1.0);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp(to, from, 1.0);
             double fromValue = from * (iterations - 1);
             double toValue = to * (iterations - 1);
-            int clippedIterations = DMath.CeilInt(toValue) - DMath.FloorInt(fromValue) + 1;
+            int clippedIterations = Dmath.CeilInt(toValue) - Dmath.FloorInt(fromValue) + 1;
             if (samples == null) samples = new SplineSample[clippedIterations];
             else if (samples.Length != clippedIterations) samples = new SplineSample[clippedIterations];
             double percent = from;
@@ -438,7 +438,7 @@ namespace Dreamteck.Splines {
                 samples[index] = Evaluate(percent);
                 index++;
                 if (index >= samples.Length) break;
-                percent = DMath.Move(percent, to, ms);
+                percent = Dmath.Move(percent, to, ms);
             }
         }
 
@@ -455,11 +455,11 @@ namespace Dreamteck.Splines {
                 samples = new SplineSample[0];
                 return;
             }
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp(to, from, 1.0);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp(to, from, 1.0);
             double fromValue = from * (iterations - 1);
             double toValue = to * (iterations - 1);
-            int clippedIterations = DMath.CeilInt(toValue) - DMath.FloorInt(fromValue) + 1;
+            int clippedIterations = Dmath.CeilInt(toValue) - Dmath.FloorInt(fromValue) + 1;
             if (samples == null || samples.Length != clippedIterations) samples = new SplineSample[clippedIterations];
             if (originalSamplePercents == null || originalSamplePercents.Length != clippedIterations)
             {
@@ -475,7 +475,7 @@ namespace Dreamteck.Splines {
                 Evaluate(Travel(lastPercent, lengthStep, out moved, Direction.Forward), ref samples[i]);
                 lastPercent = samples[i].percent;
                 originalSamplePercents[i] = lastPercent;
-                samples[i].percent = DMath.Lerp(from, to, (double)i/ (samples.Length - 1));
+                samples[i].percent = Dmath.Lerp(from, to, (double)i/ (samples.Length - 1));
             }
             Evaluate(to, ref samples[samples.Length - 1]);
             samples[samples.Length - 1].percent = originalSamplePercents[originalSamplePercents.Length - 1] = to;
@@ -494,11 +494,11 @@ namespace Dreamteck.Splines {
                 positions = new Vector3[0];
                 return;
             }
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp(to, from, 1.0);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp(to, from, 1.0);
             double fromValue = from * (iterations - 1);
             double toValue = to * (iterations - 1);
-            int clippedIterations = DMath.CeilInt(toValue) - DMath.FloorInt(fromValue) + 1;
+            int clippedIterations = Dmath.CeilInt(toValue) - Dmath.FloorInt(fromValue) + 1;
             if (positions.Length != clippedIterations) positions = new Vector3[clippedIterations];
             double percent = from;
             double ms = moveStep;
@@ -508,7 +508,7 @@ namespace Dreamteck.Splines {
                 positions[index] = EvaluatePosition(percent);
                 index++;
                 if (index >= positions.Length) break;
-                percent = DMath.Move(percent, to, ms);
+                percent = Dmath.Move(percent, to, ms);
             }
         }
 
@@ -525,13 +525,13 @@ namespace Dreamteck.Splines {
             if (points.Length <= 1) return 0.0;
             if (direction == Direction.Forward && start >= 1.0) return 1.0;
             else if (direction == Direction.Backward && start <= 0.0) return 0.0; ;
-            if (distance == 0f) return DMath.Clamp01(start);
+            if (distance == 0f) return Dmath.Clamp01(start);
             Vector3 pos = Vector3.zero;
             EvaluatePosition(start, ref pos);
             Vector3 lastPosition = pos;
             double lastPercent = start;
             int i = iterations - 1;
-            int nextSampleIndex = direction == Spline.Direction.Forward ? DMath.CeilInt(start * i) : DMath.FloorInt(start * i);
+            int nextSampleIndex = direction == Spline.Direction.Forward ? Dmath.CeilInt(start * i) : Dmath.FloorInt(start * i);
             float lastDistance = 0f;
             double percent = start;
             while (true)
@@ -554,7 +554,7 @@ namespace Dreamteck.Splines {
                     nextSampleIndex--;
                 }
             }
-            return DMath.Lerp(lastPercent, percent, 1f - (moved - distance) / lastDistance);
+            return Dmath.Lerp(lastPercent, percent, 1f - (moved - distance) / lastDistance);
         }
 
         public double Travel(double start, float distance, Spline.Direction direction = Spline.Direction.Forward)
@@ -577,13 +577,13 @@ namespace Dreamteck.Splines {
                 return;
             }
 
-            percent = DMath.Clamp01(percent);
+            percent = Dmath.Clamp01(percent);
             double doubleIndex = (points.Length - 1) * percent;
-            if (closed)
+            if (m_closed)
             {
                 doubleIndex = points.Length * percent;
             }
-            int pointIndex = DMath.FloorInt(doubleIndex);
+            int pointIndex = Dmath.FloorInt(doubleIndex);
             if (type == Type.Bezier)
             {
                 pointIndex = Mathf.Clamp(pointIndex, 0, Mathf.Max(points.Length - 1, 0));
@@ -606,13 +606,13 @@ namespace Dreamteck.Splines {
                 return;
             }
 
-            percent = DMath.Clamp01(percent);
+            percent = Dmath.Clamp01(percent);
             double doubleIndex = (points.Length - 1) * percent;
-            if (closed)
+            if (m_closed)
             {
                 doubleIndex = points.Length * percent;
             }
-            int pointIndex = DMath.FloorInt(doubleIndex);
+            int pointIndex = Dmath.FloorInt(doubleIndex);
             if (type == Type.Bezier)
             {
                 pointIndex = Mathf.Clamp(pointIndex, 0, Mathf.Max(points.Length - 1, 0));
@@ -636,13 +636,13 @@ namespace Dreamteck.Splines {
                 return;
             }
 
-            percent = DMath.Clamp01(percent);
+            percent = Dmath.Clamp01(percent);
             double doubleIndex = (points.Length - 1) * percent;
-            if (closed)
+            if (m_closed)
             {
                 doubleIndex = points.Length * percent;
             }
-            int pointIndex = DMath.FloorInt(doubleIndex);
+            int pointIndex = Dmath.FloorInt(doubleIndex);
             if (type == Type.Bezier)
             {
                 pointIndex = Mathf.Clamp(pointIndex, 0, Mathf.Max(points.Length - 1, 0));
@@ -676,7 +676,7 @@ namespace Dreamteck.Splines {
                     closestPercent = t;
                 }
                 if (t == end) break;
-                t = DMath.Move(t, end, tick);
+                t = Dmath.Move(t, end, tick);
             }
             double newStart = closestPercent - tick;
             if (newStart < start) newStart = start;
@@ -699,7 +699,7 @@ namespace Dreamteck.Splines {
         /// <param name="at"></param>
         public void Break(int at)
         {
-            if (!closed) return;
+            if (!m_closed) return;
             if (at >= points.Length) return;
             if (at < 0) return;
             SplinePoint[] previousPoints = new SplinePoint[points.Length];
@@ -715,7 +715,7 @@ namespace Dreamteck.Splines {
                 points[(points.Length - at) + i] = previousPoints[i];
             }
 
-            closed = false;
+            m_closed = false;
         }
 
         /// <summary>
@@ -728,7 +728,7 @@ namespace Dreamteck.Splines {
                 Debug.LogError("Points need to be at least 3 to close the spline");
                 return;
             }
-            closed = true;
+            m_closed = true;
         }
 
         /// <summary>
@@ -753,10 +753,10 @@ namespace Dreamteck.Splines {
                         double percent = GetPointPercent(i);
                         Vector3 tangent = Vector3.forward;
                         EvaluateTangent(percent, ref tangent);
-                        if(_knotParametrization > 0f)
+                        if(m_knotParametrization > 0f)
                         {
                             ComputeCatPoints(i);
-                            points[i].SetTangent2Position(points[i].position + tangent.normalized * Vector3.Distance(P[0], P[2]) / 6f);
+                            points[i].SetTangent2Position(points[i].position + tangent.normalized * Vector3.Distance(s_p[0], s_p[2]) / 6f);
                         } else
                         {
                             points[i].SetTangent2Position(points[i].position + tangent / 3f);
@@ -779,7 +779,7 @@ namespace Dreamteck.Splines {
             {
                 case Type.CatmullRom:
                     ComputeCatPoints(pointIndex);
-                    if (_knotParametrization < 0.000001f)
+                    if (m_knotParametrization < 0.000001f)
                     {
                         CalculateCatmullRomPositionFast(ref position, percent, pointIndex);
                     } else
@@ -791,7 +791,7 @@ namespace Dreamteck.Splines {
                 case Type.Bezier: CalculateBezierPosition(ref position, percent, pointIndex); break;
                 case Type.BSpline:
                     ComputeCatPoints(pointIndex);
-                    CalculateBSplinePosition(ref position, percent, pointIndex); break;
+                    CalculateBsplinePosition(ref position, percent, pointIndex); break;
                 case Type.Linear:
                     ComputeCatPoints(pointIndex);
                     CalculateLinearPosition(ref position, percent, pointIndex); 
@@ -808,7 +808,7 @@ namespace Dreamteck.Splines {
             {
                 case Type.CatmullRom:
                     ComputeCatPoints(pointIndex);
-                    if (_knotParametrization < 0.000001f)
+                    if (m_knotParametrization < 0.000001f)
                     {
                         CalculateCatmullRomTangentFast(ref tangent, percent, pointIndex);
                     }
@@ -837,7 +837,7 @@ namespace Dreamteck.Splines {
             {
                 case Type.CatmullRom:
                     ComputeCatPoints(pointIndex);
-                    if (_knotParametrization < 0.000001f)
+                    if (m_knotParametrization < 0.000001f)
                     {
                         CalculateCatmullRomPositionFast(ref position, percent, pointIndex);
                         CalculateCatmullRomTangentFast(ref tangent, percent, pointIndex);
@@ -855,7 +855,7 @@ namespace Dreamteck.Splines {
                     break;
                 case Type.BSpline:
                     ComputeCatPoints(pointIndex);
-                    CalculateBSplinePosition(ref position, percent, pointIndex); 
+                    CalculateBsplinePosition(ref position, percent, pointIndex); 
                     break;
                 case Type.Linear:
                     ComputeCatPoints(pointIndex);
@@ -873,7 +873,7 @@ namespace Dreamteck.Splines {
                 return;
             }
 
-            position = Vector3.Lerp(P[1], P[2], (float)t);
+            position = Vector3.Lerp(s_p[1], s_p[2], (float)t);
         }
 
         private void CalculateLinearTangent(ref Vector3 tangent, double t, int i)
@@ -884,20 +884,20 @@ namespace Dreamteck.Splines {
                 return;
             }
 
-            if (linearAverageDirection) tangent = Vector3.Slerp(P[1] - P[0], P[2] - P[1], 0.5f);
-            else tangent = P[2] - P[1];
+            if (linearAverageDirection) tangent = Vector3.Slerp(s_p[1] - s_p[0], s_p[2] - s_p[1], 0.5f);
+            else tangent = s_p[2] - s_p[1];
         }
 
-        private void CalculateBSplinePosition(ref Vector3 position, double time, int i)
+        private void CalculateBsplinePosition(ref Vector3 position, double time, int i)
         {
             if (points.Length > 0) position = points[0].position;
             if (points.Length > 1)
             {
-                float tf = (float)DMath.Clamp01(time);
-                position = ((-P[0] + P[2]) / 2f 
-                + tf * ((P[0] - 2f * P[1] + P[2]) / 2f 
-                + tf * (-P[0] + 3f * P[1] - 3f * P[2] + P[3]) / 6f)) * tf 
-                + (P[0] + 4f * P[1] + P[2]) / 6f;
+                float tf = (float)Dmath.Clamp01(time);
+                position = ((-s_p[0] + s_p[2]) / 2f 
+                + tf * ((s_p[0] - 2f * s_p[1] + s_p[2]) / 2f 
+                + tf * (-s_p[0] + 3f * s_p[1] - 3f * s_p[2] + s_p[3]) / 6f)) * tf 
+                + (s_p[0] + 4f * s_p[1] + s_p[2]) / 6f;
             }
         }
 
@@ -905,8 +905,8 @@ namespace Dreamteck.Splines {
         {
             if (points.Length > 0) position = points[0].position;
             else return;
-            if (!closed && points.Length == 1) return;
-            t = DMath.Clamp01(t);
+            if (!m_closed && points.Length == 1) return;
+            t = Dmath.Clamp01(t);
             int it = i + 1;
             if (it >= points.Length)
             {
@@ -925,8 +925,8 @@ namespace Dreamteck.Splines {
         {
             if (points.Length > 0) tangent = points[0].tangent;
             else return;
-            if (!closed && points.Length == 1) return;
-            t = DMath.Clamp01(t);
+            if (!m_closed && points.Length == 1) return;
+            t = Dmath.Clamp01(t);
             int it = i + 1;
             if (it >= points.Length)
             {
@@ -946,42 +946,42 @@ namespace Dreamteck.Splines {
         private void CalculateCatmullRomComponents(double t)
         {
             const float t0 = 0f;
-            t1 = GetInterval(P[0], P[1]);
-            t2 = GetInterval(P[1], P[2]) + t1;
-            t3 = GetInterval(P[2], P[3]) + t2;
-            float tf = Mathf.LerpUnclamped(t1, t2, (float)t);
+            s_t1 = GetInterval(s_p[0], s_p[1]);
+            s_t2 = GetInterval(s_p[1], s_p[2]) + s_t1;
+            s_t3 = GetInterval(s_p[2], s_p[3]) + s_t2;
+            float tf = Mathf.LerpUnclamped(s_t1, s_t2, (float)t);
 
-            A1 = (t1 - tf) / (t1 - t0) * P[0] + (tf - t0) / (t1 - t0) * P[1];
-            A2 = (t2 - tf) / (t2 - t1) * P[1] + (tf - t1) / (t2 - t1) * P[2];
-            A3 = (t3 - tf) / (t3 - t2) * P[2] + (tf - t2) / (t3 - t2) * P[3];
+            s_a1 = (s_t1 - tf) / (s_t1 - t0) * s_p[0] + (tf - t0) / (s_t1 - t0) * s_p[1];
+            s_a2 = (s_t2 - tf) / (s_t2 - s_t1) * s_p[1] + (tf - s_t1) / (s_t2 - s_t1) * s_p[2];
+            s_a3 = (s_t3 - tf) / (s_t3 - s_t2) * s_p[2] + (tf - s_t2) / (s_t3 - s_t2) * s_p[3];
 
-            B1 = (t2 - tf) / (t2 - t0) * A1 + (tf - t0) / (t2 - t0) * A2;
-            B2 = (t3 - tf) / (t3 - t1) * A2 + (tf - t1) / (t3 - t1) * A3;
+            s_b1 = (s_t2 - tf) / (s_t2 - t0) * s_a1 + (tf - t0) / (s_t2 - t0) * s_a2;
+            s_b2 = (s_t3 - tf) / (s_t3 - s_t1) * s_a2 + (tf - s_t1) / (s_t3 - s_t1) * s_a3;
             
 
             float GetInterval(Vector3 a, Vector3 b)
             {
-                return Mathf.Pow((a - b).sqrMagnitude, _knotParametrization * 0.5f);
+                return Mathf.Pow((a - b).sqrMagnitude, m_knotParametrization * 0.5f);
             }
         }
 
         private void CalculateCatmullRomPosition(double t, ref Vector3 position)
         {
-            float tf = Mathf.LerpUnclamped(t1, t2, (float)t);
-            position = (t2 - tf) / (t2 - t1) * B1 + (tf - t1) / (t2 - t1) * B2;
+            float tf = Mathf.LerpUnclamped(s_t1, s_t2, (float)t);
+            position = (s_t2 - tf) / (s_t2 - s_t1) * s_b1 + (tf - s_t1) / (s_t2 - s_t1) * s_b2;
         }
 
         private void CalculateCatmullRomTangent(double t, ref Vector3 tangent)
         {
-            float tf = Mathf.LerpUnclamped(t1, t2, (float)t);
-            Vector3 A1p = (P[1] - P[0]) / t1;
-            Vector3 A2p = (P[2] - P[1]) / (t2 - t1);
-            Vector3 A3p = (P[3] - P[2]) / (t3 - t2);
+            float tf = Mathf.LerpUnclamped(s_t1, s_t2, (float)t);
+            Vector3 A1p = (s_p[1] - s_p[0]) / s_t1;
+            Vector3 A2p = (s_p[2] - s_p[1]) / (s_t2 - s_t1);
+            Vector3 A3p = (s_p[3] - s_p[2]) / (s_t3 - s_t2);
 
-            Vector3 B1p = (A2 - A1) / t2  + (t2 - tf) / t2 * A1p + tf / t2  * A2p;
-            Vector3 B2p = (A3 - A2) / (t3 - t1) + (t3 - tf) / (t3 - t1) * A2p + (tf - t1) / (t3 - t1) * A3p;
+            Vector3 B1p = (s_a2 - s_a1) / s_t2  + (s_t2 - tf) / s_t2 * A1p + tf / s_t2  * A2p;
+            Vector3 B2p = (s_a3 - s_a2) / (s_t3 - s_t1) + (s_t3 - tf) / (s_t3 - s_t1) * A2p + (tf - s_t1) / (s_t3 - s_t1) * A3p;
 
-            tangent = (B2 - B1) / (t2 - t1) + (t2 - tf) / (t2 - t1) * B1p + (tf - t1) / (t2 - t1) * B2p;
+            tangent = (s_b2 - s_b1) / (s_t2 - s_t1) + (s_t2 - tf) / (s_t2 - s_t1) * B1p + (tf - s_t1) / (s_t2 - s_t1) * B2p;
         }
 
         private void CalculateCatmullRomPositionFast(ref Vector3 position, double t, int i)
@@ -994,13 +994,13 @@ namespace Dreamteck.Splines {
                 position = points[0].position;
             }
 
-            if (!closed && i >= points.Length) return;
+            if (!m_closed && i >= points.Length) return;
 
             if (points.Length > 1)
             {
-                position = 0.5f * ((2f * P[1]) + (-P[0] + P[2]) * t1
-                + (2f * P[0] - 5f * P[1] + 4f * P[2] - P[3]) * t2
-                + (-P[0] + 3f * P[1] - 3f * P[2] + P[3]) * t3);
+                position = 0.5f * ((2f * s_p[1]) + (-s_p[0] + s_p[2]) * t1
+                + (2f * s_p[0] - 5f * s_p[1] + 4f * s_p[2] - s_p[3]) * t2
+                + (-s_p[0] + 3f * s_p[1] - 3f * s_p[2] + s_p[3]) * t3);
             }
         }
 
@@ -1008,13 +1008,13 @@ namespace Dreamteck.Splines {
         {
             float t1 = (float)t;
             float t2 = t1 * t1;
-            if (!closed && i >= points.Length) return;
+            if (!m_closed && i >= points.Length) return;
             if (points.Length > 1)
             {
-                tangent = (6 * t2 - 6 * t1) * P[1]
-                + (3 * t2 - 4 * t1 + 1) * (P[2] - P[0]) * 0.5f
-                + (-6 * t2 + 6 * t1) * P[2]
-                + (3 * t2 - 2 * t1) * (P[3] - P[1]) * 0.5f;
+                tangent = (6 * t2 - 6 * t1) * s_p[1]
+                + (3 * t2 - 4 * t1 + 1) * (s_p[2] - s_p[0]) * 0.5f
+                + (-6 * t2 + 6 * t1) * s_p[2]
+                + (3 * t2 - 2 * t1) * (s_p[3] - s_p[1]) * 0.5f;
             }
         }
 
@@ -1025,7 +1025,7 @@ namespace Dreamteck.Splines {
             int p3 = i + 1;
             int p4 = i + 2;
 
-            if (closed)
+            if (m_closed)
             {
                 if(p1 < 0)
                 {
@@ -1043,40 +1043,40 @@ namespace Dreamteck.Splines {
                 {
                     p4 -= points.Length;
                 }
-                P[0] = points[p1].position;
-                P[1] = points[p2].position;
-                P[2] = points[p3].position;
-                P[3] = points[p4].position;
+                s_p[0] = points[p1].position;
+                s_p[1] = points[p2].position;
+                s_p[2] = points[p3].position;
+                s_p[3] = points[p4].position;
             } else
             {
                 if(p1 < 0)
                 {
-                    P[0] = points[0].position;
-                    P[0] += (P[0] - points[1].position);
+                    s_p[0] = points[0].position;
+                    s_p[0] += (s_p[0] - points[1].position);
                 } else 
                 {
-                    P[0] = points[p1].position;
+                    s_p[0] = points[p1].position;
                 }
 
-                P[1] = points[p2].position;
+                s_p[1] = points[p2].position;
 
                 if (p3 >= points.Length)
                 {
-                    P[2] = points[points.Length - 1].position;
-                    Vector3 pos = P[2];
-                    P[2] += P[2] - points[points.Length - 2].position;
-                    P[3] = P[2] + (P[2] - pos);
+                    s_p[2] = points[points.Length - 1].position;
+                    Vector3 pos = s_p[2];
+                    s_p[2] += s_p[2] - points[points.Length - 2].position;
+                    s_p[3] = s_p[2] + (s_p[2] - pos);
                 }
                 else
                 {
-                    P[2] = points[p3].position;
+                    s_p[2] = points[p3].position;
                     if(p4 >= points.Length)
                     {
-                        P[3] = P[2] + (P[2] - points[p3 - 1].position);
+                        s_p[3] = s_p[2] + (s_p[2] - points[p3 - 1].position);
                     } 
                     else
                     {
-                        P[3] = points[p4].position;
+                        s_p[3] = points[p4].position;
                     }
                 }
             }
@@ -1084,14 +1084,14 @@ namespace Dreamteck.Splines {
 
         public static void FormatFromTo(ref double from, ref double to, bool preventInvert = true)
         {
-            from = DMath.Clamp01(from);
-            to = DMath.Clamp01(to);
+            from = Dmath.Clamp01(from);
+            to = Dmath.Clamp01(to);
             if (preventInvert && from > to)
             {
                 double tmp = from;
                 from = to;
                 to = tmp;
-            } else  to = DMath.Clamp(to, 0.0, 1.0);
+            } else  to = Dmath.Clamp(to, 0.0, 1.0);
         }
     }
 

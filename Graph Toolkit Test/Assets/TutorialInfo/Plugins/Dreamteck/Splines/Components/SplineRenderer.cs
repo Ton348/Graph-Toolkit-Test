@@ -14,13 +14,13 @@ namespace Dreamteck.Splines
     {
         public int slices
         {
-            get { return _slices; }
+            get { return m_slices; }
             set
             {
-                if (value != _slices)
+                if (value != m_slices)
                 {
                     if (value < 1) value = 1;
-                    _slices = value;
+                    m_slices = value;
                     Rebuild();
                 }
             }
@@ -31,22 +31,22 @@ namespace Dreamteck.Splines
         public int updateFrameInterval = 0;
         [SerializeField]
         [HideInInspector]
-        private int _slices = 1;
+        private int m_slices = 1;
 
-        private int _currentFrame = 0;
-        private Vector3 _vertexDirection = Vector3.up;
-        private bool _orthographic = false;
-        private bool _init = false;
+        private int m_currentFrame = 0;
+        private Vector3 m_vertexDirection = Vector3.up;
+        private bool m_orthographic = false;
+        private bool m_init = false;
 
         void Start()
         {
             if (Camera.current != null)
             {
-                _orthographic = Camera.current.orthographic;
+                m_orthographic = Camera.current.orthographic;
             } 
             else if (Camera.main != null)
             {
-                _orthographic = Camera.main.orthographic;
+                m_orthographic = Camera.main.orthographic;
             }
 
             CreateMesh();
@@ -56,28 +56,28 @@ namespace Dreamteck.Splines
         {
             if (updateFrameInterval > 0)
             {
-                _currentFrame++;
-                if (_currentFrame > updateFrameInterval) _currentFrame = 0;
+                m_currentFrame++;
+                if (m_currentFrame > updateFrameInterval) m_currentFrame = 0;
             }
         }
 
         protected override void BuildMesh()
         {
             base.BuildMesh();
-            GenerateVertices(_vertexDirection, _orthographic);
-            MeshUtility.GeneratePlaneTriangles(ref _tsMesh.triangles, _slices, sampleCount, false, 0, 0);
+            GenerateVertices(m_vertexDirection, m_orthographic);
+            MeshUtility.GeneratePlaneTriangles(ref tsMesh.triangles, m_slices, sampleCount, false, 0, 0);
         }
 
         public void RenderWithCamera(Camera cam)
         {
-            _orthographic = cam.orthographic;
-            if (_orthographic)
+            m_orthographic = cam.orthographic;
+            if (m_orthographic)
             {
-                _vertexDirection = -cam.transform.forward;
+                m_vertexDirection = -cam.transform.forward;
             }
             else
             {
-                _vertexDirection = cam.transform.position;
+                m_vertexDirection = cam.transform.position;
             }
             BuildMesh();
             WriteMesh();
@@ -88,15 +88,15 @@ namespace Dreamteck.Splines
             if (!autoOrient) return;
             if (updateFrameInterval > 0)
             {
-                if (_currentFrame != 0) return;
+                if (m_currentFrame != 0) return;
             }
 
             if (!Application.isPlaying)
             {
-                if (!_init)
+                if (!m_init)
                 {
                     Awake();
-                    _init = true;
+                    m_init = true;
                 }
             }
 
@@ -112,29 +112,29 @@ namespace Dreamteck.Splines
 
         public void GenerateVertices(Vector3 vertexDirection, bool orthoGraphic)
         {
-            AllocateMesh((_slices + 1) * sampleCount, _slices * (sampleCount - 1) * 6);
+            AllocateMesh((m_slices + 1) * sampleCount, m_slices * (sampleCount - 1) * 6);
             int vertexIndex = 0;
-            ResetUVDistance();
+            ResetUvdistance();
             bool hasOffset = offset != Vector3.zero;
             for (int i = 0; i < sampleCount; i++)
             {
-                GetSample(i, ref evalResult);
-                Vector3 center = evalResult.position;
-                if (hasOffset) center += offset.x * -Vector3.Cross(evalResult.forward, evalResult.up) + offset.y * evalResult.up + offset.z * evalResult.forward;
+                GetSample(i, ref m_evalResult);
+                Vector3 center = m_evalResult.position;
+                if (hasOffset) center += offset.x * -Vector3.Cross(m_evalResult.forward, m_evalResult.up) + offset.y * m_evalResult.up + offset.z * m_evalResult.forward;
                 Vector3 vertexNormal;
                 if(orthoGraphic) vertexNormal = vertexDirection;
                 else vertexNormal = (vertexDirection - center).normalized;
-                Vector3 vertexRight = Vector3.Cross(evalResult.forward, vertexNormal).normalized;
-                if (uvMode == UVMode.UniformClamp || uvMode == UVMode.UniformClip) AddUVDistance(i);
-                Color vertexColor = evalResult.color * color;
-                for (int n = 0; n < _slices + 1; n++)
+                Vector3 vertexRight = Vector3.Cross(m_evalResult.forward, vertexNormal).normalized;
+                if (uvMode == Uvmode.UniformClamp || uvMode == Uvmode.UniformClip) AddUvdistance(i);
+                Color vertexColor = m_evalResult.color * color;
+                for (int n = 0; n < m_slices + 1; n++)
                 {
-                    float slicePercent = ((float)n / _slices);
-                    _tsMesh.vertices[vertexIndex] = center - vertexRight * evalResult.size * 0.5f * size + vertexRight * evalResult.size * slicePercent * size;
-                    CalculateUVs(evalResult.percent, slicePercent);
-                    _tsMesh.uv[vertexIndex] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - __uvs));
-                    _tsMesh.normals[vertexIndex] = vertexNormal;
-                    _tsMesh.colors[vertexIndex] = vertexColor;
+                    float slicePercent = ((float)n / m_slices);
+                    tsMesh.vertices[vertexIndex] = center - vertexRight * m_evalResult.size * 0.5f * size + vertexRight * m_evalResult.size * slicePercent * size;
+                    CalculateUvs(m_evalResult.percent, slicePercent);
+                    tsMesh.uv[vertexIndex] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - s_uvs));
+                    tsMesh.normals[vertexIndex] = vertexNormal;
+                    tsMesh.colors[vertexIndex] = vertexColor;
                     vertexIndex++;
                 }
             }

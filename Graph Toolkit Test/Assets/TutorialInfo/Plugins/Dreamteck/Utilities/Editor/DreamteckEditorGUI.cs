@@ -4,22 +4,22 @@ namespace Dreamteck
     using UnityEngine;
     using System.Collections.Generic;
 
-    public static class DreamteckEditorGUI
+    public static class DreamteckEditorGui
     {
         public static Texture2D blankImage
         {
             get
             {
-                if (_blankImage == null)
+                if (s_blankImage == null)
                 {
-                    _blankImage = new Texture2D(1, 1);
-                    _blankImage.SetPixel(0, 0, Color.white);
-                    _blankImage.Apply();
+                    s_blankImage = new Texture2D(1, 1);
+                    s_blankImage.SetPixel(0, 0, Color.white);
+                    s_blankImage.Apply();
                 }
-                return _blankImage;
+                return s_blankImage;
             }
         }
-        private static Texture2D _blankImage = null;
+        private static Texture2D s_blankImage = null;
 
         public static readonly Color backgroundColor = new Color(0.95f, 0.95f, 0.95f);
         public static Color iconColor = Color.black;
@@ -37,12 +37,12 @@ namespace Dreamteck
         public static readonly Color darkColor = Color.white;
         public static readonly Color borderColor = Color.white;
 
-        private static List<int> layerNumbers = new List<int>();
+        private static List<int> s_layerNumbers = new List<int>();
 
         public static readonly GUIStyle labelText = null;
-        private static float scale = -1f;
+        private static float s_scale = -1f;
 
-        static DreamteckEditorGUI()
+        static DreamteckEditorGui()
         {
             baseColor = EditorGUIUtility.isProSkin ? new Color32(56, 56, 56, 255) : new Color32(194, 194, 194, 255);
             lightColor = EditorGUIUtility.isProSkin ? new Color32(84, 84, 84, 255) : new Color32(222, 222, 222, 255);
@@ -62,9 +62,9 @@ namespace Dreamteck
 
         public static void SetScale(float newScale)
         {
-            if (scale == newScale) return;
-            scale = newScale;
-            labelText.fontSize = Mathf.RoundToInt(12f * scale);
+            if (s_scale == newScale) return;
+            s_scale = newScale;
+            labelText.fontSize = Mathf.RoundToInt(12f * s_scale);
         }
 
         public static void Label(Rect position, string text, bool active = true, GUIStyle style = null)
@@ -83,17 +83,17 @@ namespace Dreamteck
         {
             string[] layers = UnityEditorInternal.InternalEditorUtility.layers;
 
-            layerNumbers.Clear();
+            s_layerNumbers.Clear();
 
             for (int i = 0; i < layers.Length; i++)
             {
-                layerNumbers.Add(LayerMask.NameToLayer(layers[i]));
+                s_layerNumbers.Add(LayerMask.NameToLayer(layers[i]));
             }
 
             int maskWithoutEmpty = 0;
-            for (int i = 0; i < layerNumbers.Count; i++)
+            for (int i = 0; i < s_layerNumbers.Count; i++)
             {
-                if (((1 << layerNumbers[i]) & layerMask.value) > 0)
+                if (((1 << s_layerNumbers[i]) & layerMask.value) > 0)
                 {
                     maskWithoutEmpty |= (1 << i);
                 }
@@ -102,11 +102,11 @@ namespace Dreamteck
             maskWithoutEmpty = EditorGUILayout.MaskField(label, maskWithoutEmpty, layers);
 
             int mask = 0;
-            for (int i = 0; i < layerNumbers.Count; i++)
+            for (int i = 0; i < s_layerNumbers.Count; i++)
             {
                 if ((maskWithoutEmpty & (1 << i)) > 0)
                 {
-                    mask |= (1 << layerNumbers[i]);
+                    mask |= (1 << s_layerNumbers[i]);
                 }
             }
 

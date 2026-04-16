@@ -10,8 +10,8 @@ namespace Game1.Graph.Editor.Templates
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public abstract class GameGraphNextNodeModel : GameGraphEditorNode
 	{
-		protected override string DefaultTitle => "Game Next Node";
-		protected override string DefaultDescription => "Base template for game node with single next output.";
+		protected override string defaultTitle => "Game Next Node";
+		protected override string defaultDescription => "Base template for game node with single next output.";
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{

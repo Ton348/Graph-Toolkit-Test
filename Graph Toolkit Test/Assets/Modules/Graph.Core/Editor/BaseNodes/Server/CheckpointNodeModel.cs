@@ -2,7 +2,7 @@ using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Server
+namespace GraphCore.Editor.BaseNodes.Server
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -13,8 +13,8 @@ namespace GraphCore.BaseNodes.Editor.Server
 		public const string SuccessPort = "Success";
 		public const string FailPort = "Fail";
 
-		protected override string DefaultTitle => "Управление чекпоинтом";
-		protected override string DefaultDescription => "Сохраняет или удаляет checkpoint с которого начнется старт графа в профиле игрока";
+		protected override string defaultTitle => "Управление чекпоинтом";
+		protected override string defaultDescription => "Сохраняет или удаляет checkpoint с которого начнется старт графа в профиле игрока";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

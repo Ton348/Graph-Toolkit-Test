@@ -7,16 +7,16 @@ namespace Dreamteck.Splines.Editor
     {
         public enum NormalMode { Auto, Free }
         public NormalMode normalMode = NormalMode.Auto;
-        SplineSample evalResult = new SplineSample();
+        SplineSample m_evalResult = new SplineSample();
 
-        private string[] _normalOperations = new string[0];
-        private int _normalOperation = 0;
+        private string[] m_normalOperations = new string[0];
+        private int m_normalOperation = 0;
 
-        private NormalRotationWindow _rotationWindow;
+        private NormalRotationWindow m_rotationWindow;
 
         public PointNormalModule(SplineEditor editor) : base(editor)
         {
-            _normalOperations = new string[] { "Flip",
+            m_normalOperations = new string[] { "Flip",
                 "Look At Camera",
                 "Align with Camera",
                 "Calculate",
@@ -36,17 +36,17 @@ namespace Dreamteck.Splines.Editor
         {
             base.LoadState();
             normalMode = (NormalMode)LoadInt("normalMode");
-            _normalOperation = LoadInt("normalOperation");
+            m_normalOperation = LoadInt("normalOperation");
         }
 
         public override void SaveState()
         {
             base.SaveState();
             SaveInt("normalMode", (int)normalMode);
-            SaveInt("normalOperation", (int)_normalOperation);
-            if (_rotationWindow != null)
+            SaveInt("normalOperation", (int)m_normalOperation);
+            if (m_rotationWindow != null)
             {
-                _rotationWindow.Close();
+                m_rotationWindow.Close();
             }
         }
 
@@ -62,7 +62,7 @@ namespace Dreamteck.Splines.Editor
 
         private void OnNormalRotationApplied()
         {
-            editor.ApplyModifiedProperties(true);
+            m_editor.ApplyModifiedProperties(true);
             RegisterChange();
             SceneView.RepaintAll();
         }
@@ -71,8 +71,8 @@ namespace Dreamteck.Splines.Editor
         {
             if (mode == 12)
             {
-                _rotationWindow = EditorWindow.GetWindow<NormalRotationWindow>(true);
-                _rotationWindow.Init(this, OnNormalRotationApplied);
+                m_rotationWindow = EditorWindow.GetWindow<NormalRotationWindow>(true);
+                m_rotationWindow.Init(this, OnNormalRotationApplied);
                 return;
             }
 
@@ -98,7 +98,7 @@ namespace Dreamteck.Splines.Editor
                     case 10: points[selectedPoints[i]].normal = Vector3.Normalize(avg - points[selectedPoints[i]].position); break;
                     case 11:
                         SplineSample result = new SplineSample();
-                        editor.evaluateAtPoint(selectedPoints[i], ref result);
+                        m_editor.evaluateAtPoint(selectedPoints[i], ref result);
                         points[selectedPoints[i]].normal = Vector3.Cross(result.forward, result.right).normalized;
                         break;
                 }
@@ -144,7 +144,7 @@ namespace Dreamteck.Splines.Editor
 
         protected override void OnDrawInspector()
         {
-            if (editor.is2D)
+            if (m_editor.is2D)
             {
                 EditorGUILayout.LabelField("Normal editing unavailable in 2D Mode", EditorStyles.centeredGreyMiniLabel);
                 return;
@@ -158,10 +158,10 @@ namespace Dreamteck.Splines.Editor
 
             EditorGUILayout.BeginVertical();
 
-            _normalOperation = EditorGUILayout.Popup(_normalOperation, _normalOperations);
+            m_normalOperation = EditorGUILayout.Popup(m_normalOperation, m_normalOperations);
             if (GUILayout.Button("Apply"))
             {
-                SetNormals(_normalOperation);
+                SetNormals(m_normalOperation);
             }
             EditorGUILayout.EndVertical();
 
@@ -170,7 +170,7 @@ namespace Dreamteck.Splines.Editor
 
         protected override void OnDrawScene()
         {
-            if (editor.is2D) return;
+            if (m_editor.is2D) return;
             for (int i = 0; i < selectedPoints.Count; i++)
             {
                 if (normalMode == NormalMode.Free) FreeNormal(selectedPoints[i]);
@@ -180,11 +180,11 @@ namespace Dreamteck.Splines.Editor
 
         void AutoNormal(int index)
         {
-            editor.evaluateAtPoint(index, ref evalResult);
+            m_editor.evaluateAtPoint(index, ref m_evalResult);
             Handles.color = highlightColor;
-            Handles.DrawWireDisc(points[index].position, evalResult.forward, HandleUtility.GetHandleSize(points[index].position) * 0.5f);
+            Handles.DrawWireDisc(points[index].position, m_evalResult.forward, HandleUtility.GetHandleSize(points[index].position) * 0.5f);
             Handles.color = color;
-            Matrix4x4 matrix = Matrix4x4.TRS(points[index].position, evalResult.rotation, Vector3.one);
+            Matrix4x4 matrix = Matrix4x4.TRS(points[index].position, m_evalResult.rotation, Vector3.one);
             Vector3 pos = points[index].position + points[index].normal * HandleUtility.GetHandleSize(points[index].position) * 0.5f;
             Handles.DrawLine(points[index].position, pos);
             Vector3 lastPos = pos;
@@ -197,8 +197,8 @@ namespace Dreamteck.Splines.Editor
                 for (int n = 0; n < selectedPoints.Count; n++)
                 {
                     if (selectedPoints[n] == index) continue;
-                    editor.evaluateAtPoint(selectedPoints[n], ref evalResult);
-                    Matrix4x4 localMatrix = Matrix4x4.TRS(points[selectedPoints[n]].position, evalResult.rotation, Vector3.one);
+                    m_editor.evaluateAtPoint(selectedPoints[n], ref m_evalResult);
+                    Matrix4x4 localMatrix = Matrix4x4.TRS(points[selectedPoints[n]].position, m_evalResult.rotation, Vector3.one);
                     Vector3 localPos = localMatrix.inverse.MultiplyPoint(points[selectedPoints[n]].position + points[selectedPoints[n]].normal * HandleUtility.GetHandleSize(points[selectedPoints[n]].position) * 0.5f);
                     localPos += delta;
                     localPos.z = 0f;
@@ -240,27 +240,27 @@ namespace Dreamteck.Splines.Editor
 
         private class NormalRotationWindow : EditorWindow
         {
-            private float _angle = 0f;
-            private PointNormalModule _normalModule;
-            private System.Action _onRotationApplied;
+            private float m_angle = 0f;
+            private PointNormalModule m_normalModule;
+            private System.Action m_onRotationApplied;
 
             public void Init(PointNormalModule module, System.Action onRotationApplied)
             {
-                _normalModule = module;
-                _onRotationApplied = onRotationApplied;
+                m_normalModule = module;
+                m_onRotationApplied = onRotationApplied;
                 titleContent = new GUIContent("Rotate Normal");
                 minSize = maxSize = new Vector2(240, 90);
-                _angle = EditorPrefs.GetFloat("Dreamteck.Splines.Editor.PointNormalModule.NormalRotationWindow.angle", 0f);
+                m_angle = EditorPrefs.GetFloat("Dreamteck.Splines.Editor.PointNormalModule.NormalRotationWindow.angle", 0f);
             }
 
-            private void OnGUI()
+            private void OnGui()
             {
                 if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.KeypadEnter || Event.current.keyCode == KeyCode.Return))
                 {
                     ApplyRotationAndClose();
                 }
 
-                _angle = EditorGUILayout.FloatField("Angle", _angle);
+                m_angle = EditorGUILayout.FloatField("Angle", m_angle);
                 if (GUILayout.Button("Rotate"))
                 {
                     ApplyRotationAndClose();
@@ -270,19 +270,19 @@ namespace Dreamteck.Splines.Editor
             private void ApplyRotationAndClose()
             {
                 SplineSample sample = new SplineSample();
-                for (int i = 0; i < _normalModule.selectedPoints.Count; i++)
+                for (int i = 0; i < m_normalModule.selectedPoints.Count; i++)
                 {
-                    int pointIndex = _normalModule.selectedPoints[i];
-                    _normalModule.editor.evaluateAtPoint(pointIndex, ref sample);
-                    Quaternion rotation = Quaternion.AngleAxis(-_angle, sample.forward);
-                    _normalModule.points[pointIndex].normal = rotation * _normalModule.points[pointIndex].normal;
-                    _normalModule.points[pointIndex].changed = true;
+                    int pointIndex = m_normalModule.selectedPoints[i];
+                    m_normalModule.m_editor.evaluateAtPoint(pointIndex, ref sample);
+                    Quaternion rotation = Quaternion.AngleAxis(-m_angle, sample.forward);
+                    m_normalModule.points[pointIndex].normal = rotation * m_normalModule.points[pointIndex].normal;
+                    m_normalModule.points[pointIndex].changed = true;
                 }
-                if (_onRotationApplied != null)
+                if (m_onRotationApplied != null)
                 {
-                    _onRotationApplied();
+                    m_onRotationApplied();
                 }
-                EditorPrefs.SetFloat("Dreamteck.Splines.Editor.PointNormalModule.NormalRotationWindow.angle", _angle);
+                EditorPrefs.SetFloat("Dreamteck.Splines.Editor.PointNormalModule.NormalRotationWindow.angle", m_angle);
                 Close();
             }
         }

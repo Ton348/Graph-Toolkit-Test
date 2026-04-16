@@ -13,8 +13,8 @@ public sealed class RequestInstallBusinessModuleNodeModel : GameGraphSuccessFail
 	public const string LotIdOption = "LotId";
 	public const string ModuleIdOption = "ModuleId";
 
-	protected override string DefaultTitle => "Установить модуль бизнеса";
-	protected override string DefaultDescription => "Запрашивает установку модуля для бизнеса.";
+	protected override string defaultTitle => "Установить модуль бизнеса";
+	protected override string defaultDescription => "Запрашивает установку модуля для бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

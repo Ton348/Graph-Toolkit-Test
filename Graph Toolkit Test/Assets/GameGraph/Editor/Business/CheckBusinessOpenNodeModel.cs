@@ -12,8 +12,8 @@ public sealed class CheckBusinessOpenNodeModel : GameGraphTrueFalseNodeModel
 {
 	public const string LotIdOption = "LotId";
 
-	protected override string DefaultTitle => "Проверка открыт ли бизнес";
-	protected override string DefaultDescription => "Проверяет, открыт ли бизнес.";
+	protected override string defaultTitle => "Проверка открыт ли бизнес";
+	protected override string defaultDescription => "Проверяет, открыт ли бизнес.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

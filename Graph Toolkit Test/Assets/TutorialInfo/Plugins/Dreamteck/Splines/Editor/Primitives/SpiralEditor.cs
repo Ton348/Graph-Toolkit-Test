@@ -16,13 +16,13 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Spiral();
+            m_primitive = new Spiral();
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Spiral spiral = (Spiral)primitive;
+            base.OnGui();
+            Spiral spiral = (Spiral)m_primitive;
             spiral.clockwise = EditorGUILayout.Toggle("Clockwise", spiral.clockwise);
             spiral.curve = EditorGUILayout.CurveField("Radius Interpolation", spiral.curve);
             spiral.startRadius = EditorGUILayout.FloatField("Start Radius", spiral.startRadius);

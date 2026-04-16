@@ -45,11 +45,11 @@ public class GameBootstrap : MonoBehaviour
         InitializeRuntime();
     }
 
-    private async void Start()
+    private async void StartAsync()
     {
         if (useRemoteServer && refreshProfileOnGameStart)
         {
-            await FetchRemoteProfile();
+            await FetchRemoteProfileAsync();
         }
     }
 
@@ -126,14 +126,14 @@ public class GameBootstrap : MonoBehaviour
 
         LotDefinitionsValidator.Validate(lotDb, BusinessDefinitionsRepository);
 
-        RuntimeState.Player = new PlayerProfileState(GameDataRepository.GetEconomy());
-        RuntimeState.Buildings = new List<BuildingState>();
+        RuntimeState.player = new PlayerProfileState(GameDataRepository.GetEconomy());
+        RuntimeState.buildings = new List<BuildingState>();
         foreach (var definition in GameDataRepository.GetAllBuildings())
         {
-            RuntimeState.Buildings.Add(new BuildingState(definition));
+            RuntimeState.buildings.Add(new BuildingState(definition));
         }
 
-        RuntimeState.Quests = new List<QuestState>();
+        RuntimeState.quests = new List<QuestState>();
 
         GraphProgressService = new GraphProgressService();
         GameServer = useRemoteServer
@@ -143,7 +143,7 @@ public class GameBootstrap : MonoBehaviour
         QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
         BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);
         ProfileSyncService = new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
-        PlayerStateSync.RefreshRequested += HandlePlayerStateRefreshRequested;
+        PlayerStateSync.refreshRequested += HandlePlayerStateRefreshRequested;
         RequestManager = new RequestManager();
         BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
         BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
@@ -236,54 +236,54 @@ public class GameBootstrap : MonoBehaviour
 
         var snapshot = new ProfileSnapshot
         {
-            Money = RuntimeState.Player != null ? RuntimeState.Player.Money : 0,
-            Bargaining = RuntimeState.Player != null ? RuntimeState.Player.Bargaining : 0,
-            Speech = RuntimeState.Player != null ? RuntimeState.Player.Speech : 0,
-            Trading = RuntimeState.Player != null ? RuntimeState.Player.Trading : 0,
-            Speed = RuntimeState.Player != null ? RuntimeState.Player.Speed : 0,
-            Damage = RuntimeState.Player != null ? RuntimeState.Player.Damage : 0,
-            Health = RuntimeState.Player != null ? RuntimeState.Player.Health : 0
+            money = RuntimeState.player != null ? RuntimeState.player.money : 0,
+            bargaining = RuntimeState.player != null ? RuntimeState.player.bargaining : 0,
+            speech = RuntimeState.player != null ? RuntimeState.player.speech : 0,
+            trading = RuntimeState.player != null ? RuntimeState.player.trading : 0,
+            speed = RuntimeState.player != null ? RuntimeState.player.speed : 0,
+            damage = RuntimeState.player != null ? RuntimeState.player.damage : 0,
+            health = RuntimeState.player != null ? RuntimeState.player.health : 0
         };
 
-        if (RuntimeState.Quests != null)
+        if (RuntimeState.quests != null)
         {
-            foreach (var quest in RuntimeState.Quests)
+            foreach (var quest in RuntimeState.quests)
             {
-                if (quest == null || quest.Definition == null)
+                if (quest == null || quest.definition == null)
                 {
                     continue;
                 }
 
-                if (quest.Status == QuestStatus.Active)
+                if (quest.status == QuestStatus.Active)
                 {
-                    snapshot.ActiveQuestIds.Add(quest.Definition.id);
+                    snapshot.activeQuestIds.Add(quest.definition.id);
                 }
-                else if (quest.Status == QuestStatus.Completed)
+                else if (quest.status == QuestStatus.Completed)
                 {
-                    snapshot.CompletedQuestIds.Add(quest.Definition.id);
+                    snapshot.completedQuestIds.Add(quest.definition.id);
                 }
             }
         }
 
-        if (RuntimeState.Buildings != null)
+        if (RuntimeState.buildings != null)
         {
-            foreach (var building in RuntimeState.Buildings)
+            foreach (var building in RuntimeState.buildings)
             {
-                if (building == null || building.Definition == null)
+                if (building == null || building.definition == null)
                 {
                     continue;
                 }
 
-                if (building.IsOwned)
+                if (building.isOwned)
                 {
-                    snapshot.OwnedBuildingIds.Add(building.Definition.id);
-                    snapshot.BuildingStates.Add(new BuildingStateSnapshot
+                    snapshot.ownedBuildingIds.Add(building.definition.id);
+                    snapshot.buildingStates.Add(new BuildingStateSnapshot
                     {
-                        id = building.Definition.id,
+                        id = building.definition.id,
                         owned = true,
-                        level = building.Level,
-                        currentIncome = building.CurrentIncome,
-                        currentExpenses = building.CurrentExpenses
+                        level = building.level,
+                        currentIncome = building.currentIncome,
+                        currentExpenses = building.currentExpenses
                     });
                 }
             }
@@ -299,7 +299,7 @@ public class GameBootstrap : MonoBehaviour
         }
     }
 
-    private async Task FetchRemoteProfile()
+    private async Task FetchRemoteProfileAsync()
     {
         if (GameServer == null || ProfileSyncService == null)
         {

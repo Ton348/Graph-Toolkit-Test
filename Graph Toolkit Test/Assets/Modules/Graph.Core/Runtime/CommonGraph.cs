@@ -6,7 +6,7 @@ namespace GraphCore.Runtime
 {
 	public sealed class CommonGraph : ScriptableObject
 	{
-		private const string LogPrefix = "[CommonGraph]";
+		private const string s_logPrefix = "[CommonGraph]";
 		public string startNodeId;
 		[SerializeReference]
 		public List<BaseGraphNode> nodes = new List<BaseGraphNode>();
@@ -125,7 +125,7 @@ namespace GraphCore.Runtime
 
 			for (int i = 0; i < validationResult.Errors.Count; i++)
 			{
-				Debug.LogError($"{LogPrefix} {validationResult.Errors[i]}", this);
+				Debug.LogError($"{s_logPrefix} {validationResult.Errors[i]}", this);
 			}
 		}
 	}

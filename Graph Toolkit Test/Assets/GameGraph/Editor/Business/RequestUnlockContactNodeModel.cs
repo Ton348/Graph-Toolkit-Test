@@ -12,8 +12,8 @@ public sealed class RequestUnlockContactNodeModel : GameGraphSuccessFailNodeMode
 {
 	public const string ContactIdOption = "ContactId";
 
-	protected override string DefaultTitle => "Разблокировать контакт";
-	protected override string DefaultDescription => "Запрашивает разблокировку контакта.";
+	protected override string defaultTitle => "Разблокировать контакт";
+	protected override string defaultDescription => "Запрашивает разблокировку контакта.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

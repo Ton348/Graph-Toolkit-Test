@@ -6,10 +6,10 @@ public class CompassTargetRegistry : MonoBehaviour
 {
     public static CompassTargetRegistry Instance { get; private set; }
 
-    private readonly Dictionary<string, CompassTarget> _targets = new Dictionary<string, CompassTarget>();
+    private readonly Dictionary<string, CompassTarget> m_targets = new Dictionary<string, CompassTarget>();
 
-    public event Action<CompassTarget> TargetRegistered;
-    public event Action<CompassTarget> TargetUnregistered;
+    public event Action<CompassTarget> targetRegistered;
+    public event Action<CompassTarget> targetUnregistered;
 
     private void Awake()
     {
@@ -32,8 +32,8 @@ public class CompassTargetRegistry : MonoBehaviour
             return;
         }
 
-        _targets[id] = target;
-        TargetRegistered?.Invoke(target);
+        m_targets[id] = target;
+        targetRegistered?.Invoke(target);
     }
 
     public void Unregister(CompassTarget target)
@@ -43,17 +43,17 @@ public class CompassTargetRegistry : MonoBehaviour
         string id = target.TargetId;
         if (string.IsNullOrWhiteSpace(id)) return;
 
-        if (_targets.TryGetValue(id, out var existing) && existing == target)
+        if (m_targets.TryGetValue(id, out var existing) && existing == target)
         {
-            _targets.Remove(id);
-            TargetUnregistered?.Invoke(target);
+            m_targets.Remove(id);
+            targetUnregistered?.Invoke(target);
         }
     }
 
     public CompassTarget GetTarget(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        _targets.TryGetValue(id, out var target);
+        m_targets.TryGetValue(id, out var target);
         return target;
     }
 }

@@ -9,17 +9,17 @@ namespace Dreamteck.Splines.Editor
     public class OffsetModifierEditor : SplineSampleModifierEditor
     {
         public bool allowSelection = true;
-        private float addTime = 0f;
-        Matrix4x4 matrix = new Matrix4x4();
+        private float m_addTime = 0f;
+        Matrix4x4 m_matrix = new Matrix4x4();
 
         public OffsetModifierEditor(SplineUser user, SplineUserEditor editor) : base(user, editor, "_offsetModifier")
         {
-            title = "Offset Modifiers";
+            m_title = "Offset Modifiers";
         }
 
         public void ClearSelection()
         {
-            selected = -1;
+            m_selected = -1;
         }
 
         public override void DrawInspector()
@@ -28,15 +28,15 @@ namespace Dreamteck.Splines.Editor
             if (!isOpen) return;
             if (GUILayout.Button("Add New Offset"))
             {
-                AddKey(addTime - 0.1f, addTime + 0.1f);
+                AddKey(m_addTime - 0.1f, m_addTime + 0.1f);
                 UpdateValues();
             }
         }
 
-        protected override void KeyGUI(SerializedProperty key)
+        protected override void KeyGui(SerializedProperty key)
         {
             SerializedProperty offset = key.FindPropertyRelative("offset");
-            base.KeyGUI(key);
+            base.KeyGui(key);
             EditorGUILayout.PropertyField(offset);
         }
 
@@ -44,7 +44,7 @@ namespace Dreamteck.Splines.Editor
         {
             if (!isOpen) return false;
             bool changed = false;
-            bool is2D = user.spline != null && user.spline.is2D;
+            bool is2D = m_user.spline != null && m_user.spline.is2D;
             SplineSample result = new SplineSample();
             SerializedProperty start = key.FindPropertyRelative("_featherStart");
             SerializedProperty end = key.FindPropertyRelative("_featherEnd");
@@ -54,9 +54,9 @@ namespace Dreamteck.Splines.Editor
 
             float position = GetPosition(start.floatValue, end.floatValue, centerStart.floatValue, centerEnd.floatValue);
 
-            user.spline.Evaluate(position, ref result);
-            matrix.SetTRS(result.position, Quaternion.LookRotation(result.forward, result.up), Vector3.one * result.size);
-            Vector3 pos = matrix.MultiplyPoint(offset.vector2Value);
+            m_user.spline.Evaluate(position, ref result);
+            m_matrix.SetTRS(result.position, Quaternion.LookRotation(result.forward, result.up), Vector3.one * result.size);
+            Vector3 pos = m_matrix.MultiplyPoint(offset.vector2Value);
             if (is2D)
             {
                 Handles.DrawLine(result.position, result.position + result.right * offset.vector2Value.x * result.size);
@@ -73,7 +73,7 @@ namespace Dreamteck.Splines.Editor
                 {
                     MainPointModule.HoldInteraction();
                     changed = true;
-                    pos = matrix.inverse.MultiplyPoint(pos);
+                    pos = m_matrix.inverse.MultiplyPoint(pos);
                     pos.z = 0f;
                     if (is2D)
                     {

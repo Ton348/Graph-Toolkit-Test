@@ -11,7 +11,7 @@ public sealed class RequestTradeOfferNodeExecutor : GameGraphServerRequestExecut
 {
 	protected override async UniTask<ServerActionResult> ExecuteRequestAsync(RequestTradeOfferNode node, GameBootstrap bootstrap, GraphExecutionContext context, CancellationToken cancellationToken)
 	{
-		context?.Set(GraphContextKeys.BuildingLastRequestedId, node.buildingId);
+		context?.Set(GraphContextKeys.buildingLastRequestedId, node.buildingId);
 
 		int fallbackOffer = 0;
 		string buildingLabel = node.buildingId;
@@ -31,7 +31,7 @@ public sealed class RequestTradeOfferNodeExecutor : GameGraphServerRequestExecut
 
 	private static async UniTask<int> ResolveOfferAmountAsync(string buildingLabel, int fallbackOffer, CancellationToken cancellationToken)
 	{
-		TradeOfferUIService ui = Object.FindAnyObjectByType<TradeOfferUIService>(FindObjectsInactive.Include);
+		TradeOfferUiservice ui = Object.FindAnyObjectByType<TradeOfferUiservice>(FindObjectsInactive.Include);
 		if (ui == null)
 		{
 			return Mathf.Max(1, fallbackOffer);

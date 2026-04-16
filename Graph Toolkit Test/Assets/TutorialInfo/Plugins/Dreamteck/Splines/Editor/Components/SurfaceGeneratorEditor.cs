@@ -8,21 +8,21 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class SurfaceGeneratorEditor : MeshGenEditor
     {
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
-            base.DuringSceneGUI(currentSceneView);
+            base.DuringSceneGui(currentSceneView);
             SurfaceGenerator user = (SurfaceGenerator)target;
             if (user.extrudeSpline != null)
             {
-                DSSplineDrawer.DrawSplineComputer(user.extrudeSpline, 0.0, 1.0, 0.5f);
+                DssplineDrawer.DrawSplineComputer(user.extrudeSpline, 0.0, 1.0, 0.5f);
             }
         }
         
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            showSize = false;
-            showRotation = false;
-            base.BodyGUI();
+            m_showSize = false;
+            m_showRotation = false;
+            base.BodyGui();
             SurfaceGenerator user = (SurfaceGenerator)target;
             serializedObject.Update();
             SerializedProperty expand = serializedObject.FindProperty("_expand");
@@ -39,18 +39,18 @@ namespace Dreamteck.Splines.Editor
             {
                 if (lastExtrudeSpline != null)
                 {
-                    for (int i = 0; i < users.Length; i++)
+                    for (int i = 0; i < m_users.Length; i++)
                     {
-                        ((SplineComputer)lastExtrudeSpline).Unsubscribe(users[i]);
+                        ((SplineComputer)lastExtrudeSpline).Unsubscribe(m_users[i]);
                     }
                 }
 
                 SplineComputer spline = (SplineComputer)extrudeSpline.objectReferenceValue;
                 if (spline != null)
                 {
-                    for (int i = 0; i < users.Length; i++)
+                    for (int i = 0; i < m_users.Length; i++)
                     {
-                        spline.Subscribe(users[i]);
+                        spline.Subscribe(m_users[i]);
                     }
                 }
             }
@@ -74,7 +74,7 @@ namespace Dreamteck.Splines.Editor
                 serializedObject.ApplyModifiedProperties();
             }
 
-            UVControls(user);
+            Uvcontrols(user);
 
             if (extrude.floatValue != 0f || extrudeSpline.objectReferenceValue != null)
             {
@@ -98,9 +98,9 @@ namespace Dreamteck.Splines.Editor
 
             if (change)
             {
-                for (int i = 0; i < users.Length; i++)
+                for (int i = 0; i < m_users.Length; i++)
                 {
-                    users[i].Rebuild();
+                    m_users[i].Rebuild();
                 }
             }
         }  

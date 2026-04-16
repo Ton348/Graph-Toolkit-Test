@@ -4,22 +4,22 @@ using UnityEngine;
 
 public class BusinessSimulationService
 {
-    private const float SecondsPerDay = 86400f;
+    private const float s_secondsPerDay = 86400f;
 
-    private readonly BusinessStateSyncService stateSync;
-    private readonly Dictionary<string, BusinessRuntimeSimulationState> statesByLotId = new Dictionary<string, BusinessRuntimeSimulationState>();
+    private readonly BusinessStateSyncService m_stateSync;
+    private readonly Dictionary<string, BusinessRuntimeSimulationState> m_statesByLotId = new Dictionary<string, BusinessRuntimeSimulationState>();
 
     public float TimeScale { get; set; } = 1f;
     public bool DebugLogTicks { get; set; }
 
-    public event Action SimulationUpdated;
+    public event Action simulationUpdated;
 
     public BusinessSimulationService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
     {
-        this.stateSync = stateSync;
-        if (this.stateSync != null)
+        this.m_stateSync = stateSync;
+        if (this.m_stateSync != null)
         {
-            this.stateSync.StateChanged += SyncFromState;
+            this.m_stateSync.stateChanged += SyncFromState;
         }
 
         SyncFromState();
@@ -50,7 +50,7 @@ public class BusinessSimulationService
             return;
         }
 
-        foreach (var state in statesByLotId.Values)
+        foreach (var state in m_statesByLotId.Values)
         {
             if (state == null || string.IsNullOrWhiteSpace(state.lotId) || string.IsNullOrWhiteSpace(state.businessTypeId))
             {
@@ -58,14 +58,14 @@ public class BusinessSimulationService
             }
 
             float tickIncome = 0f;
-            float tickExpenses = state.rentPerDay > 0 ? (state.rentPerDay / SecondsPerDay) * scaledDelta : 0f;
+            float tickExpenses = state.rentPerDay > 0 ? (state.rentPerDay / s_secondsPerDay) * scaledDelta : 0f;
 
             state.accumulatedIncome += tickIncome;
             state.accumulatedExpenses += tickExpenses;
             state.profit = state.accumulatedIncome - state.accumulatedExpenses;
         }
 
-        SimulationUpdated?.Invoke();
+        simulationUpdated?.Invoke();
     }
 
     public BusinessRuntimeSimulationState GetStateByLotId(string lotId)
@@ -75,13 +75,13 @@ public class BusinessSimulationService
             return null;
         }
 
-        statesByLotId.TryGetValue(lotId, out var state);
+        m_statesByLotId.TryGetValue(lotId, out var state);
         return state;
     }
 
     public IEnumerable<BusinessRuntimeSimulationState> GetAllStates()
     {
-        return statesByLotId.Values;
+        return m_statesByLotId.Values;
     }
 
     public bool TryTakeFromStorage(string lotId, float requestedAmount, out float takenAmount)
@@ -107,7 +107,7 @@ public class BusinessSimulationService
         state.storageStock -= amount;
         state.storageStock = Mathf.Max(0f, state.storageStock);
         takenAmount = amount;
-        SimulationUpdated?.Invoke();
+        simulationUpdated?.Invoke();
         return true;
     }
 
@@ -138,7 +138,7 @@ public class BusinessSimulationService
             state.shelfStock = Mathf.Min(state.shelfStock, state.shelfCapacity);
         }
         addedAmount = amount;
-        SimulationUpdated?.Invoke();
+        simulationUpdated?.Invoke();
         return true;
     }
 
@@ -148,13 +148,13 @@ public class BusinessSimulationService
 
     private void SyncFromState()
     {
-        if (stateSync == null)
+        if (m_stateSync == null)
         {
             return;
         }
 
         var activeLotIds = new HashSet<string>();
-        foreach (var business in stateSync.GetAllBusinesses())
+        foreach (var business in m_stateSync.GetAllBusinesses())
         {
             if (business == null || string.IsNullOrWhiteSpace(business.lotId))
             {
@@ -163,13 +163,13 @@ public class BusinessSimulationService
 
             activeLotIds.Add(business.lotId);
 
-            if (!statesByLotId.TryGetValue(business.lotId, out var state))
+            if (!m_statesByLotId.TryGetValue(business.lotId, out var state))
             {
                 state = new BusinessRuntimeSimulationState
                 {
                     lotId = business.lotId
                 };
-                statesByLotId[business.lotId] = state;
+                m_statesByLotId[business.lotId] = state;
             }
 
             state.businessTypeId = business.businessTypeId;
@@ -182,7 +182,7 @@ public class BusinessSimulationService
         }
 
         var toRemove = new List<string>();
-        foreach (var pair in statesByLotId)
+        foreach (var pair in m_statesByLotId)
         {
             if (!activeLotIds.Contains(pair.Key))
             {
@@ -192,7 +192,7 @@ public class BusinessSimulationService
 
         foreach (var lotId in toRemove)
         {
-            statesByLotId.Remove(lotId);
+            m_statesByLotId.Remove(lotId);
         }
     }
 }

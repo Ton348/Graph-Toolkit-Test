@@ -8,9 +8,9 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class SplineFollowerEditor : SplineTracerEditor
     {
-        SplineSample result = new SplineSample();
-        protected SplineFollower[] followers = new SplineFollower[0];
-        protected FollowerSpeedModifierEditor speedModifierEditor;
+        SplineSample m_result = new SplineSample();
+        protected SplineFollower[] m_followers = new SplineFollower[0];
+        protected FollowerSpeedModifierEditor m_speedModifierEditor;
 
         void OnSetDistance(float distance)
         {
@@ -28,19 +28,19 @@ namespace Dreamteck.Splines.Editor
         protected override void OnEnable()
         {
             base.OnEnable();
-            followers = new SplineFollower[users.Length];
-            for (int i = 0; i < followers.Length; i++)
+            m_followers = new SplineFollower[m_users.Length];
+            for (int i = 0; i < m_followers.Length; i++)
             {
-                followers[i] = (SplineFollower)users[i];
+                m_followers[i] = (SplineFollower)m_users[i];
             }
 
-            if (followers.Length == 1)
+            if (m_followers.Length == 1)
             {
-                speedModifierEditor = new FollowerSpeedModifierEditor(followers[0], this);
+                m_speedModifierEditor = new FollowerSpeedModifierEditor(m_followers[0], this);
             }
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Following", EditorStyles.boldLabel);
@@ -67,12 +67,12 @@ namespace Dreamteck.Splines.Editor
                     if (autoStartPosition.boolValue)
                     {
                         SplineSample sample = new SplineSample();
-                        followers[0].Project(followers[0].transform.position, ref sample);
+                        m_followers[0].Project(m_followers[0].transform.position, ref sample);
                         if (Application.isPlaying)
                         {
-                            for (int i = 0; i < followers.Length; i++)
+                            for (int i = 0; i < m_followers.Length; i++)
                             {
-                                followers[i].SetPercent(sample.percent);
+                                m_followers[i].SetPercent(sample.percent);
                             }
                         }
                     }
@@ -102,9 +102,9 @@ namespace Dreamteck.Splines.Editor
                 {
                     EditorGUILayout.PropertyField(preserveUniformSpeedWithOffset, new GUIContent("Preserve Uniform Speed With Offset"));
                 }
-                if (followers.Length == 1)
+                if (m_followers.Length == 1)
                 {
-                    speedModifierEditor.DrawInspector();
+                    m_speedModifierEditor.DrawInspector();
                 }
             }
             else
@@ -151,14 +151,14 @@ namespace Dreamteck.Splines.Editor
                 serializedObject.ApplyModifiedProperties();
                 if (!Application.isPlaying)
                 {
-                    for (int i = 0; i < followers.Length; i++)
+                    for (int i = 0; i < m_followers.Length; i++)
                     {
-                        if(followers[i].spline.sampleCount > 0)
+                        if(m_followers[i].spline.sampleCount > 0)
                         {
-                            if (!followers[i].autoStartPosition)
+                            if (!m_followers[i].autoStartPosition)
                             {
-                                followers[i].SetPercent(startPosition.floatValue);
-                                if (!followers[i].follow) SceneView.RepaintAll();
+                                m_followers[i].SetPercent(startPosition.floatValue);
+                                if (!m_followers[i].follow) SceneView.RepaintAll();
                             }
                         }
                     }
@@ -166,7 +166,7 @@ namespace Dreamteck.Splines.Editor
             }
 
             int lastDirection = direction.intValue;
-            base.BodyGUI();
+            base.BodyGui();
 
             if(lastDirection != direction.intValue)
             {
@@ -182,9 +182,9 @@ namespace Dreamteck.Splines.Editor
         }
 
 
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
-            base.DuringSceneGUI(currentSceneView);
+            base.DuringSceneGui(currentSceneView);
             SplineFollower user = (SplineFollower)target;
             if (user == null) return;
             if (Application.isPlaying)
@@ -195,13 +195,13 @@ namespace Dreamteck.Splines.Editor
             if (user.spline == null) return;
             if (user.autoStartPosition)
             {
-                user.spline.Project(user.transform.position, ref result, user.clipFrom, user.clipTo);
-                DrawResult(result);
+                user.spline.Project(user.transform.position, ref m_result, user.clipFrom, user.clipTo);
+                DrawResult(m_result);
             } else if(!user.follow) DrawResult(user.result);
 
-            if (followers.Length == 1)
+            if (m_followers.Length == 1)
             {
-                speedModifierEditor.DrawScene();
+                m_speedModifierEditor.DrawScene();
             }
 
         }

@@ -10,9 +10,9 @@ namespace Dreamteck.Splines.Editor
     public class ObjectControllerEditor : SplineUserEditor
     {
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             ObjectController user = (ObjectController)target;
             serializedObject.Update();
             SerializedProperty objectMethod = serializedObject.FindProperty("_objectMethod");
@@ -52,7 +52,7 @@ namespace Dreamteck.Splines.Editor
             {
                 bool objectsChanged = false;
                 bool hasObj = false;
-                if (users.Length > 1)
+                if (m_users.Length > 1)
                 {
                     EditorGUILayout.HelpBox("Editing unavailable when multiple objects are selected", MessageType.Info);
                 }
@@ -186,7 +186,7 @@ namespace Dreamteck.Splines.Editor
                 }
             } else
             {
-                CustomRuleUI((ObjectControllerCustomRuleBase)customOffsetRule.objectReferenceValue);
+                CustomRuleUi((ObjectControllerCustomRuleBase)customOffsetRule.objectReferenceValue);
             }
             EditorGUI.indentLevel--;
 
@@ -202,7 +202,7 @@ namespace Dreamteck.Splines.Editor
                     EditorGUILayout.PropertyField(maxRotation, new GUIContent("Max. Rotation Offset"));
                 } else
                 {
-                    CustomRuleUI((ObjectControllerCustomRuleBase)customRotationRule.objectReferenceValue);
+                    CustomRuleUi((ObjectControllerCustomRuleBase)customRotationRule.objectReferenceValue);
                 }
                 EditorGUI.indentLevel--;
             }
@@ -222,7 +222,7 @@ namespace Dreamteck.Splines.Editor
                     EditorGUI.indentLevel--;
                 } else
                 {
-                    CustomRuleUI((ObjectControllerCustomRuleBase)customScaleRule.objectReferenceValue);
+                    CustomRuleUi((ObjectControllerCustomRuleBase)customScaleRule.objectReferenceValue);
                 }
                 EditorGUI.indentLevel--;
             }
@@ -241,7 +241,7 @@ namespace Dreamteck.Splines.Editor
             
         }
 
-        private void CustomRuleUI(ObjectControllerCustomRuleBase customRule)
+        private void CustomRuleUi(ObjectControllerCustomRuleBase customRule)
         {
             SerializedObject serializedRule = new SerializedObject(customRule);
             SerializedProperty property = serializedRule.GetIterator();

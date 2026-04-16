@@ -94,7 +94,7 @@ namespace Dreamteck.Splines
         [SerializeField]
         public Type type = Type.Double;
         public bool workOnce = false;
-        private bool worked = false;
+        private bool m_worked = false;
         [Range(0f, 1f)]
         public double position = 0.5;
         [SerializeField]
@@ -139,13 +139,13 @@ namespace Dreamteck.Splines
 
         public void Reset()
         {
-            worked = false;
+            m_worked = false;
         }
 
         public bool Check(double previousPercent, double currentPercent)
         {
             if (!enabled) return false;
-            if (workOnce && worked) return false;
+            if (workOnce && m_worked) return false;
             bool passed = false;
             switch (type)
             {
@@ -153,7 +153,7 @@ namespace Dreamteck.Splines
                 case Type.Forward: passed = previousPercent <= position && currentPercent >= position; break;
                 case Type.Backward: passed = currentPercent <= position && previousPercent >= position; break;
             }
-            if (passed) worked = true;
+            if (passed) m_worked = true;
             return passed;
         }
 

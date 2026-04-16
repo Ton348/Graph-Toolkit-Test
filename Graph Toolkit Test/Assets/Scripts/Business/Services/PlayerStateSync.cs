@@ -4,12 +4,12 @@ using Cysharp.Threading.Tasks;
 
 public class PlayerStateSync
 {
-    private readonly HashSet<string> activeQuests = new HashSet<string>();
-    private readonly HashSet<string> completedQuests = new HashSet<string>();
-    private readonly HashSet<string> ownedBuildings = new HashSet<string>();
-    private readonly Dictionary<string, BuildingStateSnapshot> buildingStates = new Dictionary<string, BuildingStateSnapshot>();
-    private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
-    private readonly Dictionary<string, ConstructedSiteSnapshot> constructedSites = new Dictionary<string, ConstructedSiteSnapshot>();
+    private readonly HashSet<string> m_activeQuests = new HashSet<string>();
+    private readonly HashSet<string> m_completedQuests = new HashSet<string>();
+    private readonly HashSet<string> m_ownedBuildings = new HashSet<string>();
+    private readonly Dictionary<string, BuildingStateSnapshot> m_buildingStates = new Dictionary<string, BuildingStateSnapshot>();
+    private readonly Dictionary<string, string> m_graphCheckpoints = new Dictionary<string, string>();
+    private readonly Dictionary<string, ConstructedSiteSnapshot> m_constructedSites = new Dictionary<string, ConstructedSiteSnapshot>();
 
     public int Money { get; private set; }
     public int Bargaining { get; private set; }
@@ -18,15 +18,15 @@ public class PlayerStateSync
     public int Speed { get; private set; }
     public int Damage { get; private set; }
     public int Health { get; private set; }
-    public IReadOnlyCollection<string> ActiveQuests => activeQuests;
-    public IReadOnlyCollection<string> CompletedQuests => completedQuests;
-    public IReadOnlyCollection<string> OwnedBuildings => ownedBuildings;
-    public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => buildingStates;
-    public IReadOnlyDictionary<string, string> GraphCheckpoints => graphCheckpoints;
-    public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => constructedSites;
+    public IReadOnlyCollection<string> ActiveQuests => m_activeQuests;
+    public IReadOnlyCollection<string> CompletedQuests => m_completedQuests;
+    public IReadOnlyCollection<string> OwnedBuildings => m_ownedBuildings;
+    public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => m_buildingStates;
+    public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
+    public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => m_constructedSites;
 
-    public event Action<ProfileSnapshot> SnapshotApplied;
-    public event Action RefreshRequested;
+    public event Action<ProfileSnapshot> snapshotApplied;
+    public event Action refreshRequested;
 
     public void ApplySnapshot(ProfileSnapshot snapshot)
     {
@@ -35,86 +35,86 @@ public class PlayerStateSync
             return;
         }
 
-        Money = snapshot.Money;
-        Bargaining = snapshot.Bargaining;
-        Speech = snapshot.Speech;
-        Trading = snapshot.Trading;
-        Speed = snapshot.Speed;
-        Damage = snapshot.Damage;
-        Health = snapshot.Health;
+        Money = snapshot.money;
+        Bargaining = snapshot.bargaining;
+        Speech = snapshot.speech;
+        Trading = snapshot.trading;
+        Speed = snapshot.speed;
+        Damage = snapshot.damage;
+        Health = snapshot.health;
 
-        activeQuests.Clear();
-        if (snapshot.ActiveQuestIds != null)
+        m_activeQuests.Clear();
+        if (snapshot.activeQuestIds != null)
         {
-            foreach (var id in snapshot.ActiveQuestIds)
+            foreach (var id in snapshot.activeQuestIds)
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    activeQuests.Add(id);
+                    m_activeQuests.Add(id);
                 }
             }
         }
 
-        completedQuests.Clear();
-        if (snapshot.CompletedQuestIds != null)
+        m_completedQuests.Clear();
+        if (snapshot.completedQuestIds != null)
         {
-            foreach (var id in snapshot.CompletedQuestIds)
+            foreach (var id in snapshot.completedQuestIds)
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    completedQuests.Add(id);
+                    m_completedQuests.Add(id);
                 }
             }
         }
 
-        ownedBuildings.Clear();
-        if (snapshot.OwnedBuildingIds != null)
+        m_ownedBuildings.Clear();
+        if (snapshot.ownedBuildingIds != null)
         {
-            foreach (var id in snapshot.OwnedBuildingIds)
+            foreach (var id in snapshot.ownedBuildingIds)
             {
                 if (!string.IsNullOrEmpty(id))
                 {
-                    ownedBuildings.Add(id);
+                    m_ownedBuildings.Add(id);
                 }
             }
         }
 
-        buildingStates.Clear();
-        if (snapshot.BuildingStates != null && snapshot.BuildingStates.Count > 0)
+        m_buildingStates.Clear();
+        if (snapshot.buildingStates != null && snapshot.buildingStates.Count > 0)
         {
-            foreach (var state in snapshot.BuildingStates)
+            foreach (var state in snapshot.buildingStates)
             {
                 if (state == null || string.IsNullOrEmpty(state.id))
                 {
                     continue;
                 }
 
-                buildingStates[state.id] = state;
+                m_buildingStates[state.id] = state;
                 if (state.owned)
                 {
-                    ownedBuildings.Add(state.id);
+                    m_ownedBuildings.Add(state.id);
                 }
             }
         }
 
-        graphCheckpoints.Clear();
-        if (snapshot.GraphCheckpoints != null && snapshot.GraphCheckpoints.Count > 0)
+        m_graphCheckpoints.Clear();
+        if (snapshot.graphCheckpoints != null && snapshot.graphCheckpoints.Count > 0)
         {
-            foreach (var checkpoint in snapshot.GraphCheckpoints)
+            foreach (var checkpoint in snapshot.graphCheckpoints)
             {
                 if (checkpoint == null || string.IsNullOrEmpty(checkpoint.graphId))
                 {
                     continue;
                 }
 
-                graphCheckpoints[checkpoint.graphId] = checkpoint.checkpointId;
+                m_graphCheckpoints[checkpoint.graphId] = checkpoint.checkpointId;
             }
         }
 
-        constructedSites.Clear();
-        if (snapshot.ConstructedSites != null && snapshot.ConstructedSites.Count > 0)
+        m_constructedSites.Clear();
+        if (snapshot.constructedSites != null && snapshot.constructedSites.Count > 0)
         {
-            foreach (var site in snapshot.ConstructedSites)
+            foreach (var site in snapshot.constructedSites)
             {
                 if (site == null || string.IsNullOrWhiteSpace(site.siteId))
                 {
@@ -124,7 +124,7 @@ public class PlayerStateSync
                 var siteId = site.siteId.Trim();
                 var visualId = string.IsNullOrWhiteSpace(site.visualId) ? null : site.visualId.Trim();
                 bool isConstructed = site.isConstructed && !string.IsNullOrEmpty(visualId);
-                constructedSites[siteId] = new ConstructedSiteSnapshot
+                m_constructedSites[siteId] = new ConstructedSiteSnapshot
                 {
                     siteId = siteId,
                     visualId = isConstructed ? visualId : null,
@@ -133,7 +133,7 @@ public class PlayerStateSync
             }
         }
 
-        SnapshotApplied?.Invoke(snapshot);
+        snapshotApplied?.Invoke(snapshot);
     }
 
     public void Reset()
@@ -145,28 +145,28 @@ public class PlayerStateSync
         Speed = 0;
         Damage = 0;
         Health = 0;
-        activeQuests.Clear();
-        completedQuests.Clear();
-        ownedBuildings.Clear();
-        buildingStates.Clear();
-        graphCheckpoints.Clear();
-        constructedSites.Clear();
-        SnapshotApplied?.Invoke(null);
+        m_activeQuests.Clear();
+        m_completedQuests.Clear();
+        m_ownedBuildings.Clear();
+        m_buildingStates.Clear();
+        m_graphCheckpoints.Clear();
+        m_constructedSites.Clear();
+        snapshotApplied?.Invoke(null);
     }
 
     public bool IsQuestActive(string questId)
     {
-        return !string.IsNullOrEmpty(questId) && activeQuests.Contains(questId);
+        return !string.IsNullOrEmpty(questId) && m_activeQuests.Contains(questId);
     }
 
     public bool IsQuestCompleted(string questId)
     {
-        return !string.IsNullOrEmpty(questId) && completedQuests.Contains(questId);
+        return !string.IsNullOrEmpty(questId) && m_completedQuests.Contains(questId);
     }
 
     public bool IsBuildingOwned(string buildingId)
     {
-        return !string.IsNullOrEmpty(buildingId) && ownedBuildings.Contains(buildingId);
+        return !string.IsNullOrEmpty(buildingId) && m_ownedBuildings.Contains(buildingId);
     }
 
     public bool TryGetBuildingState(string buildingId, out BuildingStateSnapshot state)
@@ -177,7 +177,7 @@ public class PlayerStateSync
             return false;
         }
 
-        return buildingStates.TryGetValue(buildingId, out state);
+        return m_buildingStates.TryGetValue(buildingId, out state);
     }
 
     public bool TryGetGraphCheckpoint(string graphId, out string checkpointId)
@@ -188,7 +188,7 @@ public class PlayerStateSync
             return false;
         }
 
-        return graphCheckpoints.TryGetValue(graphId, out checkpointId);
+        return m_graphCheckpoints.TryGetValue(graphId, out checkpointId);
     }
 
     public bool TryGetConstructedSite(string siteId, out ConstructedSiteSnapshot site)
@@ -199,7 +199,7 @@ public class PlayerStateSync
             return false;
         }
 
-        return constructedSites.TryGetValue(siteId.Trim(), out site);
+        return m_constructedSites.TryGetValue(siteId.Trim(), out site);
     }
 
     public bool IsSiteConstructed(string siteId)
@@ -209,18 +209,18 @@ public class PlayerStateSync
 
     public UniTask RefreshAsync()
     {
-        RefreshRequested?.Invoke();
+        refreshRequested?.Invoke();
         return UniTask.CompletedTask;
     }
 
     public void Refresh()
     {
-        RefreshRequested?.Invoke();
+        refreshRequested?.Invoke();
     }
 
     public UniTask SyncAsync()
     {
-        RefreshRequested?.Invoke();
+        refreshRequested?.Invoke();
         return UniTask.CompletedTask;
     }
 }

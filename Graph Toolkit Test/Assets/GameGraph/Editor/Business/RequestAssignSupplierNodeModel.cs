@@ -13,8 +13,8 @@ public sealed class RequestAssignSupplierNodeModel : GameGraphSuccessFailNodeMod
 	public const string LotIdOption = "LotId";
 	public const string SupplierIdOption = "SupplierId";
 
-	protected override string DefaultTitle => "Назначить поставщика";
-	protected override string DefaultDescription => "Назначает поставщика бизнесу.";
+	protected override string defaultTitle => "Назначить поставщика";
+	protected override string defaultDescription => "Назначает поставщика бизнесу.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

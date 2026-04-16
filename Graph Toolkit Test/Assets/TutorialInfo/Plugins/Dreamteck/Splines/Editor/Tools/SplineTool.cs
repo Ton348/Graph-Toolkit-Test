@@ -7,9 +7,9 @@ namespace Dreamteck.Splines
 {
     public class SplineTool
     {
-        protected List<SplineComputer> splines = new List<SplineComputer>();
-        protected bool promptSave = false;
-        protected EditorWindow windowInstance = null;
+        protected List<SplineComputer> m_splines = new List<SplineComputer>();
+        protected bool m_promptSave = false;
+        protected EditorWindow m_windowInstance = null;
 
         public virtual string GetName()
         {
@@ -18,13 +18,13 @@ namespace Dreamteck.Splines
 
         public virtual void Open(EditorWindow window)
         {
-            windowInstance = window;
+            m_windowInstance = window;
             GetSplines();
         }
 
         public virtual void Close()
         {
-            if(promptSave) ClosingDialog();
+            if(m_promptSave) ClosingDialog();
         }
 
         private void ClosingDialog()
@@ -40,12 +40,12 @@ namespace Dreamteck.Splines
 
         protected virtual void Save()
         {
-            promptSave = false;
+            m_promptSave = false;
         }
 
         protected virtual void Cancel()
         {
-            promptSave = false;
+            m_promptSave = false;
         }
 
         protected virtual string GetPrefix()
@@ -58,25 +58,25 @@ namespace Dreamteck.Splines
             //EditorGUILayout.LabelField("Spline User", EditorStyles.boldLabel);
 
             EditorGUILayout.LabelField("Selected Splines", EditorStyles.boldLabel);
-            for (int i = 0; i < splines.Count; i++)
+            for (int i = 0; i < m_splines.Count; i++)
             {
-                SplineComputer lastComputer = splines[i];
-                splines[i] = (SplineComputer)EditorGUILayout.ObjectField(splines[i], typeof(SplineComputer), true);
-                if (splines[i] == null)
+                SplineComputer lastComputer = m_splines[i];
+                m_splines[i] = (SplineComputer)EditorGUILayout.ObjectField(m_splines[i], typeof(SplineComputer), true);
+                if (m_splines[i] == null)
                 {
-                    splines.RemoveAt(i);
+                    m_splines.RemoveAt(i);
                     i--;
                     OnSplineRemoved(lastComputer);
                     continue;
                 }
-                if (lastComputer != splines[i])
+                if (lastComputer != m_splines[i])
                 {
-                    for (int j = 0; j < splines.Count; j++)
+                    for (int j = 0; j < m_splines.Count; j++)
                     {
                         if (j == i) continue;
-                        if (splines[j] == splines[i])
+                        if (m_splines[j] == m_splines[i])
                         {
-                            splines[i] = lastComputer;
+                            m_splines[i] = lastComputer;
                             break;
                         }
                     }
@@ -86,9 +86,9 @@ namespace Dreamteck.Splines
             newComp = (SplineComputer)EditorGUILayout.ObjectField(newComp, typeof(SplineComputer), true);
             if(newComp != null)
             {
-                for (int i = 0; i < splines.Count; i++)
+                for (int i = 0; i < m_splines.Count; i++)
                 {
-                    if (splines[i] == newComp)
+                    if (m_splines[i] == newComp)
                     {
                         newComp = null;
                         break;
@@ -96,7 +96,7 @@ namespace Dreamteck.Splines
                 }
                 if (newComp != null)
                 {
-                    splines.Add(newComp);
+                    m_splines.Add(newComp);
                     OnSplineAdded(newComp);
                 }
             }
@@ -113,7 +113,7 @@ namespace Dreamteck.Splines
 
         }
 
-        protected void ClipUI(SplineUser user)
+        protected void ClipUi(SplineUser user)
         {
             float fclipFrom = (float)user.clipFrom, fclipTo = (float)user.clipTo;
             EditorGUILayout.BeginHorizontal();
@@ -137,7 +137,7 @@ namespace Dreamteck.Splines
             EditorGUILayout.EndHorizontal();
         }
 
-        protected void SaveCancelUI()
+        protected void SaveCancelUi()
         {
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Save")) Save();
@@ -152,15 +152,15 @@ namespace Dreamteck.Splines
 
         protected void Repaint()
         {
-            windowInstance.Repaint();
+            m_windowInstance.Repaint();
         }
 
         protected void GetSplines()
         {
-            splines.Clear();
+            m_splines.Clear();
             for (int i = 0; i < Selection.gameObjects.Length; i++)
             {
-                splines.Add(Selection.gameObjects[i].GetComponent<SplineComputer>());
+                m_splines.Add(Selection.gameObjects[i].GetComponent<SplineComputer>());
             }
         }
 

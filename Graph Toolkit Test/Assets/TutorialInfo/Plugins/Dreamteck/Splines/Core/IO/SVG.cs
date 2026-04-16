@@ -11,7 +11,7 @@ using System;
 
 namespace Dreamteck.Splines.IO
 {
-    public class SVG : SplineParser
+    public class Svg : SplineParser
     {
         public enum Axis { X, Y, Z }
         internal class PathSegment 
@@ -35,22 +35,22 @@ namespace Dreamteck.Splines.IO
         }
 
         public enum Element { All, Path, Polygon, Ellipse, Rectangle, Line }
-        private System.Globalization.CultureInfo culture = new System.Globalization.CultureInfo("en-US");
-        private System.Globalization.NumberStyles style = System.Globalization.NumberStyles.Any;
-        List<SplineDefinition> paths = new List<SplineDefinition>();
-        List<SplineDefinition> polygons = new List<SplineDefinition>();
-        List<SplineDefinition> ellipses = new List<SplineDefinition>();
-        List<SplineDefinition> rectangles = new List<SplineDefinition>();
-        List<SplineDefinition> lines = new List<SplineDefinition>();
+        private System.Globalization.CultureInfo m_culture = new System.Globalization.CultureInfo("en-US");
+        private System.Globalization.NumberStyles m_style = System.Globalization.NumberStyles.Any;
+        List<SplineDefinition> m_paths = new List<SplineDefinition>();
+        List<SplineDefinition> m_polygons = new List<SplineDefinition>();
+        List<SplineDefinition> m_ellipses = new List<SplineDefinition>();
+        List<SplineDefinition> m_rectangles = new List<SplineDefinition>();
+        List<SplineDefinition> m_lines = new List<SplineDefinition>();
 
-        List<Transformation> transformBuffer = new List<Transformation>();
+        List<Transformation> m_transformBuffer = new List<Transformation>();
 
-        public SVG(string filePath)
+        public Svg(string filePath)
         {
             if (File.Exists(filePath))
             {
                 string ext = Path.GetExtension(filePath).ToLower();
-                fileName = Path.GetFileNameWithoutExtension(filePath);
+                m_fileName = Path.GetFileNameWithoutExtension(filePath);
                 if (ext != ".svg" && ext != ".xml")
                 {
                     Debug.LogError("SVG Parsing ERROR: Wrong format. Please use SVG or XML");
@@ -71,9 +71,9 @@ namespace Dreamteck.Splines.IO
             }
         }
 
-        public SVG(List<SplineComputer> computers)
+        public Svg(List<SplineComputer> computers)
         {
-            paths = new List<SplineDefinition>(computers.Count);
+            m_paths = new List<SplineDefinition>(computers.Count);
             for (int i = 0; i < computers.Count; i++)
             {
                 if (computers[i] == null) continue;
@@ -81,7 +81,7 @@ namespace Dreamteck.Splines.IO
                 spline.points = computers[i].GetPoints();
                 if (spline.type != Spline.Type.Bezier && spline.type != Spline.Type.Linear) spline.CatToBezierTangents();
                 if (computers[i].isClosed) spline.Close();
-                paths.Add(new SplineDefinition(computers[i].name, spline));
+                m_paths.Add(new SplineDefinition(computers[i].name, spline));
             }
         }
 
@@ -89,7 +89,7 @@ namespace Dreamteck.Splines.IO
         {
             XmlDocument doc = new XmlDocument();
             XmlElement svg = doc.CreateElement("svg");
-            foreach (SplineDefinition path in paths)
+            foreach (SplineDefinition path in m_paths)
             {
                 string elementName = "path";
                 string attributeName = "d";
@@ -141,7 +141,7 @@ namespace Dreamteck.Splines.IO
 
         private void Read(XmlDocument doc)
         {
-            transformBuffer.Clear();
+            m_transformBuffer.Clear();
             Traverse(doc.ChildNodes);
         }
 
@@ -162,7 +162,7 @@ namespace Dreamteck.Splines.IO
                     case "rect": addedTransforms = ReadRectangle(node); break;
                 }
                 Traverse(node.ChildNodes);
-                if (addedTransforms > 0) transformBuffer.RemoveRange(transformBuffer.Count - addedTransforms, addedTransforms);
+                if (addedTransforms > 0) m_transformBuffer.RemoveRange(m_transformBuffer.Count - addedTransforms, addedTransforms);
             }
         }
 
@@ -171,23 +171,23 @@ namespace Dreamteck.Splines.IO
             List<SplineComputer> computers = new List<SplineComputer>();
             if (elements == Element.All || elements == Element.Path)
             {
-                foreach (SplineDefinition definition in paths) computers.Add(definition.CreateSplineComputer(position, rotation));
+                foreach (SplineDefinition definition in m_paths) computers.Add(definition.CreateSplineComputer(position, rotation));
             }
             if (elements == Element.All || elements == Element.Polygon)
             {
-                foreach (SplineDefinition definition in polygons) computers.Add(definition.CreateSplineComputer(position, rotation));
+                foreach (SplineDefinition definition in m_polygons) computers.Add(definition.CreateSplineComputer(position, rotation));
             }
             if (elements == Element.All || elements == Element.Ellipse)
             {
-                foreach (SplineDefinition definition in ellipses) computers.Add(definition.CreateSplineComputer(position, rotation));
+                foreach (SplineDefinition definition in m_ellipses) computers.Add(definition.CreateSplineComputer(position, rotation));
             }
             if (elements == Element.All || elements == Element.Rectangle)
             {
-                foreach (SplineDefinition definition in rectangles) computers.Add(definition.CreateSplineComputer(position, rotation));
+                foreach (SplineDefinition definition in m_rectangles) computers.Add(definition.CreateSplineComputer(position, rotation));
             }
             if (elements == Element.All || elements == Element.Line)
             {
-                foreach (SplineDefinition definition in lines) computers.Add(definition.CreateSplineComputer(position, rotation));
+                foreach (SplineDefinition definition in m_lines) computers.Add(definition.CreateSplineComputer(position, rotation));
             }
             return computers;
         }
@@ -197,23 +197,23 @@ namespace Dreamteck.Splines.IO
             List<Spline> splines = new List<Spline>();
             if (elements == Element.All || elements == Element.Path)
             {
-                foreach (SplineDefinition definition in paths) splines.Add(definition.CreateSpline());
+                foreach (SplineDefinition definition in m_paths) splines.Add(definition.CreateSpline());
             }
             if (elements == Element.All || elements == Element.Polygon)
             {
-                foreach (SplineDefinition definition in polygons) splines.Add(definition.CreateSpline());
+                foreach (SplineDefinition definition in m_polygons) splines.Add(definition.CreateSpline());
             }
             if (elements == Element.All || elements == Element.Ellipse)
             {
-                foreach (SplineDefinition definition in ellipses) splines.Add(definition.CreateSpline());
+                foreach (SplineDefinition definition in m_ellipses) splines.Add(definition.CreateSpline());
             }
             if (elements == Element.All || elements == Element.Rectangle)
             {
-                foreach (SplineDefinition definition in rectangles) splines.Add(definition.CreateSpline());
+                foreach (SplineDefinition definition in m_rectangles) splines.Add(definition.CreateSpline());
             }
             if (elements == Element.All || elements == Element.Line)
             {
-                foreach (SplineDefinition definition in lines) splines.Add(definition.CreateSpline());
+                foreach (SplineDefinition definition in m_lines) splines.Add(definition.CreateSpline());
             }
             return splines;
         }
@@ -223,20 +223,20 @@ namespace Dreamteck.Splines.IO
             float x = 0f, y = 0f, w = 0f, h = 0f, rx = -1f, ry = -1f;
             string attribute = GetAttributeContent(rectNode, "x");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out x);
+            float.TryParse(attribute, m_style, m_culture, out x);
             attribute = GetAttributeContent(rectNode, "y");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out y);
+            float.TryParse(attribute, m_style, m_culture, out y);
             attribute = GetAttributeContent(rectNode, "width");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out w);
+            float.TryParse(attribute, m_style, m_culture, out w);
             attribute = GetAttributeContent(rectNode, "height");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out h);
+            float.TryParse(attribute, m_style, m_culture, out h);
             attribute = GetAttributeContent(rectNode, "rx");
-            if (attribute != "ERROR") float.TryParse(attribute, style, culture, out rx);
+            if (attribute != "ERROR") float.TryParse(attribute, m_style, m_culture, out rx);
             attribute = GetAttributeContent(rectNode, "ry");
-            if (attribute != "ERROR") float.TryParse(attribute, style, culture, out ry);
+            if (attribute != "ERROR") float.TryParse(attribute, m_style, m_culture, out ry);
             else ry = rx;
             string elementName = GetAttributeContent(rectNode, "id");
 
@@ -245,7 +245,7 @@ namespace Dreamteck.Splines.IO
                 Rectangle rect = new Rectangle();
                 rect.offset = new Vector2(x + w / 2f, -y - h / 2f);
                 rect.size = new Vector2(w, h);
-                if (elementName == "ERROR") elementName = fileName + "_rectangle" + (rectangles.Count + 1);
+                if (elementName == "ERROR") elementName = m_fileName + "_rectangle" + (m_rectangles.Count + 1);
                 buffer = new SplineDefinition(elementName, rect.CreateSpline());
             }
             else
@@ -255,11 +255,11 @@ namespace Dreamteck.Splines.IO
                 rect.size = new Vector2(w, h);
                 rect.xRadius = rx;
                 rect.yRadius = ry;
-                if (elementName == "ERROR") elementName = fileName + "_roundedRectangle" + (rectangles.Count + 1);
+                if (elementName == "ERROR") elementName = m_fileName + "_roundedRectangle" + (m_rectangles.Count + 1);
                 buffer = new SplineDefinition(elementName, rect.CreateSpline());
             }
             int addedTransforms = ParseTransformation(rectNode);
-            WriteBufferTo(rectangles);
+            WriteBufferTo(m_rectangles);
             return addedTransforms;
         }
 
@@ -268,25 +268,25 @@ namespace Dreamteck.Splines.IO
             float startX = 0f, startY = 0f, endX = 0f, endY = 0f;
             string attribute = GetAttributeContent(lineNode, "x1");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out startX);
+            float.TryParse(attribute, m_style, m_culture, out startX);
             attribute = GetAttributeContent(lineNode, "y1");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out startY);
+            float.TryParse(attribute, m_style, m_culture, out startY);
             attribute = GetAttributeContent(lineNode, "x2");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out endX);
+            float.TryParse(attribute, m_style, m_culture, out endX);
             attribute = GetAttributeContent(lineNode, "y2");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out endY);
+            float.TryParse(attribute, m_style, m_culture, out endY);
             string elementName = GetAttributeContent(lineNode, "id");
-            if (elementName == "ERROR") elementName = fileName + "_line" + (ellipses.Count + 1);
+            if (elementName == "ERROR") elementName = m_fileName + "_line" + (m_ellipses.Count + 1);
             buffer = new SplineDefinition(elementName, Spline.Type.Linear);
             buffer.position = new Vector2(startX, -startY);
             buffer.CreateLinear();
             buffer.position = new Vector2(endX, -endY);
             buffer.CreateLinear();
             int addedTransforms = ParseTransformation(lineNode);
-            WriteBufferTo(lines);
+            WriteBufferTo(m_lines);
             return addedTransforms;
         }
 
@@ -295,10 +295,10 @@ namespace Dreamteck.Splines.IO
             float x = 0f, y = 0f, rx = 0f, ry = 0f;
             string attribute = GetAttributeContent(ellipseNode, "cx");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out x);
+            float.TryParse(attribute, m_style, m_culture, out x);
             attribute = GetAttributeContent(ellipseNode, "cy");
             if (attribute == "ERROR") return 0;
-            float.TryParse(attribute, style, culture, out y);
+            float.TryParse(attribute, m_style, m_culture, out y);
             attribute = GetAttributeContent(ellipseNode, "r");
             string shapeName = "circle";
             if (attribute == "ERROR") //It might be an ellipse
@@ -306,26 +306,26 @@ namespace Dreamteck.Splines.IO
                 shapeName = "ellipse";
                 attribute = GetAttributeContent(ellipseNode, "rx");
                 if (attribute == "ERROR") return 0;
-                float.TryParse(attribute, style, culture, out rx);
+                float.TryParse(attribute, m_style, m_culture, out rx);
                 attribute = GetAttributeContent(ellipseNode, "ry");
                 if (attribute == "ERROR") return 0;
             }
             else //Nope, it's a circle
             {
-                float.TryParse(attribute, style, culture, out rx);
+                float.TryParse(attribute, m_style, m_culture, out rx);
                 ry = rx;
             }
-            float.TryParse(attribute, style, culture, out ry);
+            float.TryParse(attribute, m_style, m_culture, out ry);
             Ellipse ellipse = new Ellipse();
             ellipse.offset = new Vector2(x, -y);
             ellipse.xRadius = rx;
             ellipse.yRadius = ry;
 
             string elementName = GetAttributeContent(ellipseNode, "id");
-            if (elementName == "ERROR") elementName = fileName + "_" + shapeName + (ellipses.Count + 1);
+            if (elementName == "ERROR") elementName = m_fileName + "_" + shapeName + (m_ellipses.Count + 1);
             buffer = new SplineDefinition(elementName, ellipse.CreateSpline());
             int addedTransforms = ParseTransformation(ellipseNode);
-            WriteBufferTo(ellipses);
+            WriteBufferTo(m_ellipses);
             return addedTransforms;
         }
 
@@ -340,7 +340,7 @@ namespace Dreamteck.Splines.IO
                 return 0;
             }
             string elementName = GetAttributeContent(polyNode, "id");
-            if (elementName == "ERROR") elementName = fileName + (closed ? "_polygon " : "_polyline") + (polygons.Count + 1);
+            if (elementName == "ERROR") elementName = m_fileName + (closed ? "_polygon " : "_polyline") + (m_polygons.Count + 1);
             buffer = new SplineDefinition(elementName, Spline.Type.Linear);
             int count = coords.Count / 2;
             for (int i = 0; i < count; i++)
@@ -354,7 +354,7 @@ namespace Dreamteck.Splines.IO
                 buffer.closed = true;
             }
             int addedTransforms = ParseTransformation(polyNode);
-            WriteBufferTo(polygons);
+            WriteBufferTo(m_polygons);
             return addedTransforms;
         }
 
@@ -363,7 +363,7 @@ namespace Dreamteck.Splines.IO
             string transformAttribute = GetAttributeContent(node, "transform");
             if (transformAttribute == "ERROR") return 0;
             List<Transformation> trs = ParseTransformations(transformAttribute);
-            transformBuffer.AddRange(trs);
+            m_transformBuffer.AddRange(trs);
             return trs.Count;
         }
 
@@ -413,7 +413,7 @@ namespace Dreamteck.Splines.IO
             string contents = GetAttributeContent(pathNode, "d");
             if (contents == "ERROR") return 0;
             string elementName = GetAttributeContent(pathNode, "id");
-            if (elementName == "ERROR") elementName = fileName + "_path " + (paths.Count + 1);
+            if (elementName == "ERROR") elementName = m_fileName + "_path " + (m_paths.Count + 1);
             IEnumerable<string> tokens = Regex.Split(contents, @"(?=[A-Za-z])").Where(t => !string.IsNullOrEmpty(t));
             int numSplines = 0;
             foreach (string token in tokens)
@@ -485,17 +485,17 @@ namespace Dreamteck.Splines.IO
                         break;
                 }
             }
-            if (buffer != null) WriteBufferTo(paths);
+            if (buffer != null) WriteBufferTo(m_paths);
             int addedTransforms = ParseTransformation(pathNode);
-            for (int i = paths.Count - 1; i >= paths.Count - numSplines; --i) paths[i].Transform(transformBuffer);
+            for (int i = m_paths.Count - 1; i >= m_paths.Count - numSplines; --i) m_paths[i].Transform(m_transformBuffer);
             return addedTransforms;
         }
 
         private void PathStart(string name, string coords, bool relative)
         {
-            if (buffer != null) WriteBufferTo(paths);
+            if (buffer != null) WriteBufferTo(m_paths);
             buffer = new SplineDefinition(name, Spline.Type.Bezier);
-            if (relative) buffer.position = paths.Last().GetLastPoint().position;
+            if (relative) buffer.position = m_paths.Last().GetLastPoint().position;
             Vector2[] vectors = ParseVector2(coords);
             foreach (Vector3 vector in vectors)
             {
@@ -808,7 +808,7 @@ namespace Dreamteck.Splines.IO
 
         private void WriteBufferTo(List<SplineDefinition> list)
         {
-            buffer.Transform(transformBuffer);
+            buffer.Transform(m_transformBuffer);
             list.Add(buffer);
             buffer = null;
         }

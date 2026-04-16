@@ -8,12 +8,12 @@ namespace Dreamteck.Splines
 {
     public class CatenaryTool : SplineTool
     {
-        protected GameObject obj;
-        protected ObjectController spawner;
-        private float _sag = 0f;
-        private float _minSagDistance = 0f;
-        private float _maxSagDistance = 10f;
-        private Dictionary<SplineComputer, SplinePoint[]> _editSplines = new Dictionary<SplineComputer, SplinePoint[]>();
+        protected GameObject m_obj;
+        protected ObjectController m_spawner;
+        private float m_sag = 0f;
+        private float m_minSagDistance = 0f;
+        private float m_maxSagDistance = 10f;
+        private Dictionary<SplineComputer, SplinePoint[]> m_editSplines = new Dictionary<SplineComputer, SplinePoint[]>();
 
         public override string GetName()
         {
@@ -28,23 +28,23 @@ namespace Dreamteck.Splines
         public override void Open(EditorWindow window)
         {
             base.Open(window);
-            _sag = EditorPrefs.GetFloat("DreamteckSplines.CatenaryTool._sag", 0f);
-            _minSagDistance = EditorPrefs.GetFloat("DreamteckSplines.CatenaryTool._minSagDistance", 0f);
-            _maxSagDistance = EditorPrefs.GetFloat("DreamteckSplines.CatenaryTool._maxSagDistance", 10f);
+            m_sag = EditorPrefs.GetFloat("DreamteckSplines.CatenaryTool._sag", 0f);
+            m_minSagDistance = EditorPrefs.GetFloat("DreamteckSplines.CatenaryTool._minSagDistance", 0f);
+            m_maxSagDistance = EditorPrefs.GetFloat("DreamteckSplines.CatenaryTool._maxSagDistance", 10f);
         }
 
         public override void Close()
         {
             base.Close();
-            EditorPrefs.SetFloat("DreamteckSplines.CatenaryTool._sag", _sag);
-            EditorPrefs.SetFloat("DreamteckSplines.CatenaryTool._minSagDistance", _minSagDistance);
-            EditorPrefs.SetFloat("DreamteckSplines.CatenaryTool._maxSagDistance", _minSagDistance);
+            EditorPrefs.SetFloat("DreamteckSplines.CatenaryTool._sag", m_sag);
+            EditorPrefs.SetFloat("DreamteckSplines.CatenaryTool._minSagDistance", m_minSagDistance);
+            EditorPrefs.SetFloat("DreamteckSplines.CatenaryTool._maxSagDistance", m_minSagDistance);
         }
 
         public override void Draw(Rect windowRect)
         {
             base.Draw(windowRect);
-            if(_editSplines.Keys.Count == 0 && splines.Count > 0)
+            if(m_editSplines.Keys.Count == 0 && m_splines.Count > 0)
             {
                 if(GUILayout.Button("Convert Selected"))
                 {
@@ -53,11 +53,11 @@ namespace Dreamteck.Splines
             } else
             {
                 EditorGUI.BeginChangeCheck();
-                _sag = EditorGUILayout.FloatField("Sag", _sag);
-                _minSagDistance = EditorGUILayout.FloatField("Min Distance", _minSagDistance);
-                _maxSagDistance = EditorGUILayout.FloatField("Max Distance", _maxSagDistance);
+                m_sag = EditorGUILayout.FloatField("Sag", m_sag);
+                m_minSagDistance = EditorGUILayout.FloatField("Min Distance", m_minSagDistance);
+                m_maxSagDistance = EditorGUILayout.FloatField("Max Distance", m_maxSagDistance);
 
-                var keys = _editSplines.Keys;
+                var keys = m_editSplines.Keys;
                 if (EditorGUI.EndChangeCheck())
                 {
                     SceneView.RepaintAll();
@@ -67,7 +67,7 @@ namespace Dreamteck.Splines
                         {
                             ModifyPoint(key, i);
                         }
-                        key.SetPoints(_editSplines[key]);
+                        key.SetPoints(m_editSplines[key]);
                     }
                 }
                 
@@ -77,36 +77,36 @@ namespace Dreamteck.Splines
                     {
                         EditorUtility.SetDirty(key);
                     }
-                    _editSplines.Clear();
+                    m_editSplines.Clear();
                 }
             }
         }
 
         private void ModifyPoint(SplineComputer spline, int index)
         {
-            var current = _editSplines[spline][index];
+            var current = m_editSplines[spline][index];
             if(index > 0)
             {
-                var previous = _editSplines[spline][index - 1];
+                var previous = m_editSplines[spline][index - 1];
                 Vector3 prevDirection = (previous.position - current.position)/3f;
-                float sagAmount = Mathf.InverseLerp(_minSagDistance, _maxSagDistance, prevDirection.magnitude) * _sag;
+                float sagAmount = Mathf.InverseLerp(m_minSagDistance, m_maxSagDistance, prevDirection.magnitude) * m_sag;
                 current.SetTangentPosition(current.position + prevDirection + Vector3.down * sagAmount);
             }
 
-            if(index < _editSplines[spline].Length - 1)
+            if(index < m_editSplines[spline].Length - 1)
             {
-                var next = _editSplines[spline][index + 1];
+                var next = m_editSplines[spline][index + 1];
                 Vector3 nextDirection = (next.position - current.position) / 3f;
-                float sagAmount = Mathf.InverseLerp(_minSagDistance, _maxSagDistance, nextDirection.magnitude) * _sag;
+                float sagAmount = Mathf.InverseLerp(m_minSagDistance, m_maxSagDistance, nextDirection.magnitude) * m_sag;
                 current.SetTangent2Position(current.position + nextDirection + Vector3.down * sagAmount);
             }
-            _editSplines[spline][index] = current;
+            m_editSplines[spline][index] = current;
         }
 
         private void ConvertSelected()
         {
-            _editSplines.Clear();
-            foreach(var spline in splines)
+            m_editSplines.Clear();
+            foreach(var spline in m_splines)
             {
                 var points = spline.GetPoints();
                 for (int i = 0; i < points.Length; i++)
@@ -114,7 +114,7 @@ namespace Dreamteck.Splines
                     points[i].type = SplinePoint.Type.Broken;
                 }
                 spline.type = Spline.Type.Bezier;
-                _editSplines.Add(spline, points);
+                m_editSplines.Add(spline, points);
             }
         }
     }

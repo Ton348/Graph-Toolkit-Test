@@ -12,8 +12,8 @@ public sealed class GoToPointNodeModel : GameGraphEditorNode
 	public const string MarkerIdOption = "MarkerId";
 	public const string ArrivalDistanceOption = "ArrivalDistance";
 
-	protected override string DefaultTitle => "Перейти к точке";
-	protected override string DefaultDescription => "Задает целевую точку для перемещения.";
+	protected override string defaultTitle => "Перейти к точке";
+	protected override string defaultDescription => "Задает целевую точку для перемещения.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

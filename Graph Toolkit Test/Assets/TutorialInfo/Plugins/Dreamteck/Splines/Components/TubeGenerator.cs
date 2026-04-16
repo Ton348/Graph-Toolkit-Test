@@ -14,13 +14,13 @@ namespace Dreamteck.Splines
 
         public int sides
         {
-            get { return _sides; }
+            get { return m_sides; }
             set
             {
-                if (value != _sides)
+                if (value != m_sides)
                 {
                     if (value < 3) value = 3;
-                    _sides = value;
+                    m_sides = value;
                     Rebuild();
                 }
             }
@@ -28,12 +28,12 @@ namespace Dreamteck.Splines
 
         public CapMethod capMode
         {
-            get { return _capMode; }
+            get { return m_capMode; }
             set
             {
-                if (value != _capMode)
+                if (value != m_capMode)
                 {
-                    _capMode = value;
+                    m_capMode = value;
                     Rebuild();
                 }
             }
@@ -41,26 +41,26 @@ namespace Dreamteck.Splines
 
         public int roundCapLatitude
         {
-            get { return _roundCapLatitude; }
+            get { return m_roundCapLatitude; }
             set
             {
                 if (value < 1) value = 1;
-                if (value != _roundCapLatitude)
+                if (value != m_roundCapLatitude)
                 {
-                    _roundCapLatitude = value;
-                    if(_capMode == CapMethod.Round) Rebuild();
+                    m_roundCapLatitude = value;
+                    if(m_capMode == CapMethod.Round) Rebuild();
                 }
             }
         }
 
         public float revolve
         {
-            get { return _revolve; }
+            get { return m_revolve; }
             set
             {
-                if (value != _revolve)
+                if (value != m_revolve)
                 {
-                    _revolve = value;
+                    m_revolve = value;
                     Rebuild();
                 }
             }
@@ -68,12 +68,12 @@ namespace Dreamteck.Splines
 
         public float capUVScale
         {
-            get { return _capUVScale; }
+            get { return m_capUvscale; }
             set
             {
-                if (value != _capUVScale)
+                if (value != m_capUvscale)
                 {
-                    _capUVScale = value;
+                    m_capUvscale = value;
                     Rebuild();
                 }
             }
@@ -81,12 +81,12 @@ namespace Dreamteck.Splines
 
         public float uvTwist
         {
-            get { return _uvTwist; }
+            get { return m_uvTwist; }
             set
             {
-                if (value != _uvTwist)
+                if (value != m_uvTwist)
                 {
-                    _uvTwist = value;
+                    m_uvTwist = value;
                     Rebuild();
                 }
             }
@@ -94,29 +94,29 @@ namespace Dreamteck.Splines
 
         [SerializeField]
         [HideInInspector]
-        private int _sides = 12;
+        private int m_sides = 12;
         [SerializeField]
         [HideInInspector]
-        private int _roundCapLatitude = 6;
+        private int m_roundCapLatitude = 6;
         [SerializeField]
         [HideInInspector]
-        private CapMethod _capMode = CapMethod.None;
+        private CapMethod m_capMode = CapMethod.None;
         [SerializeField]
         [HideInInspector]
         [Range(0f, 360f)]
-        private float _revolve = 360f;
+        private float m_revolve = 360f;
         [SerializeField]
         [HideInInspector]
-        private float _capUVScale = 1f;
+        private float m_capUvscale = 1f;
         [SerializeField]
         [HideInInspector]
-        private float _uvTwist = 0f;
+        private float m_uvTwist = 0f;
 
         private bool useCap
         {
             get
             {
-                bool isCapSet = _capMode != CapMethod.None;
+                bool isCapSet = m_capMode != CapMethod.None;
                 if (spline != null) return isCapSet && (!spline.isClosed || span < 1f);
                 return isCapSet;
             }
@@ -124,10 +124,10 @@ namespace Dreamteck.Splines
 
         protected override string meshName => "Tube";
 
-        private int bodyVertexCount = 0;
-        private int bodyTrisCount = 0;
-        private int capVertexCount = 0;
-        private int capTrisCount = 0;
+        private int m_bodyVertexCount = 0;
+        private int m_bodyTrisCount = 0;
+        private int m_capVertexCount = 0;
+        private int m_capTrisCount = 0;
 
         protected override void Reset()
         {
@@ -136,30 +136,30 @@ namespace Dreamteck.Splines
 
         protected override void BuildMesh()
         {
-            if (_sides <= 2) return;
+            if (m_sides <= 2) return;
             base.BuildMesh();
-            bodyVertexCount = (_sides + 1) * sampleCount;
-            CapMethod _capModeFinal = _capMode;
+            m_bodyVertexCount = (m_sides + 1) * sampleCount;
+            CapMethod _capModeFinal = m_capMode;
             if (!useCap)
             {
                 _capModeFinal = CapMethod.None;
             }
             switch (_capModeFinal)
             {
-                case CapMethod.Flat: capVertexCount = _sides + 1; break;
-                case CapMethod.Round: capVertexCount = _roundCapLatitude * (sides + 1); break;
-                default: capVertexCount = 0; break;
+                case CapMethod.Flat: m_capVertexCount = m_sides + 1; break;
+                case CapMethod.Round: m_capVertexCount = m_roundCapLatitude * (sides + 1); break;
+                default: m_capVertexCount = 0; break;
             }
-            int vertexCount = bodyVertexCount + capVertexCount * 2;
+            int vertexCount = m_bodyVertexCount + m_capVertexCount * 2;
 
-            bodyTrisCount = _sides * (sampleCount - 1) * 2 * 3;
+            m_bodyTrisCount = m_sides * (sampleCount - 1) * 2 * 3;
             switch (_capModeFinal)
             {
-                case CapMethod.Flat: capTrisCount = (_sides - 1) * 3 * 2; break;
-                case CapMethod.Round: capTrisCount = _sides * _roundCapLatitude * 6; break;
-                default: capTrisCount = 0; break;
+                case CapMethod.Flat: m_capTrisCount = (m_sides - 1) * 3 * 2; break;
+                case CapMethod.Round: m_capTrisCount = m_sides * m_roundCapLatitude * 6; break;
+                default: m_capTrisCount = 0; break;
             }
-            AllocateMesh(vertexCount, bodyTrisCount + capTrisCount * 2);
+            AllocateMesh(vertexCount, m_bodyTrisCount + m_capTrisCount * 2);
 
             Generate();
             switch (_capModeFinal)
@@ -172,210 +172,210 @@ namespace Dreamteck.Splines
         void Generate()
         {
             int vertexIndex = 0;
-            ResetUVDistance();
+            ResetUvdistance();
             bool hasOffset = offset != Vector3.zero;
             for (int i = 0; i < sampleCount; i++)
             {
-                GetSample(i, ref evalResult);
-                Vector3 center = evalResult.position;
-                Vector3 right = evalResult.right;
-                float resultSize = GetBaseSize(evalResult);
+                GetSample(i, ref m_evalResult);
+                Vector3 center = m_evalResult.position;
+                Vector3 right = m_evalResult.right;
+                float resultSize = GetBaseSize(m_evalResult);
                 if (hasOffset)
                 {
-                    center += (offset.x * resultSize) * right + (offset.y * resultSize) * evalResult.up + (offset.z * resultSize) * evalResult.forward;
+                    center += (offset.x * resultSize) * right + (offset.y * resultSize) * m_evalResult.up + (offset.z * resultSize) * m_evalResult.forward;
                 }
-                if (uvMode == UVMode.UniformClamp || uvMode == UVMode.UniformClip)
+                if (uvMode == Uvmode.UniformClamp || uvMode == Uvmode.UniformClip)
                 {
-                    AddUVDistance(i);
+                    AddUvdistance(i);
                 }
-                Color vertexColor = GetBaseColor(evalResult) * color;
-                for (int n = 0; n < _sides + 1; n++)
+                Color vertexColor = GetBaseColor(m_evalResult) * color;
+                for (int n = 0; n < m_sides + 1; n++)
                 {
-                    float anglePercent = (float)(n) / _sides;
-                    Quaternion rot = Quaternion.AngleAxis(_revolve * anglePercent + rotation + 180f, evalResult.forward);
-                    _tsMesh.vertices[vertexIndex] = center + rot * right * (size * resultSize * 0.5f);
-                    CalculateUVs(evalResult.percent, anglePercent);
-                    _tsMesh.uv[vertexIndex] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - (__uvs + Vector2.right * ((float)evalResult.percent * _uvTwist))));
-                    _tsMesh.normals[vertexIndex] = Vector3.Normalize(_tsMesh.vertices[vertexIndex] - center);
-                    _tsMesh.colors[vertexIndex] = vertexColor;
+                    float anglePercent = (float)(n) / m_sides;
+                    Quaternion rot = Quaternion.AngleAxis(m_revolve * anglePercent + rotation + 180f, m_evalResult.forward);
+                    tsMesh.vertices[vertexIndex] = center + rot * right * (size * resultSize * 0.5f);
+                    CalculateUvs(m_evalResult.percent, anglePercent);
+                    tsMesh.uv[vertexIndex] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - (s_uvs + Vector2.right * ((float)m_evalResult.percent * m_uvTwist))));
+                    tsMesh.normals[vertexIndex] = Vector3.Normalize(tsMesh.vertices[vertexIndex] - center);
+                    tsMesh.colors[vertexIndex] = vertexColor;
                     vertexIndex++;
                 }
             }
-            MeshUtility.GeneratePlaneTriangles(ref _tsMesh.triangles, _sides, sampleCount, false);
+            MeshUtility.GeneratePlaneTriangles(ref tsMesh.triangles, m_sides, sampleCount, false);
         }
 
         void GenerateFlatCaps()
         {
             //Start Cap
 
-            GetSample(0, ref evalResult);
-            for (int i = 0; i < _sides+1; i++)
+            GetSample(0, ref m_evalResult);
+            for (int i = 0; i < m_sides+1; i++)
             {
-                int index = bodyVertexCount + i;
-                _tsMesh.vertices[index] = _tsMesh.vertices[i];
-                _tsMesh.normals[index] = -evalResult.forward;
-                _tsMesh.colors[index] = _tsMesh.colors[i];
-                _tsMesh.uv[index] = Quaternion.AngleAxis(_revolve * (((float)i) / (_sides - 1)), Vector3.forward) * Vector2.right * (0.5f * capUVScale) + Vector3.right * 0.5f + Vector3.up * 0.5f;
+                int index = m_bodyVertexCount + i;
+                tsMesh.vertices[index] = tsMesh.vertices[i];
+                tsMesh.normals[index] = -m_evalResult.forward;
+                tsMesh.colors[index] = tsMesh.colors[i];
+                tsMesh.uv[index] = Quaternion.AngleAxis(m_revolve * (((float)i) / (m_sides - 1)), Vector3.forward) * Vector2.right * (0.5f * capUVScale) + Vector3.right * 0.5f + Vector3.up * 0.5f;
             }
 
             //End Cap
-            GetSample(sampleCount - 1, ref evalResult);
-            for (int i = 0; i < _sides + 1; i++)
+            GetSample(sampleCount - 1, ref m_evalResult);
+            for (int i = 0; i < m_sides + 1; i++)
             {
-                int index = bodyVertexCount + (_sides + 1) + i;
-                int bodyIndex = bodyVertexCount - (_sides + 1) + i;
-                _tsMesh.vertices[index] = _tsMesh.vertices[bodyIndex];
-                _tsMesh.normals[index] = evalResult.forward;
-                _tsMesh.colors[index] = _tsMesh.colors[bodyIndex];
-                _tsMesh.uv[index] = Quaternion.AngleAxis(_revolve * ((float)(bodyIndex) / (_sides - 1)), Vector3.forward) * Vector2.right * (0.5f * capUVScale) + Vector3.right * 0.5f + Vector3.up * 0.5f;
+                int index = m_bodyVertexCount + (m_sides + 1) + i;
+                int bodyIndex = m_bodyVertexCount - (m_sides + 1) + i;
+                tsMesh.vertices[index] = tsMesh.vertices[bodyIndex];
+                tsMesh.normals[index] = m_evalResult.forward;
+                tsMesh.colors[index] = tsMesh.colors[bodyIndex];
+                tsMesh.uv[index] = Quaternion.AngleAxis(m_revolve * ((float)(bodyIndex) / (m_sides - 1)), Vector3.forward) * Vector2.right * (0.5f * capUVScale) + Vector3.right * 0.5f + Vector3.up * 0.5f;
             }
 
-            int t = bodyTrisCount;
-            bool fullIntegrity = _revolve == 360f;
-            int finalSides = fullIntegrity ? _sides - 1 : _sides;
+            int t = m_bodyTrisCount;
+            bool fullIntegrity = m_revolve == 360f;
+            int finalSides = fullIntegrity ? m_sides - 1 : m_sides;
             //Start cap
             for (int i = 0; i < finalSides - 1; i++)
             {
-                _tsMesh.triangles[t++] = i + bodyVertexCount + 2;
-                _tsMesh.triangles[t++] = i + +bodyVertexCount + 1;
-                _tsMesh.triangles[t++] = bodyVertexCount;
+                tsMesh.triangles[t++] = i + m_bodyVertexCount + 2;
+                tsMesh.triangles[t++] = i + +m_bodyVertexCount + 1;
+                tsMesh.triangles[t++] = m_bodyVertexCount;
             }
 
             //End cap
             for (int i = 0; i < finalSides - 1; i++)
             {
-                _tsMesh.triangles[t++] = bodyVertexCount + (_sides + 1);
-                _tsMesh.triangles[t++] = i + 1 + bodyVertexCount + (_sides + 1);
-                _tsMesh.triangles[t++] = i + 2 + bodyVertexCount + (_sides + 1);
+                tsMesh.triangles[t++] = m_bodyVertexCount + (m_sides + 1);
+                tsMesh.triangles[t++] = i + 1 + m_bodyVertexCount + (m_sides + 1);
+                tsMesh.triangles[t++] = i + 2 + m_bodyVertexCount + (m_sides + 1);
             }
         }
 
         void GenerateRoundCaps()
         {
             //Start Cap
-            GetSample(0, ref evalResult);
-            Vector3 center = evalResult.position;
+            GetSample(0, ref m_evalResult);
+            Vector3 center = m_evalResult.position;
             bool hasOffset = offset != Vector3.zero;
-            float resultSize = GetBaseSize(evalResult);
+            float resultSize = GetBaseSize(m_evalResult);
             if (hasOffset)
             {
-                center += (offset.x * resultSize) * evalResult.right + (offset.y * resultSize) * evalResult.up + (offset.z * resultSize) * evalResult.forward;
+                center += (offset.x * resultSize) * m_evalResult.right + (offset.y * resultSize) * m_evalResult.up + (offset.z * resultSize) * m_evalResult.forward;
             }
-            Quaternion lookRot = Quaternion.LookRotation(-evalResult.forward, evalResult.up);
+            Quaternion lookRot = Quaternion.LookRotation(-m_evalResult.forward, m_evalResult.up);
             float startV = 0f;
                         float capLengthPercent = 0f;
             switch (uvMode)
             {
-                case UVMode.Clip: startV = (float)evalResult.percent;
+                case Uvmode.Clip: startV = (float)m_evalResult.percent;
                     capLengthPercent = (size * 0.5f) / spline.CalculateLength(); break;
-                case UVMode.UniformClip:
-                    startV = spline.CalculateLength(0.0, evalResult.percent);
+                case Uvmode.UniformClip:
+                    startV = spline.CalculateLength(0.0, m_evalResult.percent);
                     capLengthPercent = size * 0.5f; break;
-                case UVMode.UniformClamp:
+                case Uvmode.UniformClamp:
                     startV = 0f;
                     capLengthPercent = size * 0.5f / (float)span;
                     break;
-                case UVMode.Clamp: capLengthPercent = (size * 0.5f) / spline.CalculateLength(clipFrom, clipTo); break;
+                case Uvmode.Clamp: capLengthPercent = (size * 0.5f) / spline.CalculateLength(clipFrom, clipTo); break;
             }
 
-            Color vertexColor = GetBaseColor(evalResult) * color;
-            for (int lat = 1; lat < _roundCapLatitude+1; lat++)
+            Color vertexColor = GetBaseColor(m_evalResult) * color;
+            for (int lat = 1; lat < m_roundCapLatitude+1; lat++)
             {
-                float latitudePercent = ((float)lat / _roundCapLatitude);
+                float latitudePercent = ((float)lat / m_roundCapLatitude);
                 float latAngle = 90f * latitudePercent;
                 for (int lon = 0; lon <= sides; lon++)
                 {
                     float anglePercent = (float)lon / sides;
-                    int index = bodyVertexCount + lon + (lat-1) * (sides + 1);
-                    Quaternion rot = Quaternion.AngleAxis(_revolve * anglePercent + rotation + 180f, -Vector3.forward) * Quaternion.AngleAxis(latAngle, Vector3.up);
-                    _tsMesh.vertices[index] = center + lookRot * rot * -Vector3.right * (size * 0.5f * evalResult.size);
-                    _tsMesh.colors[index] = vertexColor;
-                    _tsMesh.normals[index] = (_tsMesh.vertices[index] - center).normalized;
+                    int index = m_bodyVertexCount + lon + (lat-1) * (sides + 1);
+                    Quaternion rot = Quaternion.AngleAxis(m_revolve * anglePercent + rotation + 180f, -Vector3.forward) * Quaternion.AngleAxis(latAngle, Vector3.up);
+                    tsMesh.vertices[index] = center + lookRot * rot * -Vector3.right * (size * 0.5f * m_evalResult.size);
+                    tsMesh.colors[index] = vertexColor;
+                    tsMesh.normals[index] = (tsMesh.vertices[index] - center).normalized;
                     float baseV = startV + capLengthPercent * latitudePercent;
-                    Vector2 baseUV = new Vector2(anglePercent * uvScale.x - baseV * _uvTwist, baseV * uvScale.y) - uvOffset;
-                    _tsMesh.uv[index] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - baseUV));
+                    Vector2 baseUV = new Vector2(anglePercent * uvScale.x - baseV * m_uvTwist, baseV * uvScale.y) - uvOffset;
+                    tsMesh.uv[index] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - baseUV));
                 }
             }
 
 
             //Triangles
-            int t = bodyTrisCount;
-            for (int z = -1; z < _roundCapLatitude - 1; z++)
+            int t = m_bodyTrisCount;
+            for (int z = -1; z < m_roundCapLatitude - 1; z++)
             {
                 for (int x = 0; x < sides; x++)
                 {
-                    int current = bodyVertexCount + x + z * (sides + 1);
+                    int current = m_bodyVertexCount + x + z * (sides + 1);
                     int next = current + (sides + 1);
                     if (z == -1)
                     {
                         current = x;
-                        next = bodyVertexCount + x;
+                        next = m_bodyVertexCount + x;
                     }
-                    _tsMesh.triangles[t++] = next + 1;
-                    _tsMesh.triangles[t++] = current + 1;
-                    _tsMesh.triangles[t++] = current;
-                    _tsMesh.triangles[t++] = next;
-                    _tsMesh.triangles[t++] = next + 1;
-                    _tsMesh.triangles[t++] = current;
+                    tsMesh.triangles[t++] = next + 1;
+                    tsMesh.triangles[t++] = current + 1;
+                    tsMesh.triangles[t++] = current;
+                    tsMesh.triangles[t++] = next;
+                    tsMesh.triangles[t++] = next + 1;
+                    tsMesh.triangles[t++] = current;
                 }
             }
 
 
             //End Cap
-            GetSample(sampleCount - 1, ref evalResult);
-            center = evalResult.position;
-            resultSize = GetBaseSize(evalResult);
+            GetSample(sampleCount - 1, ref m_evalResult);
+            center = m_evalResult.position;
+            resultSize = GetBaseSize(m_evalResult);
             if (hasOffset)
             {
-                center += (offset.x * resultSize) * evalResult.right + (offset.y * resultSize) * evalResult.up + (offset.z * resultSize) * evalResult.forward;
+                center += (offset.x * resultSize) * m_evalResult.right + (offset.y * resultSize) * m_evalResult.up + (offset.z * resultSize) * m_evalResult.forward;
             }
-            lookRot = Quaternion.LookRotation(evalResult.forward, evalResult.up);
+            lookRot = Quaternion.LookRotation(m_evalResult.forward, m_evalResult.up);
             switch (uvMode)
             {
-                case UVMode.Clip: startV = (float)evalResult.percent; break;
-                case UVMode.UniformClip: startV = spline.CalculateLength(0.0, evalResult.percent); break;
-                case UVMode.Clamp: startV = 1f; break;
-                case UVMode.UniformClamp: startV = spline.CalculateLength(); break;
+                case Uvmode.Clip: startV = (float)m_evalResult.percent; break;
+                case Uvmode.UniformClip: startV = spline.CalculateLength(0.0, m_evalResult.percent); break;
+                case Uvmode.Clamp: startV = 1f; break;
+                case Uvmode.UniformClamp: startV = spline.CalculateLength(); break;
             }
 
-            vertexColor = GetBaseColor(evalResult) * color;
-            for (int lat = 1; lat < _roundCapLatitude+1; lat++)
+            vertexColor = GetBaseColor(m_evalResult) * color;
+            for (int lat = 1; lat < m_roundCapLatitude+1; lat++)
             {
-                float latitudePercent = ((float)lat / _roundCapLatitude);
+                float latitudePercent = ((float)lat / m_roundCapLatitude);
                 float latAngle = 90f * latitudePercent;
                 for (int lon = 0; lon <= sides; lon++)
                 {
                     float anglePercent = (float)lon / sides;
-                    int index = bodyVertexCount + capVertexCount + lon + (lat - 1) * (sides + 1);
-                    Quaternion rot = Quaternion.AngleAxis(_revolve * anglePercent + rotation + 180f, Vector3.forward) * Quaternion.AngleAxis(latAngle, -Vector3.up);
-                    _tsMesh.vertices[index] = center + lookRot * rot * Vector3.right * size * 0.5f * evalResult.size;
-                    _tsMesh.normals[index] = (_tsMesh.vertices[index] - center).normalized;
-                    _tsMesh.colors[index] = vertexColor;
+                    int index = m_bodyVertexCount + m_capVertexCount + lon + (lat - 1) * (sides + 1);
+                    Quaternion rot = Quaternion.AngleAxis(m_revolve * anglePercent + rotation + 180f, Vector3.forward) * Quaternion.AngleAxis(latAngle, -Vector3.up);
+                    tsMesh.vertices[index] = center + lookRot * rot * Vector3.right * size * 0.5f * m_evalResult.size;
+                    tsMesh.normals[index] = (tsMesh.vertices[index] - center).normalized;
+                    tsMesh.colors[index] = vertexColor;
                     float baseV = startV + capLengthPercent * latitudePercent;
-                    Vector2 baseUV = new Vector2(anglePercent * uvScale.x + baseV * _uvTwist, baseV * uvScale.y) - uvOffset;
-                    _tsMesh.uv[index] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - baseUV));
+                    Vector2 baseUV = new Vector2(anglePercent * uvScale.x + baseV * m_uvTwist, baseV * uvScale.y) - uvOffset;
+                    tsMesh.uv[index] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - baseUV));
                 } 
             }
 
             //Triangles
-            for (int z = -1; z < _roundCapLatitude - 1; z++)
+            for (int z = -1; z < m_roundCapLatitude - 1; z++)
             {
                 for (int x = 0; x < sides; x++)
                 {
-                    int current = bodyVertexCount + capVertexCount + x + z * (sides + 1);
+                    int current = m_bodyVertexCount + m_capVertexCount + x + z * (sides + 1);
                     int next = current + (sides + 1);
                     if (z == -1)
                     {
-                        current = bodyVertexCount - (_sides+1) + x;
-                        next = bodyVertexCount + capVertexCount + x;
+                        current = m_bodyVertexCount - (m_sides+1) + x;
+                        next = m_bodyVertexCount + m_capVertexCount + x;
                     }
 
-                    _tsMesh.triangles[t++] = current+1;
-                    _tsMesh.triangles[t++] = next + 1;
-                    _tsMesh.triangles[t++] = next;
-                    _tsMesh.triangles[t++] = next;
-                    _tsMesh.triangles[t++] = current;
-                    _tsMesh.triangles[t++] = current + 1;
+                    tsMesh.triangles[t++] = current+1;
+                    tsMesh.triangles[t++] = next + 1;
+                    tsMesh.triangles[t++] = next;
+                    tsMesh.triangles[t++] = next;
+                    tsMesh.triangles[t++] = current;
+                    tsMesh.triangles[t++] = current + 1;
                 }
             }
             

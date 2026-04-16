@@ -3,21 +3,21 @@ using UnityEngine;
 
 public class BusinessLiveSimulationService : MonoBehaviour
 {
-    private GameBootstrap bootstrap;
-    private BusinessStateSyncService stateSync;
-    private BusinessSimulationService simulation;
-    private readonly Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime> runtimes = new Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime>();
+    private GameBootstrap m_bootstrap;
+    private BusinessStateSyncService m_stateSync;
+    private BusinessSimulationService m_simulation;
+    private readonly Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime> m_runtimes = new Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime>();
 
     public void Initialize(GameBootstrap ownerBootstrap)
     {
-        bootstrap = ownerBootstrap;
-        stateSync = bootstrap != null ? bootstrap.BusinessStateSyncService : null;
-        simulation = bootstrap != null ? bootstrap.BusinessSimulationService : null;
+        m_bootstrap = ownerBootstrap;
+        m_stateSync = m_bootstrap != null ? m_bootstrap.BusinessStateSyncService : null;
+        m_simulation = m_bootstrap != null ? m_bootstrap.BusinessSimulationService : null;
 
-        if (stateSync != null)
+        if (m_stateSync != null)
         {
-            stateSync.StateChanged -= OnStateChanged;
-            stateSync.StateChanged += OnStateChanged;
+            m_stateSync.stateChanged -= OnStateChanged;
+            m_stateSync.stateChanged += OnStateChanged;
         }
 
         RebuildWorldRuntimes();
@@ -26,9 +26,9 @@ public class BusinessLiveSimulationService : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (stateSync != null)
+        if (m_stateSync != null)
         {
-            stateSync.StateChanged -= OnStateChanged;
+            m_stateSync.stateChanged -= OnStateChanged;
         }
     }
 
@@ -45,7 +45,7 @@ public class BusinessLiveSimulationService : MonoBehaviour
 
         foreach (var world in worlds)
         {
-            if (world == null || runtimes.ContainsKey(world))
+            if (world == null || m_runtimes.ContainsKey(world))
             {
                 continue;
             }
@@ -57,12 +57,12 @@ public class BusinessLiveSimulationService : MonoBehaviour
             }
 
             runtime.worldRuntime = world;
-            runtime.Initialize(simulation);
-            runtimes[world] = runtime;
+            runtime.Initialize(m_simulation);
+            m_runtimes[world] = runtime;
         }
 
         var toRemove = new List<BusinessWorldRuntime>();
-        foreach (var pair in runtimes)
+        foreach (var pair in m_runtimes)
         {
             if (pair.Key == null || !existing.Contains(pair.Key))
             {
@@ -72,13 +72,13 @@ public class BusinessLiveSimulationService : MonoBehaviour
 
         foreach (var key in toRemove)
         {
-            runtimes.Remove(key);
+            m_runtimes.Remove(key);
         }
     }
 
     private void EvaluateAll()
     {
-        foreach (var runtime in runtimes.Values)
+        foreach (var runtime in m_runtimes.Values)
         {
             if (runtime != null)
             {

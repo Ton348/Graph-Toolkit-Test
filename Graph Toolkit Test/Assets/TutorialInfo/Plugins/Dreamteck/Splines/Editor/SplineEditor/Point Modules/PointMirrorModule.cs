@@ -11,10 +11,10 @@ namespace Dreamteck.Splines.Editor
         public Axis axis = Axis.X;
         public bool flip = false;
         public float weldDistance = 0f;
-        Vector3 mirrorCenter = Vector3.zero;
+        Vector3 m_mirrorCenter = Vector3.zero;
 
 
-        private SplinePoint[] mirrored = new SplinePoint[0];
+        private SplinePoint[] m_mirrored = new SplinePoint[0];
 
 
         public PointMirrorModule(SplineEditor editor) : base(editor)
@@ -78,7 +78,7 @@ namespace Dreamteck.Splines.Editor
             axis = (Axis)EditorGUILayout.EnumPopup("Axis", axis);
             flip = EditorGUILayout.Toggle("Flip", flip);
             weldDistance = EditorGUILayout.FloatField("Weld Distance", weldDistance);
-            mirrorCenter = EditorGUILayout.Vector3Field("Center", mirrorCenter);
+            m_mirrorCenter = EditorGUILayout.Vector3Field("Center", m_mirrorCenter);
             if (EditorGUI.EndChangeCheck()) DoMirror();
             if (IsDirty())
             {
@@ -92,10 +92,10 @@ namespace Dreamteck.Splines.Editor
         protected override void OnDrawScene()
         {
             if (selectedPoints.Count > 0) ClearSelection();
-            Vector3 worldCenter = TransformPosition(mirrorCenter);
+            Vector3 worldCenter = TransformPosition(m_mirrorCenter);
             Vector3 lastCenter = worldCenter;
-            worldCenter = Handles.PositionHandle(worldCenter, rotation);
-            mirrorCenter = InverseTransformPosition(worldCenter);
+            worldCenter = Handles.PositionHandle(worldCenter, m_rotation);
+            m_mirrorCenter = InverseTransformPosition(worldCenter);
             DrawMirror();
             if (lastCenter != worldCenter) DoMirror();
             selectedPoints.Clear();
@@ -103,13 +103,13 @@ namespace Dreamteck.Splines.Editor
 
         public void DoMirror()
         {
-            List<int> half = GetHalf(ref originalPoints);
+            List<int> half = GetHalf(ref m_originalPoints);
             int welded = -1;
             if (half.Count > 0)
             {
                 if (flip)
                 {
-                    if (IsWeldable(originalPoints[half[0]]))
+                    if (IsWeldable(m_originalPoints[half[0]]))
                     {
                         welded = half[0];
                         half.RemoveAt(0);
@@ -117,7 +117,7 @@ namespace Dreamteck.Splines.Editor
                 }
                 else
                 {
-                    if (IsWeldable(originalPoints[half[half.Count - 1]]))
+                    if (IsWeldable(m_originalPoints[half[half.Count - 1]]))
                     {
                         welded = half[half.Count - 1];
                         half.RemoveAt(half.Count - 1);
@@ -126,37 +126,37 @@ namespace Dreamteck.Splines.Editor
 
                 int offset = welded >= 0 ? 1 : 0;
                 int mirroredLength = half.Count * 2 + offset;
-                if(mirrored.Length != mirroredLength) mirrored = new SplinePoint[mirroredLength];
+                if(m_mirrored.Length != mirroredLength) m_mirrored = new SplinePoint[mirroredLength];
                 for (int i = 0; i < half.Count; i++)
                 {
                     if (flip)
                     {
-                        mirrored[i] = new SplinePoint(originalPoints[half[(half.Count - 1) - i]]);
-                        mirrored[i + half.Count + offset] = GetMirrored(originalPoints[half[i]]);
-                        SwapTangents(ref mirrored[i]);
-                        SwapTangents(ref mirrored[i + half.Count + offset]);
+                        m_mirrored[i] = new SplinePoint(m_originalPoints[half[(half.Count - 1) - i]]);
+                        m_mirrored[i + half.Count + offset] = GetMirrored(m_originalPoints[half[i]]);
+                        SwapTangents(ref m_mirrored[i]);
+                        SwapTangents(ref m_mirrored[i + half.Count + offset]);
                     }
                     else
                     {
-                        mirrored[i] = new SplinePoint(originalPoints[half[i]]);
-                        mirrored[i + half.Count + offset] = GetMirrored(originalPoints[half[(half.Count - 1) - i]]);
+                        m_mirrored[i] = new SplinePoint(m_originalPoints[half[i]]);
+                        m_mirrored[i + half.Count + offset] = GetMirrored(m_originalPoints[half[(half.Count - 1) - i]]);
                     }
                 }
                 if (welded >= 0)
                 {
-                    mirrored[half.Count] = new SplinePoint(originalPoints[welded]);
-                    if (flip) SwapTangents(ref mirrored[half.Count]);
-                    MakeMiddlePoint(ref mirrored[half.Count]);
+                    m_mirrored[half.Count] = new SplinePoint(m_originalPoints[welded]);
+                    if (flip) SwapTangents(ref m_mirrored[half.Count]);
+                    MakeMiddlePoint(ref m_mirrored[half.Count]);
                 }
 
-                if (isClosed && mirrored.Length > 0)
+                if (isClosed && m_mirrored.Length > 0)
                 {
-                    MakeMiddlePoint(ref mirrored[0]);
-                    mirrored[mirrored.Length - 1] = new SplinePoint(mirrored[0]);
+                    MakeMiddlePoint(ref m_mirrored[0]);
+                    m_mirrored[m_mirrored.Length - 1] = new SplinePoint(m_mirrored[0]);
                 }
             }
-            else mirrored = new SplinePoint[0];
-            editor.SetPointsArray(mirrored);
+            else m_mirrored = new SplinePoint[0];
+            m_editor.SetPointsArray(m_mirrored);
             RegisterChange();
             SetDirty();
         }
@@ -177,9 +177,9 @@ namespace Dreamteck.Splines.Editor
             {
                 case Axis.X:
                    
-                    newPos.x = mirrorCenter.x;
+                    newPos.x = m_mirrorCenter.x;
                     point.SetPosition(newPos);
-                    if ((point.tangent.x >= mirrorCenter.x && flip) || (point.tangent.x <= mirrorCenter.x && !flip))
+                    if ((point.tangent.x >= m_mirrorCenter.x && flip) || (point.tangent.x <= m_mirrorCenter.x && !flip))
                     {
                         point.tangent2 = point.tangent;
                         point.SetTangent2X(point.position.x + (point.position.x - point.tangent.x));
@@ -191,9 +191,9 @@ namespace Dreamteck.Splines.Editor
                     }
                     break;
                 case Axis.Y:
-                    newPos.y = mirrorCenter.y;
+                    newPos.y = m_mirrorCenter.y;
                     point.SetPosition(newPos);
-                    if ((point.tangent.y >= mirrorCenter.y && flip) || (point.tangent.y <= mirrorCenter.y && !flip))
+                    if ((point.tangent.y >= m_mirrorCenter.y && flip) || (point.tangent.y <= m_mirrorCenter.y && !flip))
                     {
                         point.tangent2 = point.tangent;
                         point.SetTangent2Y(point.position.y + (point.position.y - point.tangent.y));
@@ -205,9 +205,9 @@ namespace Dreamteck.Splines.Editor
                     }
                     break;
                 case Axis.Z:
-                    newPos.z = mirrorCenter.z;
+                    newPos.z = m_mirrorCenter.z;
                     point.SetPosition(newPos);
-                    if ((point.tangent.z >= mirrorCenter.z && flip) || (point.tangent.z <= mirrorCenter.z && !flip))
+                    if ((point.tangent.z >= m_mirrorCenter.z && flip) || (point.tangent.z <= m_mirrorCenter.z && !flip))
                     {
                         point.tangent2 = point.tangent;
                         point.SetTangent2Z(point.position.z + (point.position.z - point.tangent.z));
@@ -227,13 +227,13 @@ namespace Dreamteck.Splines.Editor
             switch (axis)
             {
                 case Axis.X:
-                    if (Mathf.Abs(point.position.x - mirrorCenter.x) <= weldDistance) return true;
+                    if (Mathf.Abs(point.position.x - m_mirrorCenter.x) <= weldDistance) return true;
                     break;
                 case Axis.Y:
-                    if (Mathf.Abs(point.position.y - mirrorCenter.y) <= weldDistance) return true;
+                    if (Mathf.Abs(point.position.y - m_mirrorCenter.y) <= weldDistance) return true;
                     break;
                 case Axis.Z:
-                    if (Mathf.Abs(point.position.z - mirrorCenter.z) <= weldDistance) return true;
+                    if (Mathf.Abs(point.position.z - m_mirrorCenter.z) <= weldDistance) return true;
                     break;
             }
             return false;
@@ -243,13 +243,13 @@ namespace Dreamteck.Splines.Editor
         {
             Vector3[] points = new Vector3[4];
             Color color = Color.white;
-            Vector3 worldCenter = TransformPosition(mirrorCenter);
+            Vector3 worldCenter = TransformPosition(m_mirrorCenter);
             float size = HandleUtility.GetHandleSize(worldCenter);
-            Vector3 forward = rotation * Vector3.forward * size;
+            Vector3 forward = m_rotation * Vector3.forward * size;
             Vector3 back = -forward;
-            Vector3 right = rotation * Vector3.right * size;
+            Vector3 right = m_rotation * Vector3.right * size;
             Vector3 left = -right;
-            Vector3 up = rotation * Vector3.up * size;
+            Vector3 up = m_rotation * Vector3.up * size;
             Vector3 down = -up;
             switch (axis)
             {
@@ -290,22 +290,22 @@ namespace Dreamteck.Splines.Editor
             switch (axis)
             {
                 case Axis.X:
-                    newPoint.SetPositionX(mirrorCenter.x - (newPoint.position.x - mirrorCenter.x));
+                    newPoint.SetPositionX(m_mirrorCenter.x - (newPoint.position.x - m_mirrorCenter.x));
                     newPoint.SetNormalX(-newPoint.normal.x);
-                    newPoint.SetTangentX(mirrorCenter.x - (newPoint.tangent.x - mirrorCenter.x));
-                    newPoint.SetTangent2X(mirrorCenter.x - (newPoint.tangent2.x - mirrorCenter.x));
+                    newPoint.SetTangentX(m_mirrorCenter.x - (newPoint.tangent.x - m_mirrorCenter.x));
+                    newPoint.SetTangent2X(m_mirrorCenter.x - (newPoint.tangent2.x - m_mirrorCenter.x));
                     break;
                 case Axis.Y:
-                    newPoint.SetPositionY(mirrorCenter.y - (newPoint.position.y - mirrorCenter.y));
+                    newPoint.SetPositionY(m_mirrorCenter.y - (newPoint.position.y - m_mirrorCenter.y));
                     newPoint.SetNormalY(-newPoint.normal.y);
-                    newPoint.SetTangentY(mirrorCenter.y - (newPoint.tangent.y - mirrorCenter.y));
-                    newPoint.SetTangent2Y(mirrorCenter.y - (newPoint.tangent2.y - mirrorCenter.y));
+                    newPoint.SetTangentY(m_mirrorCenter.y - (newPoint.tangent.y - m_mirrorCenter.y));
+                    newPoint.SetTangent2Y(m_mirrorCenter.y - (newPoint.tangent2.y - m_mirrorCenter.y));
                     break;
                 case Axis.Z:
-                    newPoint.SetPositionZ(mirrorCenter.z - (newPoint.position.z - mirrorCenter.z));
+                    newPoint.SetPositionZ(m_mirrorCenter.z - (newPoint.position.z - m_mirrorCenter.z));
                     newPoint.SetNormalZ(-newPoint.normal.z);
-                    newPoint.SetTangentZ(mirrorCenter.z - (newPoint.tangent.z - mirrorCenter.z));
-                    newPoint.SetTangent2Z(mirrorCenter.z - (newPoint.tangent2.z - mirrorCenter.z));
+                    newPoint.SetTangentZ(m_mirrorCenter.z - (newPoint.tangent.z - m_mirrorCenter.z));
+                    newPoint.SetTangent2Z(m_mirrorCenter.z - (newPoint.tangent2.z - m_mirrorCenter.z));
                     break;
             }
             SwapTangents(ref newPoint);
@@ -326,11 +326,11 @@ namespace Dreamteck.Splines.Editor
                     {
                         if (flip)
                         {
-                            if (InverseTransformPosition(points[i].position).x >= mirrorCenter.x) found.Add(i);
+                            if (InverseTransformPosition(points[i].position).x >= m_mirrorCenter.x) found.Add(i);
                         }
                         else
                         {
-                            if (InverseTransformPosition(points[i].position).x <= mirrorCenter.x) found.Add(i);
+                            if (InverseTransformPosition(points[i].position).x <= m_mirrorCenter.x) found.Add(i);
                         }
                     }
                     break;
@@ -340,10 +340,10 @@ namespace Dreamteck.Splines.Editor
                     {
                         if (flip)
                         {
-                            if (InverseTransformPosition(points[i].position).y >= mirrorCenter.y) found.Add(i);
+                            if (InverseTransformPosition(points[i].position).y >= m_mirrorCenter.y) found.Add(i);
                             else
                             {
-                                if (InverseTransformPosition(points[i].position).y <= mirrorCenter.y) found.Add(i);
+                                if (InverseTransformPosition(points[i].position).y <= m_mirrorCenter.y) found.Add(i);
                             }
                         }
                     }
@@ -353,11 +353,11 @@ namespace Dreamteck.Splines.Editor
                     {
                         if (flip)
                         {
-                            if (InverseTransformPosition(points[i].position).z >= mirrorCenter.z) found.Add(i);
+                            if (InverseTransformPosition(points[i].position).z >= m_mirrorCenter.z) found.Add(i);
                         }
                         else
                         {
-                            if (InverseTransformPosition(points[i].position).z <= mirrorCenter.z) found.Add(i);
+                            if (InverseTransformPosition(points[i].position).z <= m_mirrorCenter.z) found.Add(i);
                         }
                     }
                     break;

@@ -16,124 +16,124 @@ namespace Dreamteck.Splines
 
             public string name = "Channel";
             public enum Type { Extrude, Place }
-            public enum UVOverride { None, ClampU, ClampV, UniformU, UniformV }
+            public enum Uvoverride { None, ClampU, ClampV, UniformU, UniformV }
 
-            private System.Random iterationRandom;
+            private System.Random m_iterationRandom;
             [SerializeField]
             [HideInInspector]
-            private int _iterationSeed = 0;
+            private int m_iterationSeed = 0;
             [SerializeField]
             [HideInInspector]
-            private int _offsetSeed = 0;
-            private System.Random _offsetRandom;
-            private Vector2Handler _offsetHandler = null;
+            private int m_offsetSeed = 0;
+            private System.Random m_offsetRandom;
+            private Vector2Handler m_offsetHandler = null;
             [SerializeField]
             [HideInInspector]
-            private int _rotationSeed = 0;
-            private System.Random _rotationRandom;
-            private QuaternionHandler _placeRotationHandler = null;
-            private FloatHandler _extrudeRotationHandler = null;
+            private int m_rotationSeed = 0;
+            private System.Random m_rotationRandom;
+            private QuaternionHandler m_placeRotationHandler = null;
+            private FloatHandler m_extrudeRotationHandler = null;
             [SerializeField]
             [HideInInspector]
-            private int _scaleSeed = 0;
-            private System.Random _scaleRandom;
-            private Vector3Handler _scaleHandler = null;
+            private int m_scaleSeed = 0;
+            private System.Random m_scaleRandom;
+            private Vector3Handler m_scaleHandler = null;
 
             [SerializeField]
             internal SplineMesh owner = null;
 
             [SerializeField]
             [HideInInspector]
-            private List<MeshDefinition> meshes = new List<MeshDefinition>();
+            private List<MeshDefinition> m_meshes = new List<MeshDefinition>();
 
 
             [SerializeField]
             [HideInInspector]
-            private double _clipFrom = 0.0;
+            private double m_clipFrom = 0.0;
             [SerializeField]
             [HideInInspector]
-            private double _clipTo = 1.0;
+            private double m_clipTo = 1.0;
             [SerializeField]
             [HideInInspector]
-            private bool _randomOrder = false;
+            private bool m_randomOrder = false;
             [SerializeField]
             [HideInInspector]
-            private UVOverride _overrideUVs = UVOverride.None;
+            private Uvoverride m_overrideUvs = Uvoverride.None;
             [SerializeField]
             [HideInInspector]
-            private Vector2 _uvScale = Vector2.one;
+            private Vector2 m_uvScale = Vector2.one;
             [SerializeField]
             [HideInInspector]
-            private Vector2 _uvOffset = Vector2.zero;
+            private Vector2 m_uvOffset = Vector2.zero;
             [SerializeField]
             [HideInInspector]
-            private bool _overrideNormal = false;
+            private bool m_overrideNormal = false;
             [SerializeField]
             [HideInInspector]
-            private Vector3 _customNormal = Vector3.up;
+            private Vector3 m_customNormal = Vector3.up;
             [SerializeField]
             [HideInInspector]
-            private Type _type = Type.Extrude;
+            private Type m_type = Type.Extrude;
 
             [SerializeField]
             [HideInInspector]
-            private int _count = 1;
+            private int m_count = 1;
             [SerializeField]
             [HideInInspector]
-            private bool _autoCount = false;
+            private bool m_autoCount = false;
             [SerializeField]
             [HideInInspector]
-            private double _spacing = 0.0;
+            private double m_spacing = 0.0;
             [SerializeField]
             [HideInInspector]
-            private bool _randomRotation = false;
+            private bool m_randomRotation = false;
             [SerializeField]
             [HideInInspector]
-            private Vector3 _minRotation = Vector3.zero;
+            private Vector3 m_minRotation = Vector3.zero;
             [SerializeField]
             [HideInInspector]
-            private Vector3 _maxRotation = Vector3.zero;
+            private Vector3 m_maxRotation = Vector3.zero;
             [SerializeField]
             [HideInInspector]
-            private bool _randomOffset = false;
+            private bool m_randomOffset = false;
             [SerializeField]
             [HideInInspector]
-            private Vector2 _minOffset = Vector2.one;
+            private Vector2 m_minOffset = Vector2.one;
             [SerializeField]
             [HideInInspector]
-            private Vector2 _maxOffset = Vector2.one;
+            private Vector2 m_maxOffset = Vector2.one;
             [SerializeField]
             [HideInInspector]
-            private bool _randomScale = false;
+            private bool m_randomScale = false;
             [SerializeField]
             [HideInInspector]
-            private bool _uniformRandomScale = false;
+            private bool m_uniformRandomScale = false;
             [SerializeField]
             [HideInInspector]
-            private Vector3 _minScale = Vector3.one;
+            private Vector3 m_minScale = Vector3.one;
             [SerializeField]
             [HideInInspector]
-            private Vector3 _maxScale = Vector3.one;
-            private int iterator = 0;
+            private Vector3 m_maxScale = Vector3.one;
+            private int m_iterator = 0;
             [SerializeField]
             [HideInInspector]
-            private bool _overrideMaterialID = false;
+            private bool m_overrideMaterialId = false;
             [SerializeField]
             [HideInInspector]
-            private int _targetMaterialID = 0;
+            private int m_targetMaterialId = 0;
 
             [SerializeField]
             [HideInInspector]
-            protected MeshScaleModifier _scaleModifier = new MeshScaleModifier();
+            protected MeshScaleModifier m_scaleModifier = new MeshScaleModifier();
 
             public double clipFrom
             {
-                get { return _clipFrom; }
+                get { return m_clipFrom; }
                 set
                 {
-                    if (value != _clipFrom)
+                    if (value != m_clipFrom)
                     {
-                        _clipFrom = value;
+                        m_clipFrom = value;
                         Rebuild();
                     }
                 }
@@ -141,12 +141,12 @@ namespace Dreamteck.Splines
 
             public double clipTo
             {
-                get { return _clipTo; }
+                get { return m_clipTo; }
                 set
                 {
-                    if (value != _clipTo)
+                    if (value != m_clipTo)
                     {
-                        _clipTo = value;
+                        m_clipTo = value;
                         Rebuild();
                     }
                 }
@@ -154,12 +154,12 @@ namespace Dreamteck.Splines
 
             public bool randomOffset
             {
-                get { return _randomOffset; }
+                get { return m_randomOffset; }
                 set
                 {
-                    if (value != _randomOffset)
+                    if (value != m_randomOffset)
                     {
-                        _randomOffset = value;
+                        m_randomOffset = value;
                         Rebuild();
                     }
                 }
@@ -167,12 +167,12 @@ namespace Dreamteck.Splines
 
             public Vector2Handler offsetHandler
             {
-                get { return _offsetHandler; }
+                get { return m_offsetHandler; }
                 set
                 {
-                    if (value != _offsetHandler)
+                    if (value != m_offsetHandler)
                     {
-                        _offsetHandler = value;
+                        m_offsetHandler = value;
                         Rebuild();
                     }
                 }
@@ -180,12 +180,12 @@ namespace Dreamteck.Splines
 
             public bool overrideMaterialID
             {
-                get { return _overrideMaterialID; }
+                get { return m_overrideMaterialId; }
                 set
                 {
-                    if (value != _overrideMaterialID)
+                    if (value != m_overrideMaterialId)
                     {
-                        _overrideMaterialID = value;
+                        m_overrideMaterialId = value;
                         Rebuild();
                     }
                 }
@@ -193,12 +193,12 @@ namespace Dreamteck.Splines
 
             public int targetMaterialID
             {
-                get { return _targetMaterialID; }
+                get { return m_targetMaterialId; }
                 set
                 {
-                    if (value != _targetMaterialID)
+                    if (value != m_targetMaterialId)
                     {
-                        _targetMaterialID = value;
+                        m_targetMaterialId = value;
                         Rebuild();
                     }
                 }
@@ -206,12 +206,12 @@ namespace Dreamteck.Splines
 
             public bool randomRotation
             {
-                get { return _randomRotation; }
+                get { return m_randomRotation; }
                 set
                 {
-                    if (value != _randomRotation)
+                    if (value != m_randomRotation)
                     {
-                        _randomRotation = value;
+                        m_randomRotation = value;
                         Rebuild();
                     }
                 }
@@ -219,12 +219,12 @@ namespace Dreamteck.Splines
 
             public QuaternionHandler placeRotationHandler
             {
-                get { return _placeRotationHandler; }
+                get { return m_placeRotationHandler; }
                 set
                 {
-                    if (value != _placeRotationHandler)
+                    if (value != m_placeRotationHandler)
                     {
-                        _placeRotationHandler = value;
+                        m_placeRotationHandler = value;
                         Rebuild();
                     }
                 }
@@ -232,12 +232,12 @@ namespace Dreamteck.Splines
 
             public FloatHandler extrudeRotationHandler
             {
-                get { return _extrudeRotationHandler; }
+                get { return m_extrudeRotationHandler; }
                 set
                 {
-                    if (value != _extrudeRotationHandler)
+                    if (value != m_extrudeRotationHandler)
                     {
-                        _extrudeRotationHandler = value;
+                        m_extrudeRotationHandler = value;
                         Rebuild();
                     }
                 }
@@ -245,12 +245,12 @@ namespace Dreamteck.Splines
 
             public bool randomScale
             {
-                get { return _randomScale; }
+                get { return m_randomScale; }
                 set
                 {
-                    if (value != _randomScale)
+                    if (value != m_randomScale)
                     {
-                        _randomScale = value;
+                        m_randomScale = value;
                         Rebuild();
                     }
                 }
@@ -258,12 +258,12 @@ namespace Dreamteck.Splines
 
             public Vector3Handler scaleHandler
             {
-                get { return _scaleHandler; }
+                get { return m_scaleHandler; }
                 set
                 {
-                    if (value != _scaleHandler)
+                    if (value != m_scaleHandler)
                     {
-                        _scaleHandler = value;
+                        m_scaleHandler = value;
                         Rebuild();
                     }
                 }
@@ -271,12 +271,12 @@ namespace Dreamteck.Splines
 
             public bool uniformRandomScale
             {
-                get { return _uniformRandomScale; }
+                get { return m_uniformRandomScale; }
                 set
                 {
-                    if (value != _uniformRandomScale)
+                    if (value != m_uniformRandomScale)
                     {
-                        _uniformRandomScale = value;
+                        m_uniformRandomScale = value;
                         Rebuild();
                     }
                 }
@@ -284,12 +284,12 @@ namespace Dreamteck.Splines
 
             public int offsetSeed
             {
-                get { return _offsetSeed; }
+                get { return m_offsetSeed; }
                 set
                 {
-                    if (value != _offsetSeed)
+                    if (value != m_offsetSeed)
                     {
-                        _offsetSeed = value;
+                        m_offsetSeed = value;
                         Rebuild();
                     }
                 }
@@ -297,12 +297,12 @@ namespace Dreamteck.Splines
 
             public int rotationSeed
             {
-                get { return _rotationSeed; }
+                get { return m_rotationSeed; }
                 set
                 {
-                    if (value != _rotationSeed)
+                    if (value != m_rotationSeed)
                     {
-                        _rotationSeed = value;
+                        m_rotationSeed = value;
                         Rebuild();
                     }
                 }
@@ -310,12 +310,12 @@ namespace Dreamteck.Splines
 
             public int scaleSeed
             {
-                get { return _scaleSeed; }
+                get { return m_scaleSeed; }
                 set
                 {
-                    if (value != _scaleSeed)
+                    if (value != m_scaleSeed)
                     {
-                        _scaleSeed = value;
+                        m_scaleSeed = value;
                         Rebuild();
                     }
                 }
@@ -323,12 +323,12 @@ namespace Dreamteck.Splines
 
             public double spacing
             {
-                get { return _spacing; }
+                get { return m_spacing; }
                 set
                 {
-                    if (value != _spacing)
+                    if (value != m_spacing)
                     {
-                        _spacing = value;
+                        m_spacing = value;
                         Rebuild();
                     }
                 }
@@ -336,12 +336,12 @@ namespace Dreamteck.Splines
 
             public Vector2 minOffset
             {
-                get { return _minOffset; }
+                get { return m_minOffset; }
                 set
                 {
-                    if (value != _minOffset)
+                    if (value != m_minOffset)
                     {
-                        _minOffset = value;
+                        m_minOffset = value;
                         Rebuild();
                     }
                 }
@@ -349,12 +349,12 @@ namespace Dreamteck.Splines
 
             public Vector2 maxOffset
             {
-                get { return _maxOffset; }
+                get { return m_maxOffset; }
                 set
                 {
-                    if (value != _maxOffset)
+                    if (value != m_maxOffset)
                     {
-                        _maxOffset = value;
+                        m_maxOffset = value;
                         Rebuild();
                     }
                 }
@@ -362,12 +362,12 @@ namespace Dreamteck.Splines
 
             public Vector3 minRotation
             {
-                get { return _minRotation; }
+                get { return m_minRotation; }
                 set
                 {
-                    if (value != _minRotation)
+                    if (value != m_minRotation)
                     {
-                        _minRotation = value;
+                        m_minRotation = value;
                         Rebuild();
                     }
                 }
@@ -375,12 +375,12 @@ namespace Dreamteck.Splines
 
             public Vector3 maxRotation
             {
-                get { return _maxRotation; }
+                get { return m_maxRotation; }
                 set
                 {
-                    if (value != _maxRotation)
+                    if (value != m_maxRotation)
                     {
-                        _maxRotation = value;
+                        m_maxRotation = value;
                         Rebuild();
                     }
                 }
@@ -388,12 +388,12 @@ namespace Dreamteck.Splines
 
             public Vector3 minScale
             {
-                get { return _minScale; }
+                get { return m_minScale; }
                 set
                 {
-                    if (value != _minScale)
+                    if (value != m_minScale)
                     {
-                        _minScale = value;
+                        m_minScale = value;
                         Rebuild();
                     }
                 }
@@ -401,12 +401,12 @@ namespace Dreamteck.Splines
 
             public Vector3 maxScale
             {
-                get { return _maxScale; }
+                get { return m_maxScale; }
                 set
                 {
-                    if (value != _maxScale)
+                    if (value != m_maxScale)
                     {
-                        _maxScale = value;
+                        m_maxScale = value;
                         Rebuild();
                     }
                 }
@@ -414,12 +414,12 @@ namespace Dreamteck.Splines
 
             public Type type
             {
-                get { return _type; }
+                get { return m_type; }
                 set
                 {
-                    if (value != _type)
+                    if (value != m_type)
                     {
-                        _type = value;
+                        m_type = value;
                         Rebuild();
                     }
                 }
@@ -427,12 +427,12 @@ namespace Dreamteck.Splines
 
             public bool randomOrder
             {
-                get { return _randomOrder; }
+                get { return m_randomOrder; }
                 set
                 {
-                    if (value != _randomOrder)
+                    if (value != m_randomOrder)
                     {
-                        _randomOrder = value;
+                        m_randomOrder = value;
                         Rebuild();
                     }
                 }
@@ -440,25 +440,25 @@ namespace Dreamteck.Splines
 
             public int randomSeed
             {
-                get { return _iterationSeed; }
+                get { return m_iterationSeed; }
                 set
                 {
-                    if (value != _iterationSeed)
+                    if (value != m_iterationSeed)
                     {
-                        _iterationSeed = value;
-                        if (_randomOrder) Rebuild();
+                        m_iterationSeed = value;
+                        if (m_randomOrder) Rebuild();
                     }
                 }
             }
             public int count
             {
-                get { return _count; }
+                get { return m_count; }
                 set
                 {
-                    if (value != _count)
+                    if (value != m_count)
                     {
-                        _count = value;
-                        if (_count < 1) _count = 1;
+                        m_count = value;
+                        if (m_count < 1) m_count = 1;
                         Rebuild();
                     }
                 }
@@ -466,25 +466,25 @@ namespace Dreamteck.Splines
 
             public bool autoCount
             {
-                get { return _autoCount; }
+                get { return m_autoCount; }
                 set
                 {
-                    if (value != _autoCount)
+                    if (value != m_autoCount)
                     {
-                        _autoCount = value;
+                        m_autoCount = value;
                         Rebuild();
                     }
                 }
             }
 
-            public UVOverride overrideUVs
+            public Uvoverride overrideUVs
             {
-                get { return _overrideUVs; }
+                get { return m_overrideUvs; }
                 set
                 {
-                    if (value != _overrideUVs)
+                    if (value != m_overrideUvs)
                     {
-                        _overrideUVs = value;
+                        m_overrideUvs = value;
                         Rebuild();
                     }
                 }
@@ -492,12 +492,12 @@ namespace Dreamteck.Splines
 
             public Vector2 uvOffset
             {
-                get { return _uvOffset; }
+                get { return m_uvOffset; }
                 set
                 {
-                    if (value != _uvOffset)
+                    if (value != m_uvOffset)
                     {
-                        _uvOffset = value;
+                        m_uvOffset = value;
                         Rebuild();
                     }
                 }
@@ -505,12 +505,12 @@ namespace Dreamteck.Splines
 
             public Vector2 uvScale
             {
-                get { return _uvScale; }
+                get { return m_uvScale; }
                 set
                 {
-                    if (value != _uvScale)
+                    if (value != m_uvScale)
                     {
-                        _uvScale = value;
+                        m_uvScale = value;
                         Rebuild();
                     }
                 }
@@ -518,12 +518,12 @@ namespace Dreamteck.Splines
 
             public bool overrideNormal
             {
-                get { return _overrideNormal; }
+                get { return m_overrideNormal; }
                 set
                 {
-                    if (value != _overrideNormal)
+                    if (value != m_overrideNormal)
                     {
-                        _overrideNormal = value;
+                        m_overrideNormal = value;
                         Rebuild();
                     }
                 }
@@ -531,12 +531,12 @@ namespace Dreamteck.Splines
 
             public Vector3 customNormal
             {
-                get { return _customNormal; }
+                get { return m_customNormal; }
                 set
                 {
-                    if (value != _customNormal)
+                    if (value != m_customNormal)
                     {
-                        _customNormal = value;
+                        m_customNormal = value;
                         Rebuild();
                     }
                 }
@@ -546,7 +546,7 @@ namespace Dreamteck.Splines
             {
                 get
                 {
-                    return _scaleModifier;
+                    return m_scaleModifier;
                 }
             }
 
@@ -561,122 +561,122 @@ namespace Dreamteck.Splines
             {
                 name = n;
                 owner = parent;
-                meshes.Add(new MeshDefinition(inputMesh));
+                m_meshes.Add(new MeshDefinition(inputMesh));
                 Init();
                 Rebuild();
             }
 
             void Init()
             {
-                _minScale = _maxScale = Vector3.one;
-                _minOffset = _maxOffset = Vector3.zero;
-                _minRotation = _maxRotation = Vector3.zero;
+                m_minScale = m_maxScale = Vector3.one;
+                m_minOffset = m_maxOffset = Vector3.zero;
+                m_minRotation = m_maxRotation = Vector3.zero;
             }
 
             public void CopyTo(Channel target)
             {
-                target.meshes.Clear();
-                for (int i = 0; i < meshes.Count; i++) target.meshes.Add(meshes[i].Copy());
-                target._clipFrom = _clipFrom;
-                target._clipTo = _clipTo;
-                target._customNormal = _customNormal;
-                target._iterationSeed = _iterationSeed;
-                target._minOffset = _minOffset;
-                target._minRotation = _minRotation;
-                target._minScale = _minScale;
-                target._maxOffset = _maxOffset;
-                target._maxRotation = _maxRotation;
-                target._maxScale = _maxScale;
-                target._randomOffset = _randomOffset;
-                target._randomRotation = _randomRotation;
-                target._randomScale = _randomScale;
-                target._offsetSeed = _offsetSeed;
-                target._offsetHandler = _offsetHandler;
-                target._rotationSeed = _rotationSeed;
-                target._placeRotationHandler = _placeRotationHandler;
-                target._extrudeRotationHandler = _extrudeRotationHandler;
-                target._scaleSeed = _scaleSeed;
-                target._scaleHandler = _scaleHandler;
-                target._iterationSeed = _iterationSeed;
-                target._count = _count;
-                target._spacing = _spacing;
-                target._overrideUVs = _overrideUVs;
-                target._type = _type;
-                target._overrideMaterialID = _overrideMaterialID;
-                target._targetMaterialID = _targetMaterialID;
-                target._overrideNormal = _overrideNormal;
+                target.m_meshes.Clear();
+                for (int i = 0; i < m_meshes.Count; i++) target.m_meshes.Add(m_meshes[i].Copy());
+                target.m_clipFrom = m_clipFrom;
+                target.m_clipTo = m_clipTo;
+                target.m_customNormal = m_customNormal;
+                target.m_iterationSeed = m_iterationSeed;
+                target.m_minOffset = m_minOffset;
+                target.m_minRotation = m_minRotation;
+                target.m_minScale = m_minScale;
+                target.m_maxOffset = m_maxOffset;
+                target.m_maxRotation = m_maxRotation;
+                target.m_maxScale = m_maxScale;
+                target.m_randomOffset = m_randomOffset;
+                target.m_randomRotation = m_randomRotation;
+                target.m_randomScale = m_randomScale;
+                target.m_offsetSeed = m_offsetSeed;
+                target.m_offsetHandler = m_offsetHandler;
+                target.m_rotationSeed = m_rotationSeed;
+                target.m_placeRotationHandler = m_placeRotationHandler;
+                target.m_extrudeRotationHandler = m_extrudeRotationHandler;
+                target.m_scaleSeed = m_scaleSeed;
+                target.m_scaleHandler = m_scaleHandler;
+                target.m_iterationSeed = m_iterationSeed;
+                target.m_count = m_count;
+                target.m_spacing = m_spacing;
+                target.m_overrideUvs = m_overrideUvs;
+                target.m_type = m_type;
+                target.m_overrideMaterialId = m_overrideMaterialId;
+                target.m_targetMaterialId = m_targetMaterialId;
+                target.m_overrideNormal = m_overrideNormal;
             }
 
             public int GetMeshCount()
             {
-                return meshes.Count;
+                return m_meshes.Count;
             }
 
             public void SwapMeshes(int a, int b)
             {
-                if (a < 0 || a >= meshes.Count || b < 0 || b >= meshes.Count) return;
-                MeshDefinition temp = meshes[b];
-                meshes[b] = meshes[a];
-                meshes[a] = temp;
+                if (a < 0 || a >= m_meshes.Count || b < 0 || b >= m_meshes.Count) return;
+                MeshDefinition temp = m_meshes[b];
+                m_meshes[b] = m_meshes[a];
+                m_meshes[a] = temp;
                 Rebuild();
             }
 
             public void DuplicateMesh(int index)
             {
-                if (index < 0 || index >= meshes.Count) return;
-                meshes.Add(meshes[index].Copy());
+                if (index < 0 || index >= m_meshes.Count) return;
+                m_meshes.Add(m_meshes[index].Copy());
                 Rebuild();
             }
 
             public MeshDefinition GetMesh(int index)
             {
-                return meshes[index];
+                return m_meshes[index];
             }
 
             public void AddMesh(Mesh input)
             {
-                meshes.Add(new MeshDefinition(input));
+                m_meshes.Add(new MeshDefinition(input));
                 Rebuild();
             }
 
             public void AddMesh(MeshDefinition meshDefinition)
             {
-                if (!meshes.Contains(meshDefinition))
+                if (!m_meshes.Contains(meshDefinition))
                 {
-                    meshes.Add(meshDefinition);
+                    m_meshes.Add(meshDefinition);
                     Rebuild();
                 }
             }
 
             public void RemoveMesh(int index)
             {
-                meshes.RemoveAt(index);
+                m_meshes.RemoveAt(index);
                 Rebuild();
             }
 
             public void ResetIteration()
             {
-                if (_randomOrder) iterationRandom = new System.Random(_iterationSeed);
-                if (_randomOffset) _offsetRandom = new System.Random(_offsetSeed);
-                if (_randomRotation) _rotationRandom = new System.Random(_rotationSeed);
-                if (_randomScale) _scaleRandom = new System.Random(_scaleSeed);
-                iterator = 0;
+                if (m_randomOrder) m_iterationRandom = new System.Random(m_iterationSeed);
+                if (m_randomOffset) m_offsetRandom = new System.Random(m_offsetSeed);
+                if (m_randomRotation) m_rotationRandom = new System.Random(m_rotationSeed);
+                if (m_randomScale) m_scaleRandom = new System.Random(m_scaleSeed);
+                m_iterator = 0;
             }
 
             public (Vector2, Quaternion, Vector3) GetCustomPlaceValues(double percent)
             {
                 (Vector2, Quaternion, Vector3) values = (Vector2.zero, Quaternion.identity, Vector3.one);
-                if (_offsetHandler != null)
+                if (m_offsetHandler != null)
                 {
-                    values.Item1 = _offsetHandler(percent);
+                    values.Item1 = m_offsetHandler(percent);
                 }
-                if (_placeRotationHandler != null)
+                if (m_placeRotationHandler != null)
                 {
-                    values.Item2 = _placeRotationHandler(percent);
+                    values.Item2 = m_placeRotationHandler(percent);
                 }
-                if (_scaleHandler != null)
+                if (m_scaleHandler != null)
                 {
-                    values.Item3 = _scaleHandler(percent);
+                    values.Item3 = m_scaleHandler(percent);
                 }
                 return values;
             }
@@ -684,66 +684,66 @@ namespace Dreamteck.Splines
             public (Vector2, float, Vector3) GetCustomExtrudeValues(double percent)
             {
                 (Vector2, float, Vector3) values = (Vector2.zero, 0f, Vector3.one);
-                if (_offsetHandler != null)
+                if (m_offsetHandler != null)
                 {
-                    values.Item1 = _offsetHandler(percent);
+                    values.Item1 = m_offsetHandler(percent);
                 }
-                if (_extrudeRotationHandler != null)
+                if (m_extrudeRotationHandler != null)
                 {
-                    values.Item2 = _extrudeRotationHandler(percent);
+                    values.Item2 = m_extrudeRotationHandler(percent);
                 }
-                if (_scaleHandler != null)
+                if (m_scaleHandler != null)
                 {
-                    values.Item3 = _scaleHandler(percent);
+                    values.Item3 = m_scaleHandler(percent);
                 }
                 return values;
             }
 
             public Vector2 NextRandomOffset()
             {
-                if (_randomOffset) return new Vector2(Mathf.Lerp(_minOffset.x, _maxOffset.x, (float)_offsetRandom.NextDouble()), Mathf.Lerp(_minOffset.y, _maxOffset.y, (float)_offsetRandom.NextDouble()));
-                return _minOffset;
+                if (m_randomOffset) return new Vector2(Mathf.Lerp(m_minOffset.x, m_maxOffset.x, (float)m_offsetRandom.NextDouble()), Mathf.Lerp(m_minOffset.y, m_maxOffset.y, (float)m_offsetRandom.NextDouble()));
+                return m_minOffset;
             }
 
             public Quaternion NextRandomQuaternion()
             {
-                if (_randomRotation) return Quaternion.Euler(new Vector3(Mathf.Lerp(_minRotation.x, _maxRotation.x, (float)_rotationRandom.NextDouble()), Mathf.Lerp(_minRotation.y, _maxRotation.y, (float)_rotationRandom.NextDouble()), Mathf.Lerp(_minRotation.z, _maxRotation.z, (float)_rotationRandom.NextDouble())));
-                return Quaternion.Euler(_minRotation);
+                if (m_randomRotation) return Quaternion.Euler(new Vector3(Mathf.Lerp(m_minRotation.x, m_maxRotation.x, (float)m_rotationRandom.NextDouble()), Mathf.Lerp(m_minRotation.y, m_maxRotation.y, (float)m_rotationRandom.NextDouble()), Mathf.Lerp(m_minRotation.z, m_maxRotation.z, (float)m_rotationRandom.NextDouble())));
+                return Quaternion.Euler(m_minRotation);
             }
 
             public float NextRandomAngle()
             {
-                if (_randomRotation) return Mathf.Lerp(_minRotation.z, _maxRotation.z, (float)_rotationRandom.NextDouble());
-                return _minRotation.z;
+                if (m_randomRotation) return Mathf.Lerp(m_minRotation.z, m_maxRotation.z, (float)m_rotationRandom.NextDouble());
+                return m_minRotation.z;
             }
 
             public Vector3 NextRandomScale()
             {
-                if (_randomScale)
+                if (m_randomScale)
                 {
-                    if (_uniformRandomScale) return Vector3.Lerp(new Vector3(_minScale.x, _minScale.y, 1f), new Vector3(_maxScale.x, _maxScale.y, 1f), (float)_scaleRandom.NextDouble());
-                    return new Vector3(Mathf.Lerp(_minScale.x, _maxScale.x, (float)_scaleRandom.NextDouble()), Mathf.Lerp(_minScale.y, _maxScale.y, (float)_scaleRandom.NextDouble()), 1f);
+                    if (m_uniformRandomScale) return Vector3.Lerp(new Vector3(m_minScale.x, m_minScale.y, 1f), new Vector3(m_maxScale.x, m_maxScale.y, 1f), (float)m_scaleRandom.NextDouble());
+                    return new Vector3(Mathf.Lerp(m_minScale.x, m_maxScale.x, (float)m_scaleRandom.NextDouble()), Mathf.Lerp(m_minScale.y, m_maxScale.y, (float)m_scaleRandom.NextDouble()), 1f);
                 }
-                return new Vector3(_minScale.x, _minScale.y, 1f);
+                return new Vector3(m_minScale.x, m_minScale.y, 1f);
             }
 
             public Vector3 NextPlaceScale()
             {
-                if (_randomScale)
+                if (m_randomScale)
                 {
-                    if (_uniformRandomScale) return Vector3.Lerp(_minScale, _maxScale, (float)_scaleRandom.NextDouble());
-                    return new Vector3(Mathf.Lerp(_minScale.x, _maxScale.x, (float)_scaleRandom.NextDouble()), Mathf.Lerp(_minScale.y, _maxScale.y, (float)_scaleRandom.NextDouble()), Mathf.Lerp(_minScale.z, _maxScale.z, (float)_scaleRandom.NextDouble()));
+                    if (m_uniformRandomScale) return Vector3.Lerp(m_minScale, m_maxScale, (float)m_scaleRandom.NextDouble());
+                    return new Vector3(Mathf.Lerp(m_minScale.x, m_maxScale.x, (float)m_scaleRandom.NextDouble()), Mathf.Lerp(m_minScale.y, m_maxScale.y, (float)m_scaleRandom.NextDouble()), Mathf.Lerp(m_minScale.z, m_maxScale.z, (float)m_scaleRandom.NextDouble()));
                 }
-                return _minScale;
+                return m_minScale;
             }
 
             public MeshDefinition NextMesh()
             {
-                if (_randomOrder) return meshes[iterationRandom.Next(meshes.Count)];
+                if (m_randomOrder) return m_meshes[m_iterationRandom.Next(m_meshes.Count)];
                 else
                 {
-                    if (iterator >= meshes.Count) iterator = 0;
-                    return meshes[iterator++];
+                    if (m_iterator >= m_meshes.Count) m_iterator = 0;
+                    return m_meshes[m_iterator++];
                 }
             }
 
@@ -754,7 +754,7 @@ namespace Dreamteck.Splines
 
             void Refresh()
             {
-                for (int i = 0; i < meshes.Count; i++) meshes[i].Refresh();
+                for (int i = 0; i < m_meshes.Count; i++) m_meshes[i].Refresh();
                 Rebuild();
             }
 
@@ -801,62 +801,62 @@ namespace Dreamteck.Splines
                 public List<Submesh> subMeshes = new List<Submesh>();
                 [SerializeField]
                 [HideInInspector]
-                public TS_Bounds bounds = new TS_Bounds(Vector3.zero, Vector3.zero);
+                public TsBounds bounds = new TsBounds(Vector3.zero, Vector3.zero);
                 [SerializeField]
                 [HideInInspector]
                 public List<VertexGroup> vertexGroups = new List<VertexGroup>();
                 [SerializeField]
                 [HideInInspector]
-                private Mesh _mesh = null;
+                private Mesh m_mesh = null;
                 [SerializeField]
                 [HideInInspector]
-                private Vector3 _rotation = Vector3.zero;
+                private Vector3 m_rotation = Vector3.zero;
                 [SerializeField]
                 [HideInInspector]
-                private Vector3 _offset = Vector3.zero;
+                private Vector3 m_offset = Vector3.zero;
                 [SerializeField]
                 [HideInInspector]
-                private Vector3 _scale = Vector3.one;
+                private Vector3 m_scale = Vector3.one;
                 [SerializeField]
                 [HideInInspector]
-                private Vector2 _uvScale = Vector2.one;
+                private Vector2 m_uvScale = Vector2.one;
                 [SerializeField]
                 [HideInInspector]
-                private Vector2 _uvOffset = Vector2.zero;
+                private Vector2 m_uvOffset = Vector2.zero;
                 [SerializeField]
                 [HideInInspector]
-                private float _uvRotation = 0f;
+                private float m_uvRotation = 0f;
                 [SerializeField]
                 [HideInInspector]
-                private MirrorMethod _mirror = MirrorMethod.None;
+                private MirrorMethod m_mirror = MirrorMethod.None;
                 [SerializeField]
                 [HideInInspector]
                 public BoundsSpacing _spacing = new BoundsSpacing();
 
                 [SerializeField]
                 [HideInInspector]
-                private float _vertexGroupingMargin = 0f;
+                private float m_vertexGroupingMargin = 0f;
                 [SerializeField]
                 [HideInInspector]
-                private bool _removeInnerFaces = false;
+                private bool m_removeInnerFaces = false;
                 [SerializeField]
                 [HideInInspector]
-                private bool _flipFaces = false;
+                private bool m_flipFaces = false;
                 [SerializeField]
                 [HideInInspector]
-                private bool _doubleSided = false;
+                private bool m_doubleSided = false;
 
                 public Mesh mesh
                 {
                     get
                     {
-                        return _mesh;
+                        return m_mesh;
                     }
                     set
                     {
-                        if (_mesh != value)
+                        if (m_mesh != value)
                         {
-                            _mesh = value;
+                            m_mesh = value;
                             Refresh();
                         }
                     }
@@ -866,13 +866,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _rotation;
+                        return m_rotation;
                     }
                     set
                     {
                         if (rotation != value)
                         {
-                            _rotation = value;
+                            m_rotation = value;
                             Refresh();
                         }
                     }
@@ -882,13 +882,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _offset;
+                        return m_offset;
                     }
                     set
                     {
-                        if (_offset != value)
+                        if (m_offset != value)
                         {
-                            _offset = value;
+                            m_offset = value;
                             Refresh();
                         }
                     }
@@ -898,13 +898,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _scale;
+                        return m_scale;
                     }
                     set
                     {
-                        if (_scale != value)
+                        if (m_scale != value)
                         {
-                            _scale = value;
+                            m_scale = value;
                             Refresh();
                         }
                     }
@@ -930,13 +930,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _uvScale;
+                        return m_uvScale;
                     }
                     set
                     {
-                        if (_uvScale != value)
+                        if (m_uvScale != value)
                         {
-                            _uvScale = value;
+                            m_uvScale = value;
                             Refresh();
                         }
                     }
@@ -946,13 +946,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _uvOffset;
+                        return m_uvOffset;
                     }
                     set
                     {
-                        if (_uvOffset != value)
+                        if (m_uvOffset != value)
                         {
-                            _uvOffset = value;
+                            m_uvOffset = value;
                             Refresh();
                         }
                     }
@@ -962,13 +962,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _uvRotation;
+                        return m_uvRotation;
                     }
                     set
                     {
-                        if (_uvRotation != value)
+                        if (m_uvRotation != value)
                         {
-                            _uvRotation = value;
+                            m_uvRotation = value;
                             Refresh();
                         }
                     }
@@ -978,13 +978,13 @@ namespace Dreamteck.Splines
                 {
                     get
                     {
-                        return _vertexGroupingMargin;
+                        return m_vertexGroupingMargin;
                     }
                     set
                     {
-                        if (_vertexGroupingMargin != value)
+                        if (m_vertexGroupingMargin != value)
                         {
-                            _vertexGroupingMargin = value;
+                            m_vertexGroupingMargin = value;
                             Refresh();
                         }
                     }
@@ -992,12 +992,12 @@ namespace Dreamteck.Splines
 
                 public MirrorMethod mirror
                 {
-                    get { return _mirror; }
+                    get { return m_mirror; }
                     set
                     {
-                        if (_mirror != value)
+                        if (m_mirror != value)
                         {
-                            _mirror = value;
+                            m_mirror = value;
                             Refresh();
                         }
                     }
@@ -1005,12 +1005,12 @@ namespace Dreamteck.Splines
 
                 public bool removeInnerFaces
                 {
-                    get { return _removeInnerFaces; }
+                    get { return m_removeInnerFaces; }
                     set
                     {
-                        if (_removeInnerFaces != value)
+                        if (m_removeInnerFaces != value)
                         {
-                            _removeInnerFaces = value;
+                            m_removeInnerFaces = value;
                             Refresh();
                         }
                     }
@@ -1018,12 +1018,12 @@ namespace Dreamteck.Splines
 
                 public bool flipFaces
                 {
-                    get { return _flipFaces; }
+                    get { return m_flipFaces; }
                     set
                     {
-                        if (_flipFaces != value)
+                        if (m_flipFaces != value)
                         {
-                            _flipFaces = value;
+                            m_flipFaces = value;
                             Refresh();
                         }
                     }
@@ -1031,12 +1031,12 @@ namespace Dreamteck.Splines
 
                 public bool doubleSided
                 {
-                    get { return _doubleSided; }
+                    get { return m_doubleSided; }
                     set
                     {
-                        if (_doubleSided != value)
+                        if (m_doubleSided != value)
                         {
-                            _doubleSided = value;
+                            m_doubleSided = value;
                             Refresh();
                         }
                     }
@@ -1044,7 +1044,7 @@ namespace Dreamteck.Splines
 
                 internal MeshDefinition Copy()
                 {
-                    MeshDefinition target = new MeshDefinition(_mesh);
+                    MeshDefinition target = new MeshDefinition(m_mesh);
                     target.vertices = new Vector3[vertices.Length];
                     target.normals = new Vector3[normals.Length];
                     target.colors = new Color[colors.Length];
@@ -1065,7 +1065,7 @@ namespace Dreamteck.Splines
                     uv4.CopyTo(target.uv4, 0);
                     triangles.CopyTo(target.triangles, 0);
 
-                    target.bounds = new TS_Bounds(bounds.min, bounds.max);
+                    target.bounds = new TsBounds(bounds.min, bounds.max);
                     target.subMeshes = new List<Submesh>();
                     for (int i = 0; i < subMeshes.Count; i++)
                     {
@@ -1073,27 +1073,27 @@ namespace Dreamteck.Splines
                         subMeshes[i].triangles.CopyTo(target.subMeshes[target.subMeshes.Count - 1].triangles, 0);
                     }
 
-                    target._mirror = _mirror;
-                    target._offset = _offset;
-                    target._rotation = _rotation;
-                    target._scale = _scale;
-                    target._uvOffset = _uvOffset;
-                    target._uvScale = _uvScale;
-                    target._uvRotation = _uvRotation;
-                    target._flipFaces = _flipFaces;
-                    target._doubleSided = _doubleSided;
+                    target.m_mirror = m_mirror;
+                    target.m_offset = m_offset;
+                    target.m_rotation = m_rotation;
+                    target.m_scale = m_scale;
+                    target.m_uvOffset = m_uvOffset;
+                    target.m_uvScale = m_uvScale;
+                    target.m_uvRotation = m_uvRotation;
+                    target.m_flipFaces = m_flipFaces;
+                    target.m_doubleSided = m_doubleSided;
                     return target;
                 }
 
                 public MeshDefinition(Mesh input)
                 {
-                    _mesh = input;
+                    m_mesh = input;
                     Refresh();
                 }
 
                 public void Refresh()
                 {
-                    if (_mesh == null)
+                    if (m_mesh == null)
                     {
                         vertices = new Vector3[0];
                         normals = new Vector3[0];
@@ -1108,30 +1108,30 @@ namespace Dreamteck.Splines
                         vertexGroups = new List<VertexGroup>();
                         return;
                     }
-                    if (vertices.Length != _mesh.vertexCount) vertices = new Vector3[_mesh.vertexCount];
-                    if (normals.Length != _mesh.normals.Length) normals = new Vector3[_mesh.normals.Length];
-                    if (colors.Length != _mesh.colors.Length) colors = new Color[_mesh.colors.Length];
-                    if (uv.Length != _mesh.uv.Length) uv = new Vector2[_mesh.uv.Length];
-                    if (uv2.Length != _mesh.uv2.Length) uv2 = new Vector2[_mesh.uv2.Length];
-                    if (uv3.Length != _mesh.uv3.Length) uv3 = new Vector2[_mesh.uv3.Length];
-                    if (uv4.Length != _mesh.uv4.Length) uv4 = new Vector2[_mesh.uv4.Length];
-                    if (tangents.Length != _mesh.tangents.Length) tangents = new Vector4[_mesh.tangents.Length];
-                    if (triangles.Length != _mesh.triangles.Length) triangles = new int[_mesh.triangles.Length];
+                    if (vertices.Length != m_mesh.vertexCount) vertices = new Vector3[m_mesh.vertexCount];
+                    if (normals.Length != m_mesh.normals.Length) normals = new Vector3[m_mesh.normals.Length];
+                    if (colors.Length != m_mesh.colors.Length) colors = new Color[m_mesh.colors.Length];
+                    if (uv.Length != m_mesh.uv.Length) uv = new Vector2[m_mesh.uv.Length];
+                    if (uv2.Length != m_mesh.uv2.Length) uv2 = new Vector2[m_mesh.uv2.Length];
+                    if (uv3.Length != m_mesh.uv3.Length) uv3 = new Vector2[m_mesh.uv3.Length];
+                    if (uv4.Length != m_mesh.uv4.Length) uv4 = new Vector2[m_mesh.uv4.Length];
+                    if (tangents.Length != m_mesh.tangents.Length) tangents = new Vector4[m_mesh.tangents.Length];
+                    if (triangles.Length != m_mesh.triangles.Length) triangles = new int[m_mesh.triangles.Length];
 
-                    vertices = _mesh.vertices;
-                    normals = _mesh.normals;
-                    colors = _mesh.colors;
-                    uv = _mesh.uv;
-                    uv2 = _mesh.uv2;
-                    uv3 = _mesh.uv3;
-                    uv4 = _mesh.uv4;
-                    tangents = _mesh.tangents;
-                    triangles = _mesh.triangles;
-                    colors = _mesh.colors;
+                    vertices = m_mesh.vertices;
+                    normals = m_mesh.normals;
+                    colors = m_mesh.colors;
+                    uv = m_mesh.uv;
+                    uv2 = m_mesh.uv2;
+                    uv3 = m_mesh.uv3;
+                    uv4 = m_mesh.uv4;
+                    tangents = m_mesh.tangents;
+                    triangles = m_mesh.triangles;
+                    colors = m_mesh.colors;
 
-                    while (subMeshes.Count > _mesh.subMeshCount) subMeshes.RemoveAt(0);
-                    while (subMeshes.Count < _mesh.subMeshCount) subMeshes.Add(new Submesh(new int[0]));
-                    for (int i = 0; i < subMeshes.Count; i++) subMeshes[i].triangles = _mesh.GetTriangles(i);
+                    while (subMeshes.Count > m_mesh.subMeshCount) subMeshes.RemoveAt(0);
+                    while (subMeshes.Count < m_mesh.subMeshCount) subMeshes.Add(new Submesh(new int[0]));
+                    for (int i = 0; i < subMeshes.Count; i++) subMeshes[i].triangles = m_mesh.GetTriangles(i);
 
 
                     if (colors.Length != vertices.Length)
@@ -1140,16 +1140,16 @@ namespace Dreamteck.Splines
                         for (int i = 0; i < colors.Length; i++) colors[i] = Color.white;
                     }
                     Mirror();
-                    if (_doubleSided) DoubleSided();
-                    else if (_flipFaces) FlipFaces();
+                    if (m_doubleSided) DoubleSided();
+                    else if (m_flipFaces) FlipFaces();
                     TransformVertices();
                     CalculateBounds();
-                    if (_removeInnerFaces) RemoveInnerFaces();
+                    if (m_removeInnerFaces) RemoveInnerFaces();
                     GroupVertices();
 
                     if (bounds.size.z < 0.002f || bounds.size.x < 0.002f || bounds.size.y < 0.002f)
                     {
-                        Debug.LogWarning($"The size of [{_mesh.name}]'s bounds is too small! This could cause an issue if the [Auto Count] option is enabled!");
+                        Debug.LogWarning($"The size of [{m_mesh.name}]'s bounds is too small! This could cause an issue if the [Auto Count] option is enabled!");
                     }
                 }
 
@@ -1187,7 +1187,7 @@ namespace Dreamteck.Splines
 
                 void FlipFaces()
                 {
-                    TS_Mesh temp = new TS_Mesh();
+                    TsMesh temp = new TsMesh();
                     temp.normals = normals;
                     temp.tangents = tangents;
                     temp.triangles = triangles;
@@ -1197,7 +1197,7 @@ namespace Dreamteck.Splines
 
                 void DoubleSided()
                 {
-                    TS_Mesh temp = new TS_Mesh();
+                    TsMesh temp = new TsMesh();
                     temp.vertices = vertices;
                     temp.normals = normals;
                     temp.tangents = tangents;
@@ -1221,7 +1221,7 @@ namespace Dreamteck.Splines
                     for (int i = 0; i < subMeshes.Count; i++) subMeshes[i].triangles = temp.subMeshes[i];
                 }
 
-                public void Write(TS_Mesh target, int forceMaterialId = -1)
+                public void Write(TsMesh target, int forceMaterialId = -1)
                 {
                     if (target.vertices.Length != vertices.Length) target.vertices = new Vector3[vertices.Length];
                     if (target.normals.Length != normals.Length) target.normals = new Vector3[normals.Length];
@@ -1295,8 +1295,8 @@ namespace Dreamteck.Splines
 
                 private void Mirror()
                 {
-                    if (_mirror == MirrorMethod.None) return;
-                    switch (_mirror)
+                    if (m_mirror == MirrorMethod.None) return;
+                    switch (m_mirror)
                     {
                         case MirrorMethod.X:
                             for (int i = 0; i < vertices.Length; i++)
@@ -1341,7 +1341,7 @@ namespace Dreamteck.Splines
                 void TransformVertices()
                 {
                     Matrix4x4 vertexMatrix = new Matrix4x4();
-                    vertexMatrix.SetTRS(_offset, Quaternion.Euler(_rotation), _scale);
+                    vertexMatrix.SetTRS(m_offset, Quaternion.Euler(m_rotation), m_scale);
                     Matrix4x4 normalMatrix = vertexMatrix.inverse.transpose;
                     for (int i = 0; i < vertices.Length; i++)
                     {
@@ -1351,9 +1351,9 @@ namespace Dreamteck.Splines
                     for (int i = 0; i < tangents.Length; i++) tangents[i] = normalMatrix.MultiplyVector(tangents[i]);
                     for (int i = 0; i < uv.Length; i++)
                     {
-                        uv[i].x *= _uvScale.x;
-                        uv[i].y *= _uvScale.y;
-                        uv[i] += _uvOffset;
+                        uv[i].x *= m_uvScale.x;
+                        uv[i].y *= m_uvScale.y;
+                        uv[i] += m_uvOffset;
                         uv[i] = Quaternion.AngleAxis(uvRotation, Vector3.forward) * uv[i];
                     }
                 }
@@ -1365,7 +1365,7 @@ namespace Dreamteck.Splines
                     for (int i = 0; i < vertices.Length; i++)
                     {
                         float value = vertices[i].z;
-                        double percent = DMath.Clamp01(DMath.InverseLerp(bounds.min.z, bounds.max.z, value));
+                        double percent = Dmath.Clamp01(Dmath.InverseLerp(bounds.min.z, bounds.max.z, value));
                         int index = FindInsertIndex(vertices[i], value);
                         if (index >= vertexGroups.Count) vertexGroups.Add(new VertexGroup(value, percent, new int[] { i }));
                         else

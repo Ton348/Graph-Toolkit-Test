@@ -14,8 +14,8 @@ public sealed class RequestBuyBuildingNodeModel : GameGraphSuccessFailNodeModel
 	public const string QuestActionOption = "QuestAction";
 	public const string QuestIdOption = "QuestId";
 
-	protected override string DefaultTitle => "Купить здание";
-	protected override string DefaultDescription => "Запрашивает покупку здания.";
+	protected override string defaultTitle => "Купить здание";
+	protected override string defaultDescription => "Запрашивает покупку здания.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

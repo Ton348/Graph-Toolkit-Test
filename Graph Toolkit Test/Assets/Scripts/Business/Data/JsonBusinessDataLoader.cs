@@ -3,11 +3,11 @@ using UnityEngine;
 
 public sealed class JsonBusinessDataLoader
 {
-    private readonly string rootPath;
+    private readonly string m_rootPath;
 
     public JsonBusinessDataLoader(string rootPath)
     {
-        this.rootPath = rootPath;
+        this.m_rootPath = rootPath;
     }
 
     public BusinessTypeDatabaseData LoadBusinessTypes() => Load<BusinessTypeDatabaseData>("business_types.json", "business types");
@@ -19,7 +19,7 @@ public sealed class JsonBusinessDataLoader
 
     private T Load<T>(string fileName, string label) where T : class
     {
-        string path = Path.Combine(rootPath, fileName);
+        string path = Path.Combine(m_rootPath, fileName);
         if (!File.Exists(path))
         {
             Debug.LogError($"[JsonBusinessDataLoader] Missing {label} file: {path}");

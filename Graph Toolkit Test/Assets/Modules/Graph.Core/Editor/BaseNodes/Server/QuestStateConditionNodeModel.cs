@@ -13,8 +13,8 @@ namespace GraphCore.BaseNodes.Editor.Server
 		public const string TruePort = "True";
 		public const string FalsePort = "False";
 
-		protected override string DefaultTitle => "Проверка квеста";
-		protected override string DefaultDescription => "Проверяет состояние квеста";
+		protected override string defaultTitle => "Проверка квеста";
+		protected override string defaultDescription => "Проверяет состояние квеста";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

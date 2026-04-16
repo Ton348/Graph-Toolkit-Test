@@ -10,8 +10,8 @@ namespace GraphCore.BaseNodes.Editor.Cinematics
 	{
 		public const string CutsceneReferenceOption = "CutsceneReference";
 
-		protected override string DefaultTitle => "Запуск катсцены";
-		protected override string DefaultDescription => "Запускает катсцену через Cinemachine";
+		protected override string defaultTitle => "Запуск катсцены";
+		protected override string defaultDescription => "Запускает катсцену через Cinemachine";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

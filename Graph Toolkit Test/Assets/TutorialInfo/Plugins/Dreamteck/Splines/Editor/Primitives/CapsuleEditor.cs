@@ -15,13 +15,13 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Capsule();
+            m_primitive = new Capsule();
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Capsule capsule = (Capsule)primitive;
+            base.OnGui();
+            Capsule capsule = (Capsule)m_primitive;
             capsule.radius = EditorGUILayout.FloatField("Radius", capsule.radius);
             capsule.height = EditorGUILayout.FloatField("Height", capsule.height);
         }

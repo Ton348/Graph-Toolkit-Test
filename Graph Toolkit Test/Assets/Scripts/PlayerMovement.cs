@@ -10,17 +10,17 @@ public class PlayerMovement : MonoBehaviour
     public float gravity = -9.81f;
 
     [Header("Animation")]
-    [SerializeField] private Animator animator;
+    [SerializeField] private Animator m_animator;
 
-    private CharacterController controller;
-    private Vector3 velocity;
+    private CharacterController m_controller;
+    private Vector3 m_velocity;
 
     private void Awake()
     {
-        controller = GetComponent<CharacterController>();
-        if (animator == null)
+        m_controller = GetComponent<CharacterController>();
+        if (m_animator == null)
         {
-            animator = GetComponentInChildren<Animator>();
+            m_animator = GetComponentInChildren<Animator>();
         }
     }
 
@@ -42,23 +42,23 @@ public class PlayerMovement : MonoBehaviour
         float currentSpeed = isRunning ? runSpeed : moveSpeed;
         Vector3 move = transform.forward * vertical;
 
-        controller.Move(move * currentSpeed * Time.deltaTime);
+        m_controller.Move(move * currentSpeed * Time.deltaTime);
 
         // Gravity
-        if (controller.isGrounded && velocity.y < 0f)
+        if (m_controller.isGrounded && m_velocity.y < 0f)
         {
-            velocity.y = -2f;
+            m_velocity.y = -2f;
         }
 
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(Vector3.up * velocity.y * Time.deltaTime);
+        m_velocity.y += gravity * Time.deltaTime;
+        m_controller.Move(Vector3.up * m_velocity.y * Time.deltaTime);
 
         // Animation (bool params: idle/walk)
-        if (animator != null)
+        if (m_animator != null)
         {
             bool isMoving = Mathf.Abs(vertical) > 0.01f;
-            animator.SetBool("idle", !isMoving);
-            animator.SetBool("walk", isMoving);
+            m_animator.SetBool("idle", !isMoving);
+            m_animator.SetBool("walk", isMoving);
         }
     }
 }

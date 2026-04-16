@@ -9,9 +9,9 @@ namespace Dreamteck.Splines.Editor
     public class TubeGeneratorEditor : MeshGenEditor
     {
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             TubeGenerator tubeGenerator = (TubeGenerator)target;
             serializedObject.Update();
             SerializedProperty sides = serializedObject.FindProperty("_sides");
@@ -32,7 +32,7 @@ namespace Dreamteck.Splines.Editor
             if (sides.intValue < 3) sides.intValue = 3;
             if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
 
-            UVControls(tubeGenerator);
+            Uvcontrols(tubeGenerator);
             SerializedProperty uvTwist = serializedObject.FindProperty("_uvTwist");
             EditorGUILayout.PropertyField(uvTwist, new GUIContent("UV Twist"));
             if (capMode.intValue != 0)

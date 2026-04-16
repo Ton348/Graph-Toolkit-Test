@@ -10,8 +10,8 @@ namespace GraphCore.BaseNodes.Editor.Flow
 	{
 		public const string DelaySecondsOption = "DelaySeconds";
 
-		protected override string DefaultTitle => "Задержка";
-		protected override string DefaultDescription => "Останавливает выполнение следующих нод на время";
+		protected override string defaultTitle => "Задержка";
+		protected override string defaultDescription => "Останавливает выполнение следующих нод на время";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

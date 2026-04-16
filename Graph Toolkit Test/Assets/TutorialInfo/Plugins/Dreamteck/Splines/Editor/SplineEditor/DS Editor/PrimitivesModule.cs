@@ -10,28 +10,28 @@ namespace Dreamteck.Splines.Editor
 
     public class PrimitivesModule : PointTransformModule
     {
-        DreamteckSplinesEditor dsEditor = null;
-        private PrimitiveEditor[] primitiveEditors;
-        private string[] primitiveNames;
-        private SplinePreset[] presets;
-        private string[] presetNames;
-        int mode = 0, selectedPrimitive = 0, selectedPreset = 0;
-        bool createPresetMode = false;
-        GUIContent[] toolbarContents = new GUIContent[2];
-        Dreamteck.Editor.Toolbar toolbar;
+        DreamteckSplinesEditor m_dsEditor = null;
+        private PrimitiveEditor[] m_primitiveEditors;
+        private string[] m_primitiveNames;
+        private SplinePreset[] m_presets;
+        private string[] m_presetNames;
+        int m_mode = 0, m_selectedPrimitive = 0, m_selectedPreset = 0;
+        bool m_createPresetMode = false;
+        GUIContent[] m_toolbarContents = new GUIContent[2];
+        Dreamteck.Editor.Toolbar m_toolbar;
 
-        private string savePresetName = "", savePresetDescription = "";
+        private string m_savePresetName = "", m_savePresetDescription = "";
 
-        private bool lastClosed = false;
-        private Spline.Type lastType = Spline.Type.Bezier;
+        private bool m_lastClosed = false;
+        private Spline.Type m_lastType = Spline.Type.Bezier;
 
 
         public PrimitivesModule(SplineEditor editor) : base(editor)
         {
-            dsEditor = ((DreamteckSplinesEditor)editor);
-            toolbarContents[0] = new GUIContent("Primitives", "Procedural Primitives");
-            toolbarContents[1] = new GUIContent("Presets", "Saved spline presets");
-            toolbar = new Dreamteck.Editor.Toolbar(toolbarContents, toolbarContents);
+            m_dsEditor = ((DreamteckSplinesEditor)editor);
+            m_toolbarContents[0] = new GUIContent("Primitives", "Procedural Primitives");
+            m_toolbarContents[1] = new GUIContent("Presets", "Saved spline presets");
+            m_toolbar = new Dreamteck.Editor.Toolbar(m_toolbarContents, m_toolbarContents);
         }
 
         public override GUIContent GetIconOff()
@@ -47,26 +47,26 @@ namespace Dreamteck.Splines.Editor
         public override void LoadState()
         {
             base.LoadState();
-            selectedPrimitive = LoadInt("selectedPrimitive");
-            mode = LoadInt("mode");
-            createPresetMode = LoadBool("createPresetMode");
+            m_selectedPrimitive = LoadInt("selectedPrimitive");
+            m_mode = LoadInt("mode");
+            m_createPresetMode = LoadBool("createPresetMode");
         }
 
         public override void SaveState()
         {
             base.SaveState();
-            SaveInt("selectedPrimitive", selectedPrimitive);
-            SaveInt("mode", mode);
-            SaveBool("createPresetMode", createPresetMode);
+            SaveInt("selectedPrimitive", m_selectedPrimitive);
+            SaveInt("mode", m_mode);
+            SaveBool("createPresetMode", m_createPresetMode);
         }
 
         public override void Select()
         {
             base.Select();
-            lastClosed = editor.GetSplineClosed();
-            lastType = editor.GetSplineType();
-            if(mode == 0) LoadPrimitives();
-            else if(!createPresetMode) LoadPresets();
+            m_lastClosed = m_editor.GetSplineClosed();
+            m_lastType = m_editor.GetSplineType();
+            if(m_mode == 0) LoadPrimitives();
+            else if(!m_createPresetMode) LoadPresets();
         }
 
         public override void Deselect()
@@ -90,26 +90,26 @@ namespace Dreamteck.Splines.Editor
 
         public override void Revert()
         {
-            editor.SetSplineType(lastType);
-            editor.SetSplineClosed(lastClosed);
+            m_editor.SetSplineType(m_lastType);
+            m_editor.SetSplineClosed(m_lastClosed);
             base.Revert();
         }
 
         protected override void OnDrawInspector()
         {
             EditorGUI.BeginChangeCheck();
-            toolbar.Draw(ref mode);
+            m_toolbar.Draw(ref m_mode);
             if (EditorGUI.EndChangeCheck())
             {
-                if (mode == 0) LoadPrimitives();
-                else if (!createPresetMode) LoadPresets();
+                if (m_mode == 0) LoadPrimitives();
+                else if (!m_createPresetMode) LoadPresets();
                 
             }
             if (selectedPoints.Count > 0) ClearSelection();
-            if (mode == 0) PrimitivesGUI();
-            else PresetsGUI();
+            if (m_mode == 0) PrimitivesGui();
+            else PresetsGui();
 
-            if (IsDirty() && (!createPresetMode || mode == 0))
+            if (IsDirty() && (!m_createPresetMode || m_mode == 0))
             {
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Apply")) Apply();
@@ -118,69 +118,69 @@ namespace Dreamteck.Splines.Editor
             }
         }
 
-        void PrimitivesGUI()
+        void PrimitivesGui()
         {
-            int last = selectedPrimitive;
-            selectedPrimitive = EditorGUILayout.Popup(selectedPrimitive, primitiveNames);
-            if (last != selectedPrimitive)
+            int last = m_selectedPrimitive;
+            m_selectedPrimitive = EditorGUILayout.Popup(m_selectedPrimitive, m_primitiveNames);
+            if (last != m_selectedPrimitive)
             {
-                primitiveEditors[selectedPrimitive].Open(dsEditor);
-                primitiveEditors[selectedPrimitive].Update();
+                m_primitiveEditors[m_selectedPrimitive].Open(m_dsEditor);
+                m_primitiveEditors[m_selectedPrimitive].Update();
                 TransformPoints();
             }
 
             EditorGUI.BeginChangeCheck();
-            primitiveEditors[selectedPrimitive].Draw();
+            m_primitiveEditors[m_selectedPrimitive].Draw();
             if (EditorGUI.EndChangeCheck())
             {
                 TransformPoints();
             }
         }
 
-        void PresetsGUI()
+        void PresetsGui()
         {
-            if (createPresetMode)
+            if (m_createPresetMode)
             {
-                savePresetName = EditorGUILayout.TextField("Preset name", savePresetName);
+                m_savePresetName = EditorGUILayout.TextField("Preset name", m_savePresetName);
                 EditorGUILayout.LabelField("Description");
-                savePresetDescription = EditorGUILayout.TextArea(savePresetDescription);
+                m_savePresetDescription = EditorGUILayout.TextArea(m_savePresetDescription);
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("Save"))
                 {
-                    string lower = savePresetName.ToLower();
+                    string lower = m_savePresetName.ToLower();
                     string noSlashes = lower.Replace('/', '_');
                     noSlashes = noSlashes.Replace('\\', '_');
                     string noSpaces = noSlashes.Replace(' ', '_');
                     SplinePreset preset = new SplinePreset(points, isClosed, splineType);
-                    preset.name = savePresetName;
-                    preset.description = savePresetDescription;
+                    preset.name = m_savePresetName;
+                    preset.description = m_savePresetDescription;
                     preset.Save(noSpaces);
-                    createPresetMode = false;
+                    m_createPresetMode = false;
                     LoadPresets();
-                    savePresetName = savePresetDescription = "";
+                    m_savePresetName = m_savePresetDescription = "";
                 }
-                if (GUILayout.Button("Cancel")) createPresetMode = false;
+                if (GUILayout.Button("Cancel")) m_createPresetMode = false;
                 EditorGUILayout.EndHorizontal();
                 return;
             }
-            if (GUILayout.Button("Create New")) createPresetMode = true;
+            if (GUILayout.Button("Create New")) m_createPresetMode = true;
             EditorGUILayout.Space();
             
             EditorGUILayout.BeginHorizontal();
-            selectedPreset = EditorGUILayout.Popup(selectedPreset, presetNames, GUILayout.MaxWidth(Screen.width / 3f));
-            if (selectedPreset >= 0 && selectedPreset < presets.Length)
+            m_selectedPreset = EditorGUILayout.Popup(m_selectedPreset, m_presetNames, GUILayout.MaxWidth(Screen.width / 3f));
+            if (m_selectedPreset >= 0 && m_selectedPreset < m_presets.Length)
             {
                 if (GUILayout.Button("Use"))
                 {
-                    LoadPreset(selectedPreset);
+                    LoadPreset(m_selectedPreset);
                 }
                 if (GUILayout.Button("Delete", GUILayout.MaxWidth(80)))
                 {
                     if (EditorUtility.DisplayDialog("Delete Preset", "This will permanently delete the preset file. Continue?", "Yes", "No"))
                     {
-                        SplinePreset.Delete(presets[selectedPreset].filename);
+                        SplinePreset.Delete(m_presets[m_selectedPreset].filename);
                         LoadPresets();
-                        if (selectedPreset >= presets.Length) selectedPreset = presets.Length - 1;
+                        if (m_selectedPreset >= m_presets.Length) m_selectedPreset = m_presets.Length - 1;
                     }
                 }
             }
@@ -190,12 +190,12 @@ namespace Dreamteck.Splines.Editor
 
         void TransformPoints()
         {
-            for (int i = 0; i < editor.points.Length; i++)
+            for (int i = 0; i < m_editor.points.Length; i++)
             {
-                editor.points[i].position = dsEditor.spline.transform.TransformPoint(editor.points[i].position);
-                editor.points[i].tangent = dsEditor.spline.transform.TransformPoint(editor.points[i].tangent);
-                editor.points[i].tangent2 = dsEditor.spline.transform.TransformPoint(editor.points[i].tangent2);
-                editor.points[i].normal = dsEditor.spline.transform.TransformDirection(editor.points[i].normal);
+                m_editor.points[i].position = m_dsEditor.spline.transform.TransformPoint(m_editor.points[i].position);
+                m_editor.points[i].tangent = m_dsEditor.spline.transform.TransformPoint(m_editor.points[i].tangent);
+                m_editor.points[i].tangent2 = m_dsEditor.spline.transform.TransformPoint(m_editor.points[i].tangent2);
+                m_editor.points[i].normal = m_dsEditor.spline.transform.TransformDirection(m_editor.points[i].normal);
             }
             RegisterChange();
             SetDirty();
@@ -204,21 +204,21 @@ namespace Dreamteck.Splines.Editor
         void LoadPrimitives()
         {
             List<Type> types = FindDerivedClasses.GetAllDerivedClasses(typeof(PrimitiveEditor));
-            primitiveEditors = new PrimitiveEditor[types.Count];
+            m_primitiveEditors = new PrimitiveEditor[types.Count];
             int count = 0;
-            primitiveNames = new string[types.Count];
+            m_primitiveNames = new string[types.Count];
             foreach (Type t in types)
             {
-                primitiveEditors[count] = (PrimitiveEditor)Activator.CreateInstance(t);
-                primitiveNames[count] = primitiveEditors[count].GetName();
+                m_primitiveEditors[count] = (PrimitiveEditor)Activator.CreateInstance(t);
+                m_primitiveNames[count] = m_primitiveEditors[count].GetName();
                 count++;
             }
 
-            if (selectedPrimitive >= 0 && selectedPrimitive < primitiveEditors.Length)
+            if (m_selectedPrimitive >= 0 && m_selectedPrimitive < m_primitiveEditors.Length)
             {
                 ClearSelection();
-                primitiveEditors[selectedPrimitive].Open(dsEditor);
-                primitiveEditors[selectedPrimitive].Update();
+                m_primitiveEditors[m_selectedPrimitive].Open(m_dsEditor);
+                m_primitiveEditors[m_selectedPrimitive].Update();
                 TransformPoints();
                 SetDirty();
             }
@@ -227,22 +227,22 @@ namespace Dreamteck.Splines.Editor
         void LoadPresets()
         {
             ApplyDialog();
-            presets = SplinePreset.LoadAll();
-            presetNames = new string[presets.Length];
-            for (int i = 0; i < presets.Length; i++)
+            m_presets = SplinePreset.LoadAll();
+            m_presetNames = new string[m_presets.Length];
+            for (int i = 0; i < m_presets.Length; i++)
             {
-                presetNames[i] = presets[i].name;
+                m_presetNames[i] = m_presets[i].name;
             }
             ClearSelection();
         }
 
         void LoadPreset(int index)
         {
-            if (index >= 0 && index < presets.Length)
+            if (index >= 0 && index < m_presets.Length)
             {
-                editor.SetPointsArray(presets[index].points);
-                editor.SetSplineClosed(presets[index].isClosed);
-                editor.SetSplineType(presets[index].type);
+                m_editor.SetPointsArray(m_presets[index].points);
+                m_editor.SetSplineClosed(m_presets[index].isClosed);
+                m_editor.SetSplineType(m_presets[index].type);
                 TransformPoints();
                 FramePoints();
             }

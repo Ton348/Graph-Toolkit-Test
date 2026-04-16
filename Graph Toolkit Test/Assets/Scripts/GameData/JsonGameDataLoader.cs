@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class JsonGameDataLoader
 {
-    private readonly string rootPath;
+    private readonly string m_rootPath;
 
     public JsonGameDataLoader(string rootPath)
     {
-        this.rootPath = rootPath;
+        this.m_rootPath = rootPath;
     }
 
     public QuestDatabaseData LoadQuests()
@@ -52,7 +52,7 @@ public class JsonGameDataLoader
 
     private T Load<T>(string fileName) where T : class
     {
-        string path = Path.Combine(rootPath, fileName);
+        string path = Path.Combine(m_rootPath, fileName);
         if (!File.Exists(path))
         {
             Debug.LogError($"[JsonGameDataLoader] File not found: {path}");

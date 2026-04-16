@@ -6,24 +6,24 @@ using UnityEngine.Networking;
 
 public class RemoteGameServer : IGameServer
 {
-    private readonly string baseUrl;
-    private readonly string playerId;
-    private readonly float timeoutSeconds;
-    private readonly bool debugLog;
+    private readonly string m_baseUrl;
+    private readonly string m_playerId;
+    private readonly float m_timeoutSeconds;
+    private readonly bool m_debugLog;
 
     public RemoteGameServer(string baseUrl, string playerId, float timeoutSeconds, bool debugLog)
     {
-        this.baseUrl = NormalizeBaseUrl(string.IsNullOrEmpty(baseUrl) ? "http://localhost:3000" : baseUrl);
-        this.playerId = string.IsNullOrEmpty(playerId) ? "player" : playerId;
+        this.m_baseUrl = NormalizeBaseUrl(string.IsNullOrEmpty(baseUrl) ? "http://localhost:3000" : baseUrl);
+        this.m_playerId = string.IsNullOrEmpty(playerId) ? "player" : playerId;
         if (timeoutSeconds <= 0f)
         {
-            this.timeoutSeconds = 0f;
+            this.m_timeoutSeconds = 0f;
         }
         else
         {
-            this.timeoutSeconds = Mathf.Clamp(timeoutSeconds, 0.1f, 120f);
+            this.m_timeoutSeconds = Mathf.Clamp(timeoutSeconds, 0.1f, 120f);
         }
-        this.debugLog = debugLog;
+        this.m_debugLog = debugLog;
     }
 
     private string NormalizeBaseUrl(string url)
@@ -44,7 +44,7 @@ public class RemoteGameServer : IGameServer
                     Host = "127.0.0.1"
                 };
                 string normalized = builder.Uri.ToString().TrimEnd('/');
-                if (debugLog)
+                if (m_debugLog)
                 {
                     Debug.Log($"[RemoteGameServer] Normalized baseUrl '{trimmed}' -> '{normalized}'");
                 }
@@ -60,14 +60,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryGetProfileAsync()
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log("[RemoteGameServer] action=get_profile");
         }
         var request = new RemoteProfileRequest
         {
             action = "get_profile",
-            playerId = playerId
+            playerId = m_playerId
         };
 
         return SendRequestAsync(request);
@@ -75,14 +75,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryBuyBuildingAsync(string buildingId, QuestActionType questAction = QuestActionType.None, string questId = null)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=buy_building buildingId='{buildingId}' questAction='{questAction}' questId='{questId}'");
         }
         var request = new RemoteBuyBuildingRequest
         {
             action = "buy_building",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteBuyBuildingData
             {
                 buildingId = buildingId,
@@ -96,14 +96,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryStartQuestAsync(string questId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=start_quest questId='{questId}'");
         }
         var request = new RemoteQuestRequest
         {
             action = "start_quest",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteQuestData { questId = questId }
         };
 
@@ -112,14 +112,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryCompleteQuestAsync(string questId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=complete_quest questId='{questId}'");
         }
         var request = new RemoteQuestRequest
         {
             action = "complete_quest",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteQuestData { questId = questId }
         };
 
@@ -128,14 +128,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryFailQuestAsync(string questId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=fail_quest questId='{questId}'");
         }
         var request = new RemoteQuestRequest
         {
             action = "fail_quest",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteQuestData { questId = questId }
         };
 
@@ -144,14 +144,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryAddMoneyAsync(int amount)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=add_money amount={amount}");
         }
         var request = new RemoteMoneyRequest
         {
             action = "add_money",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteMoneyData { amount = amount }
         };
 
@@ -160,14 +160,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TrySpendMoneyAsync(int amount)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=spend_money amount={amount}");
         }
         var request = new RemoteMoneyRequest
         {
             action = "spend_money",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteMoneyData { amount = amount }
         };
 
@@ -176,14 +176,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=steal amount={amount} canFail={canFail} successChance={successChance}");
         }
         var request = new RemoteStealRequest
         {
             action = "steal",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteStealData { amount = amount, canFail = canFail, successChance = successChance }
         };
 
@@ -192,14 +192,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TrySaveCheckpointAsync(string graphId, string checkpointId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=save_checkpoint graphId='{graphId}' checkpointId='{checkpointId}'");
         }
         var request = new RemoteCheckpointRequest
         {
             action = "save_checkpoint",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteCheckpointData
             {
                 graphId = graphId,
@@ -212,14 +212,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TrySubmitTradeOfferAsync(string buildingId, int offeredAmount)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=submit_trade_offer buildingId='{buildingId}' offeredAmount={offeredAmount}");
         }
         var request = new RemoteTradeOfferRequest
         {
             action = "submit_trade_offer",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteTradeOfferData
             {
                 buildingId = buildingId,
@@ -232,14 +232,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryRentBusinessAsync(string lotId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=rent_business lotId='{lotId}'");
         }
         var request = new RemoteRentBusinessRequest
         {
             action = "rent_business",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteRentBusinessData { lotId = lotId }
         };
 
@@ -248,14 +248,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryAssignBusinessTypeAsync(string lotId, string businessTypeId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=assign_business_type lotId='{lotId}' businessTypeId='{businessTypeId}'");
         }
         var request = new RemoteAssignBusinessTypeRequest
         {
             action = "assign_business_type",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteAssignBusinessTypeData { lotId = lotId, businessTypeId = businessTypeId }
         };
 
@@ -264,14 +264,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryInstallBusinessModuleAsync(string lotId, string moduleId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=install_business_module lotId='{lotId}' moduleId='{moduleId}'");
         }
         var request = new RemoteInstallBusinessModuleRequest
         {
             action = "install_business_module",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteInstallBusinessModuleData { lotId = lotId, moduleId = moduleId }
         };
 
@@ -280,14 +280,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=assign_supplier lotId='{lotId}' supplierId='{supplierId}'");
         }
         var request = new RemoteAssignSupplierRequest
         {
             action = "assign_supplier",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteAssignSupplierData { lotId = lotId, supplierId = supplierId }
         };
 
@@ -296,14 +296,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=hire_business_worker lotId='{lotId}' roleId='{roleId}' contactId='{contactId}'");
         }
         var request = new RemoteHireBusinessWorkerRequest
         {
             action = "hire_business_worker",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteHireBusinessWorkerData { lotId = lotId, roleId = roleId, contactId = contactId }
         };
 
@@ -312,14 +312,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryOpenBusinessAsync(string lotId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=open_business lotId='{lotId}'");
         }
         var request = new RemoteBusinessLotRequest
         {
             action = "open_business",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteBusinessLotData { lotId = lotId }
         };
 
@@ -328,14 +328,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryCloseBusinessAsync(string lotId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=close_business lotId='{lotId}'");
         }
         var request = new RemoteBusinessLotRequest
         {
             action = "close_business",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteBusinessLotData { lotId = lotId }
         };
 
@@ -344,14 +344,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TrySetBusinessMarkupAsync(string lotId, int markupPercent)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=set_business_markup lotId='{lotId}' markupPercent={markupPercent}");
         }
         var request = new RemoteSetBusinessMarkupRequest
         {
             action = "set_business_markup",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteSetBusinessMarkupData { lotId = lotId, markupPercent = markupPercent }
         };
 
@@ -360,14 +360,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryUnlockContactAsync(string contactId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=unlock_contact contactId='{contactId}'");
         }
         var request = new RemoteUnlockContactRequest
         {
             action = "unlock_contact",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteUnlockContactData { contactId = contactId }
         };
 
@@ -376,14 +376,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=add_business_stock lotId='{lotId}' amount={amount}");
         }
         var request = new RemoteAddBusinessStockRequest
         {
             action = "add_business_stock",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteAddBusinessStockData { lotId = lotId, amount = amount }
         };
 
@@ -392,14 +392,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=add_business_shelf_stock lotId='{lotId}' amount={amount}");
         }
         var request = new RemoteAddBusinessShelfStockRequest
         {
             action = "add_business_shelf_stock",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteAddBusinessShelfStockData { lotId = lotId, amount = amount }
         };
 
@@ -408,14 +408,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryClearBusinessStockAsync(string lotId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=clear_business_stock lotId='{lotId}'");
         }
         var request = new RemoteClearBusinessStockRequest
         {
             action = "clear_business_stock",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteClearBusinessStockData { lotId = lotId }
         };
 
@@ -424,14 +424,14 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryResetBusinessesAsync()
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log("[RemoteGameServer] action=reset_businesses");
         }
         var request = new RemoteResetBusinessesRequest
         {
             action = "reset_businesses",
-            playerId = playerId
+            playerId = m_playerId
         };
 
         return SendRequestAsync(request);
@@ -439,7 +439,7 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryConstructSiteVisualAsync(string siteId, string visualId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=construct_site_visual siteId='{siteId}' visualId='{visualId}'");
         }
@@ -447,7 +447,7 @@ public class RemoteGameServer : IGameServer
         var request = new RemoteConstructSiteVisualRequest
         {
             action = "construct_site_visual",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteConstructSiteVisualData
             {
                 siteId = siteId,
@@ -460,7 +460,7 @@ public class RemoteGameServer : IGameServer
 
     public Task<ServerActionResult> TryRemoveSiteVisualAsync(string siteId)
     {
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] action=remove_site_visual siteId='{siteId}'");
         }
@@ -468,7 +468,7 @@ public class RemoteGameServer : IGameServer
         var request = new RemoteSiteVisualRequest
         {
             action = "remove_site_visual",
-            playerId = playerId,
+            playerId = m_playerId,
             data = new RemoteSiteVisualData { siteId = siteId }
         };
 
@@ -477,10 +477,10 @@ public class RemoteGameServer : IGameServer
 
     private async Task<ServerActionResult> SendRequestAsync<T>(T requestPayload)
     {
-        string url = $"{baseUrl}/api/action";
+        string url = $"{m_baseUrl}/api/action";
         string payload = JsonUtility.ToJson(requestPayload);
 
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] POST {url}\n{payload}");
         }
@@ -490,9 +490,9 @@ public class RemoteGameServer : IGameServer
         request.uploadHandler = new UploadHandlerRaw(body);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        if (timeoutSeconds >= 1f)
+        if (m_timeoutSeconds >= 1f)
         {
-            request.timeout = Mathf.CeilToInt(timeoutSeconds);
+            request.timeout = Mathf.CeilToInt(m_timeoutSeconds);
         }
 
         bool manualTimeout = false;
@@ -500,7 +500,7 @@ public class RemoteGameServer : IGameServer
         var op = request.SendWebRequest();
         while (!op.isDone)
         {
-            if (timeoutSeconds > 0f && timeoutSeconds < 1f && stopwatch.Elapsed.TotalSeconds >= timeoutSeconds)
+            if (m_timeoutSeconds > 0f && m_timeoutSeconds < 1f && stopwatch.Elapsed.TotalSeconds >= m_timeoutSeconds)
             {
                 manualTimeout = true;
                 request.Abort();
@@ -513,21 +513,21 @@ public class RemoteGameServer : IGameServer
 
         if (manualTimeout)
         {
-            if (debugLog)
+            if (m_debugLog)
             {
-                string timeoutLabel = timeoutSeconds > 0f ? $"{timeoutSeconds:0.###}s" : "disabled";
+                string timeoutLabel = m_timeoutSeconds > 0f ? $"{m_timeoutSeconds:0.###}s" : "disabled";
                 Debug.LogWarning($"[RemoteGameServer] Network error: result=Timeout, error='Request timeout', url={url}, timeout={timeoutLabel}, elapsed={elapsedMs:0.0}ms");
             }
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.Timeout, "Timeout", "Request timeout.");
         }
 
         string responseText = request.downloadHandler != null ? request.downloadHandler.text : null;
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] Response ({request.responseCode}) in {elapsedMs:0.0}ms: {responseText}");
             if (request.result != UnityWebRequest.Result.Success)
             {
-                string timeoutLabel = timeoutSeconds > 0f ? $"{timeoutSeconds:0.###}s" : "disabled";
+                string timeoutLabel = m_timeoutSeconds > 0f ? $"{m_timeoutSeconds:0.###}s" : "disabled";
                 Debug.LogWarning($"[RemoteGameServer] Network error: result={request.result}, error='{request.error}', url={url}, timeout={timeoutLabel}, elapsed={elapsedMs:0.0}ms");
             }
         }
@@ -564,14 +564,14 @@ public class RemoteGameServer : IGameServer
 
         if (!response.success)
         {
-            if (debugLog)
+            if (m_debugLog)
             {
                 Debug.Log($"[RemoteGameServer] Result: success=false errorCode={response.errorCode} message={response.message}");
             }
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, response.errorCode ?? "ServerError", response.message);
         }
 
-        if (debugLog)
+        if (m_debugLog)
         {
             Debug.Log($"[RemoteGameServer] Result: success=true message={response.message}");
         }
@@ -603,28 +603,28 @@ public class RemoteGameServer : IGameServer
     {
         var snapshot = new ProfileSnapshot
         {
-            Money = profile.money,
-            Bargaining = profile.bargaining,
-            Speech = profile.speech,
-            Trading = profile.trading,
-            Speed = profile.speed,
-            Damage = profile.damage,
-            Health = profile.health
+            money = profile.money,
+            bargaining = profile.bargaining,
+            speech = profile.speech,
+            trading = profile.trading,
+            speed = profile.speed,
+            damage = profile.damage,
+            health = profile.health
         };
 
         if (profile.activeQuests != null)
         {
-            snapshot.ActiveQuestIds.AddRange(profile.activeQuests);
+            snapshot.activeQuestIds.AddRange(profile.activeQuests);
         }
 
         if (profile.completedQuests != null)
         {
-            snapshot.CompletedQuestIds.AddRange(profile.completedQuests);
+            snapshot.completedQuestIds.AddRange(profile.completedQuests);
         }
 
         if (profile.buildings != null)
         {
-            snapshot.OwnedBuildingIds.AddRange(profile.buildings);
+            snapshot.ownedBuildingIds.AddRange(profile.buildings);
         }
 
         if (profile.buildingStates != null)
@@ -636,7 +636,7 @@ public class RemoteGameServer : IGameServer
                     continue;
                 }
 
-                snapshot.BuildingStates.Add(new BuildingStateSnapshot
+                snapshot.buildingStates.Add(new BuildingStateSnapshot
                 {
                     id = state.id,
                     owned = state.owned,
@@ -656,7 +656,7 @@ public class RemoteGameServer : IGameServer
                     continue;
                 }
 
-                snapshot.GraphCheckpoints.Add(new GraphCheckpointSnapshot
+                snapshot.graphCheckpoints.Add(new GraphCheckpointSnapshot
                 {
                     graphId = checkpoint.graphId,
                     checkpointId = checkpoint.checkpointId
@@ -673,7 +673,7 @@ public class RemoteGameServer : IGameServer
                     continue;
                 }
 
-                snapshot.ConstructedSites.Add(new ConstructedSiteSnapshot
+                snapshot.constructedSites.Add(new ConstructedSiteSnapshot
                 {
                     siteId = site.siteId,
                     visualId = site.visualId,
@@ -715,13 +715,13 @@ public class RemoteGameServer : IGameServer
                     snapshotBusiness.installedModules.AddRange(business.installedModules);
                 }
 
-                snapshot.Businesses.Add(snapshotBusiness);
+                snapshot.businesses.Add(snapshotBusiness);
             }
         }
 
         if (profile.knownContacts != null)
         {
-            snapshot.KnownContacts.AddRange(profile.knownContacts);
+            snapshot.knownContacts.AddRange(profile.knownContacts);
         }
 
         return snapshot;

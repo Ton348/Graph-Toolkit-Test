@@ -12,8 +12,8 @@ public sealed class RequestOpenBusinessNodeModel : GameGraphSuccessFailNodeModel
 {
 	public const string LotIdOption = "LotId";
 
-	protected override string DefaultTitle => "Открыть бизнес";
-	protected override string DefaultDescription => "Запрашивает открытие бизнеса.";
+	protected override string defaultTitle => "Открыть бизнес";
+	protected override string defaultDescription => "Запрашивает открытие бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

@@ -4,21 +4,21 @@ namespace Dreamteck.Splines
 
     public class ObjectControllerCustomRuleBase : ScriptableObject
     {
-        protected ObjectController currentController;
-        protected SplineSample currentSample;
-        protected int currentObjectIndex;
-        protected int totalObjects;
+        protected ObjectController m_currentController;
+        protected SplineSample m_currentSample;
+        protected int m_currentObjectIndex;
+        protected int m_totalObjects;
         protected float currentObjectPercent
         {
-            get { return (float)currentObjectIndex / (totalObjects - 1); }
+            get { return (float)m_currentObjectIndex / (m_totalObjects - 1); }
         }
 
         public void SetContext(ObjectController context, SplineSample sample, int currentObject, int totalObjects)
         {
-            currentController = context;
-            currentSample = sample;
-            this.currentObjectIndex = currentObject;
-            this.totalObjects = totalObjects;
+            m_currentController = context;
+            m_currentSample = sample;
+            this.m_currentObjectIndex = currentObject;
+            this.m_totalObjects = totalObjects;
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Dreamteck.Splines
         /// <returns>Vector3 offset in local coordinates</returns>
         public virtual Vector3 GetOffset()
         {
-            return currentSample.position;
+            return m_currentSample.position;
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Dreamteck.Splines
         /// <returns>Quaternion rotation in world coordinates</returns>
         public virtual Quaternion GetRotation()
         {
-            return currentSample.rotation;
+            return m_currentSample.rotation;
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace Dreamteck.Splines
         /// <returns>Vector3 scale</returns>
         public virtual Vector3 GetScale()
         {
-            return Vector3.one * currentSample.size;
+            return Vector3.one * m_currentSample.size;
         }
     }
 }

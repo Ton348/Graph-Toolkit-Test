@@ -8,23 +8,23 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class SplineProjectorEditor : SplineTracerEditor
     {
-        private bool info = false;
+        private bool m_info = false;
 
         public override void OnInspectorGUI()
         {
             SplineProjector user = (SplineProjector)target;
             if (user.mode == SplineProjector.Mode.Accurate)
             {
-                showAveraging = false;
+                m_showAveraging = false;
             }
             else
             {
-                showAveraging = true;
+                m_showAveraging = true;
             }
             base.OnInspectorGUI();
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Projector", EditorStyles.boldLabel);
@@ -49,20 +49,20 @@ namespace Dreamteck.Splines.Editor
             GUI.color = Color.white;
             EditorGUILayout.PropertyField(autoProject, new GUIContent("Auto Project"));
 
-            info = EditorGUILayout.Foldout(info, "Info");
+            m_info = EditorGUILayout.Foldout(m_info, "Info");
             SerializedProperty percent = serializedObject.FindProperty("_result").FindPropertyRelative("percent");
-            if (info) EditorGUILayout.HelpBox("Projection percent: " + percent.floatValue, MessageType.Info);
+            if (m_info) EditorGUILayout.HelpBox("Projection percent: " + percent.floatValue, MessageType.Info);
 
             if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
-            base.BodyGUI();
+            base.BodyGui();
         }
 
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
-            base.DuringSceneGUI(currentSceneView);
-            for (int i = 0; i < users.Length; i++)
+            base.DuringSceneGui(currentSceneView);
+            for (int i = 0; i < m_users.Length; i++)
             {
-                SplineProjector user = (SplineProjector)users[i];
+                SplineProjector user = (SplineProjector)m_users[i];
                 if (user.spline == null) return;
                 if (!user.autoProject) return;
                 DrawResult(user.result);

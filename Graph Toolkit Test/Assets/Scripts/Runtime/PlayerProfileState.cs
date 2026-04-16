@@ -1,12 +1,12 @@
 public class PlayerProfileState
 {
-    public int Money;
-    public int Bargaining;
-    public int Speech;
-    public int Trading;
-    public int Speed;
-    public int Damage;
-    public int Health;
+    public int money;
+    public int bargaining;
+    public int speech;
+    public int trading;
+    public int speed;
+    public int damage;
+    public int health;
 
     public PlayerProfileState(EconomyConfigData config)
     {
@@ -15,13 +15,13 @@ public class PlayerProfileState
             return;
         }
 
-        Money = config.startMoney;
-        Bargaining = config.baseBargaining;
-        Speech = config.baseSpeech;
-        Trading = config.baseTrading;
-        Speed = config.baseSpeed;
-        Damage = config.baseDamage;
-        Health = config.baseHealth;
+        money = config.startMoney;
+        bargaining = config.baseBargaining;
+        speech = config.baseSpeech;
+        trading = config.baseTrading;
+        speed = config.baseSpeed;
+        damage = config.baseDamage;
+        health = config.baseHealth;
     }
 
 }

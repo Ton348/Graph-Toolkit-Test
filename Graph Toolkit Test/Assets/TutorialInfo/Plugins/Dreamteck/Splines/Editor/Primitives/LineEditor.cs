@@ -15,13 +15,13 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Line();
+            m_primitive = new Line();
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Line line = (Line)primitive;
+            base.OnGui();
+            Line line = (Line)m_primitive;
             line.length = EditorGUILayout.FloatField("Length", line.length);
             line.mirror = EditorGUILayout.Toggle("Mirror", line.mirror);
             line.rotation = EditorGUILayout.Vector3Field("Rotation", line.rotation);

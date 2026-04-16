@@ -21,7 +21,7 @@ namespace Dreamteck.Splines.Primitives
         protected override void Generate()
         {
             base.Generate();
-            closed = false;
+            m_closed = false;
             CreatePoints(iterations * 4 + 1, SplinePoint.Type.SmoothMirrored);
             float radiusDelta = Mathf.Abs(endRadius - startRadius);
             float radiusDeltaPercent = radiusDelta / Mathf.Max(Mathf.Abs(endRadius), Mathf.Abs(startRadius));
@@ -35,13 +35,13 @@ namespace Dreamteck.Splines.Primitives
                 float percent = curve.Evaluate((float)i / (iterations * 4));
                 float radius = Mathf.Lerp(startRadius, endRadius, percent);
                 Quaternion rot = Quaternion.AngleAxis(angle, Vector3.up);
-                points[i].position = rot * Vector3.forward / 2f * radius + Vector3.up * str;
+                m_points[i].position = rot * Vector3.forward / 2f * radius + Vector3.up * str;
                 Quaternion tangentRot = Quaternion.identity;
                 if (multiplier > 0) tangentRot = Quaternion.AngleAxis(Mathf.Lerp(0f, 90f * 0.16f * angleDirection, radiusDeltaPercent * percent), Vector3.up);
                 else tangentRot = Quaternion.AngleAxis(Mathf.Lerp(0f, -90f * 0.16f * angleDirection, (1f - percent) * radiusDeltaPercent), Vector3.up);
-                if (clockwise) points[i].tangent = points[i].position - (tangentRot * rot * Vector3.right * radius + Vector3.up * stretch / 4f) * 2 * (Mathf.Sqrt(2f) - 1f) / 3f;
-                else points[i].tangent = points[i].position + (tangentRot * rot * Vector3.right * radius - Vector3.up * stretch / 4f) * 2 * (Mathf.Sqrt(2f) - 1f) / 3f;
-                points[i].tangent2 = points[i].position - (points[i].tangent - points[i].position);
+                if (clockwise) m_points[i].tangent = m_points[i].position - (tangentRot * rot * Vector3.right * radius + Vector3.up * stretch / 4f) * 2 * (Mathf.Sqrt(2f) - 1f) / 3f;
+                else m_points[i].tangent = m_points[i].position + (tangentRot * rot * Vector3.right * radius - Vector3.up * stretch / 4f) * 2 * (Mathf.Sqrt(2f) - 1f) / 3f;
+                m_points[i].tangent2 = m_points[i].position - (m_points[i].tangent - m_points[i].position);
                 str += stretch / 4f;
                 angle += 90f * angleDirection;
             }

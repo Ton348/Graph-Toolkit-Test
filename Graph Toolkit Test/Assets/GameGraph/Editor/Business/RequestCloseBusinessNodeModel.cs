@@ -12,8 +12,8 @@ public sealed class RequestCloseBusinessNodeModel : GameGraphSuccessFailNodeMode
 {
 	public const string LotIdOption = "LotId";
 
-	protected override string DefaultTitle => "Закрыть бизнес";
-	protected override string DefaultDescription => "Запрашивает закрытие бизнеса.";
+	protected override string defaultTitle => "Закрыть бизнес";
+	protected override string defaultDescription => "Запрашивает закрытие бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

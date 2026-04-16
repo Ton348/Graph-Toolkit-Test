@@ -6,8 +6,8 @@ namespace GraphCore.Editor
 {
 	public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 	{
-		private const string AutoBuildPreferenceKey = "GraphCore.AutoBuildRuntimeGraphs";
-		private const string AutoBuildMenuPath = "Assets/GraphCore/Auto Build Runtime Graphs";
+		private const string s_autoBuildPreferenceKey = "GraphCore.AutoBuildRuntimeGraphs";
+		private const string s_autoBuildMenuPath = "Assets/GraphCore/Auto Build Runtime Graphs";
 
 		private static readonly HashSet<string> s_pendingBaseGraphPaths = new HashSet<string>();
 		private static readonly HashSet<string> s_pendingFirstSavePaths = new HashSet<string>();
@@ -38,24 +38,24 @@ namespace GraphCore.Editor
 			EditorApplication.delayCall += ProcessPendingBuilds;
 		}
 
-		[MenuItem(AutoBuildMenuPath, true)]
+		[MenuItem(s_autoBuildMenuPath, true)]
 		private static bool ValidateAutoBuildMenu()
 		{
-			Menu.SetChecked(AutoBuildMenuPath, IsAutoBuildEnabled());
+			Menu.SetChecked(s_autoBuildMenuPath, IsAutoBuildEnabled());
 			return true;
 		}
 
-		[MenuItem(AutoBuildMenuPath)]
+		[MenuItem(s_autoBuildMenuPath)]
 		private static void ToggleAutoBuild()
 		{
 			bool nextValue = !IsAutoBuildEnabled();
-			EditorPrefs.SetBool(AutoBuildPreferenceKey, nextValue);
-			Menu.SetChecked(AutoBuildMenuPath, nextValue);
+			EditorPrefs.SetBool(s_autoBuildPreferenceKey, nextValue);
+			Menu.SetChecked(s_autoBuildMenuPath, nextValue);
 		}
 
 		private static bool IsAutoBuildEnabled()
 		{
-			return EditorPrefs.GetBool(AutoBuildPreferenceKey, true);
+			return EditorPrefs.GetBool(s_autoBuildPreferenceKey, true);
 		}
 
 		public static void SetGraphCompiler(CommonGraphRuntimeExporter.GraphCompiler graphCompiler)

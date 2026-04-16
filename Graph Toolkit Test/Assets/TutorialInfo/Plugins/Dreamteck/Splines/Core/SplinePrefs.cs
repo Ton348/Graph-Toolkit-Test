@@ -8,7 +8,7 @@ namespace Dreamteck.Splines
 {
     public static class SplinePrefs
     {
-        private static bool loaded = false;
+        private static bool s_loaded = false;
         public static Spline.Direction duplicationDirection = Spline.Direction.Forward;
         public static bool defaultAlwaysDraw = false;
         public static SplineComputer.EditorUpdateMode defaultEditorUpdateMode = SplineComputer.EditorUpdateMode.Default;
@@ -40,7 +40,7 @@ namespace Dreamteck.Splines
                 label = "Splines",
                 guiHandler = (searchContext) =>
                 {
-                    OnGUI();
+                    OnGui();
                 },
                 keywords = new HashSet<string>(new[] { "Dreamteck", "Splines", "Path", "Curve"})
             };
@@ -50,9 +50,9 @@ namespace Dreamteck.Splines
 #else
         [PreferenceItem("DTK Splines")]
 #endif
-        public static void OnGUI()
+        public static void OnGui()
         {
-            if (!loaded) LoadPrefs();
+            if (!s_loaded) LoadPrefs();
             EditorGUILayout.LabelField("Newly created splines:", EditorStyles.boldLabel);
             startInCreationMode = EditorGUILayout.Toggle("Start in Creation Mode", startInCreationMode);
             defaultComputerSpace = (SplineComputer.Space)EditorGUILayout.EnumPopup("Space", defaultComputerSpace);
@@ -114,7 +114,7 @@ namespace Dreamteck.Splines
             duplicationDirection = (Spline.Direction)EditorPrefs.GetInt("Dreamteck.Splines.duplicationDirection", 0);
             createPointSize = EditorPrefs.GetFloat("Dreamteck.Splines.createPointSize", 1f);
             createPointColor = LoadColor("Dreamteck.Splines.createPointColor", Color.white);
-            loaded = true;
+            s_loaded = true;
         }
 
         private static Color LoadColor(string name, Color defaultValue)

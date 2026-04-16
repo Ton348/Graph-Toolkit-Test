@@ -8,9 +8,9 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class ParticleControllerEditor : SplineUserEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             ParticleController user = (ParticleController)target;
 
             serializedObject.Update();

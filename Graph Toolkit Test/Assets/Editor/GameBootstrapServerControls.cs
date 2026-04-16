@@ -48,13 +48,13 @@ public class GameBootstrapServerControls : Editor
 
         using (new EditorGUILayout.HorizontalScope())
         {
-            GUI.enabled = status.State != ServerProcessState.Running;
+            GUI.enabled = status.state != ServerProcessState.Running;
             if (GUILayout.Button("Start Server"))
             {
                 ServerProcessManager.Start();
             }
 
-            GUI.enabled = status.State == ServerProcessState.Running;
+            GUI.enabled = status.state == ServerProcessState.Running;
             if (GUILayout.Button("Stop Server"))
             {
                 ServerProcessManager.Stop();
@@ -151,14 +151,14 @@ public class GameBootstrapServerControls : Editor
     private static void DrawStatus(ServerProcessStatus status)
     {
         Color prev = GUI.color;
-        GUI.color = status.State switch
+        GUI.color = status.state switch
         {
             ServerProcessState.Running => new Color(0.6f, 1f, 0.6f),
             ServerProcessState.Stopped => new Color(1f, 0.7f, 0.7f),
             _ => new Color(1f, 0.9f, 0.6f)
         };
 
-        EditorGUILayout.HelpBox(status.Message, MessageType.Info);
+        EditorGUILayout.HelpBox(status.message, MessageType.Info);
         GUI.color = prev;
     }
 }
@@ -172,32 +172,32 @@ internal enum ServerProcessState
 
 internal readonly struct ServerProcessStatus
 {
-    public readonly ServerProcessState State;
-    public readonly string Message;
+    public readonly ServerProcessState state;
+    public readonly string message;
 
     public ServerProcessStatus(ServerProcessState state, string message)
     {
-        State = state;
-        Message = message;
+        this.state = state;
+        this.message = message;
     }
 }
 
 internal static class ServerProcessManager
 {
-    private const string PrefPid = "GraphToolkit.ServerProcessPid";
-    private static Process process;
+    private const string s_prefPid = "GraphToolkit.ServerProcessPid";
+    private static Process s_process;
 
-    public static string ServerRootPath => Path.Combine(ProjectRoot, "server");
+    public static string ServerRootPath => Path.Combine(projectRoot, "server");
     public static string PlayerDataPath => Path.Combine(ServerRootPath, "playerData");
     public static string ServerScriptPath => Path.Combine(ServerRootPath, "index.js");
 
-    private static string ProjectRoot => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
+    private static string projectRoot => Path.GetFullPath(Path.Combine(Application.dataPath, ".."));
 
     public static ServerProcessStatus GetStatus()
     {
         if (IsRunning())
         {
-            return new ServerProcessStatus(ServerProcessState.Running, $"Server: RUNNING (pid {process?.Id})");
+            return new ServerProcessStatus(ServerProcessState.Running, $"Server: RUNNING (pid {s_process?.Id})");
         }
 
         return new ServerProcessStatus(ServerProcessState.Stopped, "Server: STOPPED");
@@ -237,8 +237,8 @@ internal static class ServerProcessManager
             CreateNoWindow = true
         };
 
-        process = new Process { StartInfo = psi, EnableRaisingEvents = true };
-        process.Exited += (_, __) =>
+        s_process = new Process { StartInfo = psi, EnableRaisingEvents = true };
+        s_process.Exited += (value, __) =>
         {
             UnityEngine.Debug.Log("[ServerLauncher] Server process exited.");
             ClearProcess();
@@ -246,9 +246,9 @@ internal static class ServerProcessManager
 
         try
         {
-            process.Start();
-            EditorPrefs.SetInt(PrefPid, process.Id);
-            UnityEngine.Debug.Log($"[ServerLauncher] Server started (pid {process.Id}).");
+            s_process.Start();
+            EditorPrefs.SetInt(s_prefPid, s_process.Id);
+            UnityEngine.Debug.Log($"[ServerLauncher] Server started (pid {s_process.Id}).");
         }
         catch (Exception ex)
         {
@@ -267,8 +267,8 @@ internal static class ServerProcessManager
 
         try
         {
-            process.Kill();
-            process.WaitForExit(2000);
+            s_process.Kill();
+            s_process.WaitForExit(2000);
         }
         catch (Exception ex)
         {
@@ -283,9 +283,9 @@ internal static class ServerProcessManager
 
     private static bool IsRunning()
     {
-        if (process != null)
+        if (s_process != null)
         {
-            if (!process.HasExited)
+            if (!s_process.HasExited)
             {
                 return true;
             }
@@ -293,15 +293,15 @@ internal static class ServerProcessManager
             ClearProcess();
         }
 
-        if (EditorPrefs.HasKey(PrefPid))
+        if (EditorPrefs.HasKey(s_prefPid))
         {
-            int pid = EditorPrefs.GetInt(PrefPid);
+            int pid = EditorPrefs.GetInt(s_prefPid);
             try
             {
                 var existing = Process.GetProcessById(pid);
                 if (!existing.HasExited)
                 {
-                    process = existing;
+                    s_process = existing;
                     return true;
                 }
             }
@@ -316,10 +316,10 @@ internal static class ServerProcessManager
 
     private static void ClearProcess()
     {
-        process = null;
-        if (EditorPrefs.HasKey(PrefPid))
+        s_process = null;
+        if (EditorPrefs.HasKey(s_prefPid))
         {
-            EditorPrefs.DeleteKey(PrefPid);
+            EditorPrefs.DeleteKey(s_prefPid);
         }
     }
 
@@ -383,7 +383,7 @@ internal static class ServerProcessManager
 
     public static string GetNodePath()
     {
-        string custom = EditorPrefs.GetString(NodePathPref, string.Empty);
+        string custom = EditorPrefs.GetString(s_nodePathPref, string.Empty);
         if (!string.IsNullOrEmpty(custom) && File.Exists(custom))
         {
             return custom;
@@ -411,17 +411,17 @@ internal static class ServerProcessManager
     {
         if (string.IsNullOrEmpty(path))
         {
-            EditorPrefs.DeleteKey(NodePathPref);
+            EditorPrefs.DeleteKey(s_nodePathPref);
             return;
         }
 
-        EditorPrefs.SetString(NodePathPref, path);
+        EditorPrefs.SetString(s_nodePathPref, path);
     }
 
     public static string GetNodePathPref()
     {
-        return EditorPrefs.GetString(NodePathPref, string.Empty);
+        return EditorPrefs.GetString(s_nodePathPref, string.Empty);
     }
 
-    private const string NodePathPref = "GraphToolkit.NodePath";
+    private const string s_nodePathPref = "GraphToolkit.NodePath";
 }

@@ -2,8 +2,6 @@ using GraphCore.BaseNodes.Editor.Cinematics;
 using GraphCore.BaseNodes.Editor.Flow;
 using GraphCore.BaseNodes.Editor.Server;
 using GraphCore.BaseNodes.Editor.UI;
-using GraphCore.BaseNodes.Editor.Utility;
-using GraphCore.BaseNodes.Editor.World;
 using GraphCore.Runtime;
 using GraphCore.Runtime.Nodes.Cinematics;
 using GraphCore.Runtime.Nodes.Flow;
@@ -15,6 +13,11 @@ using GraphCore.Runtime.Templates;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using GraphCore.BaseNodes.Editor.Utility;
+using GraphCore.Editor.BaseNodes.Flow;
+using GraphCore.Editor.BaseNodes.Server;
+using GraphCore.Editor.BaseNodes.UI;
+using GraphCore.Editor.BaseNodes.World;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 
@@ -22,8 +25,8 @@ namespace GraphCore.Editor
 {
 	public static class CommonGraphImporter
 	{
-		private const int PrimaryOutputIndex = 0;
-		private const int SecondaryOutputIndex = 1;
+		private const int s_primaryOutputIndex = 0;
+		private const int s_secondaryOutputIndex = 1;
 
 		public delegate BaseGraphNode NodeConverter(INode editorNode);
 		public delegate void ConnectionApplier(INode editorNode, BaseGraphNode runtimeNode, IReadOnlyDictionary<INode, string> idMap);
@@ -256,11 +259,11 @@ namespace GraphCore.Editor
 
 			if (runtimeNode is CoreGraphNextNode coreGraphNextNode)
 			{
-				coreGraphNextNode.nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap);
+				coreGraphNextNode.nextNodeId = GetConnectedNodeIdByOutputIndex(editorNode, s_primaryOutputIndex, idMap);
 				return;
 			}
 
-			TrySetNextNodeId(runtimeNode, GetConnectedNodeIdByOutputIndex(editorNode, PrimaryOutputIndex, idMap));
+			TrySetNextNodeId(runtimeNode, GetConnectedNodeIdByOutputIndex(editorNode, s_primaryOutputIndex, idMap));
 		}
 
 		private static void TrySetNextNodeId(BaseGraphNode node, string nextNodeId)

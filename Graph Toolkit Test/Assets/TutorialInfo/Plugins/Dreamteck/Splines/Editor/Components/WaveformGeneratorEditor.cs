@@ -8,11 +8,11 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class WaveGeneratorEditor : MeshGenEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            showSize = false;
-            showRotation = false;
-            base.BodyGUI();
+            m_showSize = false;
+            m_showRotation = false;
+            base.BodyGui();
             WaveformGenerator user = (WaveformGenerator)target;
 
             serializedObject.Update();

@@ -12,8 +12,8 @@ public sealed class CheckContactKnownNodeModel : GameGraphTrueFalseNodeModel
 {
 	public const string ContactIdOption = "ContactId";
 
-	protected override string DefaultTitle => "Проверка знакомства с контактом";
-	protected override string DefaultDescription => "Проверяет, знаком ли игрок с контактом.";
+	protected override string defaultTitle => "Проверка знакомства с контактом";
+	protected override string defaultDescription => "Проверяет, знаком ли игрок с контактом.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

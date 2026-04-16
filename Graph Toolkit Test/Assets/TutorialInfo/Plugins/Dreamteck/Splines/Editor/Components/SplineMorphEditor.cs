@@ -8,65 +8,65 @@ namespace Dreamteck.Splines.Editor
     [CustomEditor(typeof(SplineMorph))]
     public class SplineMorphEditor : Editor
     {
-        private string addName = "";
-        bool rename = false;
-        int selected = -1;
+        private string m_addName = "";
+        bool m_rename = false;
+        int m_selected = -1;
 
-        SplineMorph morph;
+        SplineMorph m_morph;
 
         private void OnEnable()
         {
-            morph = (SplineMorph)target;
+            m_morph = (SplineMorph)target;
             GetAddName();
         }
 
         void GetAddName()
         {
-            addName = "Channel " + morph.GetChannelCount();
+            m_addName = "Channel " + m_morph.GetChannelCount();
         }
 
         public override void OnInspectorGUI()
         {
             base.OnInspectorGUI();
-            Undo.RecordObject(morph, "Edit Morph");
-            morph.spline = (SplineComputer)EditorGUILayout.ObjectField("Spline", morph.spline, typeof(SplineComputer), true);
-            morph.space = (SplineComputer.Space)EditorGUILayout.EnumPopup("Space", morph.space);
-            morph.cycle = EditorGUILayout.Toggle("Runtime Cycle", morph.cycle);
-            if (morph.cycle)
+            Undo.RecordObject(m_morph, "Edit Morph");
+            m_morph.spline = (SplineComputer)EditorGUILayout.ObjectField("Spline", m_morph.spline, typeof(SplineComputer), true);
+            m_morph.space = (SplineComputer.Space)EditorGUILayout.EnumPopup("Space", m_morph.space);
+            m_morph.cycle = EditorGUILayout.Toggle("Runtime Cycle", m_morph.cycle);
+            if (m_morph.cycle)
             {
                 EditorGUI.indentLevel++;
-                morph.cycleMode = (SplineMorph.CycleMode)EditorGUILayout.EnumPopup("Cycle Wrap", morph.cycleMode);
-                morph.cycleUpdateMode = (SplineMorph.UpdateMode)EditorGUILayout.EnumPopup("Update Mode", morph.cycleUpdateMode);
-                morph.cycleDuration = EditorGUILayout.FloatField("Cycle Duration", morph.cycleDuration);
+                m_morph.cycleMode = (SplineMorph.CycleMode)EditorGUILayout.EnumPopup("Cycle Wrap", m_morph.cycleMode);
+                m_morph.cycleUpdateMode = (SplineMorph.UpdateMode)EditorGUILayout.EnumPopup("Update Mode", m_morph.cycleUpdateMode);
+                m_morph.cycleDuration = EditorGUILayout.FloatField("Cycle Duration", m_morph.cycleDuration);
                 EditorGUI.indentLevel--;
             }
 
-            int channelCount = morph.GetChannelCount();
+            int channelCount = m_morph.GetChannelCount();
             if (channelCount > 0)
             {
-                if(morph.spline == null)
+                if(m_morph.spline == null)
                 {
                     EditorGUILayout.HelpBox("No spline assigned.", MessageType.Error);
                     return;
                 }
-                if (morph.GetSnapshot(0).Length != morph.spline.pointCount)
+                if (m_morph.GetSnapshot(0).Length != m_morph.spline.pointCount)
                 {
-                    EditorGUILayout.HelpBox("Recorded morphs require the spline to have " + morph.GetSnapshot(0).Length + ". The spline has " + morph.spline.pointCount, MessageType.Error);
+                    EditorGUILayout.HelpBox("Recorded morphs require the spline to have " + m_morph.GetSnapshot(0).Length + ". The spline has " + m_morph.spline.pointCount, MessageType.Error);
                     EditorGUILayout.BeginHorizontal();
                     if (GUILayout.Button("Clear morph states"))
                     {
                         if (EditorUtility.DisplayDialog("Clear morph states?", "Do you want to clear all morph states?", "Yes", "No"))
                         {
-                            morph.Clear();
+                            m_morph.Clear();
                         }
                     }
                     string str = "Reduce";
-                    if (morph.GetSnapshot(0).Length > morph.spline.pointCount) str = "Increase";
+                    if (m_morph.GetSnapshot(0).Length > m_morph.spline.pointCount) str = "Increase";
                     if (GUILayout.Button(str + " spline points"))
                     {
                         if (EditorUtility.DisplayDialog(str + " spline points?", "Do you want to " + str + " the spline points?", "Yes", "No"))
                         {
-                            morph.spline.SetPoints(morph.GetSnapshot(0), SplineComputer.Space.Local);
+                            m_morph.spline.SetPoints(m_morph.GetSnapshot(0), SplineComputer.Space.Local);
                         }
                     }
 
@@ -74,20 +74,20 @@ namespace Dreamteck.Splines.Editor
                     {
                         if (EditorUtility.DisplayDialog("Update morph states?", "This will add or delete the needed spline points to all morph states", "Yes", "No"))
                         {
-                            for (int i = 0; i < morph.GetChannelCount(); i++)
+                            for (int i = 0; i < m_morph.GetChannelCount(); i++)
                             {
-                                var points = morph.GetSnapshot(i);
-                                while (points.Length < morph.spline.pointCount)
+                                var points = m_morph.GetSnapshot(i);
+                                while (points.Length < m_morph.spline.pointCount)
                                 {
                                     Dreamteck.ArrayUtility.Add(ref points, new SplinePoint());
                                 }
 
-                                while (points.Length > morph.spline.pointCount)
+                                while (points.Length > m_morph.spline.pointCount)
                                 {
                                     Dreamteck.ArrayUtility.RemoveAt(ref points, points.Length-1);
                                 }
 
-                                morph.SetSnapshot(i, points);
+                                m_morph.SetSnapshot(i, points);
                             }
                         }
                     }
@@ -101,10 +101,10 @@ namespace Dreamteck.Splines.Editor
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("+", GUILayout.Width(40)))
             {
-                morph.AddChannel(addName);
+                m_morph.AddChannel(m_addName);
                 GetAddName();
             }
-            addName = EditorGUILayout.TextField(addName);
+            m_addName = EditorGUILayout.TextField(m_addName);
             
             EditorGUILayout.EndHorizontal();
             if (GUI.changed) SceneView.RepaintAll();
@@ -112,34 +112,34 @@ namespace Dreamteck.Splines.Editor
 
         void DrawChannel(int index)
         {
-            SplineMorph.Channel channel = morph.GetChannel(index);
+            SplineMorph.Channel channel = m_morph.GetChannel(index);
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             GUI.backgroundColor = Color.white;
-            if (selected == index && rename)
+            if (m_selected == index && m_rename)
             {
-                if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return) rename = false;
+                if (Event.current.type == EventType.KeyDown && Event.current.keyCode == KeyCode.Return) m_rename = false;
                 channel.name = EditorGUILayout.TextField(channel.name);
             }
             else if (index > 0)
             {
-                float weight = morph.GetWeight(index);
+                float weight = m_morph.GetWeight(index);
                 float lastWeight = weight;
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(new GUIContent("●", "Capture Snapshot"), GUILayout.Width(22f))) morph.CaptureSnapshot(index);
+                if (GUILayout.Button(new GUIContent("●", "Capture Snapshot"), GUILayout.Width(22f))) m_morph.CaptureSnapshot(index);
                 EditorGUILayout.LabelField(channel.name, GUILayout.Width(EditorGUIUtility.labelWidth));
                 weight = EditorGUILayout.Slider(weight, 0f, 1f);
                 EditorGUILayout.EndHorizontal();
-                if (lastWeight != weight) morph.SetWeight(index, weight);
+                if (lastWeight != weight) m_morph.SetWeight(index, weight);
                 SplineMorph.Channel.Interpolation lastInterpolation = channel.interpolation;
                 channel.interpolation = (SplineMorph.Channel.Interpolation)EditorGUILayout.EnumPopup("Interpolation", channel.interpolation);
-                if (lastInterpolation != channel.interpolation) morph.UpdateMorph();
+                if (lastInterpolation != channel.interpolation) m_morph.UpdateMorph();
 
                 channel.curve = EditorGUILayout.CurveField("Curve", channel.curve);
             }
             else
             {
                 EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button(new GUIContent("●", "Capture Snapshot"), GUILayout.Width(22f))) morph.CaptureSnapshot(index);
+                if (GUILayout.Button(new GUIContent("●", "Capture Snapshot"), GUILayout.Width(22f))) m_morph.CaptureSnapshot(index);
                 GUILayout.Label(channel.name);
                 EditorGUILayout.EndHorizontal();
             }
@@ -151,19 +151,19 @@ namespace Dreamteck.Splines.Editor
                 {
                     if (Event.current.button == 0)
                     {
-                        rename = false;
-                        selected = -1;
+                        m_rename = false;
+                        m_selected = -1;
                         Repaint();
                     }
                     if (Event.current.button == 1)
                     {
                         GenericMenu menu = new GenericMenu();
-                        menu.AddItem(new GUIContent("Rename"), false, delegate { rename = true; selected = index; });
+                        menu.AddItem(new GUIContent("Rename"), false, delegate { m_rename = true; m_selected = index; });
                         menu.AddItem(new GUIContent("Delete"), false, delegate
                         {
-                            morph.SetWeight(index, 0f);
-                            morph.RemoveChannel(index);
-                            selected = -1;
+                            m_morph.SetWeight(index, 0f);
+                            m_morph.RemoveChannel(index);
+                            m_selected = -1;
                             GetAddName();
                         });
                         menu.ShowAsContext();

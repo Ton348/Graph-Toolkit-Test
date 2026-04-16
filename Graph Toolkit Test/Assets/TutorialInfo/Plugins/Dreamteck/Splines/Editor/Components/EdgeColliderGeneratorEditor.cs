@@ -8,9 +8,9 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class EdgeColliderGeneratorEditor : SplineUserEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             EdgeColliderGenerator generator = (EdgeColliderGenerator)target;
 
             serializedObject.Update();

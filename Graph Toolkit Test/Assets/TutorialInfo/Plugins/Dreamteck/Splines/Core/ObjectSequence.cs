@@ -14,28 +14,28 @@ namespace Dreamteck.Splines
         public Iteration iteration = Iteration.Ordered;
         public int randomSeed
         {
-            get { return _randomSeed; }
+            get { return m_randomSeed; }
             set
             {
-                if (value != _randomSeed)
+                if (value != m_randomSeed)
                 {
-                    _randomSeed = value;
-                    randomizer = new System.Random(_randomSeed);
+                    m_randomSeed = value;
+                    m_randomizer = new System.Random(m_randomSeed);
                 }
             }
         }
         [SerializeField]
         [HideInInspector]
-        private int _randomSeed = 1;
+        private int m_randomSeed = 1;
         [SerializeField]
         [HideInInspector]
-        private int index = 0;
+        private int m_index = 0;
         [SerializeField]
         [HideInInspector]
-        System.Random randomizer;
+        System.Random m_randomizer;
         
         public ObjectSequence(){
-            randomizer = new System.Random(_randomSeed);
+            m_randomizer = new System.Random(m_randomSeed);
         }
 
         public T GetFirst()
@@ -54,11 +54,11 @@ namespace Dreamteck.Splines
         {
             if (iteration == Iteration.Ordered)
             {
-                if (index >= objects.Length) index = 0;
-                return objects[index++];
+                if (m_index >= objects.Length) m_index = 0;
+                return objects[m_index++];
             } else
             {
-                int randomIndex = randomizer.Next(objects.Length-1);
+                int randomIndex = m_randomizer.Next(objects.Length-1);
                 return objects[randomIndex];
             }
         }

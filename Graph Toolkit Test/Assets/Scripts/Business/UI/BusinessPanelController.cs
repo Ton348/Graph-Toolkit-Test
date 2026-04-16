@@ -11,13 +11,13 @@ public class BusinessPanelController : MonoBehaviour
     public BusinessDetailsView detailsView;
     public TMP_Text statusText;
 
-    private BusinessRuntimeService runtimeService;
-    private BusinessActionFacade actionFacade;
-    private BusinessStateSyncService stateSync;
-    private BusinessDefinitionsRepository definitions;
-    private GameDataRepository gameData;
-    private BusinessSimulationService simulationService;
-    private string selectedLotId;
+    private BusinessRuntimeService m_runtimeService;
+    private BusinessActionFacade m_actionFacade;
+    private BusinessStateSyncService m_stateSync;
+    private BusinessDefinitionsRepository m_definitions;
+    private GameDataRepository m_gameData;
+    private BusinessSimulationService m_simulationService;
+    private string m_selectedLotId;
 
     private void OnEnable()
     {
@@ -40,12 +40,12 @@ public class BusinessPanelController : MonoBehaviour
 
         if (bootstrap != null)
         {
-            runtimeService = bootstrap.BusinessRuntimeService;
-            actionFacade = bootstrap.BusinessActionFacade;
-            stateSync = bootstrap.BusinessStateSyncService;
-            definitions = bootstrap.BusinessDefinitionsRepository;
-            gameData = bootstrap.GameDataRepository;
-            simulationService = bootstrap.BusinessSimulationService;
+            m_runtimeService = bootstrap.BusinessRuntimeService;
+            m_actionFacade = bootstrap.BusinessActionFacade;
+            m_stateSync = bootstrap.BusinessStateSyncService;
+            m_definitions = bootstrap.BusinessDefinitionsRepository;
+            m_gameData = bootstrap.GameDataRepository;
+            m_simulationService = bootstrap.BusinessSimulationService;
         }
     }
 
@@ -53,36 +53,36 @@ public class BusinessPanelController : MonoBehaviour
     {
         if (listView != null)
         {
-            listView.SelectionChanged += OnBusinessSelected;
+            listView.selectionChanged += OnBusinessSelected;
         }
 
         if (detailsView != null)
         {
-            detailsView.RentClicked += OnRentClicked;
-            detailsView.AssignTypeClicked += OnAssignTypeClicked;
-            detailsView.InstallModuleClicked += OnInstallModuleClicked;
-            detailsView.AssignSupplierClicked += OnAssignSupplierClicked;
-            detailsView.HireWorkerClicked += OnHireWorkerClicked;
-            detailsView.OpenClicked += OnOpenClicked;
-            detailsView.CloseClicked += OnCloseClicked;
-            detailsView.SetMarkupClicked += OnSetMarkupClicked;
-            detailsView.UnlockContactClicked += OnUnlockContactClicked;
-            detailsView.RoleChanged += OnRoleChanged;
+            detailsView.rentClicked += OnRentClickedAsync;
+            detailsView.assignTypeClicked += OnAssignTypeClickedAsync;
+            detailsView.installModuleClicked += OnInstallModuleClickedAsync;
+            detailsView.assignSupplierClicked += OnAssignSupplierClickedAsync;
+            detailsView.hireWorkerClicked += OnHireWorkerClickedAsync;
+            detailsView.openClicked += OnOpenClickedAsync;
+            detailsView.closeClicked += OnCloseClickedAsync;
+            detailsView.setMarkupClicked += OnSetMarkupClickedAsync;
+            detailsView.unlockContactClicked += OnUnlockContactClickedAsync;
+            detailsView.roleChanged += OnRoleChanged;
         }
 
         if (bootstrap != null && bootstrap.ProfileSyncService != null)
         {
-            bootstrap.ProfileSyncService.Synced += OnProfileSynced;
+            bootstrap.ProfileSyncService.synced += OnProfileSynced;
         }
 
-        if (stateSync != null)
+        if (m_stateSync != null)
         {
-            stateSync.StateChanged += OnStateChanged;
+            m_stateSync.stateChanged += OnStateChanged;
         }
 
-        if (simulationService != null)
+        if (m_simulationService != null)
         {
-            simulationService.SimulationUpdated += OnSimulationUpdated;
+            m_simulationService.simulationUpdated += OnSimulationUpdated;
         }
     }
 
@@ -90,36 +90,36 @@ public class BusinessPanelController : MonoBehaviour
     {
         if (listView != null)
         {
-            listView.SelectionChanged -= OnBusinessSelected;
+            listView.selectionChanged -= OnBusinessSelected;
         }
 
         if (detailsView != null)
         {
-            detailsView.RentClicked -= OnRentClicked;
-            detailsView.AssignTypeClicked -= OnAssignTypeClicked;
-            detailsView.InstallModuleClicked -= OnInstallModuleClicked;
-            detailsView.AssignSupplierClicked -= OnAssignSupplierClicked;
-            detailsView.HireWorkerClicked -= OnHireWorkerClicked;
-            detailsView.OpenClicked -= OnOpenClicked;
-            detailsView.CloseClicked -= OnCloseClicked;
-            detailsView.SetMarkupClicked -= OnSetMarkupClicked;
-            detailsView.UnlockContactClicked -= OnUnlockContactClicked;
-            detailsView.RoleChanged -= OnRoleChanged;
+            detailsView.rentClicked -= OnRentClickedAsync;
+            detailsView.assignTypeClicked -= OnAssignTypeClickedAsync;
+            detailsView.installModuleClicked -= OnInstallModuleClickedAsync;
+            detailsView.assignSupplierClicked -= OnAssignSupplierClickedAsync;
+            detailsView.hireWorkerClicked -= OnHireWorkerClickedAsync;
+            detailsView.openClicked -= OnOpenClickedAsync;
+            detailsView.closeClicked -= OnCloseClickedAsync;
+            detailsView.setMarkupClicked -= OnSetMarkupClickedAsync;
+            detailsView.unlockContactClicked -= OnUnlockContactClickedAsync;
+            detailsView.roleChanged -= OnRoleChanged;
         }
 
         if (bootstrap != null && bootstrap.ProfileSyncService != null)
         {
-            bootstrap.ProfileSyncService.Synced -= OnProfileSynced;
+            bootstrap.ProfileSyncService.synced -= OnProfileSynced;
         }
 
-        if (stateSync != null)
+        if (m_stateSync != null)
         {
-            stateSync.StateChanged -= OnStateChanged;
+            m_stateSync.stateChanged -= OnStateChanged;
         }
 
-        if (simulationService != null)
+        if (m_simulationService != null)
         {
-            simulationService.SimulationUpdated -= OnSimulationUpdated;
+            m_simulationService.simulationUpdated -= OnSimulationUpdated;
         }
     }
 
@@ -140,12 +140,12 @@ public class BusinessPanelController : MonoBehaviour
 
     private void Refresh()
     {
-        if (runtimeService == null || listView == null)
+        if (m_runtimeService == null || listView == null)
         {
             return;
         }
 
-        listView.SetBusinesses(runtimeService.GetBusinesses(), b => ResolveLotDisplayName(b != null ? b.lotId : null));
+        listView.SetBusinesses(m_runtimeService.GetBusinesses(), b => ResolveLotDisplayName(b != null ? b.lotId : null));
     }
 
     private void OnBusinessSelected(BusinessInstanceSnapshot business)
@@ -157,26 +157,26 @@ public class BusinessPanelController : MonoBehaviour
 
         if (business != null && !string.IsNullOrWhiteSpace(business.lotId))
         {
-            selectedLotId = business.lotId;
+            m_selectedLotId = business.lotId;
         }
 
         var required = new List<string>();
         var missing = new List<string>();
 
-        if (business != null && definitions != null)
+        if (business != null && m_definitions != null)
         {
-            required.AddRange(definitions.GetRequiredModules(business.businessTypeId));
-            if (runtimeService != null)
+            required.AddRange(m_definitions.GetRequiredModules(business.businessTypeId));
+            if (m_runtimeService != null)
             {
-                missing.AddRange(runtimeService.GetMissingRequiredModules(business));
+                missing.AddRange(m_runtimeService.GetMissingRequiredModules(business));
             }
         }
 
-        var knownContactIds = stateSync != null ? stateSync.GetKnownContacts() : new List<string>();
-        string selectedLot = business != null ? business.lotId : selectedLotId;
+        var knownContactIds = m_stateSync != null ? m_stateSync.GetKnownContacts() : new List<string>();
+        string selectedLot = business != null ? business.lotId : m_selectedLotId;
         PopulateDropdowns(business, selectedLot);
-        var simulation = simulationService != null && !string.IsNullOrWhiteSpace(selectedLotId)
-            ? simulationService.GetStateByLotId(selectedLotId)
+        var simulation = m_simulationService != null && !string.IsNullOrWhiteSpace(m_selectedLotId)
+            ? m_simulationService.GetStateByLotId(m_selectedLotId)
             : null;
         detailsView.SetBusiness(
             business,
@@ -193,102 +193,102 @@ public class BusinessPanelController : MonoBehaviour
 
     private void RefreshSelected()
     {
-        if (detailsView == null || runtimeService == null)
+        if (detailsView == null || m_runtimeService == null)
         {
             return;
         }
 
-        if (string.IsNullOrWhiteSpace(selectedLotId))
+        if (string.IsNullOrWhiteSpace(m_selectedLotId))
         {
             return;
         }
 
-        var business = runtimeService.GetBusinessView(selectedLotId);
+        var business = m_runtimeService.GetBusinessView(m_selectedLotId);
         OnBusinessSelected(business);
     }
 
     public void OpenForLot(string lotId)
     {
-        selectedLotId = lotId;
+        m_selectedLotId = lotId;
         RefreshSelected();
     }
 
-    private async void OnRentClicked()
+    private async void OnRentClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         BusinessDebugLog.Log($"[BusinessUI] Rent lotId='{lotId}'");
-        await RunAction(actionFacade.RentBusiness(lotId));
+        await RunActionAsync(m_actionFacade.RentBusiness(lotId));
     }
 
-    private async void OnAssignTypeClicked()
+    private async void OnAssignTypeClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         string businessTypeId = detailsView.GetBusinessTypeId();
         BusinessDebugLog.Log($"[BusinessUI] AssignType lotId='{lotId}' businessTypeId='{businessTypeId}'");
-        await RunAction(actionFacade.AssignBusinessType(lotId, businessTypeId));
+        await RunActionAsync(m_actionFacade.AssignBusinessType(lotId, businessTypeId));
     }
 
-    private async void OnInstallModuleClicked()
+    private async void OnInstallModuleClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         string moduleId = detailsView.GetModuleId();
         BusinessDebugLog.Log($"[BusinessUI] InstallModule lotId='{lotId}' moduleId='{moduleId}'");
-        await RunAction(actionFacade.InstallModule(lotId, moduleId));
+        await RunActionAsync(m_actionFacade.InstallModule(lotId, moduleId));
     }
 
-    private async void OnAssignSupplierClicked()
+    private async void OnAssignSupplierClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         string supplierId = detailsView.GetSupplierId();
         BusinessDebugLog.Log($"[BusinessUI] AssignSupplier lotId='{lotId}' supplierId='{supplierId}'");
-        await RunAction(actionFacade.AssignSupplier(lotId, supplierId));
+        await RunActionAsync(m_actionFacade.AssignSupplier(lotId, supplierId));
     }
 
-    private async void OnHireWorkerClicked()
+    private async void OnHireWorkerClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         string roleId = detailsView.GetRoleId();
         string contactId = detailsView.GetContactId();
         BusinessDebugLog.Log($"[BusinessUI] HireWorker lotId='{lotId}' roleId='{roleId}' contactId='{contactId}'");
-        await RunAction(actionFacade.HireWorker(lotId, roleId, contactId));
+        await RunActionAsync(m_actionFacade.HireWorker(lotId, roleId, contactId));
     }
 
-    private async void OnOpenClicked()
+    private async void OnOpenClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         BusinessDebugLog.Log($"[BusinessUI] OpenBusiness lotId='{lotId}'");
-        await RunAction(actionFacade.OpenBusiness(lotId));
+        await RunActionAsync(m_actionFacade.OpenBusiness(lotId));
     }
 
-    private async void OnCloseClicked()
+    private async void OnCloseClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         BusinessDebugLog.Log($"[BusinessUI] CloseBusiness lotId='{lotId}'");
-        await RunAction(actionFacade.CloseBusiness(lotId));
+        await RunActionAsync(m_actionFacade.CloseBusiness(lotId));
     }
 
-    private async void OnSetMarkupClicked()
+    private async void OnSetMarkupClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string lotId = detailsView.GetLotId();
         int markup = detailsView.GetMarkupPercent();
         BusinessDebugLog.Log($"[BusinessUI] SetMarkup lotId='{lotId}' markupPercent={markup}");
-        await RunAction(actionFacade.SetMarkup(lotId, markup));
+        await RunActionAsync(m_actionFacade.SetMarkup(lotId, markup));
     }
 
-    private async void OnUnlockContactClicked()
+    private async void OnUnlockContactClickedAsync()
     {
-        if (actionFacade == null || detailsView == null) return;
+        if (m_actionFacade == null || detailsView == null) return;
         string contactId = detailsView.GetUnlockContactId();
         BusinessDebugLog.Log($"[BusinessUI] UnlockContact contactId='{contactId}'");
-        await RunAction(actionFacade.UnlockContact(contactId));
+        await RunActionAsync(m_actionFacade.UnlockContact(contactId));
     }
 
     private void OnRoleChanged()
@@ -299,13 +299,13 @@ public class BusinessPanelController : MonoBehaviour
         }
 
         string roleId = detailsView.GetRoleId();
-        var business = runtimeService != null && !string.IsNullOrWhiteSpace(selectedLotId)
-            ? runtimeService.GetBusinessView(selectedLotId)
+        var business = m_runtimeService != null && !string.IsNullOrWhiteSpace(m_selectedLotId)
+            ? m_runtimeService.GetBusinessView(m_selectedLotId)
             : null;
         PopulateWorkerDropdown(roleId, business);
     }
 
-    private async Task RunAction(Task<ServerActionResult> actionTask)
+    private async Task RunActionAsync(Task<ServerActionResult> actionTask)
     {
         if (actionTask == null)
         {
@@ -380,12 +380,12 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildLotOptions()
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (gameData == null)
+        if (m_gameData == null)
         {
             return options;
         }
 
-        foreach (var lot in gameData.GetAllLots())
+        foreach (var lot in m_gameData.GetAllLots())
         {
             if (lot == null || string.IsNullOrWhiteSpace(lot.id))
             {
@@ -405,22 +405,22 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessTypeOptions(string lotId)
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (definitions == null)
+        if (m_definitions == null)
         {
             return options;
         }
 
         HashSet<string> allowed = null;
-        if (!string.IsNullOrWhiteSpace(lotId) && gameData != null)
+        if (!string.IsNullOrWhiteSpace(lotId) && m_gameData != null)
         {
-            var lot = gameData.GetLotById(lotId);
+            var lot = m_gameData.GetLotById(lotId);
             if (lot != null && lot.allowedBusinessTypes != null && lot.allowedBusinessTypes.Count > 0)
             {
                 allowed = new HashSet<string>(lot.allowedBusinessTypes);
             }
         }
 
-        foreach (var type in definitions.GetAllBusinessTypes())
+        foreach (var type in m_definitions.GetAllBusinessTypes())
         {
             if (type == null || string.IsNullOrWhiteSpace(type.id))
             {
@@ -445,7 +445,7 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildModuleOptions(BusinessInstanceSnapshot business)
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (definitions == null)
+        if (m_definitions == null)
         {
             return options;
         }
@@ -454,7 +454,7 @@ public class BusinessPanelController : MonoBehaviour
             ? new HashSet<string>(business.installedModules)
             : new HashSet<string>();
 
-        foreach (var module in definitions.GetAllModules())
+        foreach (var module in m_definitions.GetAllModules())
         {
             if (module == null || string.IsNullOrWhiteSpace(module.id))
             {
@@ -479,7 +479,7 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildSupplierOptions(BusinessInstanceSnapshot business)
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (runtimeService == null || definitions == null || stateSync == null)
+        if (m_runtimeService == null || m_definitions == null || m_stateSync == null)
         {
             return options;
         }
@@ -487,13 +487,13 @@ public class BusinessPanelController : MonoBehaviour
         IEnumerable<SupplierDefinitionData> suppliers;
         if (business != null)
         {
-            suppliers = runtimeService.GetAvailableSuppliers(business);
+            suppliers = m_runtimeService.GetAvailableSuppliers(business);
         }
         else
         {
-            var known = new HashSet<string>(stateSync.GetKnownContacts());
+            var known = new HashSet<string>(m_stateSync.GetKnownContacts());
             var filtered = new List<SupplierDefinitionData>();
-            foreach (var supplier in definitions.GetAllSuppliers())
+            foreach (var supplier in m_definitions.GetAllSuppliers())
             {
                 if (supplier != null && !string.IsNullOrWhiteSpace(supplier.id) && known.Contains(supplier.id))
                 {
@@ -523,12 +523,12 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildRoleOptions()
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (definitions == null)
+        if (m_definitions == null)
         {
             return options;
         }
 
-        foreach (var role in definitions.GetAllStaffRoles())
+        foreach (var role in m_definitions.GetAllStaffRoles())
         {
             if (role == null || string.IsNullOrWhiteSpace(role.id))
             {
@@ -548,13 +548,13 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptions(string roleId)
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (string.IsNullOrWhiteSpace(roleId) || definitions == null || stateSync == null)
+        if (string.IsNullOrWhiteSpace(roleId) || m_definitions == null || m_stateSync == null)
         {
             return options;
         }
 
-        var known = new HashSet<string>(stateSync.GetKnownContacts());
-        foreach (var contact in definitions.GetStaffContactsByRole(roleId))
+        var known = new HashSet<string>(m_stateSync.GetKnownContacts());
+        foreach (var contact in m_definitions.GetStaffContactsByRole(roleId))
         {
             if (contact == null || string.IsNullOrWhiteSpace(contact.id))
             {
@@ -579,15 +579,15 @@ public class BusinessPanelController : MonoBehaviour
     private IEnumerable<BusinessDetailsView.IdOption> BuildUnlockContactOptions()
     {
         var options = new List<BusinessDetailsView.IdOption>();
-        if (definitions == null || stateSync == null)
+        if (m_definitions == null || m_stateSync == null)
         {
             return options;
         }
 
-        var known = new HashSet<string>(stateSync.GetKnownContacts());
+        var known = new HashSet<string>(m_stateSync.GetKnownContacts());
         var used = new HashSet<string>();
 
-        foreach (var supplier in definitions.GetAllSuppliers())
+        foreach (var supplier in m_definitions.GetAllSuppliers())
         {
             if (supplier == null || string.IsNullOrWhiteSpace(supplier.id) || known.Contains(supplier.id) || !used.Add(supplier.id))
             {
@@ -601,7 +601,7 @@ public class BusinessPanelController : MonoBehaviour
             });
         }
 
-        foreach (var contact in definitions.GetAllStaffContacts())
+        foreach (var contact in m_definitions.GetAllStaffContacts())
         {
             if (contact == null || string.IsNullOrWhiteSpace(contact.id) || known.Contains(contact.id) || !used.Add(contact.id))
             {
@@ -627,7 +627,7 @@ public class BusinessPanelController : MonoBehaviour
             return "-";
         }
 
-        var module = definitions != null ? definitions.GetModule(moduleId) : null;
+        var module = m_definitions != null ? m_definitions.GetModule(moduleId) : null;
         return module != null && !string.IsNullOrWhiteSpace(module.displayName) ? module.displayName : moduleId;
     }
 
@@ -638,7 +638,7 @@ public class BusinessPanelController : MonoBehaviour
             return null;
         }
 
-        var role = definitions != null ? definitions.GetStaffRole(roleId) : null;
+        var role = m_definitions != null ? m_definitions.GetStaffRole(roleId) : null;
         return role != null && !string.IsNullOrWhiteSpace(role.displayName) ? role.displayName : roleId;
     }
 
@@ -649,7 +649,7 @@ public class BusinessPanelController : MonoBehaviour
             return "-";
         }
 
-        var lot = gameData != null ? gameData.GetLotById(lotId) : null;
+        var lot = m_gameData != null ? m_gameData.GetLotById(lotId) : null;
         return lot != null && !string.IsNullOrWhiteSpace(lot.displayName) ? lot.displayName : lotId;
     }
 
@@ -660,7 +660,7 @@ public class BusinessPanelController : MonoBehaviour
             return "-";
         }
 
-        var type = definitions != null ? definitions.GetBusinessType(businessTypeId) : null;
+        var type = m_definitions != null ? m_definitions.GetBusinessType(businessTypeId) : null;
         return type != null && !string.IsNullOrWhiteSpace(type.displayName) ? type.displayName : businessTypeId;
     }
 
@@ -671,13 +671,13 @@ public class BusinessPanelController : MonoBehaviour
             return "-";
         }
 
-        var supplier = definitions != null ? definitions.GetSupplier(contactId) : null;
+        var supplier = m_definitions != null ? m_definitions.GetSupplier(contactId) : null;
         if (supplier != null && !string.IsNullOrWhiteSpace(supplier.displayName))
         {
             return supplier.displayName;
         }
 
-        var contact = definitions != null ? definitions.GetStaffContact(contactId) : null;
+        var contact = m_definitions != null ? m_definitions.GetStaffContact(contactId) : null;
         if (contact != null && !string.IsNullOrWhiteSpace(contact.displayName))
         {
             return contact.displayName;

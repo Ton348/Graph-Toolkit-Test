@@ -7,28 +7,28 @@ namespace Dreamteck.Splines.Editor
 
     public class SplineUserSubEditor
     {
-        protected string title = "";
-        protected SplineUser user;
-        protected SplineUserEditor editor = null;
+        protected string m_title = "";
+        protected SplineUser m_user;
+        protected SplineUserEditor m_editor = null;
         public bool alwaysOpen = false;
 
         public bool isOpen
         {
-            get { return foldout || alwaysOpen; }
+            get { return m_foldout || alwaysOpen; }
         }
-        bool foldout = false;
+        bool m_foldout = false;
 
         public SplineUserSubEditor(SplineUser user, SplineUserEditor editor)
         {
-            this.editor = editor;
-            this.user = user;
+            this.m_editor = editor;
+            this.m_user = user;
         }
 
         public virtual void DrawInspector()
         {
             if (!alwaysOpen)
             {
-                foldout = EditorGUILayout.Foldout(foldout, title);
+                m_foldout = EditorGUILayout.Foldout(m_foldout, m_title);
             }
         }
 

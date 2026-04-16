@@ -17,14 +17,14 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Ellipse();
-            primitive.offset = origin;
+            m_primitive = new Ellipse();
+            m_primitive.offset = origin;
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Ellipse ellipse = (Ellipse)primitive;
+            base.OnGui();
+            Ellipse ellipse = (Ellipse)m_primitive;
             ellipse.xRadius = EditorGUILayout.FloatField("X Radius", ellipse.xRadius);
             ellipse.yRadius = EditorGUILayout.FloatField("Y Radius", ellipse.yRadius);
         }

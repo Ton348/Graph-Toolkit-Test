@@ -4,21 +4,21 @@ using System.Collections.Generic;
 [Serializable]
 public class ProfileSnapshot
 {
-    public int Money;
-    public int Bargaining;
-    public int Speech;
-    public int Trading;
-    public int Speed;
-    public int Damage;
-    public int Health;
-    public List<string> ActiveQuestIds = new List<string>();
-    public List<string> CompletedQuestIds = new List<string>();
-    public List<string> OwnedBuildingIds = new List<string>();
-    public List<BuildingStateSnapshot> BuildingStates = new List<BuildingStateSnapshot>();
-    public List<GraphCheckpointSnapshot> GraphCheckpoints = new List<GraphCheckpointSnapshot>();
-    public List<ConstructedSiteSnapshot> ConstructedSites = new List<ConstructedSiteSnapshot>();
-    public List<BusinessInstanceSnapshot> Businesses = new List<BusinessInstanceSnapshot>();
-    public List<string> KnownContacts = new List<string>();
+    public int money;
+    public int bargaining;
+    public int speech;
+    public int trading;
+    public int speed;
+    public int damage;
+    public int health;
+    public List<string> activeQuestIds = new List<string>();
+    public List<string> completedQuestIds = new List<string>();
+    public List<string> ownedBuildingIds = new List<string>();
+    public List<BuildingStateSnapshot> buildingStates = new List<BuildingStateSnapshot>();
+    public List<GraphCheckpointSnapshot> graphCheckpoints = new List<GraphCheckpointSnapshot>();
+    public List<ConstructedSiteSnapshot> constructedSites = new List<ConstructedSiteSnapshot>();
+    public List<BusinessInstanceSnapshot> businesses = new List<BusinessInstanceSnapshot>();
+    public List<string> knownContacts = new List<string>();
 }
 
 [Serializable]

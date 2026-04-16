@@ -18,7 +18,7 @@ public sealed class ConditionNodeExecutor : GameGraphTrueFalseNodeExecutor<Condi
 		}
 
 		bool result = ConditionEvaluator.EvaluateCondition(node, playerStateSync);
-		context?.Set(GraphContextKeys.ConditionLastResult, result);
+		context?.Set(GraphContextKeys.conditionLastResult, result);
 		return UniTask.FromResult(result);
 	}
 }

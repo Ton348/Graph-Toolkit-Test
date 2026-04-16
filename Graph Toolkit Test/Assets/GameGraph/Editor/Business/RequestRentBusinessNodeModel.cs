@@ -12,8 +12,8 @@ public sealed class RequestRentBusinessNodeModel : GameGraphSuccessFailNodeModel
 {
 	public const string LotIdOption = "LotId";
 
-	protected override string DefaultTitle => "Арендовать бизнес";
-	protected override string DefaultDescription => "Запрашивает аренду бизнеса.";
+	protected override string defaultTitle => "Арендовать бизнес";
+	protected override string defaultDescription => "Запрашивает аренду бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

@@ -11,12 +11,12 @@ public class BusinessVisualRegistry : MonoBehaviour
         public GameObject prefab;
     }
 
-    [SerializeField] private List<Entry> entries = new List<Entry>();
+    [SerializeField] private List<Entry> m_entries = new List<Entry>();
 
-    private readonly Dictionary<string, GameObject> prefabByVisualId = new Dictionary<string, GameObject>();
-    private bool cacheDirty = true;
+    private readonly Dictionary<string, GameObject> m_prefabByVisualId = new Dictionary<string, GameObject>();
+    private bool m_cacheDirty = true;
 
-    public int EntryCount => entries != null ? entries.Count : 0;
+    public int EntryCount => m_entries != null ? m_entries.Count : 0;
 
     public GameObject GetPrefab(string visualId)
     {
@@ -26,30 +26,30 @@ public class BusinessVisualRegistry : MonoBehaviour
         }
 
         RebuildCacheIfNeeded();
-        prefabByVisualId.TryGetValue(visualId.Trim(), out GameObject prefab);
+        m_prefabByVisualId.TryGetValue(visualId.Trim(), out GameObject prefab);
         return prefab;
     }
 
     public bool HasEntries()
     {
         RebuildCacheIfNeeded();
-        return prefabByVisualId.Count > 0;
+        return m_prefabByVisualId.Count > 0;
     }
 
     private void OnValidate()
     {
-        cacheDirty = true;
+        m_cacheDirty = true;
     }
 
     private void RebuildCacheIfNeeded()
     {
-        if (!cacheDirty)
+        if (!m_cacheDirty)
         {
             return;
         }
 
-        prefabByVisualId.Clear();
-        foreach (var entry in entries)
+        m_prefabByVisualId.Clear();
+        foreach (var entry in m_entries)
         {
             if (entry == null || string.IsNullOrWhiteSpace(entry.visualId) || entry.prefab == null)
             {
@@ -57,12 +57,12 @@ public class BusinessVisualRegistry : MonoBehaviour
             }
 
             string visualId = entry.visualId.Trim();
-            if (!prefabByVisualId.ContainsKey(visualId))
+            if (!m_prefabByVisualId.ContainsKey(visualId))
             {
-                prefabByVisualId.Add(visualId, entry.prefab);
+                m_prefabByVisualId.Add(visualId, entry.prefab);
             }
         }
 
-        cacheDirty = false;
+        m_cacheDirty = false;
     }
 }

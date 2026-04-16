@@ -2,11 +2,11 @@ using UnityEngine;
 
 public static class BusinessDebugLog
 {
-    public static bool Enabled;
+    public static bool enabled;
 
     public static void Log(string message)
     {
-        if (!Enabled) return;
+        if (!enabled) return;
         Debug.Log(message);
     }
 

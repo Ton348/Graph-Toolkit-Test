@@ -1,11 +1,11 @@
 public class QuestState
 {
-    public QuestDefinitionData Definition;
-    public QuestStatus Status;
+    public QuestDefinitionData definition;
+    public QuestStatus status;
 
     public QuestState(QuestDefinitionData definition)
     {
-        Definition = definition;
-        Status = QuestStatus.Inactive;
+        this.definition = definition;
+        status = QuestStatus.Inactive;
     }
 }

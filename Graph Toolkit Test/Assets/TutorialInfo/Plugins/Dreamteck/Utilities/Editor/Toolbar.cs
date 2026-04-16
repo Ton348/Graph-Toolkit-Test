@@ -5,8 +5,8 @@ namespace Dreamteck.Editor
 
     public class Toolbar
     {
-        GUIContent[] shownContent;
-        GUIContent[] allContent;
+        GUIContent[] m_shownContent;
+        GUIContent[] m_allContent;
         public bool center = true;
         public bool newLine = true;
         public float elementWidth = 0f;
@@ -20,43 +20,43 @@ namespace Dreamteck.Editor
                 Debug.LogError("Invalid icon count for toolbar ");
                 return;
             }
-            allContent = new GUIContent[iconsNormal.Length * 2];
-            shownContent = new GUIContent[iconsNormal.Length];
-            iconsNormal.CopyTo(allContent, 0);
-            iconsSelected.CopyTo(allContent, iconsNormal.Length);
+            m_allContent = new GUIContent[iconsNormal.Length * 2];
+            m_shownContent = new GUIContent[iconsNormal.Length];
+            iconsNormal.CopyTo(m_allContent, 0);
+            iconsSelected.CopyTo(m_allContent, iconsNormal.Length);
         }
 
         public Toolbar(GUIContent[] contents, float elementWidth = 0f)
         {
             this.elementWidth = elementWidth;
-            allContent = new GUIContent[contents.Length * 2];
-            shownContent = new GUIContent[contents.Length];
-            contents.CopyTo(allContent, 0);
-            contents.CopyTo(allContent, contents.Length);
+            m_allContent = new GUIContent[contents.Length * 2];
+            m_shownContent = new GUIContent[contents.Length];
+            contents.CopyTo(m_allContent, 0);
+            contents.CopyTo(m_allContent, contents.Length);
         }
 
         public void SetContent(int index, GUIContent content)
         {
-            allContent[index] = content;
-            allContent[shownContent.Length + index] = content;
+            m_allContent[index] = content;
+            m_allContent[m_shownContent.Length + index] = content;
         }
 
         public void SetContent(int index, GUIContent content, GUIContent contentSelected)
         {
-            allContent[index] = content;
-            allContent[shownContent.Length + index] = contentSelected;
+            m_allContent[index] = content;
+            m_allContent[m_shownContent.Length + index] = contentSelected;
         }
 
         public void Draw(ref int selected)
         {
-            for (int i = 0; i < shownContent.Length; i++)
+            for (int i = 0; i < m_shownContent.Length; i++)
             {
-                shownContent[i] = selected == i ? allContent[shownContent.Length + i] : allContent[i];
+                m_shownContent[i] = selected == i ? m_allContent[m_shownContent.Length + i] : m_allContent[i];
             }
             if(newLine) EditorGUILayout.BeginHorizontal();
             if(center) GUILayout.FlexibleSpace();
-            if(elementWidth > 0f) selected = GUILayout.Toolbar(selected, shownContent, GUILayout.Width(elementWidth * shownContent.Length), GUILayout.Height(elementHeight));
-            else selected = GUILayout.Toolbar(selected, shownContent, GUILayout.Height(elementHeight));
+            if(elementWidth > 0f) selected = GUILayout.Toolbar(selected, m_shownContent, GUILayout.Width(elementWidth * m_shownContent.Length), GUILayout.Height(elementHeight));
+            else selected = GUILayout.Toolbar(selected, m_shownContent, GUILayout.Height(elementHeight));
             if (center) GUILayout.FlexibleSpace();
             if (newLine) EditorGUILayout.EndHorizontal();
         }

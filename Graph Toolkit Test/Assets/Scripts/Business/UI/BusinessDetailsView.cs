@@ -71,41 +71,41 @@ public class BusinessDetailsView : MonoBehaviour
     public Button setMarkupButton;
     public Button unlockContactButton;
 
-    public event Action RentClicked;
-    public event Action AssignTypeClicked;
-    public event Action InstallModuleClicked;
-    public event Action AssignSupplierClicked;
-    public event Action HireWorkerClicked;
-    public event Action OpenClicked;
-    public event Action CloseClicked;
-    public event Action SetMarkupClicked;
-    public event Action UnlockContactClicked;
-    public event Action RoleChanged;
+    public event Action rentClicked;
+    public event Action assignTypeClicked;
+    public event Action installModuleClicked;
+    public event Action assignSupplierClicked;
+    public event Action hireWorkerClicked;
+    public event Action openClicked;
+    public event Action closeClicked;
+    public event Action setMarkupClicked;
+    public event Action unlockContactClicked;
+    public event Action roleChanged;
 
-    private BusinessInstanceSnapshot currentBusiness;
-    private readonly List<IdOption> lotOptions = new List<IdOption>();
-    private readonly List<IdOption> businessTypeOptions = new List<IdOption>();
-    private readonly List<IdOption> moduleOptions = new List<IdOption>();
-    private readonly List<IdOption> supplierOptions = new List<IdOption>();
-    private readonly List<IdOption> roleOptions = new List<IdOption>();
-    private readonly List<IdOption> workerContactOptions = new List<IdOption>();
-    private readonly List<IdOption> unlockContactOptions = new List<IdOption>();
+    private BusinessInstanceSnapshot m_currentBusiness;
+    private readonly List<IdOption> m_lotOptions = new List<IdOption>();
+    private readonly List<IdOption> m_businessTypeOptions = new List<IdOption>();
+    private readonly List<IdOption> m_moduleOptions = new List<IdOption>();
+    private readonly List<IdOption> m_supplierOptions = new List<IdOption>();
+    private readonly List<IdOption> m_roleOptions = new List<IdOption>();
+    private readonly List<IdOption> m_workerContactOptions = new List<IdOption>();
+    private readonly List<IdOption> m_unlockContactOptions = new List<IdOption>();
 
     private void Awake()
     {
-        HookButton(rentButton, () => RentClicked?.Invoke());
-        HookButton(assignTypeButton, () => AssignTypeClicked?.Invoke());
-        HookButton(installModuleButton, () => InstallModuleClicked?.Invoke());
-        HookButton(assignSupplierButton, () => AssignSupplierClicked?.Invoke());
-        HookButton(hireWorkerButton, () => HireWorkerClicked?.Invoke());
-        HookButton(openButton, () => OpenClicked?.Invoke());
-        HookButton(closeButton, () => CloseClicked?.Invoke());
-        HookButton(setMarkupButton, () => SetMarkupClicked?.Invoke());
-        HookButton(unlockContactButton, () => UnlockContactClicked?.Invoke());
+        HookButton(rentButton, () => rentClicked?.Invoke());
+        HookButton(assignTypeButton, () => assignTypeClicked?.Invoke());
+        HookButton(installModuleButton, () => installModuleClicked?.Invoke());
+        HookButton(assignSupplierButton, () => assignSupplierClicked?.Invoke());
+        HookButton(hireWorkerButton, () => hireWorkerClicked?.Invoke());
+        HookButton(openButton, () => openClicked?.Invoke());
+        HookButton(closeButton, () => closeClicked?.Invoke());
+        HookButton(setMarkupButton, () => setMarkupClicked?.Invoke());
+        HookButton(unlockContactButton, () => unlockContactClicked?.Invoke());
 
         if (roleDropdown != null)
         {
-            roleDropdown.onValueChanged.AddListener(_ => RoleChanged?.Invoke());
+            roleDropdown.onValueChanged.AddListener(value => roleChanged?.Invoke());
         }
     }
 
@@ -127,7 +127,7 @@ public class BusinessDetailsView : MonoBehaviour
         string cashierDisplayName,
         string merchDisplayName)
     {
-        currentBusiness = business;
+        m_currentBusiness = business;
 
         SetText(lotIdText, !string.IsNullOrWhiteSpace(lotDisplayName) ? lotDisplayName : (business != null ? business.lotId : "-"));
         SetText(businessTypeText, !string.IsNullOrWhiteSpace(businessTypeDisplayName) ? businessTypeDisplayName : (business != null ? business.businessTypeId : "-"));
@@ -174,25 +174,25 @@ public class BusinessDetailsView : MonoBehaviour
 
     public string GetLotId()
     {
-        var selectedLot = GetSelectedId(lotDropdown, lotOptions);
+        var selectedLot = GetSelectedId(lotDropdown, m_lotOptions);
         if (!string.IsNullOrWhiteSpace(selectedLot))
         {
             return selectedLot;
         }
 
-        if (currentBusiness != null && !string.IsNullOrWhiteSpace(currentBusiness.lotId))
+        if (m_currentBusiness != null && !string.IsNullOrWhiteSpace(m_currentBusiness.lotId))
         {
-            return currentBusiness.lotId;
+            return m_currentBusiness.lotId;
         }
         return lotIdInput != null ? lotIdInput.text : null;
     }
 
-    public string GetBusinessTypeId() => GetSelectedId(businessTypeDropdown, businessTypeOptions) ?? (businessTypeIdInput != null ? businessTypeIdInput.text : null);
-    public string GetModuleId() => GetSelectedId(moduleDropdown, moduleOptions) ?? (moduleIdInput != null ? moduleIdInput.text : null);
-    public string GetSupplierId() => GetSelectedId(supplierDropdown, supplierOptions) ?? (supplierIdInput != null ? supplierIdInput.text : null);
-    public string GetRoleId() => GetSelectedId(roleDropdown, roleOptions) ?? (roleIdInput != null ? roleIdInput.text : null);
-    public string GetContactId() => GetSelectedId(workerContactDropdown, workerContactOptions) ?? (contactIdInput != null ? contactIdInput.text : null);
-    public string GetUnlockContactId() => GetSelectedId(unlockContactDropdown, unlockContactOptions) ?? (contactIdInput != null ? contactIdInput.text : null);
+    public string GetBusinessTypeId() => GetSelectedId(businessTypeDropdown, m_businessTypeOptions) ?? (businessTypeIdInput != null ? businessTypeIdInput.text : null);
+    public string GetModuleId() => GetSelectedId(moduleDropdown, m_moduleOptions) ?? (moduleIdInput != null ? moduleIdInput.text : null);
+    public string GetSupplierId() => GetSelectedId(supplierDropdown, m_supplierOptions) ?? (supplierIdInput != null ? supplierIdInput.text : null);
+    public string GetRoleId() => GetSelectedId(roleDropdown, m_roleOptions) ?? (roleIdInput != null ? roleIdInput.text : null);
+    public string GetContactId() => GetSelectedId(workerContactDropdown, m_workerContactOptions) ?? (contactIdInput != null ? contactIdInput.text : null);
+    public string GetUnlockContactId() => GetSelectedId(unlockContactDropdown, m_unlockContactOptions) ?? (contactIdInput != null ? contactIdInput.text : null);
 
     public int GetMarkupPercent()
     {
@@ -208,37 +208,37 @@ public class BusinessDetailsView : MonoBehaviour
 
     public void SetLotOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(lotDropdown, lotOptions, options, selectedId, "Нет доступных помещений");
+        SetOptions(lotDropdown, m_lotOptions, options, selectedId, "Нет доступных помещений");
     }
 
     public void SetBusinessTypeOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(businessTypeDropdown, businessTypeOptions, options, selectedId, "Нет доступных типов");
+        SetOptions(businessTypeDropdown, m_businessTypeOptions, options, selectedId, "Нет доступных типов");
     }
 
     public void SetModuleOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(moduleDropdown, moduleOptions, options, selectedId, "Нет доступных модулей");
+        SetOptions(moduleDropdown, m_moduleOptions, options, selectedId, "Нет доступных модулей");
     }
 
     public void SetSupplierOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(supplierDropdown, supplierOptions, options, selectedId, "Нет доступных поставщиков");
+        SetOptions(supplierDropdown, m_supplierOptions, options, selectedId, "Нет доступных поставщиков");
     }
 
     public void SetRoleOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(roleDropdown, roleOptions, options, selectedId, "Нет доступных ролей");
+        SetOptions(roleDropdown, m_roleOptions, options, selectedId, "Нет доступных ролей");
     }
 
     public void SetWorkerContactOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(workerContactDropdown, workerContactOptions, options, selectedId, "Нет доступных сотрудников");
+        SetOptions(workerContactDropdown, m_workerContactOptions, options, selectedId, "Нет доступных сотрудников");
     }
 
     public void SetUnlockContactOptions(IEnumerable<IdOption> options, string selectedId)
     {
-        SetOptions(unlockContactDropdown, unlockContactOptions, options, selectedId, "Нет доступных контактов");
+        SetOptions(unlockContactDropdown, m_unlockContactOptions, options, selectedId, "Нет доступных контактов");
     }
 
     private static string GetSelectedId(TMP_Dropdown dropdown, List<IdOption> options)

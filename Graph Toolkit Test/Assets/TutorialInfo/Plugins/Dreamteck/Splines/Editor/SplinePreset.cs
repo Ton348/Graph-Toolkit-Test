@@ -43,23 +43,23 @@ namespace Dreamteck.Splines.Editor
     public class SplinePreset
     {
         [SerializeField]
-        private S_Vector3[] points_position = new S_Vector3[0];
+        private S_Vector3[] m_pointsPosition = new S_Vector3[0];
         [SerializeField]
-        private S_Vector3[] points_tanget = new S_Vector3[0];
+        private S_Vector3[] m_pointsTanget = new S_Vector3[0];
         [SerializeField]
-        private S_Vector3[] points_tangent2 = new S_Vector3[0];
+        private S_Vector3[] m_pointsTangent2 = new S_Vector3[0];
         [SerializeField]
-        private S_Vector3[] points_normal = new S_Vector3[0];
+        private S_Vector3[] m_pointsNormal = new S_Vector3[0];
         [SerializeField]
-        private S_Color[] points_color = new S_Color[0];
+        private S_Color[] m_pointsColor = new S_Color[0];
         [SerializeField]
-        private float[] points_size = new float[0];
+        private float[] m_pointsSize = new float[0];
         [SerializeField]
-        private SplinePoint.Type[] points_type = new SplinePoint.Type[0];
+        private SplinePoint.Type[] m_pointsType = new SplinePoint.Type[0];
 
 
         [System.NonSerialized]
-        protected SplineComputer computer;
+        protected SplineComputer m_computer;
         [System.NonSerialized]
         public Vector3 origin = Vector3.zero;
 
@@ -68,22 +68,22 @@ namespace Dreamteck.Splines.Editor
         public string name = "";
         public string description = "";
         public Spline.Type type = Spline.Type.Bezier;
-        private static string path = "";
+        private static string s_path = "";
 
         public SplinePoint[] points
         {
             get
             {
-                SplinePoint[] p = new SplinePoint[points_position.Length];
+                SplinePoint[] p = new SplinePoint[m_pointsPosition.Length];
                 for (int i = 0; i < p.Length; i++)
                 {
-                    p[i].type = points_type[i];
-                    p[i].position = points_position[i].vector;
-                    p[i].tangent = points_tanget[i].vector;
-                    p[i].tangent2 = points_tangent2[i].vector;
-                    p[i].normal = points_normal[i].vector;
-                    p[i].color = points_color[i].color;
-                    p[i].size = points_size[i];
+                    p[i].type = m_pointsType[i];
+                    p[i].position = m_pointsPosition[i].vector;
+                    p[i].tangent = m_pointsTanget[i].vector;
+                    p[i].tangent2 = m_pointsTangent2[i].vector;
+                    p[i].normal = m_pointsNormal[i].vector;
+                    p[i].color = m_pointsColor[i].color;
+                    p[i].size = m_pointsSize[i];
                 }
                 return p;
             }
@@ -91,35 +91,35 @@ namespace Dreamteck.Splines.Editor
 
         public SplinePreset(SerializedSplinePoint[] p, bool closed, Spline.Type t)
         {
-            points_position = new S_Vector3[p.Length];
-            points_tanget = new S_Vector3[p.Length];
-            points_tangent2 = new S_Vector3[p.Length];
-            points_normal = new S_Vector3[p.Length];
-            points_color = new S_Color[p.Length];
-            points_size = new float[p.Length];
-            points_type = new SplinePoint.Type[p.Length];
+            m_pointsPosition = new S_Vector3[p.Length];
+            m_pointsTanget = new S_Vector3[p.Length];
+            m_pointsTangent2 = new S_Vector3[p.Length];
+            m_pointsNormal = new S_Vector3[p.Length];
+            m_pointsColor = new S_Color[p.Length];
+            m_pointsSize = new float[p.Length];
+            m_pointsType = new SplinePoint.Type[p.Length];
             for (int i = 0; i < p.Length; i++)
             {
-                points_position[i] = new S_Vector3(p[i].position);
-                points_tanget[i] = new S_Vector3(p[i].tangent);
-                points_tangent2[i] = new S_Vector3(p[i].tangent2);
-                points_normal[i] = new S_Vector3(p[i].normal);
-                points_color[i] = new S_Color(p[i].color);
-                points_size[i] = p[i].size;
-                points_type[i] = p[i].type;
+                m_pointsPosition[i] = new S_Vector3(p[i].position);
+                m_pointsTanget[i] = new S_Vector3(p[i].tangent);
+                m_pointsTangent2[i] = new S_Vector3(p[i].tangent2);
+                m_pointsNormal[i] = new S_Vector3(p[i].normal);
+                m_pointsColor[i] = new S_Color(p[i].color);
+                m_pointsSize[i] = p[i].size;
+                m_pointsType[i] = p[i].type;
             }
             isClosed = closed;
             type = t;
-            path = ResourceUtility.FindFolder(Application.dataPath, "Dreamteck/Splines/Presets");
+            s_path = ResourceUtility.FindFolder(Application.dataPath, "Dreamteck/Splines/Presets");
         }
 
         public void Save(string name)
         {
-            if (!Directory.Exists(path))
+            if (!Directory.Exists(s_path))
             {
-                Directory.CreateDirectory(path);
+                Directory.CreateDirectory(s_path);
             }
-            FileStream file = File.Create(path + "/" + name + ".jsp");
+            FileStream file = File.Create(s_path + "/" + name + ".jsp");
             byte[] bytes = System.Text.ASCIIEncoding.ASCII.GetBytes(JsonUtility.ToJson(this));
             file.Write(bytes, 0, bytes.Length);
             file.Close();
@@ -127,24 +127,24 @@ namespace Dreamteck.Splines.Editor
 
         public static void Delete(string filename)
         {
-            path = ResourceUtility.FindFolder(Application.dataPath, "Dreamteck/Splines/Presets");
-            if (!Directory.Exists(path))
+            s_path = ResourceUtility.FindFolder(Application.dataPath, "Dreamteck/Splines/Presets");
+            if (!Directory.Exists(s_path))
             {
-                Debug.LogError("Directory " + path + " does not exist");
+                Debug.LogError("Directory " + s_path + " does not exist");
                 return;
             }
-            File.Delete(path + "/" + filename);
+            File.Delete(s_path + "/" + filename);
         }
 
         public static SplinePreset[] LoadAll()
         {
-            path = ResourceUtility.FindFolder(Application.dataPath, "Dreamteck/Splines/Presets");
-            if (!Directory.Exists(path))
+            s_path = ResourceUtility.FindFolder(Application.dataPath, "Dreamteck/Splines/Presets");
+            if (!Directory.Exists(s_path))
             {
-                Debug.LogError("Directory " + path + " does not exist");
+                Debug.LogError("Directory " + s_path + " does not exist");
                 return null;
             }
-            string[] files = Directory.GetFiles(path, "*.jsp");
+            string[] files = Directory.GetFiles(s_path, "*.jsp");
             SplinePreset[] presets = new SplinePreset[files.Length];
             for (int i = 0; i < files.Length; i++)
             {

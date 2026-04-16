@@ -2,15 +2,15 @@ using UnityEngine;
 
 public class CompassTarget : MonoBehaviour
 {
-    [SerializeField] private string targetId;
-    [SerializeField] private Transform markerPoint;
-    private bool _registered;
+    [SerializeField] private string m_targetId;
+    [SerializeField] private Transform m_markerPoint;
+    private bool m_registered;
 
-    public string TargetId => targetId;
+    public string TargetId => m_targetId;
 
     public Vector3 GetMarkerWorldPosition()
     {
-        return markerPoint != null ? markerPoint.position : transform.position;
+        return m_markerPoint != null ? m_markerPoint.position : transform.position;
     }
 
     private void OnEnable()
@@ -30,7 +30,7 @@ public class CompassTarget : MonoBehaviour
 
     private void TryRegister()
     {
-        if (_registered) return;
+        if (m_registered) return;
 
         var registry = CompassTargetRegistry.Instance;
         if (registry == null)
@@ -41,12 +41,12 @@ public class CompassTarget : MonoBehaviour
         if (registry == null) return;
 
         registry.Register(this);
-        _registered = true;
+        m_registered = true;
     }
 
     private void TryUnregister()
     {
-        if (!_registered) return;
+        if (!m_registered) return;
 
         var registry = CompassTargetRegistry.Instance;
         if (registry == null)
@@ -57,6 +57,6 @@ public class CompassTarget : MonoBehaviour
         if (registry == null) return;
 
         registry.Unregister(this);
-        _registered = false;
+        m_registered = false;
     }
 }

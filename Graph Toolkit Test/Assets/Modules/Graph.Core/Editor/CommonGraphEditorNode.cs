@@ -12,11 +12,11 @@ namespace GraphCore.Editor
 		public const string ExecutionPortName = "Next";
 		public const string TitleOption = "NodeTitle";
 		public const string DescriptionOption = "NodeDescription";
-		private static readonly BindingFlags InstancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
-		private static readonly BindingFlags InstancePublic = BindingFlags.Instance | BindingFlags.Public;
+		private static readonly BindingFlags s_instancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+		private static readonly BindingFlags s_instancePublic = BindingFlags.Instance | BindingFlags.Public;
 
-		protected virtual string DefaultTitle => GetType().Name;
-		protected virtual string DefaultDescription => string.Empty;
+		protected virtual string defaultTitle => GetType().Name;
+		protected virtual string defaultDescription => string.Empty;
 
 		protected void AddInputExecutionPort(IPortDefinitionContext context)
 		{
@@ -38,12 +38,12 @@ namespace GraphCore.Editor
 		{
 			_ = context.AddOption<string>(TitleOption)
 				.WithDisplayName("Название")
-				.WithDefaultValue(DefaultTitle)
+				.WithDefaultValue(defaultTitle)
 				.Build();
 
 			INodeOption descriptionOption = context.AddOption<string>(DescriptionOption)
 				.WithDisplayName("Описание")
-				.WithDefaultValue(DefaultDescription)
+				.WithDefaultValue(defaultDescription)
 				.Build();
 
 			TryEnableMultiline(descriptionOption);
@@ -88,13 +88,13 @@ namespace GraphCore.Editor
 
 		private static object GetPortModel(INodeOption option)
 		{
-			PropertyInfo portModelProperty = option.GetType().GetProperty("PortModel", InstancePublicAndNonPublic);
+			PropertyInfo portModelProperty = option.GetType().GetProperty("PortModel", s_instancePublicAndNonPublic);
 			return portModelProperty?.GetValue(option);
 		}
 
 		private static List<Attribute> GetAttributes(object portModel)
 		{
-			PropertyInfo attributesProperty = portModel.GetType().GetProperty("Attributes", InstancePublic);
+			PropertyInfo attributesProperty = portModel.GetType().GetProperty("Attributes", s_instancePublic);
 			if (attributesProperty == null)
 			{
 				return null;
@@ -106,7 +106,7 @@ namespace GraphCore.Editor
 
 		private static void SetAttributes(object portModel, List<Attribute> attributes)
 		{
-			MethodInfo setAttributesMethod = portModel.GetType().GetMethod("SetAttributes", InstancePublicAndNonPublic);
+			MethodInfo setAttributesMethod = portModel.GetType().GetMethod("SetAttributes", s_instancePublicAndNonPublic);
 			setAttributesMethod?.Invoke(portModel, new object[] { attributes });
 		}
 	}

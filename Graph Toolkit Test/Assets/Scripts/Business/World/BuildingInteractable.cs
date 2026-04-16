@@ -31,7 +31,7 @@ public class BuildingInteractable : Interactable
             return;
         }
 
-        TryBuyBuilding(buildingId);
+        TryBuyBuildingAsync(buildingId);
     }
 
     public override void Interact()
@@ -39,7 +39,7 @@ public class BuildingInteractable : Interactable
         Interact(null);
     }
 
-    private async void TryBuyBuilding(string buildingId)
+    private async void TryBuyBuildingAsync(string buildingId)
     {
         if (bootstrap == null || bootstrap.GameServer == null)
         {

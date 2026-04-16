@@ -9,9 +9,9 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class ObjectBenderEditor : SplineUserEditor
     {
-        List<int> selected = new List<int>();
-        Vector2 scroll = Vector2.zero;
-        bool generatedUvs = false;
+        List<int> m_selected = new List<int>();
+        Vector2 m_scroll = Vector2.zero;
+        bool m_generatedUvs = false;
 
         protected override void Awake() 
         {
@@ -22,13 +22,13 @@ namespace Dreamteck.Splines.Editor
 
         void PropertyEditor(ObjectBender.BendProperty[] properties)
         {
-            if (selected.Count == 0) return;
+            if (m_selected.Count == 0) return;
             int applyRotationCount = 0, applyScaleCount = 0, enableCount = 0, bendMeshCount = 0, bendColliderCount = 0, bendSplineCount = 0;
             bool showMesh = false, showCollider = false, showSpline = false;
             float colliderUpdateRate = 0f;
-            for(int i = 0; i < selected.Count; i++)
+            for(int i = 0; i < m_selected.Count; i++)
             {
-                ObjectBender.BendProperty property = properties[selected[i]];
+                ObjectBender.BendProperty property = properties[m_selected[i]];
                 if (property.enabled) enableCount++;
                 if (property.applyRotation) applyRotationCount++;
                 if (property.applyScale) applyScaleCount++;
@@ -40,13 +40,13 @@ namespace Dreamteck.Splines.Editor
                 if (property.splineComputer != null) showSpline = true;
                 colliderUpdateRate += property.colliderUpdateRate;
             }
-            bool enabled = enableCount == selected.Count;
-            bool applyRotation = applyRotationCount == selected.Count;
-            bool applyScale = applyScaleCount == selected.Count;
-            bool bendMesh = bendMeshCount == selected.Count;
-            bool bendCollider = bendColliderCount == selected.Count;
-            bool bendSpline = bendSplineCount == selected.Count;
-            colliderUpdateRate /= selected.Count;
+            bool enabled = enableCount == m_selected.Count;
+            bool applyRotation = applyRotationCount == m_selected.Count;
+            bool applyScale = applyScaleCount == m_selected.Count;
+            bool bendMesh = bendMeshCount == m_selected.Count;
+            bool bendCollider = bendColliderCount == m_selected.Count;
+            bool bendSpline = bendSplineCount == m_selected.Count;
+            colliderUpdateRate /= m_selected.Count;
             bool lastEnabled = enabled, lastApplyRotation = applyRotation, lastApplyScale = applyScale, lastBendMesh = bendMesh, lastBendCollider = bendCollider, lastBendSpline = bendSpline;
             float lastColliderUpdateRate = colliderUpdateRate;
 
@@ -56,7 +56,7 @@ namespace Dreamteck.Splines.Editor
             EditorGUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(EditorGUIUtility.currentViewWidth - 50));
             EditorGUILayout.BeginHorizontal();
             enabled = EditorGUILayout.Toggle(enabled, GUILayout.Width(20));
-            if (selected.Count == 1) EditorGUILayout.LabelField(properties[selected[0]].transform.transform.name);
+            if (m_selected.Count == 1) EditorGUILayout.LabelField(properties[m_selected[0]].transform.transform.name);
             else EditorGUILayout.LabelField("Multiple objects");
             EditorGUILayout.EndHorizontal();
 
@@ -95,15 +95,15 @@ namespace Dreamteck.Splines.Editor
             EditorGUILayout.EndVertical();
             if (EditorGUI.EndChangeCheck())
             {
-                for(int i = 0; i < selected.Count; i++)
+                for(int i = 0; i < m_selected.Count; i++)
                 {
-                    if (lastEnabled != enabled) properties[selected[i]].enabled = enabled;
-                    if (lastApplyRotation != applyRotation) properties[selected[i]].applyRotation = applyRotation;
-                    if (lastApplyScale != applyScale) properties[selected[i]].applyScale = applyScale;
-                    if (bendMesh != lastBendMesh) properties[selected[i]].bendMesh = bendMesh;
-                    if (bendCollider != lastBendCollider) properties[selected[i]].bendCollider = bendCollider;
-                    if (bendSpline != lastBendSpline) properties[selected[i]].bendSpline = bendSpline;
-                    if (lastColliderUpdateRate != colliderUpdateRate) properties[selected[i]].colliderUpdateRate = colliderUpdateRate;
+                    if (lastEnabled != enabled) properties[m_selected[i]].enabled = enabled;
+                    if (lastApplyRotation != applyRotation) properties[m_selected[i]].applyRotation = applyRotation;
+                    if (lastApplyScale != applyScale) properties[m_selected[i]].applyScale = applyScale;
+                    if (bendMesh != lastBendMesh) properties[m_selected[i]].bendMesh = bendMesh;
+                    if (bendCollider != lastBendCollider) properties[m_selected[i]].bendCollider = bendCollider;
+                    if (bendSpline != lastBendSpline) properties[m_selected[i]].bendSpline = bendSpline;
+                    if (lastColliderUpdateRate != colliderUpdateRate) properties[m_selected[i]].colliderUpdateRate = colliderUpdateRate;
                 }
             }
         }
@@ -119,13 +119,13 @@ namespace Dreamteck.Splines.Editor
 
         public override void OnInspectorGUI()
         {
-            showAveraging = false;
+            m_showAveraging = false;
             base.OnInspectorGUI();
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             ObjectBender bender = (ObjectBender)target;
 
             serializedObject.Update();
@@ -174,11 +174,11 @@ namespace Dreamteck.Splines.Editor
             if (!bender.bend)
             {
                 float scrollHeight = Mathf.Min(bender.bendProperties.Length, 15) * 22;
-                scroll = EditorGUILayout.BeginScrollView(scroll, GUILayout.Height(scrollHeight+5));
+                m_scroll = EditorGUILayout.BeginScrollView(m_scroll, GUILayout.Height(scrollHeight+5));
 
                 for (int i = 0; i < bender.bendProperties.Length; i++)
                 {
-                    bool isSelected = selected.Contains(i);
+                    bool isSelected = m_selected.Contains(i);
                     if (!bender.bendProperties[i].enabled)
                     {
                         GUI.color = Color.gray;
@@ -194,25 +194,25 @@ namespace Dreamteck.Splines.Editor
                     {
                         if (Event.current.control)
                         {
-                            if (!selected.Contains(i)) selected.Add(i);
+                            if (!m_selected.Contains(i)) m_selected.Add(i);
                         }
-                        else if (Event.current.shift && selected.Count > 0)
+                        else if (Event.current.shift && m_selected.Count > 0)
                         {
-                            int from = selected[0];
-                            selected.Clear();
+                            int from = m_selected[0];
+                            m_selected.Clear();
                             if (from < i)
                             {
-                                for (int n = from; n <= i; n++) selected.Add(n);
+                                for (int n = from; n <= i; n++) m_selected.Add(n);
                             }
                             else
                             {
-                                for (int n = from; n >= i; n--) selected.Add(n);
+                                for (int n = from; n >= i; n--) m_selected.Add(n);
                             }
                         }
                         else
                         {
-                            selected.Clear();
-                            selected.Add(i);
+                            m_selected.Clear();
+                            m_selected.Add(i);
                         }
                         Repaint();
                         SceneView.RepaintAll();
@@ -221,36 +221,36 @@ namespace Dreamteck.Splines.Editor
                 }
                 EditorGUILayout.EndScrollView();
 
-                if (selected.Count > 0)
+                if (m_selected.Count > 0)
                 {
                     PropertyEditor(bender.bendProperties);
                 }
 
-                if (selected.Count > 0)
+                if (m_selected.Count > 0)
                 {
                     if (Event.current.type == EventType.KeyDown)
                     {
                         if (Event.current.keyCode == KeyCode.DownArrow)
                         {
-                            if (selected.Count > 1)
+                            if (m_selected.Count > 1)
                             {
-                                int temp = selected[selected.Count - 1];
-                                selected.Clear();
-                                selected.Add(temp);
+                                int temp = m_selected[m_selected.Count - 1];
+                                m_selected.Clear();
+                                m_selected.Add(temp);
                             }
-                            selected[0]++;
-                            if (selected[0] >= bender.bendProperties.Length) selected[0] = 0;
+                            m_selected[0]++;
+                            if (m_selected[0] >= bender.bendProperties.Length) m_selected[0] = 0;
                         }
                         if (Event.current.keyCode == KeyCode.UpArrow)
                         {
-                            if (selected.Count > 1)
+                            if (m_selected.Count > 1)
                             {
-                                int temp = selected[0];
-                                selected.Clear();
-                                selected.Add(temp);
+                                int temp = m_selected[0];
+                                m_selected.Clear();
+                                m_selected.Add(temp);
                             }
-                            selected[0]--;
-                            if (selected[0] < 0) selected[0] = bender.bendProperties.Length - 1;
+                            m_selected[0]--;
+                            if (m_selected[0] < 0) m_selected[0] = bender.bendProperties.Length - 1;
                         }
 
                         Repaint();
@@ -267,27 +267,27 @@ namespace Dreamteck.Splines.Editor
                 if (bender.bend) bender.bend = false;
                 else bender.bend = true;
             }
-            if (bender.bend && !generatedUvs)
+            if (bender.bend && !m_generatedUvs)
             {
                 if (GUILayout.Button("Generate Lightmap UVS"))
                 {
-                    bender.EditorGenerateLightmapUVs();
-                    generatedUvs = true;
+                    bender.EditorGenerateLightmapUvs();
+                    m_generatedUvs = true;
                 }
             }
         }
 
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
-            base.DuringSceneGUI(currentSceneView);
+            base.DuringSceneGui(currentSceneView);
             ObjectBender bender = (ObjectBender)target;
-            if (selected.Count > 0)
+            if (m_selected.Count > 0)
             {
                 Handles.BeginGUI();
-                for(int i = 0; i < selected.Count; i++)
+                for(int i = 0; i < m_selected.Count; i++)
                 {
-                    Vector2 screenPosition = HandleUtility.WorldToGUIPoint(bender.bendProperties[selected[i]].transform.transform.position);
-                    DreamteckEditorGUI.Label(new Rect(screenPosition.x - 120 + bender.bendProperties[selected[i]].transform.transform.name.Length * 4, screenPosition.y, 120, 25), bender.bendProperties[selected[i]].transform.transform.name);
+                    Vector2 screenPosition = HandleUtility.WorldToGUIPoint(bender.bendProperties[m_selected[i]].transform.transform.position);
+                    DreamteckEditorGui.Label(new Rect(screenPosition.x - 120 + bender.bendProperties[m_selected[i]].transform.transform.name.Length * 4, screenPosition.y, 120, 25), bender.bendProperties[m_selected[i]].transform.transform.name);
                 }
                 Handles.EndGUI();
             }
@@ -295,13 +295,13 @@ namespace Dreamteck.Splines.Editor
             {
                 if(bender.bendProperties[i].bendSpline && bender.bendProperties[i].splineComputer != null)
                 {
-                    DSSplineDrawer.DrawSplineComputer(bender.bendProperties[i].splineComputer, 0.0, 1.0, 0.2f);
+                    DssplineDrawer.DrawSplineComputer(bender.bendProperties[i].splineComputer, 0.0, 1.0, 0.2f);
                 }
             }
 
             //Draw bounds
             if (bender.bend) return;
-            TS_Bounds bound = bender.GetBounds();
+            TsBounds bound = bender.GetBounds();
             Vector3 a = bender.transform.TransformPoint(bound.min);
             Vector3 b = bender.transform.TransformPoint(new Vector3(bound.max.x, bound.min.y, bound.min.z));
             Vector3 c = bender.transform.TransformPoint(new Vector3(bound.max.x, bound.min.y, bound.max.z));
@@ -348,7 +348,7 @@ namespace Dreamteck.Splines.Editor
                 if (user == null) OnDelete(); //The object or the component is being deleted
                 else if (user.spline != null)
                 {
-                    if(!generatedUvs)  user.Rebuild();
+                    if(!m_generatedUvs)  user.Rebuild();
                 }
             }
             SplineComputerEditor.hold = false;

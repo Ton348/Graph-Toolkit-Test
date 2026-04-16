@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TradeOfferUIService : MonoBehaviour
+public class TradeOfferUiservice : MonoBehaviour
 {
     public GameObject panel;
     public TMP_Text titleText;
@@ -12,8 +12,8 @@ public class TradeOfferUIService : MonoBehaviour
     public Slider offerSlider;
     public Button confirmButton;
 
-    private Action<int> onConfirm;
-    private int currentFullPrice;
+    private Action<int> m_onConfirm;
+    private int m_currentFullPrice;
 
     public bool IsOpen => panel != null && panel.activeSelf;
 
@@ -26,7 +26,7 @@ public class TradeOfferUIService : MonoBehaviour
 
         if (offerSlider != null)
         {
-            offerSlider.onValueChanged.AddListener(_ => UpdateOfferLabel());
+            offerSlider.onValueChanged.AddListener(value => UpdateOfferLabel());
         }
 
         if (confirmButton != null)
@@ -37,8 +37,8 @@ public class TradeOfferUIService : MonoBehaviour
 
     public void ShowOffer(string buildingLabel, int fullPrice, Action<int> confirmCallback)
     {
-        onConfirm = confirmCallback;
-        currentFullPrice = Mathf.Max(1, fullPrice);
+        m_onConfirm = confirmCallback;
+        m_currentFullPrice = Mathf.Max(1, fullPrice);
 
         if (titleText != null)
         {
@@ -47,15 +47,15 @@ public class TradeOfferUIService : MonoBehaviour
 
         if (fullPriceText != null)
         {
-            fullPriceText.text = $"{currentFullPrice}";
+            fullPriceText.text = $"{m_currentFullPrice}";
         }
 
         if (offerSlider != null)
         {
             offerSlider.minValue = 1;
-            offerSlider.maxValue = currentFullPrice;
+            offerSlider.maxValue = m_currentFullPrice;
             offerSlider.wholeNumbers = true;
-            offerSlider.value = currentFullPrice;
+            offerSlider.value = m_currentFullPrice;
         }
 
         if (confirmButton != null)
@@ -78,7 +78,7 @@ public class TradeOfferUIService : MonoBehaviour
             panel.SetActive(false);
         }
 
-        onConfirm = null;
+        m_onConfirm = null;
     }
 
     private void UpdateOfferLabel()
@@ -99,9 +99,9 @@ public class TradeOfferUIService : MonoBehaviour
             confirmButton.interactable = false;
         }
 
-        int amount = offerSlider != null ? Mathf.RoundToInt(offerSlider.value) : currentFullPrice;
-        var callback = onConfirm;
-        onConfirm = null;
+        int amount = offerSlider != null ? Mathf.RoundToInt(offerSlider.value) : m_currentFullPrice;
+        var callback = m_onConfirm;
+        m_onConfirm = null;
         Hide();
         callback?.Invoke(amount);
     }

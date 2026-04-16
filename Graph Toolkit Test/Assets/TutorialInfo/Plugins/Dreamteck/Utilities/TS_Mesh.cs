@@ -4,7 +4,7 @@ namespace Dreamteck
     using System.Collections;
     using System.Collections.Generic;
     //Thread-safe mesh & bounds classes for working with threads.
-    public class TS_Mesh
+    public class TsMesh
     {
         public int vertexCount
         {
@@ -21,21 +21,21 @@ namespace Dreamteck
         public Vector2[] uv4 = new Vector2[0];
         public int[] triangles = new int[0];
         public List<int[]> subMeshes = new List<int[]>();
-        public TS_Bounds bounds = new TS_Bounds(Vector3.zero, Vector3.zero);
+        public TsBounds bounds = new TsBounds(Vector3.zero, Vector3.zero);
         public UnityEngine.Rendering.IndexFormat indexFormat = UnityEngine.Rendering.IndexFormat.UInt16;
 
         public volatile bool hasUpdate = false;
 
-        private int[] _submeshTrisCount = new int[0];
-        private int[] _submeshOffsets = new int[0];
+        private int[] m_submeshTrisCount = new int[0];
+        private int[] m_submeshOffsets = new int[0];
 
 
-        public TS_Mesh()
+        public TsMesh()
         {
 
         }
 
-        public TS_Mesh(Mesh mesh)
+        public TsMesh(Mesh mesh)
         {
             CreateFromMesh(mesh);
         }
@@ -52,7 +52,7 @@ namespace Dreamteck
             uv4 = new Vector2[0];
             triangles = new int[0];
             subMeshes = new List<int[]>();
-            bounds = new TS_Bounds(Vector3.zero, Vector3.zero);
+            bounds = new TsBounds(Vector3.zero, Vector3.zero);
         }
 
         public void CreateFromMesh(Mesh mesh)
@@ -66,7 +66,7 @@ namespace Dreamteck
             uv3 = mesh.uv3;
             uv4 = mesh.uv4;
             triangles = mesh.triangles;
-            bounds = new TS_Bounds(mesh.bounds);
+            bounds = new TsBounds(mesh.bounds);
             indexFormat = mesh.indexFormat;
             for (int i = 0; i < mesh.subMeshCount; i++)
             {
@@ -78,7 +78,7 @@ namespace Dreamteck
         /// Writes the combineMeshes array to the current TS_Mesh object and tries to not allocate memory
         /// </summary>
         /// <param name="combineMeshes"></param>
-        public void Combine(List<TS_Mesh> combineMeshes)
+        public void Combine(List<TsMesh> combineMeshes)
         {
             int totalVertexCount = 0;
             int totalTrisCount = 0;
@@ -94,15 +94,15 @@ namespace Dreamteck
                 }
             }
 
-            if (_submeshTrisCount.Length != addedSubmeshCount)
+            if (m_submeshTrisCount.Length != addedSubmeshCount)
             {
-                _submeshTrisCount = new int[addedSubmeshCount];
+                m_submeshTrisCount = new int[addedSubmeshCount];
             }
             else
             {
-                for (int i = 0; i < _submeshTrisCount.Length; i++)
+                for (int i = 0; i < m_submeshTrisCount.Length; i++)
                 {
-                    _submeshTrisCount[i] = 0;
+                    m_submeshTrisCount[i] = 0;
                 }
             }
 
@@ -111,7 +111,7 @@ namespace Dreamteck
             {
                 for (int j = 0; j < combineMeshes[i].subMeshes.Count; j++)
                 {
-                    _submeshTrisCount[j] += combineMeshes[i].subMeshes[j].Length;
+                    m_submeshTrisCount[j] += combineMeshes[i].subMeshes[j].Length;
                 }
             }
 
@@ -129,14 +129,14 @@ namespace Dreamteck
             int vertexOffset = 0;
             int trisOffset = 0;
 
-            if(_submeshOffsets.Length != addedSubmeshCount)
+            if(m_submeshOffsets.Length != addedSubmeshCount)
             {
-                _submeshOffsets = new int[addedSubmeshCount];
+                m_submeshOffsets = new int[addedSubmeshCount];
             } else
             {
-                for (int i = 0; i < _submeshOffsets.Length; i++)
+                for (int i = 0; i < m_submeshOffsets.Length; i++)
                 {
-                    _submeshOffsets[i] = 0;
+                    m_submeshOffsets[i] = 0;
                 }
             }
 
@@ -164,20 +164,20 @@ namespace Dreamteck
                 {
                     if (j >= subMeshes.Count)
                     {
-                        subMeshes.Add(new int[_submeshTrisCount[j]]);
+                        subMeshes.Add(new int[m_submeshTrisCount[j]]);
                     }
-                    else if (subMeshes[j].Length != _submeshTrisCount[j])
+                    else if (subMeshes[j].Length != m_submeshTrisCount[j])
                     {
-                        subMeshes[j] = new int[_submeshTrisCount[j]];
+                        subMeshes[j] = new int[m_submeshTrisCount[j]];
                     }
                     int[] submesh = combineMeshes[i].subMeshes[j];
 
                     for (int x = 0; x < submesh.Length; x++)
                     {
-                        int index = _submeshOffsets[j] + x;
+                        int index = m_submeshOffsets[j] + x;
                         subMeshes[j][index] = submesh[x] + vertexOffset;
                     }
-                    _submeshOffsets[j] += submesh.Length;
+                    m_submeshOffsets[j] += submesh.Length;
                 }
                 vertexOffset += combineMeshes[i].vertices.Length;
             }
@@ -187,7 +187,7 @@ namespace Dreamteck
         /// Adds the provieded mesh list to the current mesh and allocates memory
         /// </summary>
         /// <param name="addedMeshes"></param>
-        public void AddMeshes(List<TS_Mesh> addedMeshes)
+        public void AddMeshes(List<TsMesh> addedMeshes)
         {
             int newVerts = 0;
             int newTris = 0;
@@ -289,9 +289,9 @@ namespace Dreamteck
             subMeshes = newSubmeshes;
         }
 
-        public static TS_Mesh Copy(TS_Mesh input)
+        public static TsMesh Copy(TsMesh input)
         {
-            TS_Mesh result = new TS_Mesh();
+            TsMesh result = new TsMesh();
             result.vertices = new Vector3[input.vertices.Length];
             input.vertices.CopyTo(result.vertices, 0);
             result.normals = new Vector3[input.normals.Length];
@@ -316,12 +316,12 @@ namespace Dreamteck
                 result.subMeshes.Add(new int[input.subMeshes[i].Length]);
                 input.subMeshes[i].CopyTo(result.subMeshes[i], 0);
             }
-            result.bounds = new TS_Bounds(input.bounds.center, input.bounds.size);
+            result.bounds = new TsBounds(input.bounds.center, input.bounds.size);
             result.indexFormat = input.indexFormat;
             return result;
         }
 
-        public void Absorb(TS_Mesh input)
+        public void Absorb(TsMesh input)
         {
             if (vertices.Length != input.vertexCount) vertices = new Vector3[input.vertexCount];
             if (normals.Length != input.normals.Length) normals = new Vector3[input.normals.Length];
@@ -360,7 +360,7 @@ namespace Dreamteck
                     input.subMeshes[i].CopyTo(subMeshes[i], 0);
                 }
             }
-            bounds = new TS_Bounds(input.bounds.center, input.bounds.size);
+            bounds = new TsBounds(input.bounds.center, input.bounds.size);
         }
 
         public void WriteMesh(ref Mesh input)

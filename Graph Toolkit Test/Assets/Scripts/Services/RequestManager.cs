@@ -5,9 +5,9 @@ public class RequestManager
     public bool IsRequestInProgress { get; private set; }
     public string ActiveRequestLabel { get; private set; }
 
-    public event Action<string> RequestStarted;
-    public event Action<string> RequestFinished;
-    public event Action<bool> RequestStateChanged;
+    public event Action<string> requestStarted;
+    public event Action<string> requestFinished;
+    public event Action<bool> requestStateChanged;
 
     public bool TryStartRequest(string label)
     {
@@ -20,8 +20,8 @@ public class RequestManager
         IsRequestInProgress = true;
         ActiveRequestLabel = label;
         UnityEngine.Debug.Log($"[RequestManager] Request START '{label}'");
-        RequestStarted?.Invoke(label);
-        RequestStateChanged?.Invoke(true);
+        requestStarted?.Invoke(label);
+        requestStateChanged?.Invoke(true);
         return true;
     }
 
@@ -36,7 +36,7 @@ public class RequestManager
         IsRequestInProgress = false;
         ActiveRequestLabel = null;
         UnityEngine.Debug.Log($"[RequestManager] Request FINISH '{label}'");
-        RequestFinished?.Invoke(label);
-        RequestStateChanged?.Invoke(false);
+        requestFinished?.Invoke(label);
+        requestStateChanged?.Invoke(false);
     }
 }

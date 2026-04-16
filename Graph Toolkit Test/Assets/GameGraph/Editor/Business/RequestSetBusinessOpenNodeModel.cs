@@ -13,8 +13,8 @@ public sealed class RequestSetBusinessOpenNodeModel : GameGraphSuccessFailNodeMo
 	public const string LotIdOption = "LotId";
 	public const string OpenOption = "Open";
 
-	protected override string DefaultTitle => "Установить статус открытия";
-	protected override string DefaultDescription => "Устанавливает желаемый статус открытия бизнеса.";
+	protected override string defaultTitle => "Установить статус открытия";
+	protected override string defaultDescription => "Устанавливает желаемый статус открытия бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

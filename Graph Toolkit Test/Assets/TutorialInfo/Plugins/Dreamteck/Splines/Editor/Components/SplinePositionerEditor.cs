@@ -8,7 +8,7 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class SplinePositionerEditor : SplineTracerEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Positioning", EditorStyles.boldLabel);
@@ -80,16 +80,16 @@ namespace Dreamteck.Splines.Editor
                 positioner.followLoop = followLoop.boolValue;
                 serializedObject.ApplyModifiedProperties();
             }
-            base.BodyGUI();
+            base.BodyGui();
         }
 
         void OnSetDistance(float distance)
         {
             int longest = 0;
             float max = 0f;
-            for (int i = 0; i < users.Length; i++)
+            for (int i = 0; i < m_users.Length; i++)
             {
-                float length = users[i].CalculateLength();
+                float length = m_users[i].CalculateLength();
                 if (length > max)
                 {
                     max = length;

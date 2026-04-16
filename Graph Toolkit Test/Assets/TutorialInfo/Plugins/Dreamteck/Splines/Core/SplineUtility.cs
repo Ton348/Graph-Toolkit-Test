@@ -87,8 +87,8 @@ namespace Dreamteck.Splines
             {
                 addedSpline.Unsubscribe(subs[i]);
                 subs[i].spline = baseSpline;
-                subs[i].clipFrom = DMath.Lerp(from, to, subs[i].clipFrom);
-                subs[i].clipTo = DMath.Lerp(from, to, subs[i].clipTo);
+                subs[i].clipFrom = Dmath.Lerp(from, to, subs[i].clipFrom);
+                subs[i].clipTo = Dmath.Lerp(from, to, subs[i].clipTo);
             }
             baseSpline.SetPoints(points);
 

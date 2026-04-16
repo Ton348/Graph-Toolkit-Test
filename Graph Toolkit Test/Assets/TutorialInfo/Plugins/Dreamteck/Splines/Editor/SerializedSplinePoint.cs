@@ -11,13 +11,13 @@ namespace Dreamteck.Splines.Editor
         {
             get
             {
-                return (SplinePoint.Type)_type.enumValueIndex;
+                return (SplinePoint.Type)m_type.enumValueIndex;
             }
             set
             {
                 if (value != type)
                 {
-                    _type.enumValueIndex = (int)value;
+                    m_type.enumValueIndex = (int)value;
                     changed = true;
                 }
             }
@@ -25,12 +25,12 @@ namespace Dreamteck.Splines.Editor
 
         public Vector3 position
         {
-            get { return _position.vector3Value; }
+            get { return m_position.vector3Value; }
             set
             {
                 if (value != position)
                 {
-                    _position.vector3Value = value;
+                    m_position.vector3Value = value;
                     changed = true;
                 }
             }
@@ -38,24 +38,24 @@ namespace Dreamteck.Splines.Editor
 
         public Vector3 tangent
         {
-            get { return _tangent.vector3Value; }
+            get { return m_tangent.vector3Value; }
             set
             {
                 if (value != tangent)
                 {
-                    _tangent.vector3Value = value;
+                    m_tangent.vector3Value = value;
                     changed = true;
                 }
             }
         }
         public Vector3 tangent2
         {
-            get { return _tangent2.vector3Value; }
+            get { return m_tangent2.vector3Value; }
             set
             {
                 if (value != tangent2)
                 {
-                    _tangent2.vector3Value = value;
+                    m_tangent2.vector3Value = value;
                     changed = true;
                 }
             }
@@ -63,12 +63,12 @@ namespace Dreamteck.Splines.Editor
 
         public Color color
         {
-            get { return _color.colorValue; }
+            get { return m_color.colorValue; }
             set
             {
                 if (value != color)
                 {
-                    _color.colorValue = value;
+                    m_color.colorValue = value;
                     changed = true;
                 }
             }
@@ -76,50 +76,50 @@ namespace Dreamteck.Splines.Editor
 
         public Vector3 normal
         {
-            get { return _normal.vector3Value; }
+            get { return m_normal.vector3Value; }
             set
             {
                 if (value != normal)
                 {
-                    _normal.vector3Value = value;
+                    m_normal.vector3Value = value;
                     changed = true;
                 }
             }
         }
         public float size
         {
-            get { return _size.floatValue; }
+            get { return m_size.floatValue; }
             set
             {
                 if (value != size)
                 {
-                    _size.floatValue = value;
+                    m_size.floatValue = value;
                     changed = true;
                 }
             }
         }
 
 
-        private SerializedProperty _point;
-        private SerializedProperty _position;
-        private SerializedProperty _tangent;
-        private SerializedProperty _tangent2;
-        private SerializedProperty _normal;
-        private SerializedProperty _size;
-        private SerializedProperty _color;
-        private SerializedProperty _type;
+        private SerializedProperty m_point;
+        private SerializedProperty m_position;
+        private SerializedProperty m_tangent;
+        private SerializedProperty m_tangent2;
+        private SerializedProperty m_normal;
+        private SerializedProperty m_size;
+        private SerializedProperty m_color;
+        private SerializedProperty m_type;
 
 
         public SerializedSplinePoint(SerializedProperty input)
         {
-            _point = input;
-            _position = _point.FindPropertyRelative("position");
-            _tangent = _point.FindPropertyRelative("tangent");
-            _tangent2 = _point.FindPropertyRelative("tangent2");
-            _normal = _point.FindPropertyRelative("normal");
-            _size = _point.FindPropertyRelative("size");
-            _color = _point.FindPropertyRelative("color");
-            _type = _point.FindPropertyRelative("_type");
+            m_point = input;
+            m_position = m_point.FindPropertyRelative("position");
+            m_tangent = m_point.FindPropertyRelative("tangent");
+            m_tangent2 = m_point.FindPropertyRelative("tangent2");
+            m_normal = m_point.FindPropertyRelative("normal");
+            m_size = m_point.FindPropertyRelative("size");
+            m_color = m_point.FindPropertyRelative("color");
+            m_type = m_point.FindPropertyRelative("_type");
             changed = false;
         }
 
@@ -215,7 +215,7 @@ namespace Dreamteck.Splines.Editor
         public void SetTangentPosition(Vector3 pos)
         {
             tangent = pos;
-            switch ((SplinePoint.Type)_type.enumValueIndex)
+            switch ((SplinePoint.Type)m_type.enumValueIndex)
             {
                 case SplinePoint.Type.SmoothMirrored: SmoothMirrorTangent2(); break;
                 case SplinePoint.Type.SmoothFree: SmoothFreeTangent2(); break;
@@ -225,7 +225,7 @@ namespace Dreamteck.Splines.Editor
         public void SetTangent2Position(Vector3 pos)
         {
             tangent2 = pos;
-            switch ((SplinePoint.Type)_type.enumValueIndex)
+            switch ((SplinePoint.Type)m_type.enumValueIndex)
             {
                 case SplinePoint.Type.SmoothMirrored: SmoothMirrorTangent(); break;
                 case SplinePoint.Type.SmoothFree: SmoothFreeTangent(); break;

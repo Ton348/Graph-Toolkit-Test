@@ -6,7 +6,7 @@ namespace Dreamteck.Splines.Editor
     public class SplineEditorBase
     {
         public bool open = false;
-        public EditorGUIEvents eventModule = null;
+        public EditorGuievents eventModule = null;
 
         public delegate void UndoHandler(string title);
         public delegate void EmptyHandler();
@@ -16,18 +16,18 @@ namespace Dreamteck.Splines.Editor
 
         protected bool gizmosEnabled
         {
-            get { return _gizmosEnabled; }
+            get { return m_gizmosEnabled; }
         }
 
-        private bool _gizmosEnabled = true;
+        private bool m_gizmosEnabled = true;
 
-        protected readonly SerializedObject _serializedObject;
+        protected readonly SerializedObject m_serializedObject;
 
         public SplineEditorBase(SerializedObject serializedObject)
         {
             Load();
-            this._serializedObject = serializedObject;
-            eventModule = new EditorGUIEvents();
+            this.m_serializedObject = serializedObject;
+            eventModule = new EditorGuievents();
         }
 
         public virtual void Destroy()
@@ -50,7 +50,7 @@ namespace Dreamteck.Splines.Editor
             if(SceneView.lastActiveSceneView != null)
             {
 #if UNITY_2019_1_OR_NEWER
-                _gizmosEnabled = SceneView.lastActiveSceneView.drawGizmos;
+                m_gizmosEnabled = SceneView.lastActiveSceneView.drawGizmos;
 #endif
             }
             eventModule.Update(Event.current);

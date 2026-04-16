@@ -3,29 +3,29 @@ using UnityEngine;
 
 public class CompassTickView : MonoBehaviour
 {
-    [SerializeField] private RectTransform rectTransform;
-    [SerializeField] private TMP_Text label;
+    [SerializeField] private RectTransform m_rectTransform;
+    [SerializeField] private TMP_Text m_label;
 
     private void Awake()
     {
-        if (rectTransform == null)
+        if (m_rectTransform == null)
         {
-            rectTransform = GetComponent<RectTransform>();
+            m_rectTransform = GetComponent<RectTransform>();
         }
 
-        if (label == null)
+        if (m_label == null)
         {
-            label = GetComponentInChildren<TMP_Text>(true);
+            m_label = GetComponentInChildren<TMP_Text>(true);
         }
     }
 
     public void SetPositionX(float x)
     {
-        if (rectTransform == null) return;
+        if (m_rectTransform == null) return;
 
-        Vector2 pos = rectTransform.anchoredPosition;
+        Vector2 pos = m_rectTransform.anchoredPosition;
         pos.x = x;
-        rectTransform.anchoredPosition = pos;
+        m_rectTransform.anchoredPosition = pos;
     }
 
     public void SetVisible(bool visible)
@@ -35,7 +35,7 @@ public class CompassTickView : MonoBehaviour
 
     public void SetLabel(string text)
     {
-        if (label == null) return;
-        label.text = text;
+        if (m_label == null) return;
+        m_label.text = text;
     }
 }

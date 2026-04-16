@@ -13,8 +13,8 @@ public sealed class RequestSetBusinessMarkupNodeModel : GameGraphSuccessFailNode
 	public const string LotIdOption = "LotId";
 	public const string MarkupPercentOption = "MarkupPercent";
 
-	protected override string DefaultTitle => "Изменить наценку бизнеса";
-	protected override string DefaultDescription => "Запрашивает изменение наценки бизнеса.";
+	protected override string defaultTitle => "Изменить наценку бизнеса";
+	protected override string defaultDescription => "Запрашивает изменение наценки бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

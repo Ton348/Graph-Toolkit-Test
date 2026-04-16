@@ -60,14 +60,14 @@ namespace Dreamteck.Splines.Editor
                 }
             }
             Handles.color = Color.white;
-            Quaternion lastRotation = rotation;
-            rotation = Handles.RotationHandle(lastRotation, selectionCenter);
-            if (lastRotation != rotation)
+            Quaternion lastRotation = m_rotation;
+            m_rotation = Handles.RotationHandle(lastRotation, selectionCenter);
+            if (lastRotation != m_rotation)
             {
                 PrepareTransform();
                 for (int i = 0; i < selectedPoints.Count; i++)
                 {
-                    var point = localPoints[selectedPoints[i]];
+                    var point = m_localPoints[selectedPoints[i]];
                     TransformPoint(ref point, rotateNormals, rotateTangents);
                     points[selectedPoints[i]].SetPoint(point);
                 }

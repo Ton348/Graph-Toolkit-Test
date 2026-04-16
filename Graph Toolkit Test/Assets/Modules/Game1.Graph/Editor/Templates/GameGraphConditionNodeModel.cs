@@ -10,15 +10,15 @@ namespace Game1.Graph.Editor.Templates
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public abstract class GameGraphConditionNodeModel : GameGraphTrueFalseNodeModel
 	{
-		protected override string DefaultTitle => "Game Condition Node";
-		protected override string DefaultDescription => "Base template for game condition node with true/false branching.";
+		protected override string defaultTitle => "Game Condition Node";
+		protected override string defaultDescription => "Base template for game condition node with true/false branching.";
 
-		protected virtual string ConditionOptionKey => GameGraphOptionNames.TargetId;
+		protected virtual string conditionOptionKey => GameGraphOptionNames.TargetId;
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
-			AddStringOption(context, ConditionOptionKey, "Condition");
+			AddStringOption(context, conditionOptionKey, "Condition");
 		}
 	}
 }

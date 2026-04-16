@@ -4,30 +4,30 @@ namespace Dreamteck.Utilities
 
     public class Randomizer
     {
-        private int _seed;
-        private System.Random _random;
+        private int m_seed;
+        private System.Random m_random;
 
-        public System.Random random => _random;
+        public System.Random random => m_random;
 
         public Randomizer(int seed)
         {
-            _seed = seed;
-            _random = new System.Random(_seed);
+            m_seed = seed;
+            m_random = new System.Random(m_seed);
         }
 
         public float Random01()
         {
-            return (float)_random.NextDouble();
+            return (float)m_random.NextDouble();
         }
 
         public float Random(float min, float max)
         {
-            return (float)DMath.Lerp(min, max, _random.NextDouble());
+            return (float)Dmath.Lerp(min, max, m_random.NextDouble());
         }
 
         public int Random(int min, int max)
         {
-            return (int)DMath.Lerp(min, max, _random.NextDouble());
+            return (int)Dmath.Lerp(min, max, m_random.NextDouble());
         }
 
         public Vector2 RandomVector2(float min, float max)
@@ -62,12 +62,12 @@ namespace Dreamteck.Utilities
 
         public void Reset()
         {
-            _random = new System.Random(_seed);
+            m_random = new System.Random(m_seed);
         }
 
         public void Reset(int seed)
         {
-            _random = new System.Random(seed);
+            m_random = new System.Random(seed);
         }
     }
 }

@@ -5,24 +5,24 @@
 
     public class SplineSampleModifierEditor : SplineUserSubEditor
     {
-        protected int selected = -1;
-        protected bool drawAllKeys = false;
-        protected virtual SerializedProperty _keysProperty => _keys;
-        protected SerializedProperty _keys;
-        protected SerializedProperty _blend;
-        protected SerializedProperty _useClipped;
-        protected SerializedProperty _modifier;
-        protected virtual string _keysPropertyName => "keys";
-        private int _deleteElement = -1;
+        protected int m_selected = -1;
+        protected bool m_drawAllKeys = false;
+        protected virtual SerializedProperty keysProperty => m_keys;
+        protected SerializedProperty m_keys;
+        protected SerializedProperty m_blend;
+        protected SerializedProperty m_useClipped;
+        protected SerializedProperty m_modifier;
+        protected virtual string keysPropertyName => "keys";
+        private int m_deleteElement = -1;
 
-        protected SerializedObject _serializedObject;
+        protected SerializedObject m_serializedObject;
 
         public SplineSampleModifierEditor(SplineUser user, SplineUserEditor editor, string modifierPropertyPath = "") : base(user, editor)
         {
-            title = "Sample Modifier";
-            _serializedObject = new SerializedObject(user);
+            m_title = "Sample Modifier";
+            m_serializedObject = new SerializedObject(user);
             string[] propertyPath = modifierPropertyPath.Split('/');
-            var property = _serializedObject.FindProperty(propertyPath[0]);
+            var property = m_serializedObject.FindProperty(propertyPath[0]);
             for (int i = 1; i < propertyPath.Length; i++)
             {
                 if(propertyPath[i].StartsWith("[") && propertyPath[i].EndsWith("]"))
@@ -33,32 +33,32 @@
                 }
                 property = property.FindPropertyRelative(propertyPath[i]);
             }
-            _modifier = property;
-            _keys = _modifier.FindPropertyRelative(_keysPropertyName);
-            _blend = _modifier.FindPropertyRelative("blend");
-            _useClipped = _modifier.FindPropertyRelative("useClippedPercent");
+            m_modifier = property;
+            m_keys = m_modifier.FindPropertyRelative(keysPropertyName);
+            m_blend = m_modifier.FindPropertyRelative("blend");
+            m_useClipped = m_modifier.FindPropertyRelative("useClippedPercent");
         }
 
         public override void DrawInspector()
         {
             base.DrawInspector();
             if (!isOpen) return;
-            if (_keysProperty.arraySize > 0)
+            if (keysProperty.arraySize > 0)
             {
-                drawAllKeys = EditorGUILayout.Toggle("Draw all Modules", drawAllKeys);
+                m_drawAllKeys = EditorGUILayout.Toggle("Draw all Modules", m_drawAllKeys);
             }
-            _serializedObject.Update();
+            m_serializedObject.Update();
 
             EditorGUI.BeginChangeCheck();
-            for (int i = 0; i < _keysProperty.arraySize; i++)
+            for (int i = 0; i < keysProperty.arraySize; i++)
             {
                 EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-                SerializedProperty keyProperty = _keysProperty.GetArrayElementAtIndex(i);
-                if (selected == i)
+                SerializedProperty keyProperty = keysProperty.GetArrayElementAtIndex(i);
+                if (m_selected == i)
                 {
                     EditorGUI.BeginChangeCheck();
-                    KeyGUI(keyProperty);
-                    if (EditorGUI.EndChangeCheck()) user.Rebuild();
+                    KeyGui(keyProperty);
+                    if (EditorGUI.EndChangeCheck()) m_user.Rebuild();
                 }
                 else
                 {
@@ -74,35 +74,35 @@
                     {
                         if(Event.current.button == 0)
                         {
-                            selected = i;
-                            editor.Repaint();
+                            m_selected = i;
+                            m_editor.Repaint();
                         } else if (Event.current.button == 1)
                         {
                             int index = i;
                             GenericMenu menu = new GenericMenu();
                             menu.AddItem(new GUIContent("Delete"), false, delegate
                             {
-                                _deleteElement = index;
+                                m_deleteElement = index;
                             });
                             menu.ShowAsContext();
                             UpdateValues();
-                            _serializedObject.Update();
+                            m_serializedObject.Update();
                         }
                     }
                 }
             }
 
             EditorGUILayout.Space();
-            if (_keysProperty.arraySize > 0)
+            if (keysProperty.arraySize > 0)
             {
-                EditorGUILayout.PropertyField(_blend);
-                EditorGUILayout.PropertyField(_useClipped, new GUIContent("Use Clipped Percents", "Whether the percentages relate to the clip range of the user or not."));
+                EditorGUILayout.PropertyField(m_blend);
+                EditorGUILayout.PropertyField(m_useClipped, new GUIContent("Use Clipped Percents", "Whether the percentages relate to the clip range of the user or not."));
             }
 
-            if(_deleteElement >= 0)
+            if(m_deleteElement >= 0)
             {
-                _keysProperty.DeleteArrayElementAtIndex(_deleteElement);
-                _deleteElement = -1;
+                keysProperty.DeleteArrayElementAtIndex(m_deleteElement);
+                m_deleteElement = -1;
                 UpdateValues();
             } else
             {
@@ -116,13 +116,13 @@
         public override void DrawScene()
         {
             base.DrawScene();
-            _serializedObject.Update();
+            m_serializedObject.Update();
             bool changed = false;
-            for (int i = 0; i < _keysProperty.arraySize; i++)
+            for (int i = 0; i < keysProperty.arraySize; i++)
             {
-                if (selected == i || drawAllKeys)
+                if (m_selected == i || m_drawAllKeys)
                 {
-                    if(KeyHandles(_keysProperty.GetArrayElementAtIndex(i), selected == i))
+                    if(KeyHandles(keysProperty.GetArrayElementAtIndex(i), m_selected == i))
                     {
                         changed = true;
                     }
@@ -137,18 +137,18 @@
 
         protected void UpdateValues()
         {
-            if (_serializedObject != null)
+            if (m_serializedObject != null)
             {
-                _serializedObject.ApplyModifiedProperties();
+                m_serializedObject.ApplyModifiedProperties();
             }
-            user.Rebuild();
-            editor.Repaint();
+            m_user.Rebuild();
+            m_editor.Repaint();
         }
 
         protected virtual SerializedProperty AddKey(float f, float t)
         {
-            _keys.InsertArrayElementAtIndex(_keys.arraySize);
-            var key = _keys.GetArrayElementAtIndex(_keys.arraySize - 1);
+            m_keys.InsertArrayElementAtIndex(m_keys.arraySize);
+            var key = m_keys.GetArrayElementAtIndex(m_keys.arraySize - 1);
             SerializedProperty start = key.FindPropertyRelative("_featherStart");
             SerializedProperty end = key.FindPropertyRelative("_featherEnd");
             SerializedProperty centerStart = key.FindPropertyRelative("_centerStart");
@@ -165,7 +165,7 @@
             return key;
         }
 
-        protected virtual void KeyGUI(SerializedProperty keyProperty)
+        protected virtual void KeyGui(SerializedProperty keyProperty)
         {
             SerializedProperty start = keyProperty.FindPropertyRelative("_featherStart");
             SerializedProperty end = keyProperty.FindPropertyRelative("_featherEnd");
@@ -235,7 +235,7 @@
         protected virtual bool KeyHandles(SerializedProperty key, bool edit)
         {
             if (!isOpen) return false;
-            bool useClip = _useClipped.boolValue;
+            bool useClip = m_useClipped.boolValue;
 
             SerializedProperty start = key.FindPropertyRelative("_featherStart");
             SerializedProperty end = key.FindPropertyRelative("_featherEnd");
@@ -247,12 +247,12 @@
 
             if (useClip)
             {
-                user.UnclipPercent(ref value);
+                m_user.UnclipPercent(ref value);
             }
-            SplineComputerEditorHandles.Slider(user.spline, ref value, user.spline.editorPathColor, "Start", SplineComputerEditorHandles.SplineSliderGizmo.ForwardTriangle, 0.8f);
+            SplineComputerEditorHandles.Slider(m_user.spline, ref value, m_user.spline.editorPathColor, "Start", SplineComputerEditorHandles.SplineSliderGizmo.ForwardTriangle, 0.8f);
             if (useClip)
             {
-                user.ClipPercent(ref value);
+                m_user.ClipPercent(ref value);
             }
 
             if (start.floatValue != value)
@@ -265,12 +265,12 @@
             value = LocalToGlobalPercent(start.floatValue, end.floatValue, centerStart.floatValue);
             if (useClip)
             {
-                user.UnclipPercent(ref value);
+                m_user.UnclipPercent(ref value);
             }
-            SplineComputerEditorHandles.Slider(user.spline, ref value, user.spline.editorPathColor, "", SplineComputerEditorHandles.SplineSliderGizmo.Rectangle, 0.6f);
+            SplineComputerEditorHandles.Slider(m_user.spline, ref value, m_user.spline.editorPathColor, "", SplineComputerEditorHandles.SplineSliderGizmo.Rectangle, 0.6f);
             if (useClip)
             {
-                user.ClipPercent(ref value);
+                m_user.ClipPercent(ref value);
             }
 
             if (LocalToGlobalPercent(start.floatValue, end.floatValue, centerStart.floatValue) != value)
@@ -283,14 +283,14 @@
             value = LocalToGlobalPercent(start.floatValue, end.floatValue, centerEnd.floatValue);
             if (useClip)
             {
-                user.UnclipPercent(ref value);
+                m_user.UnclipPercent(ref value);
             }
             
 
-            SplineComputerEditorHandles.Slider(user.spline, ref value, user.spline.editorPathColor, "", SplineComputerEditorHandles.SplineSliderGizmo.Rectangle, 0.6f);
+            SplineComputerEditorHandles.Slider(m_user.spline, ref value, m_user.spline.editorPathColor, "", SplineComputerEditorHandles.SplineSliderGizmo.Rectangle, 0.6f);
             if (useClip)
             {
-                user.ClipPercent(ref value);
+                m_user.ClipPercent(ref value);
             }
             if (LocalToGlobalPercent(start.floatValue, end.floatValue, centerEnd.floatValue) != value)
             {
@@ -303,13 +303,13 @@
             value = end.floatValue;
             if (useClip)
             {
-                user.UnclipPercent(ref value);
+                m_user.UnclipPercent(ref value);
             }
 
-            SplineComputerEditorHandles.Slider(user.spline, ref value, user.spline.editorPathColor, "End", SplineComputerEditorHandles.SplineSliderGizmo.BackwardTriangle, 0.8f);
+            SplineComputerEditorHandles.Slider(m_user.spline, ref value, m_user.spline.editorPathColor, "End", SplineComputerEditorHandles.SplineSliderGizmo.BackwardTriangle, 0.8f);
             if (useClip)
             {
-                user.ClipPercent(ref value);
+                m_user.ClipPercent(ref value);
             }
             if (end.floatValue != value)
             {
@@ -325,13 +325,13 @@
                 double lastValue = value;
                 if (useClip)
                 {
-                    user.UnclipPercent(ref value);
+                    m_user.UnclipPercent(ref value);
                 }
-                SplineComputerEditorHandles.Slider(user.spline, ref value, user.spline.editorPathColor, "", SplineComputerEditorHandles.SplineSliderGizmo.Circle, 0.4f);
+                SplineComputerEditorHandles.Slider(m_user.spline, ref value, m_user.spline.editorPathColor, "", SplineComputerEditorHandles.SplineSliderGizmo.Circle, 0.4f);
                 
                 if (useClip)
                 {
-                    user.ClipPercent(ref value);
+                    m_user.ClipPercent(ref value);
                 }
 
                 if (value != lastValue)

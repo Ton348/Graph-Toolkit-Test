@@ -7,16 +7,16 @@ namespace Dreamteck.Splines
     [AddComponentMenu("Dreamteck/Splines/Complex Surface Generator")]
     public class ComplexSurfaceGenerator : MeshGenerator
     {
-        public enum UVWrapMode { Clamp, UniformX, UniformY, Uniform }
+        public enum UvwrapMode { Clamp, UniformX, UniformY, Uniform }
         public enum SubdivisionMode { CatmullRom, BSpline, Linear }
-        public UVWrapMode uvWrapMode
+        public UvwrapMode uvWrapMode
         {
-            get { return _uvWrapMode; }
+            get { return m_uvWrapMode; }
             set
             {
-                if (value != _uvWrapMode)
+                if (value != m_uvWrapMode)
                 {
-                    _uvWrapMode = value;
+                    m_uvWrapMode = value;
                     Rebuild();
                 }
             }
@@ -24,12 +24,12 @@ namespace Dreamteck.Splines
 
         public int subdivisions
         {
-            get { return _subdivisions; }
+            get { return m_subdivisions; }
             set
             {
-                if (value != _subdivisions)
+                if (value != m_subdivisions)
                 {
-                    _subdivisions = value;
+                    m_subdivisions = value;
                     Rebuild();
                 }
             }
@@ -37,12 +37,12 @@ namespace Dreamteck.Splines
 
         public SubdivisionMode subdivisionMode
         {
-            get { return _subdivisionMode; }
+            get { return m_subdivisionMode; }
             set
             {
-                if (value != _subdivisionMode)
+                if (value != m_subdivisionMode)
                 {
-                    _subdivisionMode = value;
+                    m_subdivisionMode = value;
                     Rebuild();
                 }
             }
@@ -50,12 +50,12 @@ namespace Dreamteck.Splines
 
         public bool automaticNormals
         {
-            get { return _automaticNormals; }
+            get { return m_automaticNormals; }
             set
             {
-                if (value != _automaticNormals)
+                if (value != m_automaticNormals)
                 {
-                    _automaticNormals = value;
+                    m_automaticNormals = value;
                     Rebuild();
                 }
             }
@@ -63,12 +63,12 @@ namespace Dreamteck.Splines
 
         public bool separateMaterialIDs
         {
-            get { return _separateMaterialIDs; }
+            get { return m_separateMaterialIds; }
             set
             {
-                if (value != _separateMaterialIDs)
+                if (value != m_separateMaterialIds)
                 {
-                    _separateMaterialIDs = value;
+                    m_separateMaterialIds = value;
                     Rebuild();
                 }
             }
@@ -77,18 +77,18 @@ namespace Dreamteck.Splines
 
         public SplineComputer[] otherComputers
         {
-            get { return _otherComputers; }
+            get { return m_otherComputers; }
             set
             {
                 bool rebuild = false;
-                if (value.Length != _otherComputers.Length)
+                if (value.Length != m_otherComputers.Length)
                 {
                     rebuild = true;
-                    for (int i = 0; i < _otherComputers.Length; i++)
+                    for (int i = 0; i < m_otherComputers.Length; i++)
                     {
-                        if (_otherComputers[i] != null)
+                        if (m_otherComputers[i] != null)
                         {
-                            _otherComputers[i].Unsubscribe(this);
+                            m_otherComputers[i].Unsubscribe(this);
                         }
                     }
                 }
@@ -96,11 +96,11 @@ namespace Dreamteck.Splines
                 {
                     for (int i = 0; i < value.Length; i++)
                     {
-                        if (_otherComputers[i] != null)
+                        if (m_otherComputers[i] != null)
                         {
-                            _otherComputers[i].Unsubscribe(this);
+                            m_otherComputers[i].Unsubscribe(this);
                         }
-                        if (value[i] != _otherComputers[i])
+                        if (value[i] != m_otherComputers[i])
                         {
                             rebuild = true;
                             break;
@@ -109,16 +109,16 @@ namespace Dreamteck.Splines
                 }
                 if (rebuild)
                 {
-                    _otherComputers = value;
-                    for (int i = 0; i < _otherComputers.Length; i++)
+                    m_otherComputers = value;
+                    for (int i = 0; i < m_otherComputers.Length; i++)
                     {
-                        if (_otherComputers[i] != null)
+                        if (m_otherComputers[i] != null)
                         {
-                            if (_otherComputers[i].subscriberCount == 0)
+                            if (m_otherComputers[i].subscriberCount == 0)
                             {
-                                _otherComputers[i].name = "Surface Spline " + (i + 1);
+                                m_otherComputers[i].name = "Surface Spline " + (i + 1);
                             }
-                            _otherComputers[i].Subscribe(this);
+                            m_otherComputers[i].Subscribe(this);
                         }
                     }
                     Rebuild();
@@ -128,38 +128,38 @@ namespace Dreamteck.Splines
 
         [SerializeField]
         [HideInInspector]
-        private UVWrapMode _uvWrapMode = UVWrapMode.Clamp;
+        private UvwrapMode m_uvWrapMode = UvwrapMode.Clamp;
         [SerializeField, HideInInspector, Min(1)]
-        private int _subdivisions = 3;
+        private int m_subdivisions = 3;
         [SerializeField, HideInInspector]
-        private SubdivisionMode _subdivisionMode;
+        private SubdivisionMode m_subdivisionMode;
         [SerializeField]
         [HideInInspector]
-        private bool _automaticNormals = true;
+        private bool m_automaticNormals = true;
         [SerializeField]
         [HideInInspector]
-        private bool _separateMaterialIDs = false;
+        private bool m_separateMaterialIds = false;
         [SerializeField]
         [HideInInspector]
-        private SplineComputer[] _otherComputers = new SplineComputer[0];
+        private SplineComputer[] m_otherComputers = new SplineComputer[0];
         [SerializeField]
         [HideInInspector]
-        private Spline[] _splines = new Spline[0];
+        private Spline[] m_splines = new Spline[0];
         [SerializeField]
         [HideInInspector]
-        private bool _initializedInEditor = false;
+        private bool m_initializedInEditor = false;
 
-        private int iterations => _subdivisions * _otherComputers.Length;
+        private int iterations => m_subdivisions * m_otherComputers.Length;
 
         protected override void Awake()
         {
             base.Awake();
 
-            _mesh.name = "multispline_surface";
-            for (int i = 0; i < _otherComputers.Length; i++)
+            m_mesh.name = "multispline_surface";
+            for (int i = 0; i < m_otherComputers.Length; i++)
             {
-                _otherComputers[i].onRebuild -= OnOtherRebuild;
-                _otherComputers[i].onRebuild += OnOtherRebuild;
+                m_otherComputers[i].onRebuild -= OnOtherRebuild;
+                m_otherComputers[i].onRebuild += OnOtherRebuild;
             }
         }
 
@@ -186,42 +186,42 @@ namespace Dreamteck.Splines
 
         protected override void BuildMesh()
         {
-            if (sampleCount == 0 || _otherComputers.Length == 0)
+            if (sampleCount == 0 || m_otherComputers.Length == 0)
             {
                 AllocateMesh(0, 0);
                 return;
             }
 
-            if (_splines.Length != sampleCount)
+            if (m_splines.Length != sampleCount)
             {
-                _splines = new Spline[sampleCount];
-                for (int i = 0; i < _splines.Length; i++)
+                m_splines = new Spline[sampleCount];
+                for (int i = 0; i < m_splines.Length; i++)
                 {
-                    _splines[i] = new Spline(ModeToSplineType(_subdivisionMode));
+                    m_splines[i] = new Spline(ModeToSplineType(m_subdivisionMode));
                 }
             } else
             {
-                for (int i = 0; i < _splines.Length; i++)
+                for (int i = 0; i < m_splines.Length; i++)
                 {
-                    _splines[i].type = ModeToSplineType(_subdivisionMode);
+                    m_splines[i].type = ModeToSplineType(m_subdivisionMode);
                 }
             }
 
             base.BuildMesh();
             AllocateMesh(sampleCount * (iterations + 1), iterations * (sampleCount-1) * 6);
-            _tsMesh.triangles = MeshUtility.GeneratePlaneTriangles(sampleCount - 1, iterations + 1, false);
+            tsMesh.triangles = MeshUtility.GeneratePlaneTriangles(sampleCount - 1, iterations + 1, false);
             GenerateVertices();
-            _tsMesh.subMeshes.Clear();
+            tsMesh.subMeshes.Clear();
 
-            if (_separateMaterialIDs)
+            if (m_separateMaterialIds)
             {
-                for (int i = 0; i < _otherComputers.Length; i++)
+                for (int i = 0; i < m_otherComputers.Length; i++)
                 {
                     int[] newTris = MeshUtility.GeneratePlaneTriangles(sampleCount - 1, subdivisions + 1, false);
-                    _tsMesh.subMeshes.Add(newTris);
-                    for (int n = 0; n < _tsMesh.subMeshes[i].Length; n++)
+                    tsMesh.subMeshes.Add(newTris);
+                    for (int n = 0; n < tsMesh.subMeshes[i].Length; n++)
                     {
-                        _tsMesh.subMeshes[i][n] += i * (_subdivisions * sampleCount);
+                        tsMesh.subMeshes[i][n] += i * (m_subdivisions * sampleCount);
                     }
                 }
             }
@@ -230,29 +230,29 @@ namespace Dreamteck.Splines
 
         void GenerateVertices()
         {
-            if (_otherComputers.Length == 0) return;
+            if (m_otherComputers.Length == 0) return;
 
-            ResetUVDistance();
+            ResetUvdistance();
 
             SplineSample sample = default;
             SplineSample sample2 = default;
 
-            for (int i = 0; i < _otherComputers.Length + 1; i++)
+            for (int i = 0; i < m_otherComputers.Length + 1; i++)
             {
                 SplineComputer splineComp = spline;
                 if (i > 0)
                 {
-                    splineComp = _otherComputers[i - 1];
+                    splineComp = m_otherComputers[i - 1];
                 }
 
                 for (int j = 0; j < sampleCount; j++)
                 {
-                    if (_splines[j].points.Length != _otherComputers.Length + 1)
+                    if (m_splines[j].points.Length != m_otherComputers.Length + 1)
                     {
-                        _splines[j].points = new SplinePoint[_otherComputers.Length + 1];
+                        m_splines[j].points = new SplinePoint[m_otherComputers.Length + 1];
                     }
                     
-                    double xPercent = DMath.Lerp(clipFrom, clipTo, (double)j / (sampleCount - 1));
+                    double xPercent = Dmath.Lerp(clipFrom, clipTo, (double)j / (sampleCount - 1));
                     if (i > 0)
                     {
                         splineComp.Evaluate(xPercent, ref sample);
@@ -262,54 +262,54 @@ namespace Dreamteck.Splines
                         GetSample(j, ref sample);
                     }
 
-                    _splines[j].points[i].position = sample.position;
-                    _splines[j].points[i].normal = sample.up;
-                    _splines[j].points[i].color = sample.color;
+                    m_splines[j].points[i].position = sample.position;
+                    m_splines[j].points[i].normal = sample.up;
+                    m_splines[j].points[i].color = sample.color;
                 }
             }
 
 
 
-            for (int x = 0; x < _splines.Length; x++)
+            for (int x = 0; x < m_splines.Length; x++)
             {
-                if (uvMode == UVMode.UniformClamp || uvMode == UVMode.UniformClip)
+                if (uvMode == Uvmode.UniformClamp || uvMode == Uvmode.UniformClip)
                 {
-                    AddUVDistance(x);
+                    AddUvdistance(x);
                 } else
                 {
                     GetSample(x, ref sample2);
                 }
                 Vector3 lastPos = sample.position;
                 float ydist = 0f;
-                float xPercent = Mathf.Lerp((float)clipFrom, (float)clipTo, (float)x / (_splines.Length - 1));
+                float xPercent = Mathf.Lerp((float)clipFrom, (float)clipTo, (float)x / (m_splines.Length - 1));
                 for (int y = 0; y < iterations + 1; y++)
                 {
                     float yPercent = (float)y / iterations;
-                    int index = x + y * _splines.Length;
-                    _splines[x].Evaluate(yPercent, ref sample);
+                    int index = x + y * m_splines.Length;
+                    m_splines[x].Evaluate(yPercent, ref sample);
                     if (y > 0)
                     {
                         ydist += Vector3.Distance(lastPos, sample.position);
                     }
                     lastPos = sample.position;
-                    if (uvMode == UVMode.UniformClamp )
+                    if (uvMode == Uvmode.UniformClamp )
                     {
-                        __uvs.x = CalculateUVUniformClamp(_vDist);
-                        __uvs.y = CalculateUVUniformClamp(ydist);
-                    } else if(uvMode == UVMode.UniformClip)
+                        s_uvs.x = CalculateUvuniformClamp(m_vDist);
+                        s_uvs.y = CalculateUvuniformClamp(ydist);
+                    } else if(uvMode == Uvmode.UniformClip)
                     {
-                        __uvs.x = CalculateUVUniformClip(_vDist);
-                        __uvs.y = CalculateUVUniformClip(ydist);
+                        s_uvs.x = CalculateUvuniformClip(m_vDist);
+                        s_uvs.y = CalculateUvuniformClip(ydist);
                     }
                     else
                     {
-                        CalculateUVs(xPercent, yPercent);
+                        CalculateUvs(xPercent, yPercent);
                     }
 
-                    _tsMesh.vertices[index] = sample.position;
-                    _tsMesh.normals[index] = sample.up;
-                    _tsMesh.colors[index] = sample.color;
-                    _tsMesh.uv[index] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - __uvs));
+                    tsMesh.vertices[index] = sample.position;
+                    tsMesh.normals[index] = sample.up;
+                    tsMesh.colors[index] = sample.color;
+                    tsMesh.uv[index] = Vector2.one * 0.5f + (Vector2)(Quaternion.AngleAxis(uvRotation + 180f, Vector3.forward) * (Vector2.one * 0.5f - s_uvs));
                 }
             }
         }
@@ -318,9 +318,9 @@ namespace Dreamteck.Splines
         protected override void WriteMesh()
         {
             base.WriteMesh();
-            if (_automaticNormals)
+            if (m_automaticNormals)
             {
-                _mesh.RecalculateNormals();
+                m_mesh.RecalculateNormals();
             }
         }
 
@@ -333,7 +333,7 @@ namespace Dreamteck.Splines
             Vector3 prevPoint = spline.EvaluatePosition(from);
             for (int i = 1; i < iterations; i++)
             {
-                double p = DMath.Lerp(from, to, (double)i / (iterations - 1));
+                double p = Dmath.Lerp(from, to, (double)i / (iterations - 1));
                 Debug.DrawLine(prevPoint, spline.EvaluatePosition(p), color, 1f);
                 prevPoint = spline.EvaluatePosition(p);
             }

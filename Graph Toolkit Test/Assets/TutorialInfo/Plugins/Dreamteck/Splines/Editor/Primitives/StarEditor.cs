@@ -15,13 +15,13 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Star();
+            m_primitive = new Star();
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Star star = (Star)primitive;
+            base.OnGui();
+            Star star = (Star)m_primitive;
             star.radius = EditorGUILayout.FloatField("Radius", star.radius);
             star.depth = EditorGUILayout.FloatField("Depth", star.depth);
             star.sides = EditorGUILayout.IntField("Sides", star.sides);

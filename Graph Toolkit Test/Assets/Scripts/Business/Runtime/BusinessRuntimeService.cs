@@ -3,42 +3,42 @@ using System.Linq;
 
 public class BusinessRuntimeService
 {
-    private readonly BusinessDefinitionsRepository definitions;
-    private readonly BusinessStateSyncService stateSync;
+    private readonly BusinessDefinitionsRepository m_definitions;
+    private readonly BusinessStateSyncService m_stateSync;
 
     public BusinessRuntimeService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
     {
-        this.definitions = definitions;
-        this.stateSync = stateSync;
+        this.m_definitions = definitions;
+        this.m_stateSync = stateSync;
     }
 
     public IEnumerable<BusinessInstanceSnapshot> GetBusinesses()
     {
-        return stateSync != null ? stateSync.GetAllBusinesses() : Enumerable.Empty<BusinessInstanceSnapshot>();
+        return m_stateSync != null ? m_stateSync.GetAllBusinesses() : Enumerable.Empty<BusinessInstanceSnapshot>();
     }
 
     public BusinessInstanceSnapshot GetBusinessView(string lotId)
     {
-        return stateSync?.GetBusinessByLotId(lotId);
+        return m_stateSync?.GetBusinessByLotId(lotId);
     }
 
     public IEnumerable<SupplierDefinitionData> GetAvailableSuppliers(BusinessInstanceSnapshot business)
     {
-        if (business == null || definitions == null)
+        if (business == null || m_definitions == null)
         {
             return Enumerable.Empty<SupplierDefinitionData>();
         }
 
-        var type = definitions.GetBusinessType(business.businessTypeId);
+        var type = m_definitions.GetBusinessType(business.businessTypeId);
         if (type == null || string.IsNullOrWhiteSpace(type.productType))
         {
             return Enumerable.Empty<SupplierDefinitionData>();
         }
 
-        var knownContacts = stateSync != null ? new HashSet<string>(stateSync.GetKnownContacts()) : new HashSet<string>();
+        var knownContacts = m_stateSync != null ? new HashSet<string>(m_stateSync.GetKnownContacts()) : new HashSet<string>();
         var suppliers = new List<SupplierDefinitionData>();
 
-        foreach (var supplier in definitions.GetAllSuppliers())
+        foreach (var supplier in m_definitions.GetAllSuppliers())
         {
             if (supplier == null) continue;
             if (supplier.productType == type.productType && knownContacts.Contains(supplier.id))
@@ -52,14 +52,14 @@ public class BusinessRuntimeService
 
     public IEnumerable<string> GetAvailableWorkers(string roleId)
     {
-        if (stateSync == null || definitions == null || string.IsNullOrWhiteSpace(roleId))
+        if (m_stateSync == null || m_definitions == null || string.IsNullOrWhiteSpace(roleId))
         {
             return Enumerable.Empty<string>();
         }
 
-        var known = new HashSet<string>(stateSync.GetKnownContacts());
+        var known = new HashSet<string>(m_stateSync.GetKnownContacts());
         var result = new List<string>();
-        foreach (var contact in definitions.GetStaffContactsByRole(roleId))
+        foreach (var contact in m_definitions.GetStaffContactsByRole(roleId))
         {
             if (contact != null && !string.IsNullOrWhiteSpace(contact.id) && known.Contains(contact.id))
             {
@@ -72,12 +72,12 @@ public class BusinessRuntimeService
 
     public IEnumerable<string> GetMissingRequiredModules(BusinessInstanceSnapshot business)
     {
-        if (business == null || definitions == null)
+        if (business == null || m_definitions == null)
         {
             return Enumerable.Empty<string>();
         }
 
-        var required = definitions.GetRequiredModules(business.businessTypeId);
+        var required = m_definitions.GetRequiredModules(business.businessTypeId);
         var installed = business.installedModules ?? new List<string>();
         return required.Where(moduleId => !installed.Contains(moduleId));
     }

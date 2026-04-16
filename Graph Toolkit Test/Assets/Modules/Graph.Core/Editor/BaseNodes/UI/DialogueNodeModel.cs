@@ -11,8 +11,8 @@ namespace GraphCore.BaseNodes.Editor.UI
 		public const string DialogueTitleOption = "Title";
 		public const string DialogueBodyOption = "Body";
 
-		protected override string DefaultTitle => "Диалог NPC";
-		protected override string DefaultDescription => "Показывает диалог NPC";
+		protected override string defaultTitle => "Диалог NPC";
+		protected override string defaultDescription => "Показывает диалог NPC";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

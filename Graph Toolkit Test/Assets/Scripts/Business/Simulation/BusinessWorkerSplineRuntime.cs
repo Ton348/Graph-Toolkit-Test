@@ -7,12 +7,12 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
     public BusinessWorldRuntime worldRuntime;
     public float stopSeconds = 5f;
 
-    private BusinessWorkerSplineAgent activeAgent;
-    private BusinessSimulationService simulation;
-    private Coroutine activeRoutine;
-    private SplineTrigger storageTrigger;
-    private SplineTrigger shelvesTrigger;
-    private bool triggerListenersBound;
+    private BusinessWorkerSplineAgent m_activeAgent;
+    private BusinessSimulationService m_simulation;
+    private Coroutine m_activeRoutine;
+    private SplineTrigger m_storageTrigger;
+    private SplineTrigger m_shelvesTrigger;
+    private bool m_triggerListenersBound;
 
     private void Awake()
     {
@@ -24,13 +24,13 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
 
     public void Initialize(BusinessSimulationService simulationService)
     {
-        simulation = simulationService;
+        m_simulation = simulationService;
         BindSplineTriggers();
     }
 
     public void EvaluateActivation()
     {
-        if (worldRuntime == null || simulation == null)
+        if (worldRuntime == null || m_simulation == null)
         {
             DeactivateAgent();
             return;
@@ -48,7 +48,7 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
             return;
         }
 
-        if (activeAgent == null)
+        if (m_activeAgent == null)
         {
             SpawnAgent();
         }
@@ -56,18 +56,18 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
 
     public void OnTriggerEntered(BusinessSplineTriggerPoint trigger, BusinessWorkerSplineAgent agent)
     {
-        if (trigger == null || agent == null || agent != activeAgent || activeRoutine != null)
+        if (trigger == null || agent == null || agent != m_activeAgent || m_activeRoutine != null)
         {
             return;
         }
 
         if (trigger.triggerKind == BusinessSplineTriggerPoint.TriggerKind.Storage)
         {
-            activeRoutine = StartCoroutine(HandleStorageTrigger());
+            m_activeRoutine = StartCoroutine(HandleStorageTrigger());
         }
         else
         {
-            activeRoutine = StartCoroutine(HandleShelvesTrigger());
+            m_activeRoutine = StartCoroutine(HandleShelvesTrigger());
         }
     }
 
@@ -75,29 +75,29 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
     {
         var spawnTransform = worldRuntime.merchSpawnPoint != null ? worldRuntime.merchSpawnPoint : worldRuntime.transform;
         var spawned = Instantiate(worldRuntime.merchWorkerPrefab, spawnTransform.position, spawnTransform.rotation, worldRuntime.transform);
-        activeAgent = spawned.GetComponent<BusinessWorkerSplineAgent>();
-        if (activeAgent == null)
+        m_activeAgent = spawned.GetComponent<BusinessWorkerSplineAgent>();
+        if (m_activeAgent == null)
         {
-            activeAgent = spawned.AddComponent<BusinessWorkerSplineAgent>();
+            m_activeAgent = spawned.AddComponent<BusinessWorkerSplineAgent>();
         }
 
-        activeAgent.BindRoute(worldRuntime.merchRoute, spawnTransform, worldRuntime.merchTriggerGroupIndex);
+        m_activeAgent.BindRoute(worldRuntime.merchRoute, spawnTransform, worldRuntime.merchTriggerGroupIndex);
     }
 
     private IEnumerator HandleStorageTrigger()
     {
-        if (activeAgent == null)
+        if (m_activeAgent == null)
         {
-            activeRoutine = null;
+            m_activeRoutine = null;
             yield break;
         }
 
-        activeAgent.StopMovement();
+        m_activeAgent.StopMovement();
         yield return new WaitForSeconds(stopSeconds);
 
-        while (activeAgent != null)
+        while (m_activeAgent != null)
         {
-            var state = simulation.GetStateByLotId(worldRuntime.lotId);
+            var state = m_simulation.GetStateByLotId(worldRuntime.lotId);
             if (state == null)
             {
                 break;
@@ -110,64 +110,64 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
                 continue;
             }
 
-            float request = Mathf.Min(activeAgent.carryBatch, shelfSpace);
-            if (simulation.TryTakeFromStorage(worldRuntime.lotId, request, out var taken))
+            float request = Mathf.Min(m_activeAgent.carryBatch, shelfSpace);
+            if (m_simulation.TryTakeFromStorage(worldRuntime.lotId, request, out var taken))
             {
-                activeAgent.SetCarry(taken);
+                m_activeAgent.SetCarry(taken);
             }
             else
             {
-                activeAgent.ClearCarry();
+                m_activeAgent.ClearCarry();
             }
 
             break;
         }
 
-        if (activeAgent != null)
+        if (m_activeAgent != null)
         {
-            activeAgent.ResumeMovement();
+            m_activeAgent.ResumeMovement();
         }
 
-        activeRoutine = null;
+        m_activeRoutine = null;
     }
 
     private IEnumerator HandleShelvesTrigger()
     {
-        if (activeAgent == null)
+        if (m_activeAgent == null)
         {
-            activeRoutine = null;
+            m_activeRoutine = null;
             yield break;
         }
 
-        activeAgent.StopMovement();
+        m_activeAgent.StopMovement();
         yield return new WaitForSeconds(stopSeconds);
 
-        if (activeAgent.CarryingGoods)
+        if (m_activeAgent.CarryingGoods)
         {
-            simulation.TryAddToShelves(worldRuntime.lotId, activeAgent.CurrentCarryAmount, out var added);
+            m_simulation.TryAddToShelves(worldRuntime.lotId, m_activeAgent.CurrentCarryAmount, out var added);
             if (added > 0f)
             {
-                activeAgent.SetCarry(Mathf.Max(0f, activeAgent.CurrentCarryAmount - added));
+                m_activeAgent.SetCarry(Mathf.Max(0f, m_activeAgent.CurrentCarryAmount - added));
             }
         }
 
-        activeAgent.ClearCarry();
-        activeAgent.ResumeMovement();
-        activeRoutine = null;
+        m_activeAgent.ClearCarry();
+        m_activeAgent.ResumeMovement();
+        m_activeRoutine = null;
     }
 
     private void DeactivateAgent()
     {
-        if (activeRoutine != null)
+        if (m_activeRoutine != null)
         {
-            StopCoroutine(activeRoutine);
-            activeRoutine = null;
+            StopCoroutine(m_activeRoutine);
+            m_activeRoutine = null;
         }
 
-        if (activeAgent != null)
+        if (m_activeAgent != null)
         {
-            Destroy(activeAgent.gameObject);
-            activeAgent = null;
+            Destroy(m_activeAgent.gameObject);
+            m_activeAgent = null;
         }
     }
 
@@ -196,49 +196,49 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
                 continue;
             }
 
-            if (storageTrigger == null && string.Equals(trigger.name, worldRuntime.storageTriggerName, System.StringComparison.Ordinal))
+            if (m_storageTrigger == null && string.Equals(trigger.name, worldRuntime.storageTriggerName, System.StringComparison.Ordinal))
             {
-                storageTrigger = trigger;
+                m_storageTrigger = trigger;
             }
-            else if (shelvesTrigger == null && string.Equals(trigger.name, worldRuntime.shelvesTriggerName, System.StringComparison.Ordinal))
+            else if (m_shelvesTrigger == null && string.Equals(trigger.name, worldRuntime.shelvesTriggerName, System.StringComparison.Ordinal))
             {
-                shelvesTrigger = trigger;
+                m_shelvesTrigger = trigger;
             }
         }
 
-        if (storageTrigger != null)
+        if (m_storageTrigger != null)
         {
-            storageTrigger.AddListener(OnStorageSplineTrigger);
+            m_storageTrigger.AddListener(OnStorageSplineTrigger);
         }
 
-        if (shelvesTrigger != null)
+        if (m_shelvesTrigger != null)
         {
-            shelvesTrigger.AddListener(OnShelvesSplineTrigger);
+            m_shelvesTrigger.AddListener(OnShelvesSplineTrigger);
         }
 
-        triggerListenersBound = storageTrigger != null || shelvesTrigger != null;
+        m_triggerListenersBound = m_storageTrigger != null || m_shelvesTrigger != null;
     }
 
     private void UnbindSplineTriggers()
     {
-        if (!triggerListenersBound)
+        if (!m_triggerListenersBound)
         {
             return;
         }
 
-        if (storageTrigger != null)
+        if (m_storageTrigger != null)
         {
-            storageTrigger.RemoveListener(OnStorageSplineTrigger);
+            m_storageTrigger.RemoveListener(OnStorageSplineTrigger);
         }
 
-        if (shelvesTrigger != null)
+        if (m_shelvesTrigger != null)
         {
-            shelvesTrigger.RemoveListener(OnShelvesSplineTrigger);
+            m_shelvesTrigger.RemoveListener(OnShelvesSplineTrigger);
         }
 
-        storageTrigger = null;
-        shelvesTrigger = null;
-        triggerListenersBound = false;
+        m_storageTrigger = null;
+        m_shelvesTrigger = null;
+        m_triggerListenersBound = false;
     }
 
     private void OnDestroy()
@@ -248,26 +248,26 @@ public class BusinessWorkerSplineRuntime : MonoBehaviour
 
     private void OnStorageSplineTrigger(SplineUser user)
     {
-        if (!IsActiveAgentUser(user) || activeRoutine != null)
+        if (!IsActiveAgentUser(user) || m_activeRoutine != null)
         {
             return;
         }
 
-        activeRoutine = StartCoroutine(HandleStorageTrigger());
+        m_activeRoutine = StartCoroutine(HandleStorageTrigger());
     }
 
     private void OnShelvesSplineTrigger(SplineUser user)
     {
-        if (!IsActiveAgentUser(user) || activeRoutine != null)
+        if (!IsActiveAgentUser(user) || m_activeRoutine != null)
         {
             return;
         }
 
-        activeRoutine = StartCoroutine(HandleShelvesTrigger());
+        m_activeRoutine = StartCoroutine(HandleShelvesTrigger());
     }
 
     private bool IsActiveAgentUser(SplineUser user)
     {
-        return activeAgent != null && activeAgent.follower != null && user == activeAgent.follower;
+        return m_activeAgent != null && m_activeAgent.follower != null && user == m_activeAgent.follower;
     }
 }

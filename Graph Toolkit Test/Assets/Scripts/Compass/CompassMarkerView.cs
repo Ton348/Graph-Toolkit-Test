@@ -2,23 +2,23 @@ using UnityEngine;
 
 public class CompassMarkerView : MonoBehaviour
 {
-    [SerializeField] private RectTransform rectTransform;
+    [SerializeField] private RectTransform m_rectTransform;
 
     private void Awake()
     {
-        if (rectTransform == null)
+        if (m_rectTransform == null)
         {
-            rectTransform = GetComponent<RectTransform>();
+            m_rectTransform = GetComponent<RectTransform>();
         }
     }
 
     public void SetPositionX(float x)
     {
-        if (rectTransform == null) return;
+        if (m_rectTransform == null) return;
 
-        Vector2 pos = rectTransform.anchoredPosition;
+        Vector2 pos = m_rectTransform.anchoredPosition;
         pos.x = x;
-        rectTransform.anchoredPosition = pos;
+        m_rectTransform.anchoredPosition = pos;
     }
 
     public void SetVisible(bool visible)

@@ -12,9 +12,9 @@ namespace Dreamteck.Splines.Editor
             base.OnInspectorGUI();
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             CapsuleColliderGenerator generator = (CapsuleColliderGenerator)target;
             SerializedProperty directionProperty = serializedObject.FindProperty("_direction");
             SerializedProperty heightProperty = serializedObject.FindProperty("_height");
@@ -23,8 +23,8 @@ namespace Dreamteck.Splines.Editor
 
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.PropertyField(directionProperty);
-            CapsuleColliderGenerator.CapsuleColliderZDirection direction = (CapsuleColliderGenerator.CapsuleColliderZDirection)directionProperty.intValue;
-            if(direction == CapsuleColliderGenerator.CapsuleColliderZDirection.Z)
+            CapsuleColliderGenerator.CapsuleColliderZdirection direction = (CapsuleColliderGenerator.CapsuleColliderZdirection)directionProperty.intValue;
+            if(direction == CapsuleColliderGenerator.CapsuleColliderZdirection.Z)
             {
                 EditorGUILayout.PropertyField(radiusProperty);
                 EditorGUILayout.PropertyField(overlapCapsProperty);

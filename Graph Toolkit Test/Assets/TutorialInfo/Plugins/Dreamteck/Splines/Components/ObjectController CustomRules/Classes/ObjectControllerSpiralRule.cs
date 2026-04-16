@@ -7,48 +7,48 @@ namespace Dreamteck.Splines
     [CreateAssetMenu(menuName = "Dreamteck/Splines/Object Controller Rules/Spiral Rule")]
     public class ObjectControllerSpiralRule : ObjectControllerCustomRuleBase
     {
-        [SerializeField] private bool _useSplinePercent = false;
-        [SerializeField] private float _revolve = 360f;
-        [SerializeField] private Vector2 _startSize = Vector2.one;
-        [SerializeField] private Vector2 _endSize = Vector2.one;        
-        [SerializeField] [Range(0f, 1f)] private float _offset = 0f;
+        [SerializeField] private bool m_useSplinePercent = false;
+        [SerializeField] private float m_revolve = 360f;
+        [SerializeField] private Vector2 m_startSize = Vector2.one;
+        [SerializeField] private Vector2 m_endSize = Vector2.one;        
+        [SerializeField] [Range(0f, 1f)] private float m_offset = 0f;
 
         public bool useSplinePercent
         {
-            get { return _useSplinePercent; }
-            set { _useSplinePercent = value; }
+            get { return m_useSplinePercent; }
+            set { m_useSplinePercent = value; }
         }
 
         public float revolve
         {
-            get { return _revolve; }
-            set { _revolve = value; }
+            get { return m_revolve; }
+            set { m_revolve = value; }
         }
 
         public Vector2 startSize
         {
-            get { return _startSize; }
-            set { _startSize = value; }
+            get { return m_startSize; }
+            set { m_startSize = value; }
         }
 
         public Vector2 endSize
         {
-            get { return _endSize; }
-            set { _endSize = value; }
+            get { return m_endSize; }
+            set { m_endSize = value; }
         }
 
         public float offset
         {
-            get { return _offset; }
+            get { return m_offset; }
             set { 
-                _offset = value;
-                if(_offset > 1)
+                m_offset = value;
+                if(m_offset > 1)
                 {
-                    _offset -= Mathf.FloorToInt(_offset);
+                    m_offset -= Mathf.FloorToInt(m_offset);
                 }
-                if(_offset < 0)
+                if(m_offset < 0)
                 {
-                    _offset += Mathf.FloorToInt(-_offset);
+                    m_offset += Mathf.FloorToInt(-m_offset);
                 }
             }
         }
@@ -58,8 +58,8 @@ namespace Dreamteck.Splines
 
         public override Vector3 GetOffset()
         {
-            Vector3 offset = Quaternion.AngleAxis(_revolve * GetPercent(), Vector3.forward) * Vector3.up;
-            Vector2 scale = Vector2.Lerp(_startSize, _endSize, GetPercent());
+            Vector3 offset = Quaternion.AngleAxis(m_revolve * GetPercent(), Vector3.forward) * Vector3.up;
+            Vector2 scale = Vector2.Lerp(m_startSize, m_endSize, GetPercent());
             offset.x *= scale.x;
             offset.y *= scale.y;
             return offset;
@@ -67,12 +67,12 @@ namespace Dreamteck.Splines
 
         public override Quaternion GetRotation()
         {
-            return currentSample.rotation * Quaternion.AngleAxis(_revolve * -GetPercent(), Vector3.forward);
+            return m_currentSample.rotation * Quaternion.AngleAxis(m_revolve * -GetPercent(), Vector3.forward);
         }
 
         private float GetPercent()
         {
-            float percent = _useSplinePercent ? (float)currentSample.percent : currentObjectPercent + _offset;
+            float percent = m_useSplinePercent ? (float)m_currentSample.percent : currentObjectPercent + m_offset;
             if (percent > 1)
             {
                 percent -= Mathf.FloorToInt(percent);

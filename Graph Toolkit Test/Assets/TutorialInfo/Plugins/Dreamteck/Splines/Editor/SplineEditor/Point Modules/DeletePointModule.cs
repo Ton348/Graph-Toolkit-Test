@@ -8,7 +8,7 @@ using System.Collections.Generic;
     public class DeletePointModule : PointModule
     {
         public float deleteRadius = 50f;
-        Vector2 lastMousePos = Vector2.zero;
+        Vector2 m_lastMousePos = Vector2.zero;
 
 
         public DeletePointModule(SplineEditor editor) : base(editor)
@@ -51,11 +51,11 @@ using System.Collections.Generic;
             Handles.DrawWireDisc(Event.current.mousePosition, -Vector3.forward, deleteRadius);
             Handles.color = Color.white;
             Handles.EndGUI();
-            if (!eventModule.alt && SceneView.currentDrawingSceneView.camera.pixelRect.Contains(Event.current.mousePosition)) {
-                if (editor.eventModule.mouseLeftDown) GUIUtility.hotControl = GUIUtility.GetControlID(FocusType.Passive);
-                if (editor.eventModule.mouseLeft && lastMousePos != Event.current.mousePosition)
+            if (!m_eventModule.alt && SceneView.currentDrawingSceneView.camera.pixelRect.Contains(Event.current.mousePosition)) {
+                if (m_editor.eventModule.mouseLeftDown) GUIUtility.hotControl = GUIUtility.GetControlID(FocusType.Passive);
+                if (m_editor.eventModule.mouseLeft && m_lastMousePos != Event.current.mousePosition)
                 {
-                    lastMousePos = Event.current.mousePosition;
+                    m_lastMousePos = Event.current.mousePosition;
                     RunDeleteMethod();
                 }
             }
@@ -77,7 +77,7 @@ using System.Collections.Generic;
                     if (Vector2.Distance(mousPos, screenPos) <= deleteRadius)
                     {
                         DeletePoint(i);
-                        editor.ApplyModifiedProperties(true);
+                        m_editor.ApplyModifiedProperties(true);
                         i--;
                     }
                 }

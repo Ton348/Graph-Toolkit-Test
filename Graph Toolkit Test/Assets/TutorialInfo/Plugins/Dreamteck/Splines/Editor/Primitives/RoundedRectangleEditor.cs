@@ -15,14 +15,14 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new RoundedRectangle();
-            primitive.offset = origin;
+            m_primitive = new RoundedRectangle();
+            m_primitive.offset = origin;
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            RoundedRectangle rect = (RoundedRectangle)primitive;
+            base.OnGui();
+            RoundedRectangle rect = (RoundedRectangle)m_primitive;
             rect.size = EditorGUILayout.Vector2Field("Size", rect.size);
             rect.xRadius = EditorGUILayout.FloatField("X Radius", rect.xRadius);
             rect.yRadius = EditorGUILayout.FloatField("Y Radius", rect.yRadius);

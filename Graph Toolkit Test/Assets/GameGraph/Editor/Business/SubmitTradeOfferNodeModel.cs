@@ -12,8 +12,8 @@ public sealed class SubmitTradeOfferNodeModel : GameGraphSuccessFailNodeModel
 {
 	public const string BuildingIdOption = "BuildingId";
 
-	protected override string DefaultTitle => "Trade Offer";
-	protected override string DefaultDescription => "Отправляет торговое предложение по зданию.";
+	protected override string defaultTitle => "Trade Offer";
+	protected override string defaultDescription => "Отправляет торговое предложение по зданию.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

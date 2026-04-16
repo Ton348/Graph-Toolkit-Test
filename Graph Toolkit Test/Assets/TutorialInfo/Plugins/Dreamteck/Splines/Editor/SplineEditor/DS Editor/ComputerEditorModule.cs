@@ -7,13 +7,13 @@ namespace Dreamteck.Splines.Editor
 
     public class ComputerEditorModule : EditorModule
     {
-        protected SplineComputer spline;
+        protected SplineComputer m_spline;
         public SplineEditorBase.UndoHandler undoHandler;
         public EmptySplineHandler repaintHandler;
 
         public ComputerEditorModule(SplineComputer spline)
         {
-            this.spline = spline;
+            this.m_spline = spline;
         }
 
         protected override void RecordUndo(string title)

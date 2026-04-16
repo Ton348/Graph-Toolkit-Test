@@ -16,4 +16,3 @@ public sealed class CheckBusinessExistsNodeConverter : GameGraphNodeConverterBas
 		return true;
 	}
 }
-

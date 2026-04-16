@@ -18,8 +18,8 @@ namespace GraphCore.BaseNodes.Editor.Flow
 		public const string Option3Port = "Option3";
 		public const string Option4Port = "Option4";
 
-		protected override string DefaultTitle => "Случайный выбор";
-		protected override string DefaultDescription => "Выбирает случайную ветку";
+		protected override string defaultTitle => "Случайный выбор";
+		protected override string defaultDescription => "Выбирает случайную ветку";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

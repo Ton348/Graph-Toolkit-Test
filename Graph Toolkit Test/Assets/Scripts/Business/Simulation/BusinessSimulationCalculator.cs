@@ -2,13 +2,13 @@ using UnityEngine;
 
 public static class BusinessSimulationCalculator
 {
-    private const float SecondsPerHour = 3600f;
-    private const float SecondsPerDay = 86400f;
-    private const string ModuleStorage = "storage";
-    private const string ModuleShelves = "shelves";
-    private const string ModuleCashRegister = "cash_register";
-    private const string RoleCashier = "cashier";
-    private const string RoleMerchandiser = "merchandiser";
+    private const float s_secondsPerHour = 3600f;
+    private const float s_secondsPerDay = 86400f;
+    private const string s_moduleStorage = "storage";
+    private const string s_moduleShelves = "shelves";
+    private const string s_moduleCashRegister = "cash_register";
+    private const string s_roleCashier = "cashier";
+    private const string s_roleMerchandiser = "merchandiser";
 
     public static void SimulateTick(BusinessSimulationState state, BusinessDefinitionsRepository definitions, float deltaSeconds)
     {
@@ -24,8 +24,8 @@ public static class BusinessSimulationCalculator
             return;
         }
 
-        var cashierRole = definitions.GetStaffRole(RoleCashier);
-        var merchRole = definitions.GetStaffRole(RoleMerchandiser);
+        var cashierRole = definitions.GetStaffRole(s_roleCashier);
+        var merchRole = definitions.GetStaffRole(s_roleMerchandiser);
         var supplier = definitions.GetSupplier(state.selectedSupplierId);
 
         float tickIncome = 0f;
@@ -33,22 +33,22 @@ public static class BusinessSimulationCalculator
 
         if (state.rentPerDay > 0)
         {
-            tickExpenses += state.rentPerDay / SecondsPerDay * deltaSeconds;
+            tickExpenses += state.rentPerDay / s_secondsPerDay * deltaSeconds;
         }
 
         if (!string.IsNullOrWhiteSpace(state.hiredCashierContactId) && cashierRole != null)
         {
-            tickExpenses += cashierRole.salaryPerDay / SecondsPerDay * deltaSeconds;
+            tickExpenses += cashierRole.salaryPerDay / s_secondsPerDay * deltaSeconds;
         }
 
         if (!string.IsNullOrWhiteSpace(state.hiredMerchContactId) && merchRole != null)
         {
-            tickExpenses += merchRole.salaryPerDay / SecondsPerDay * deltaSeconds;
+            tickExpenses += merchRole.salaryPerDay / s_secondsPerDay * deltaSeconds;
         }
 
         if (supplier != null && state.autoDeliveryPerDay > 0 && state.storageCapacity > 0)
         {
-            float deliveryRatePerSecond = state.autoDeliveryPerDay / SecondsPerDay;
+            float deliveryRatePerSecond = state.autoDeliveryPerDay / s_secondsPerDay;
             float desired = deliveryRatePerSecond * deltaSeconds;
             float storageSpace = Mathf.Max(0f, state.storageCapacity - state.storageStock);
             float delivered = Mathf.Min(desired, storageSpace);
@@ -60,12 +60,12 @@ public static class BusinessSimulationCalculator
             }
         }
 
-        if (state.HasModule(ModuleStorage)
-            && state.HasModule(ModuleShelves)
+        if (state.HasModule(s_moduleStorage)
+            && state.HasModule(s_moduleShelves)
             && !string.IsNullOrWhiteSpace(state.hiredMerchContactId)
             && merchRole != null)
         {
-            float merchRatePerSecond = merchRole.throughputPerHour / SecondsPerHour;
+            float merchRatePerSecond = merchRole.throughputPerHour / s_secondsPerHour;
             float desired = merchRatePerSecond * deltaSeconds;
             float shelfSpace = Mathf.Max(0f, state.shelfCapacity - state.shelfStock);
             float moved = Mathf.Min(desired, Mathf.Min(state.storageStock, shelfSpace));
@@ -78,8 +78,8 @@ public static class BusinessSimulationCalculator
         }
 
         if (state.isOpen
-            && state.HasModule(ModuleCashRegister)
-            && state.HasModule(ModuleShelves)
+            && state.HasModule(s_moduleCashRegister)
+            && state.HasModule(s_moduleShelves)
             && !string.IsNullOrWhiteSpace(state.hiredCashierContactId)
             && cashierRole != null
             && state.shelfStock > 0f)
@@ -87,7 +87,7 @@ public static class BusinessSimulationCalculator
             float demand = CalculateDemand(state, definitions, deltaSeconds);
             state.lastDemand = demand;
 
-            float cashierRatePerSecond = cashierRole.throughputPerHour / SecondsPerHour;
+            float cashierRatePerSecond = cashierRole.throughputPerHour / s_secondsPerHour;
             if (state.cashierMultiplier > 0f)
             {
                 cashierRatePerSecond *= state.cashierMultiplier;
@@ -143,7 +143,7 @@ public static class BusinessSimulationCalculator
             return 0f;
         }
 
-        float expectedArrivals = behavior.arrivalRatePerHour * deltaSeconds / SecondsPerHour;
+        float expectedArrivals = behavior.arrivalRatePerHour * deltaSeconds / s_secondsPerHour;
         int arrivals = Mathf.FloorToInt(expectedArrivals);
         float fractional = expectedArrivals - arrivals;
         if (Random.value < fractional)

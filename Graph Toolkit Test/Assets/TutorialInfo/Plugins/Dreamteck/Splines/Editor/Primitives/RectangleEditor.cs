@@ -15,14 +15,14 @@ namespace Dreamteck.Splines.Primitives
         public override void Open(DreamteckSplinesEditor editor)
         {
             base.Open(editor);
-            primitive = new Rectangle();
-            primitive.offset = origin;
+            m_primitive = new Rectangle();
+            m_primitive.offset = origin;
         }
 
-        protected override void OnGUI()
+        protected override void OnGui()
         {
-            base.OnGUI();
-            Rectangle rect = (Rectangle)primitive;
+            base.OnGui();
+            Rectangle rect = (Rectangle)m_primitive;
             rect.size = EditorGUILayout.Vector2Field("Size", rect.size);
         }
     }

@@ -9,7 +9,7 @@ public class BusinessShelfVisual : MonoBehaviour
     public Vector3 minScale = new Vector3(1f, 0.05f, 1f);
     public Vector3 maxScale = new Vector3(1f, 1f, 1f);
 
-    private BusinessSimulationService simulation;
+    private BusinessSimulationService m_simulation;
 
     private void OnEnable()
     {
@@ -19,9 +19,9 @@ public class BusinessShelfVisual : MonoBehaviour
 
     private void OnDisable()
     {
-        if (simulation != null)
+        if (m_simulation != null)
         {
-            simulation.SimulationUpdated -= Refresh;
+            m_simulation.simulationUpdated -= Refresh;
         }
     }
 
@@ -32,21 +32,21 @@ public class BusinessShelfVisual : MonoBehaviour
             worldRuntime = GetComponentInParent<BusinessWorldRuntime>();
         }
 
-        simulation = worldRuntime != null ? worldRuntime.GetSimulationService() : null;
-        if (simulation != null)
+        m_simulation = worldRuntime != null ? worldRuntime.GetSimulationService() : null;
+        if (m_simulation != null)
         {
-            simulation.SimulationUpdated += Refresh;
+            m_simulation.simulationUpdated += Refresh;
         }
     }
 
     private void Refresh()
     {
-        if (simulation == null || worldRuntime == null)
+        if (m_simulation == null || worldRuntime == null)
         {
             return;
         }
 
-        var state = simulation.GetStateByLotId(worldRuntime.lotId);
+        var state = m_simulation.GetStateByLotId(worldRuntime.lotId);
         if (state == null)
         {
             return;

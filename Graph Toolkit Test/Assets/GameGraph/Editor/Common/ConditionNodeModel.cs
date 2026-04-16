@@ -17,8 +17,8 @@ public sealed class ConditionNodeModel : GameGraphTrueFalseNodeModel
 	public const string RequiredStatValueOption = "RequiredStatValue";
 	public const string QuestIdOption = "QuestId";
 
-	protected override string DefaultTitle => "Проверка условия";
-	protected override string DefaultDescription => "Проверяет условие и выбирает ветку Истина/Ложь.";
+	protected override string defaultTitle => "Проверка условия";
+	protected override string defaultDescription => "Проверяет условие и выбирает ветку Истина/Ложь.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

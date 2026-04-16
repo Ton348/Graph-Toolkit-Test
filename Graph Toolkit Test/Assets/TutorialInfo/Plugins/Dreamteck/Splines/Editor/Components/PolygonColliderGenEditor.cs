@@ -8,9 +8,9 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class PolygonColliderGenEditor : SplineUserEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             PolygonColliderGenerator generator = (PolygonColliderGenerator)target;
 
             serializedObject.Update();

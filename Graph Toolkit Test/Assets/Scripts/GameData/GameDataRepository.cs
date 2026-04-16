@@ -3,14 +3,14 @@ using UnityEngine;
 
 public class GameDataRepository
 {
-    private readonly Dictionary<string, QuestDefinitionData> questsById = new Dictionary<string, QuestDefinitionData>();
-    private readonly Dictionary<string, BuildingDefinitionData> buildingsById = new Dictionary<string, BuildingDefinitionData>();
-    private readonly Dictionary<string, LotDefinitionData> lotsById = new Dictionary<string, LotDefinitionData>();
-    private readonly EconomyConfigData economy;
+    private readonly Dictionary<string, QuestDefinitionData> m_questsById = new Dictionary<string, QuestDefinitionData>();
+    private readonly Dictionary<string, BuildingDefinitionData> m_buildingsById = new Dictionary<string, BuildingDefinitionData>();
+    private readonly Dictionary<string, LotDefinitionData> m_lotsById = new Dictionary<string, LotDefinitionData>();
+    private readonly EconomyConfigData m_economy;
 
     public GameDataRepository(QuestDatabaseData questDatabase, BuildingDatabaseData buildingDatabase, EconomyConfigData economy, LotDatabaseData lotDatabase)
     {
-        this.economy = economy ?? new EconomyConfigData();
+        this.m_economy = economy ?? new EconomyConfigData();
         IndexQuests(questDatabase);
         IndexBuildings(buildingDatabase);
         IndexLots(lotDatabase);
@@ -18,27 +18,27 @@ public class GameDataRepository
 
     public QuestDefinitionData GetQuestById(string id)
     {
-        return !string.IsNullOrEmpty(id) && questsById.TryGetValue(id, out var quest) ? quest : null;
+        return !string.IsNullOrEmpty(id) && m_questsById.TryGetValue(id, out var quest) ? quest : null;
     }
 
     public BuildingDefinitionData GetBuildingById(string id)
     {
-        return !string.IsNullOrEmpty(id) && buildingsById.TryGetValue(id, out var building) ? building : null;
+        return !string.IsNullOrEmpty(id) && m_buildingsById.TryGetValue(id, out var building) ? building : null;
     }
 
     public IEnumerable<QuestDefinitionData> GetAllQuests()
     {
-        return questsById.Values;
+        return m_questsById.Values;
     }
 
     public IEnumerable<BuildingDefinitionData> GetAllBuildings()
     {
-        return buildingsById.Values;
+        return m_buildingsById.Values;
     }
 
     public LotDefinitionData GetLotById(string id)
     {
-        return !string.IsNullOrEmpty(id) && lotsById.TryGetValue(id, out var lot) ? lot : null;
+        return !string.IsNullOrEmpty(id) && m_lotsById.TryGetValue(id, out var lot) ? lot : null;
     }
 
     public bool HasLot(string id)
@@ -48,17 +48,17 @@ public class GameDataRepository
 
     public IEnumerable<LotDefinitionData> GetAllLots()
     {
-        return lotsById.Values;
+        return m_lotsById.Values;
     }
 
     public EconomyConfigData GetEconomy()
     {
-        return economy;
+        return m_economy;
     }
 
     private void IndexQuests(QuestDatabaseData questDatabase)
     {
-        questsById.Clear();
+        m_questsById.Clear();
         if (questDatabase == null || questDatabase.quests == null)
         {
             return;
@@ -71,9 +71,9 @@ public class GameDataRepository
                 continue;
             }
 
-            if (!questsById.ContainsKey(quest.id))
+            if (!m_questsById.ContainsKey(quest.id))
             {
-                questsById.Add(quest.id, quest);
+                m_questsById.Add(quest.id, quest);
             }
             else
             {
@@ -84,7 +84,7 @@ public class GameDataRepository
 
     private void IndexBuildings(BuildingDatabaseData buildingDatabase)
     {
-        buildingsById.Clear();
+        m_buildingsById.Clear();
         if (buildingDatabase == null || buildingDatabase.buildings == null)
         {
             return;
@@ -97,9 +97,9 @@ public class GameDataRepository
                 continue;
             }
 
-            if (!buildingsById.ContainsKey(building.id))
+            if (!m_buildingsById.ContainsKey(building.id))
             {
-                buildingsById.Add(building.id, building);
+                m_buildingsById.Add(building.id, building);
             }
             else
             {
@@ -110,7 +110,7 @@ public class GameDataRepository
 
     private void IndexLots(LotDatabaseData lotDatabase)
     {
-        lotsById.Clear();
+        m_lotsById.Clear();
         if (lotDatabase == null || lotDatabase.lots == null)
         {
             return;
@@ -123,9 +123,9 @@ public class GameDataRepository
                 continue;
             }
 
-            if (!lotsById.ContainsKey(lot.id))
+            if (!m_lotsById.ContainsKey(lot.id))
             {
-                lotsById.Add(lot.id, lot);
+                m_lotsById.Add(lot.id, lot);
             }
             else
             {

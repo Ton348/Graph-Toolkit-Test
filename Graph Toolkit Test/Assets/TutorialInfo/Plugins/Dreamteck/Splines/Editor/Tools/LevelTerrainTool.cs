@@ -64,36 +64,36 @@ namespace Dreamteck.Splines
         public float offset = 0f;
         public float clipFrom = 0f;
         public float clipTo = 1f;
-        private float[,] heights = null;
-        private Texture2D brushPreview = null;
-        private Texture2D basePreview = null;
-        private Texture2D drawPreview = null;
+        private float[,] m_heights = null;
+        private Texture2D m_brushPreview = null;
+        private Texture2D m_basePreview = null;
+        private Texture2D m_drawPreview = null;
 
-        private float maxDrawHeight = 0f;
+        private float m_maxDrawHeight = 0f;
 
 
-        private bool init = false;
+        private bool m_init = false;
 
-        Terrain terrain = null;
+        Terrain m_terrain = null;
 
 
         void GetSplinesAndTerrain()
         {
-            if(splines.Count == 0) GetSplines();
+            if(m_splines.Count == 0) GetSplines();
             for (int i = 0; i < Selection.gameObjects.Length; i++)
             {
-                if (terrain == null)  terrain = Selection.gameObjects[i].GetComponent<Terrain>();
+                if (m_terrain == null)  m_terrain = Selection.gameObjects[i].GetComponent<Terrain>();
             }
 
             Terrain[] terrains = GameObject.FindObjectsOfType<Terrain>();
             if(terrains.Length == 1)
             {
                 //if there is only one terrain in the scene, automatically select it
-                terrain = terrains[0];
+                m_terrain = terrains[0];
             }
         }
 
-        void OnGUI()
+        void OnGui()
         {
            // Draw();
         }
@@ -107,7 +107,7 @@ namespace Dreamteck.Splines
         public override void Close()
         {
             base.Close();
-            if (promptSave)
+            if (m_promptSave)
             {
                 if (EditorUtility.DisplayDialog("Apply changes?", "Changes to the terrain have been made. Do you want to keep them?", "Yes", "No"))
                 {
@@ -123,21 +123,21 @@ namespace Dreamteck.Splines
 
             EditorGUILayout.Space();
             EditorGUI.BeginChangeCheck();
-            terrain = (Terrain)EditorGUILayout.ObjectField("Terrain", terrain, typeof(Terrain), true);
+            m_terrain = (Terrain)EditorGUILayout.ObjectField("Terrain", m_terrain, typeof(Terrain), true);
             if (EditorGUI.EndChangeCheck())
             {
-                heights = null;
+                m_heights = null;
             }
 
-            if (splines.Count == 0) EditorGUILayout.HelpBox("No spline selected! Select an object with a SplineComputer component.", MessageType.Warning);
-            if (terrain == null) EditorGUILayout.HelpBox("No terrain selected! You need to select a terrain.", MessageType.Warning);
-            if (splines.Count == 0 || terrain == null) return;
-            if (!init)
+            if (m_splines.Count == 0) EditorGUILayout.HelpBox("No spline selected! Select an object with a SplineComputer component.", MessageType.Warning);
+            if (m_terrain == null) EditorGUILayout.HelpBox("No terrain selected! You need to select a terrain.", MessageType.Warning);
+            if (m_splines.Count == 0 || m_terrain == null) return;
+            if (!m_init)
             {
-                init = true;
-                brushPreview = GenerateBrushThumbnail();
+                m_init = true;
+                m_brushPreview = GenerateBrushThumbnail();
             }
-            if (heights == null)
+            if (m_heights == null)
             {
                 GetBase();
             }
@@ -146,15 +146,15 @@ namespace Dreamteck.Splines
             float lastSize = size;
             size = EditorGUILayout.FloatField("Brush radius", size);
             if (size < 0f) size = 0f;
-            if(lastSize != size) brushPreview = GenerateBrushThumbnail();
+            if(lastSize != size) m_brushPreview = GenerateBrushThumbnail();
             int lastBlur = feather;
-            int maxFeatherCount = Mathf.Max(heights.GetLength(0)/64, 2);
+            int maxFeatherCount = Mathf.Max(m_heights.GetLength(0)/64, 2);
             feather = EditorGUILayout.IntSlider("Feather", feather, 0, maxFeatherCount);
-            if (lastBlur != feather) brushPreview = GenerateBrushThumbnail();
+            if (lastBlur != feather) m_brushPreview = GenerateBrushThumbnail();
             GUILayout.EndVertical();
             GUILayout.Box("", GUILayout.Width(64), GUILayout.Height(64));
             Rect rect = GUILayoutUtility.GetLastRect();
-            GUI.DrawTexture(rect, brushPreview);
+            GUI.DrawTexture(rect, m_brushPreview);
             GUILayout.EndHorizontal();
             offset = EditorGUILayout.FloatField("Height offset", offset);
             EditorGUILayout.MinMaxSlider(new GUIContent("Spline range"), ref clipFrom, ref clipTo, 0f, 1f);
@@ -166,13 +166,13 @@ namespace Dreamteck.Splines
             GUILayout.BeginHorizontal();
             GUILayout.Box("", GUILayout.Width((windowRect.width-10)/2), GUILayout.Height((windowRect.width - 10) / 2));
             rect = GUILayoutUtility.GetLastRect();
-            GUI.DrawTexture(rect, basePreview);
+            GUI.DrawTexture(rect, m_basePreview);
             GUILayout.Box("", GUILayout.Width((windowRect.width - 10) / 2), GUILayout.Height((windowRect.width - 10) / 2));
             rect = GUILayoutUtility.GetLastRect();
-            GUI.DrawTexture(rect, drawPreview);
+            GUI.DrawTexture(rect, m_drawPreview);
             GUILayout.EndHorizontal();
 
-            if (promptSave)
+            if (m_promptSave)
             {
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("Revert")) RevertToBase();
@@ -184,19 +184,19 @@ namespace Dreamteck.Splines
         void OnFocus()
         {
             GetSplinesAndTerrain();
-            if (promptSave)
+            if (m_promptSave)
             {
                 bool isChanged = false;
-                float[,] newHeights = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
-                if (newHeights.GetLength(0) != heights.GetLength(0) || newHeights.GetLength(1) != heights.GetLength(1))
+                float[,] newHeights = m_terrain.terrainData.GetHeights(0, 0, m_terrain.terrainData.heightmapResolution, m_terrain.terrainData.heightmapResolution);
+                if (newHeights.GetLength(0) != m_heights.GetLength(0) || newHeights.GetLength(1) != m_heights.GetLength(1))
                 {
                     isChanged = true;
                 } else {
-                    for (int x = 0; x < heights.GetLength(0); x++)
+                    for (int x = 0; x < m_heights.GetLength(0); x++)
                     {
-                        for (int y = 0; y < heights.GetLength(1); y++)
+                        for (int y = 0; y < m_heights.GetLength(1); y++)
                         {
-                            if (heights[x,y] != newHeights[x, y])
+                            if (m_heights[x,y] != newHeights[x, y])
                             {
                                 isChanged = true;
                                 break;
@@ -222,12 +222,12 @@ namespace Dreamteck.Splines
 
         void CarveTerrain()
         {
-            float[,] drawLayer = new float[terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution];
-            float[,] alphaLayer = new float[terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution];
-            Undo.RecordObject(terrain, "Carve");
-            for (int i = 0; i < splines.Count; i++)
+            float[,] drawLayer = new float[m_terrain.terrainData.heightmapResolution, m_terrain.terrainData.heightmapResolution];
+            float[,] alphaLayer = new float[m_terrain.terrainData.heightmapResolution, m_terrain.terrainData.heightmapResolution];
+            Undo.RecordObject(m_terrain, "Carve");
+            for (int i = 0; i < m_splines.Count; i++)
             {
-                PaintHeightMap(terrain, splines[i], ref drawLayer, ref alphaLayer);
+                PaintHeightMap(m_terrain, m_splines[i], ref drawLayer, ref alphaLayer);
             }
 
             float[,] blurLayer = new float[drawLayer.GetLength(0), drawLayer.GetLength(1)];
@@ -237,21 +237,21 @@ namespace Dreamteck.Splines
             float[,] finalLayer = new float[drawLayer.GetLength(0), drawLayer.GetLength(1)];
 
 
-            Color[] pixels = drawPreview.GetPixels();
+            Color[] pixels = m_drawPreview.GetPixels();
 
 
-            drawPreview = new Texture2D(drawLayer.GetLength(0), drawLayer.GetLength(1));
+            m_drawPreview = new Texture2D(drawLayer.GetLength(0), drawLayer.GetLength(1));
             for (int x = 0; x < drawLayer.GetLength(0); x++)
             {
                 for (int y = 0; y < drawLayer.GetLength(1); y++)
                 {
-                    finalLayer[x, y] = Mathf.Lerp(heights[x, y], blurLayer[x, y], blurAlphaLayer[x,y]);
-                    pixels[x * drawPreview.width + y] = Color.Lerp(Color.black, Color.white, blurLayer[x, y]/maxDrawHeight*blurAlphaLayer[x,y]);
+                    finalLayer[x, y] = Mathf.Lerp(m_heights[x, y], blurLayer[x, y], blurAlphaLayer[x,y]);
+                    pixels[x * m_drawPreview.width + y] = Color.Lerp(Color.black, Color.white, blurLayer[x, y]/m_maxDrawHeight*blurAlphaLayer[x,y]);
                 } 
             }
-            terrain.terrainData.SetHeights(0, 0, finalLayer);
-            drawPreview.SetPixels(pixels);
-            drawPreview.Apply();
+            m_terrain.terrainData.SetHeights(0, 0, finalLayer);
+            m_drawPreview.SetPixels(pixels);
+            m_drawPreview.Apply();
         }
 
         Texture2D GenerateBrushThumbnail()
@@ -316,37 +316,37 @@ namespace Dreamteck.Splines
         void GetBase()
         {
             GetSplinesAndTerrain();
-            if (terrain == null) return;
-            heights = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
-            basePreview = new Texture2D(heights.GetLength(0), heights.GetLength(1));
-            drawPreview = new Texture2D(heights.GetLength(0), heights.GetLength(1));
-            Color[] pixels = new Color[basePreview.width * basePreview.height];
-            Color[] blackPixels = new Color[basePreview.width * basePreview.height];
+            if (m_terrain == null) return;
+            m_heights = m_terrain.terrainData.GetHeights(0, 0, m_terrain.terrainData.heightmapResolution, m_terrain.terrainData.heightmapResolution);
+            m_basePreview = new Texture2D(m_heights.GetLength(0), m_heights.GetLength(1));
+            m_drawPreview = new Texture2D(m_heights.GetLength(0), m_heights.GetLength(1));
+            Color[] pixels = new Color[m_basePreview.width * m_basePreview.height];
+            Color[] blackPixels = new Color[m_basePreview.width * m_basePreview.height];
             float maxHeight = 0f;
-            for (int x = 0; x < basePreview.width; x++)
+            for (int x = 0; x < m_basePreview.width; x++)
             {
-                for(int y = 0; y < basePreview.height; y++)
+                for(int y = 0; y < m_basePreview.height; y++)
                 {
-                    if (heights[x, y] > maxHeight) maxHeight = heights[x, y];
-                    pixels[x * basePreview.width + y] = Color.Lerp(Color.black, Color.white, heights[x, y]);
-                    blackPixels[x * basePreview.width + y] = Color.black;
+                    if (m_heights[x, y] > maxHeight) maxHeight = m_heights[x, y];
+                    pixels[x * m_basePreview.width + y] = Color.Lerp(Color.black, Color.white, m_heights[x, y]);
+                    blackPixels[x * m_basePreview.width + y] = Color.black;
                 }
             }
             if(maxHeight > 0f)
             {
-                for (int x = 0; x < basePreview.width; x++)
+                for (int x = 0; x < m_basePreview.width; x++)
                 {
-                    for (int y = 0; y < basePreview.height; y++)
+                    for (int y = 0; y < m_basePreview.height; y++)
                     {
-                        pixels[x * basePreview.width + y] /= maxHeight;
+                        pixels[x * m_basePreview.width + y] /= maxHeight;
                     }
                 }
             }
-            basePreview.SetPixels(pixels);
-            basePreview.Apply();
-            drawPreview.SetPixels(blackPixels);
-            drawPreview.Apply();
-            promptSave = false;
+            m_basePreview.SetPixels(pixels);
+            m_basePreview.Apply();
+            m_drawPreview.SetPixels(blackPixels);
+            m_drawPreview.Apply();
+            m_promptSave = false;
         }
 
         void SaveChanges()
@@ -356,14 +356,14 @@ namespace Dreamteck.Splines
 
         void RevertToBase()
         {
-            if (terrain == null) return;
-            terrain.terrainData.SetHeights(0, 0, heights);
-            heights = null;
+            if (m_terrain == null) return;
+            m_terrain.terrainData.SetHeights(0, 0, m_heights);
+            m_heights = null;
         }
 
         void PaintHeightMap(Terrain terrain, SplineComputer computer, ref float[,] drawLayer, ref float[,] alphaLayer)
         {
-            if (heights == null) GetBase();
+            if (m_heights == null) GetBase();
             SplineSample[] results = new SplineSample[computer.iterations];
             computer.Evaluate(ref results, clipFrom, clipTo);
             Draw(results, ref drawLayer, ref alphaLayer);          
@@ -372,27 +372,27 @@ namespace Dreamteck.Splines
 
         int ToHeightmapSize(float value)
         {
-            float avgSize = (terrain.terrainData.size.x + terrain.terrainData.size.z) / 2f;
-            int result = Mathf.RoundToInt(value / avgSize * terrain.terrainData.heightmapResolution);
+            float avgSize = (m_terrain.terrainData.size.x + m_terrain.terrainData.size.z) / 2f;
+            int result = Mathf.RoundToInt(value / avgSize * m_terrain.terrainData.heightmapResolution);
             return result;
         }
 
         Point ToHeightmapCoords(Vector3 pos)
         {
-            Vector3 terrainPos = pos - terrain.transform.position;
-            terrainPos.x /= terrain.terrainData.size.x;
-            terrainPos.z /= terrain.terrainData.size.z;
+            Vector3 terrainPos = pos - m_terrain.transform.position;
+            terrainPos.x /= m_terrain.terrainData.size.x;
+            terrainPos.z /= m_terrain.terrainData.size.z;
             terrainPos.x = Mathf.Clamp01(terrainPos.x);
             terrainPos.z = Mathf.Clamp01(terrainPos.z);
-            int x = Mathf.RoundToInt(terrainPos.z * terrain.terrainData.heightmapResolution);
-            int y = Mathf.RoundToInt(terrainPos.x * terrain.terrainData.heightmapResolution);
+            int x = Mathf.RoundToInt(terrainPos.z * m_terrain.terrainData.heightmapResolution);
+            int y = Mathf.RoundToInt(terrainPos.x * m_terrain.terrainData.heightmapResolution);
             return new Point(x, y);
         }
 
         float ToHeightmapValue(float y)
         {
-            float terrainHeight = y - terrain.transform.position.y;
-            terrainHeight /= terrain.terrainData.size.y;
+            float terrainHeight = y - m_terrain.transform.position.y;
+            terrainHeight /= m_terrain.terrainData.size.y;
             return terrainHeight;
         }
 
@@ -519,7 +519,7 @@ namespace Dreamteck.Splines
             //Paint the points
             for (int i = 0; i < paintPoints.Length - 1; i++)
             {
-                promptSave = true;
+                m_promptSave = true;
                 PaintSegment(paintPoints[i], paintPoints[i + 1], ref drawLayer, ref alphaLayer);
             }
 
@@ -548,8 +548,8 @@ namespace Dreamteck.Splines
             paintPoint.leftHeight = ToHeightmapValue(leftPoint.y);
             paintPoint.rightHeight = ToHeightmapValue(rightPoint.y);
             paintPoint.floatDiameter = Vector2.Distance(new Vector2(leftPoint.x, leftPoint.z), new Vector2(rightPoint.x, rightPoint.z));
-            if (paintPoint.leftHeight > maxDrawHeight) maxDrawHeight = paintPoint.leftHeight;
-            if (paintPoint.rightHeight > maxDrawHeight) maxDrawHeight = paintPoint.rightHeight;
+            if (paintPoint.leftHeight > m_maxDrawHeight) m_maxDrawHeight = paintPoint.leftHeight;
+            if (paintPoint.rightHeight > m_maxDrawHeight) m_maxDrawHeight = paintPoint.rightHeight;
             return paintPoint;
         }
 
@@ -568,7 +568,7 @@ namespace Dreamteck.Splines
         {
             int w = source.GetLength(0);
             int h = source.GetLength(1);
-            int[] bxs = GBGetBoxes(r, 3);
+            int[] bxs = GbgetBoxes(r, 3);
             float[] flatSource = new float[source.GetLength(0) * source.GetLength(1)];
             float[] flatTarget = new float[source.GetLength(0) * source.GetLength(1)];
             for (int x = 0; x < source.GetLength(0); x++)
@@ -592,7 +592,7 @@ namespace Dreamteck.Splines
             }
         }
 
-        int[] GBGetBoxes(int sigma, int n)
+        int[] GbgetBoxes(int sigma, int n)
         {
             float wIdeal = Mathf.Sqrt((12 * sigma * sigma / n) + 1);
             int wl = Mathf.FloorToInt(wIdeal); if (wl % 2 == 0) wl--;

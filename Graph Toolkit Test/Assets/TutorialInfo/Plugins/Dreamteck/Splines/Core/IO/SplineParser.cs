@@ -6,22 +6,22 @@ namespace Dreamteck.Splines.IO
 {
     public class SplineParser 
     {
-        protected string fileName = "";
+        protected string m_fileName = "";
         public string name
         {
-            get { return fileName; }
+            get { return m_fileName; }
         }
 
-        private System.Globalization.CultureInfo culture = new System.Globalization.CultureInfo("en-US");
-        private System.Globalization.NumberStyles style = System.Globalization.NumberStyles.Any;
+        private System.Globalization.CultureInfo m_culture = new System.Globalization.CultureInfo("en-US");
+        private System.Globalization.NumberStyles m_style = System.Globalization.NumberStyles.Any;
 
         internal class Transformation
         {
-            protected static Matrix4x4 matrix = new Matrix4x4();
+            protected static Matrix4x4 s_matrix = new Matrix4x4();
 
             internal static void ResetMatrix()
             {
-                matrix.SetTRS(Vector3.zero, Quaternion.identity, Vector3.one);
+                s_matrix.SetTRS(Vector3.zero, Quaternion.identity, Vector3.one);
             }
 
             internal virtual void Push()
@@ -34,9 +34,9 @@ namespace Dreamteck.Splines.IO
                 for (int i = 0; i < points.Length; i++)
                 {
                     SplinePoint p = points[i];
-                    p.position = matrix.MultiplyPoint(p.position);
-                    p.tangent = matrix.MultiplyPoint(p.tangent);
-                    p.tangent2 = matrix.MultiplyPoint(p.tangent2);
+                    p.position = s_matrix.MultiplyPoint(p.position);
+                    p.tangent = s_matrix.MultiplyPoint(p.tangent);
+                    p.tangent2 = s_matrix.MultiplyPoint(p.tangent2);
                     points[i] = p;
                 }
             }
@@ -44,58 +44,58 @@ namespace Dreamteck.Splines.IO
 
         internal class Translate : Transformation
         {
-            private Vector2 offset = Vector2.zero;
+            private Vector2 m_offset = Vector2.zero;
             public Translate(Vector2 o)
             {
-                offset = o;
+                m_offset = o;
             }
 
             internal override void Push()
             {
                 Matrix4x4 translate = new Matrix4x4();
-                translate.SetTRS(new Vector2(offset.x, -offset.y), Quaternion.identity, Vector3.one);
-                matrix = matrix * translate;
+                translate.SetTRS(new Vector2(m_offset.x, -m_offset.y), Quaternion.identity, Vector3.one);
+                s_matrix = s_matrix * translate;
             }
         }
 
         internal class Rotate : Transformation
         {
-            private float angle = 0f;
+            private float m_angle = 0f;
             public Rotate(float a)
             {
-                angle = a;
+                m_angle = a;
             }
 
             internal override void Push()
             {
                 Matrix4x4 rotate = new Matrix4x4();
-                rotate.SetTRS(Vector3.zero, Quaternion.AngleAxis(angle, Vector3.back), Vector3.one);
-                matrix = matrix * rotate;
+                rotate.SetTRS(Vector3.zero, Quaternion.AngleAxis(m_angle, Vector3.back), Vector3.one);
+                s_matrix = s_matrix * rotate;
             }
         }
 
         internal class Scale : Transformation
         {
-            private Vector2 multiplier = Vector2.one;
+            private Vector2 m_multiplier = Vector2.one;
             public Scale(Vector2 s)
             {
-                multiplier = s;
+                m_multiplier = s;
             }
 
             internal override void Push()
             {
                 Matrix4x4 scale = new Matrix4x4();
-                scale.SetTRS(Vector3.zero, Quaternion.identity, multiplier);
-                matrix = matrix * scale;
+                scale.SetTRS(Vector3.zero, Quaternion.identity, m_multiplier);
+                s_matrix = s_matrix * scale;
             }
         }
 
         internal class SkewX : Transformation
         {
-            private float amount = 0f;
+            private float m_amount = 0f;
             public SkewX(float a)
             {
-                amount = a;
+                m_amount = a;
             }
 
             internal override void Push()
@@ -105,17 +105,17 @@ namespace Dreamteck.Splines.IO
                 skew[1, 1] = 1.0f;
                 skew[2, 2] = 1.0f;
                 skew[3, 3] = 1.0f;
-                skew[0, 1] = Mathf.Tan(-amount * Mathf.Deg2Rad);
-                matrix = matrix * skew;
+                skew[0, 1] = Mathf.Tan(-m_amount * Mathf.Deg2Rad);
+                s_matrix = s_matrix * skew;
             }
         }
 
         internal class SkewY : Transformation
         {
-            private float amount = 0f;
+            private float m_amount = 0f;
             public SkewY(float a)
             {
-                amount = a;
+                m_amount = a;
             }
 
             internal override void Push()
@@ -125,26 +125,26 @@ namespace Dreamteck.Splines.IO
                 skew[1, 1] = 1.0f;
                 skew[2, 2] = 1.0f;
                 skew[3, 3] = 1.0f;
-                skew[1, 0] = Mathf.Tan(-amount * Mathf.Deg2Rad);
-                matrix = matrix *skew;
+                skew[1, 0] = Mathf.Tan(-m_amount * Mathf.Deg2Rad);
+                s_matrix = s_matrix *skew;
             }
         }
 
         internal class MatrixTransform : Transformation
         {
-            private Matrix4x4 transformMatrix = new Matrix4x4();
+            private Matrix4x4 m_transformMatrix = new Matrix4x4();
 
             public MatrixTransform(float a, float b, float c, float d, float e, float f)
             { 
-                transformMatrix.SetRow(0, new Vector4(a, c, 0f, e));
-                transformMatrix.SetRow(1, new Vector4(b, d, 0f, -f));
-                transformMatrix.SetRow(2, new Vector4(0f, 0f, 1f, 0f));
-                transformMatrix.SetRow(3, new Vector4(0f, 0f, 0f, 1f));
+                m_transformMatrix.SetRow(0, new Vector4(a, c, 0f, e));
+                m_transformMatrix.SetRow(1, new Vector4(b, d, 0f, -f));
+                m_transformMatrix.SetRow(2, new Vector4(0f, 0f, 1f, 0f));
+                m_transformMatrix.SetRow(3, new Vector4(0f, 0f, 0f, 1f));
             }
 
             internal override void Push()
             {
-                matrix = matrix * transformMatrix;
+                s_matrix = s_matrix * m_transformMatrix;
             }
         }
 
@@ -300,10 +300,10 @@ namespace Dreamteck.Splines.IO
             {
                 if (c == ',' || c == '-' || char.IsWhiteSpace(c) || (accumulated.Contains(".") && c == '.'))
                 {
-                    if (!IsWHiteSpace(accumulated))
+                    if (!IsWhiteSpace(accumulated))
                     {
                         float parsed = 0f;
-                        float.TryParse(accumulated, style, culture, out parsed);
+                        float.TryParse(accumulated, m_style, m_culture, out parsed);
                         list.Add(parsed);
                         accumulated = "";
                         if (c == '-') accumulated = "-";
@@ -313,16 +313,16 @@ namespace Dreamteck.Splines.IO
                 }
                 if (!char.IsWhiteSpace(c)) accumulated += c;
             }
-            if (!IsWHiteSpace(accumulated))
+            if (!IsWhiteSpace(accumulated))
             {
                 float p = 0f;
-                float.TryParse(accumulated, style, culture, out p);
+                float.TryParse(accumulated, m_style, m_culture, out p);
                 list.Add(p);
             }
             return list;
         }
 
-        public bool IsWHiteSpace(string s)
+        public bool IsWhiteSpace(string s)
         {
             foreach (char c in s)
             {

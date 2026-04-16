@@ -10,16 +10,16 @@ namespace Game1.Graph.Editor
 	[Serializable]
 	public abstract class GameGraphEditorNode : CommonGraphEditorNode
 	{
-		protected virtual string Category => GameGraphNodeCategories.Common;
+		protected virtual string category => GameGraphNodeCategories.Common;
 
 		protected string BuildCategoryPath(string nodeName)
 		{
 			if (string.IsNullOrWhiteSpace(nodeName))
 			{
-				return Category;
+				return category;
 			}
 
-			return $"{Category}/{nodeName}";
+			return $"{category}/{nodeName}";
 		}
 
 		protected void AddNextPort(IPortDefinitionContext context)

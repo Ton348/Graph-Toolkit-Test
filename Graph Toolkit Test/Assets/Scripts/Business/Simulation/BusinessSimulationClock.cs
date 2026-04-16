@@ -4,7 +4,7 @@ public class BusinessSimulationClock
 {
     public float tickIntervalSeconds = 1f;
 
-    private float accumulator;
+    private float m_accumulator;
 
     public void Update(float deltaTime)
     {
@@ -13,18 +13,18 @@ public class BusinessSimulationClock
             return;
         }
 
-        accumulator += Mathf.Max(0f, deltaTime);
+        m_accumulator += Mathf.Max(0f, deltaTime);
     }
 
     public bool TryConsumeTick(out float delta)
     {
         delta = 0f;
-        if (tickIntervalSeconds <= 0f || accumulator < tickIntervalSeconds)
+        if (tickIntervalSeconds <= 0f || m_accumulator < tickIntervalSeconds)
         {
             return false;
         }
 
-        accumulator -= tickIntervalSeconds;
+        m_accumulator -= tickIntervalSeconds;
         delta = tickIntervalSeconds;
         return true;
     }

@@ -7,9 +7,9 @@ namespace Dreamteck.Splines
 {
     public class UpdateTool : SplineTool
     {
-        protected GameObject obj;
-        protected ObjectController spawner;
-        private string updated = "";
+        protected GameObject m_obj;
+        protected ObjectController m_spawner;
+        private string m_updated = "";
 
         public override string GetName()
         {
@@ -25,34 +25,34 @@ namespace Dreamteck.Splines
         {
             if (GUILayout.Button("Update All Spline Components"))
             {
-                updated = "";
+                m_updated = "";
                 UpdateComputers();
                 UpdateNodes();
                 UpdateUsers();
             }
             if (GUILayout.Button("Update SplineUsers"))
             {
-                updated = "";
+                m_updated = "";
                 UpdateUsers();
             }
             if (GUILayout.Button("Update MeshGenerators"))
             {
-                updated = "";
+                m_updated = "";
                 UpdateMeshGenerators();
             }
             if (GUILayout.Button("Update SplineComputers"))
             {
-                updated = "";
+                m_updated = "";
                 UpdateComputers();
             }
             if (GUILayout.Button("Update Nodes In Scene"))
             {
-                updated = "";
+                m_updated = "";
                 UpdateNodes();
             }
 
             EditorGUILayout.Space();
-            GUILayout.Label(updated);
+            GUILayout.Label(m_updated);
         }
 
         private void UpdateNodes()
@@ -64,10 +64,10 @@ namespace Dreamteck.Splines
                 EditorUtility.DisplayProgressBar("Updating nodes", "Updating node " + nodes[i].name, (float)i / (nodes.Length - 1));
                 nodes[i].UpdateConnectedComputers();
                 EditorUtility.SetDirty(nodes[i]);
-                updated += i + " - " + nodes[i].name + System.Environment.NewLine;
+                m_updated += i + " - " + nodes[i].name + System.Environment.NewLine;
             }
             EditorUtility.ClearProgressBar();
-            if (nodes.Length == 0) updated += System.Environment.NewLine+"No active Nodes found in the scene.";
+            if (nodes.Length == 0) m_updated += System.Environment.NewLine+"No active Nodes found in the scene.";
         }
 
         private void UpdateUsers()
@@ -79,10 +79,10 @@ namespace Dreamteck.Splines
                 EditorUtility.DisplayProgressBar("Updating users", "Updating user " + users[i].name, (float)i/(users.Length-1));
                 users[i].Rebuild();
                 EditorUtility.SetDirty(users[i]);
-                updated += i + " - " + users[i].name + System.Environment.NewLine;
+                m_updated += i + " - " + users[i].name + System.Environment.NewLine;
             }
             EditorUtility.ClearProgressBar();
-            if (users.Length == 0) updated += System.Environment.NewLine+"No active SplineUsers found in the scene.";
+            if (users.Length == 0) m_updated += System.Environment.NewLine+"No active SplineUsers found in the scene.";
         }
 
         private void UpdateMeshGenerators()
@@ -94,10 +94,10 @@ namespace Dreamteck.Splines
                 EditorUtility.DisplayProgressBar("Updating mesh generators", "Updating generator " + users[i].name, (float)i / (users.Length - 1));
                 users[i].Rebuild();
                 EditorUtility.SetDirty(users[i]);
-                updated += i + " - " + users[i].name + System.Environment.NewLine;
+                m_updated += i + " - " + users[i].name + System.Environment.NewLine;
             }
             EditorUtility.ClearProgressBar();
-            if (users.Length == 0) updated += System.Environment.NewLine + "No active MeshGenerators found in the scene.";
+            if (users.Length == 0) m_updated += System.Environment.NewLine + "No active MeshGenerators found in the scene.";
         }
 
         private void UpdateComputers()
@@ -109,10 +109,10 @@ namespace Dreamteck.Splines
                 EditorUtility.DisplayProgressBar("Updating spline computers", "Updating computer " + computers[i].name, (float)i / (computers.Length - 1));
                 computers[i].RebuildImmediate();
                 EditorUtility.SetDirty(computers[i]);
-                updated += i + " - " + computers[i].name + System.Environment.NewLine;
+                m_updated += i + " - " + computers[i].name + System.Environment.NewLine;
             }
             EditorUtility.ClearProgressBar();
-            if (computers.Length == 0) updated += System.Environment.NewLine+"No active SplineComputers found in the scene.";
+            if (computers.Length == 0) m_updated += System.Environment.NewLine+"No active SplineComputers found in the scene.";
         }
     }
 }

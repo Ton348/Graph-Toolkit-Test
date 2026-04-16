@@ -9,30 +9,30 @@ namespace Dreamteck.Splines.Editor
     {
         protected bool isClosed
         {
-            get { return editor.GetSplineClosed(); }
+            get { return m_editor.GetSplineClosed(); }
         }
         protected int sampleRate
         {
-            get { return editor.GetSplineSampleRate(); }
+            get { return m_editor.GetSplineSampleRate(); }
         }
         protected Spline.Type splineType
         {
-            get { return editor.GetSplineType(); }
+            get { return m_editor.GetSplineType(); }
         }
         protected Color color {
-            get { return editor.drawColor; }
+            get { return m_editor.drawColor; }
         }
-        protected SplineEditor editor;
+        protected SplineEditor m_editor;
 
         protected SerializedSplinePoint[] points {
-            get { return editor.points; }    
-            set { editor.points = value; }    
+            get { return m_editor.points; }    
+            set { m_editor.points = value; }    
         }
 
         protected List<int> selectedPoints
         {
-            get { return editor.selectedPoints; }
-            set { editor.selectedPoints = value; }
+            get { return m_editor.selectedPoints; }
+            set { m_editor.selectedPoints = value; }
         }
 
         public Vector3 center
@@ -57,7 +57,7 @@ namespace Dreamteck.Splines.Editor
             }
         }
 
-        protected EditorGUIEvents eventModule;
+        protected EditorGuievents m_eventModule;
 
         public delegate void UndoHandler(string title);
         public delegate void EmptyHandler();
@@ -72,25 +72,25 @@ namespace Dreamteck.Splines.Editor
         public event EmptyHandler onSelectionChanged;
         public event IntArrayHandler onDuplicatePoint;
 
-        private bool movePivot = false;
-        private Vector3 idealPivot = Vector3.zero;
+        private bool m_movePivot = false;
+        private Vector3 m_idealPivot = Vector3.zero;
 
         
 
         public PointModule(SplineEditor editor)
         {
-            this.editor = editor;
-            eventModule = editor.eventModule;
+            this.m_editor = editor;
+            m_eventModule = editor.eventModule;
         }
 
         protected override void RecordUndo(string title)
         {
-            if (editor.undoHandler != null) editor.undoHandler(title);
+            if (m_editor.undoHandler != null) m_editor.undoHandler(title);
         }
 
         protected override void Repaint()
         {
-            if (editor.repaintHandler != null) editor.repaintHandler();
+            if (m_editor.repaintHandler != null) m_editor.repaintHandler();
         }
 
         public override void BeforeSceneDraw(SceneView current)
@@ -98,14 +98,14 @@ namespace Dreamteck.Splines.Editor
             base.BeforeSceneDraw(current);
             Event e = Event.current;
 
-            if (movePivot)
+            if (m_movePivot)
             {
-                SceneView.lastActiveSceneView.pivot = Vector3.Lerp(SceneView.lastActiveSceneView.pivot, idealPivot, 0.02f);
-                if (e.type == EventType.MouseDown || e.type == EventType.MouseUp) movePivot = false;
-                if (Vector3.Distance(SceneView.lastActiveSceneView.pivot, idealPivot) <= 0.05f)
+                SceneView.lastActiveSceneView.pivot = Vector3.Lerp(SceneView.lastActiveSceneView.pivot, m_idealPivot, 0.02f);
+                if (e.type == EventType.MouseDown || e.type == EventType.MouseUp) m_movePivot = false;
+                if (Vector3.Distance(SceneView.lastActiveSceneView.pivot, m_idealPivot) <= 0.05f)
                 {
-                    SceneView.lastActiveSceneView.pivot = idealPivot;
-                    movePivot = false;
+                    SceneView.lastActiveSceneView.pivot = m_idealPivot;
+                    m_movePivot = false;
                 }
             }
 
@@ -154,7 +154,7 @@ namespace Dreamteck.Splines.Editor
             if (selectedPoints.Count == 0) return;
             SplinePoint[] newPoints = new SplinePoint[points.Length + selectedPoints.Count];
             SplinePoint[] duplicated = new SplinePoint[selectedPoints.Count];
-            editor.SetPointsCount(newPoints.Length);
+            m_editor.SetPointsCount(newPoints.Length);
             int index = 0;
             for (int i = 0; i < selectedPoints.Count; i++) duplicated[index++] = points[selectedPoints[i]].CreateSplinePoint();
             int min = points.Length - 1, max = 0;
@@ -185,7 +185,7 @@ namespace Dreamteck.Splines.Editor
                 }
                 for (int i = max + 1; i < points.Length; i++) newPoints[i + duplicated.Length] = points[i].CreateSplinePoint();
             }
-            editor.SetPointsArray(newPoints);
+            m_editor.SetPointsArray(newPoints);
             RegisterChange();
             if (onDuplicatePoint != null) onDuplicatePoint(selected);
         }
@@ -203,7 +203,7 @@ namespace Dreamteck.Splines.Editor
         {
             selectedPoints.Clear();
             Repaint();
-            if (editor.selectionChangeHandler != null) editor.selectionChangeHandler();
+            if (m_editor.selectionChangeHandler != null) m_editor.selectionChangeHandler();
             if (onSelectionChanged != null) onSelectionChanged();
         }
 
@@ -224,12 +224,12 @@ namespace Dreamteck.Splines.Editor
             }
             ClearSelection();
             RegisterChange();
-            editor.ApplyModifiedProperties(true);
+            m_editor.ApplyModifiedProperties(true);
         }
 
         protected void DeletePoint(int index)
         {
-            editor.DeletePoint(index);
+            m_editor.DeletePoint(index);
             RegisterChange();
         }
 
@@ -252,7 +252,7 @@ namespace Dreamteck.Splines.Editor
             }
             selectedPoints = new List<int>(inverse);
             Repaint();
-            if (editor.selectionChangeHandler != null) editor.selectionChangeHandler();
+            if (m_editor.selectionChangeHandler != null) m_editor.selectionChangeHandler();
             if (onSelectionChanged != null) onSelectionChanged();
         }
 
@@ -262,7 +262,7 @@ namespace Dreamteck.Splines.Editor
             selectedPoints.Clear();
             selectedPoints.Add(index);
             Repaint();
-            if (editor.selectionChangeHandler != null) editor.selectionChangeHandler();
+            if (m_editor.selectionChangeHandler != null) m_editor.selectionChangeHandler();
             if (onSelectionChanged != null) onSelectionChanged();
         }
 
@@ -272,7 +272,7 @@ namespace Dreamteck.Splines.Editor
             {
                 selectedPoints.Remove(index);
                 Repaint();
-                if (editor.selectionChangeHandler != null) editor.selectionChangeHandler();
+                if (m_editor.selectionChangeHandler != null) m_editor.selectionChangeHandler();
                 if (onSelectionChanged != null) onSelectionChanged();
             }
         }
@@ -285,7 +285,7 @@ namespace Dreamteck.Splines.Editor
                 selectedPoints.Add(indices[i]);
             }
             Repaint();
-            if (editor.selectionChangeHandler != null) editor.selectionChangeHandler();
+            if (m_editor.selectionChangeHandler != null) m_editor.selectionChangeHandler();
             if (onSelectionChanged != null) onSelectionChanged();
         }
 
@@ -294,7 +294,7 @@ namespace Dreamteck.Splines.Editor
             if (selectedPoints.Contains(index)) return;
             selectedPoints.Add(index);
             Repaint();
-            if (editor.selectionChangeHandler != null) editor.selectionChangeHandler();
+            if (m_editor.selectionChangeHandler != null) m_editor.selectionChangeHandler();
             if (onSelectionChanged != null) onSelectionChanged();
         }
 
@@ -335,8 +335,8 @@ namespace Dreamteck.Splines.Editor
                 }
                 center /= points.Length;
             }
-            movePivot = true;
-            idealPivot = center;
+            m_movePivot = true;
+            m_idealPivot = center;
         }
 
         

@@ -8,16 +8,16 @@ namespace Dreamteck.Splines.Editor
     public class RotationModifierEditor : SplineSampleModifierEditor
     {
         public bool allowSelection = true;
-        private float addTime = 0f;
+        private float m_addTime = 0f;
 
         public RotationModifierEditor(SplineUser user, SplineUserEditor parent) : base(user, parent, "_rotationModifier")
         {
-            title = "Rotation Modifiers";
+            m_title = "Rotation Modifiers";
         }
 
         public void ClearSelection()
         {
-            selected = -1;
+            m_selected = -1;
         }
 
         public override void DrawInspector()
@@ -26,17 +26,17 @@ namespace Dreamteck.Splines.Editor
             if (!isOpen) return;
             if (GUILayout.Button("Add New Rotation"))
             {
-                AddKey(addTime - 0.1f, addTime + 0.1f);
+                AddKey(m_addTime - 0.1f, m_addTime + 0.1f);
                 UpdateValues();
             }
         }
 
-        protected override void KeyGUI(SerializedProperty key)
+        protected override void KeyGui(SerializedProperty key)
         {
             SerializedProperty rotation = key.FindPropertyRelative("rotation");
             SerializedProperty target = key.FindPropertyRelative("target");
             SerializedProperty useLookTarget = key.FindPropertyRelative("useLookTarget");
-            base.KeyGUI(key);
+            base.KeyGui(key);
             if (!useLookTarget.boolValue)
             {
                 EditorGUILayout.PropertyField(rotation);
@@ -61,7 +61,7 @@ namespace Dreamteck.Splines.Editor
             SerializedProperty useLookTarget = key.FindPropertyRelative("useLookTarget");
             float position = GetPosition(start.floatValue, end.floatValue, centerStart.floatValue, centerEnd.floatValue);
             SplineSample result = new SplineSample();
-            user.spline.Evaluate(position, ref result);
+            m_user.spline.Evaluate(position, ref result);
             if (useLookTarget.boolValue)
             {
                 if (target.objectReferenceValue != null)

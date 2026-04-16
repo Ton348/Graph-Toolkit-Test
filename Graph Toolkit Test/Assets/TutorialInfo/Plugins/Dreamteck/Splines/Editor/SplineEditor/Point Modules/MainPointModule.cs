@@ -7,39 +7,39 @@ namespace Dreamteck.Splines.Editor
     {
         public bool excludeSelected = false;
         public int minimumRectSize = 5;
-        private Vector2 _rectStart = Vector2.zero;
-        private Vector2 _rectEnd = Vector2.zero;
-        private Rect _dragRect;
-        private bool _drag = false;
-        private bool _finalizeDrag = false;
-        private bool _pointsMoved = false;
-        private bool _tangentMode = false;
-        private Color _bgColor = Color.black;
+        private Vector2 m_rectStart = Vector2.zero;
+        private Vector2 m_rectEnd = Vector2.zero;
+        private Rect m_dragRect;
+        private bool m_drag = false;
+        private bool m_finalizeDrag = false;
+        private bool m_pointsMoved = false;
+        private bool m_tangentMode = false;
+        private Color m_bgColor = Color.black;
 
-        public static bool isSelecting => __isDragging;
-        private static bool __holdInteraction = false;
-        private static bool __isDragging = false;
+        public static bool isSelecting => s_isDragging;
+        private static bool s_holdInteraction = false;
+        private static bool s_isDragging = false;
 
 
         public bool isDragging
         {
             get
             {
-                return _drag && _dragRect.width >= minimumRectSize && _dragRect.height >= minimumRectSize;
+                return m_drag && m_dragRect.width >= minimumRectSize && m_dragRect.height >= minimumRectSize;
             }
         }
 
-        public bool tangentMode => _tangentMode;
+        public bool tangentMode => m_tangentMode;
 
         public MainPointModule(SplineEditor editor) : base(editor)
         {
-            _bgColor = Color.Lerp(color, Color.black, 0.75f);
-            _bgColor.a = 0.75f;
+            m_bgColor = Color.Lerp(color, Color.black, 0.75f);
+            m_bgColor.a = 0.75f;
         }
 
         public static void HoldInteraction()
         {
-            __holdInteraction = true;
+            s_holdInteraction = true;
         }
 
         protected override void OnDrawInspector()
@@ -90,7 +90,7 @@ namespace Dreamteck.Splines.Editor
 
             if (isDragging)
             {
-                if (!eventModule.mouseLeft)
+                if (!m_eventModule.mouseLeft)
                 {
                     FinishDrag();
                 }
@@ -99,19 +99,19 @@ namespace Dreamteck.Splines.Editor
 
         protected override void OnDrawScene()
         {
-            if (eventModule.v) return;
+            if (m_eventModule.v) return;
             Transform camTransform = SceneView.currentDrawingSceneView.camera.transform;
-            if (!_drag)
+            if (!m_drag)
             {
-                if (_finalizeDrag)
+                if (m_finalizeDrag)
                 {
-                    if (_dragRect.width > 0f && _dragRect.height > 0f)
+                    if (m_dragRect.width > 0f && m_dragRect.height > 0f)
                     {
-                        if (!eventModule.control) ClearSelection();
+                        if (!m_eventModule.control) ClearSelection();
                         for (int i = 0; i < points.Length; i++)
                         {
                             Vector2 guiPoint = HandleUtility.WorldToGUIPoint(points[i].position);
-                            if (_dragRect.Contains(guiPoint))
+                            if (m_dragRect.Contains(guiPoint))
                             {
                                 Vector3 local = camTransform.InverseTransformPoint(points[i].position);
                                 if (local.z >= 0f)
@@ -121,25 +121,25 @@ namespace Dreamteck.Splines.Editor
                             }
                         }
                     }
-                    _finalizeDrag = false;
+                    m_finalizeDrag = false;
                 }
             }
             else
             {
-                if (__holdInteraction)
+                if (s_holdInteraction)
                 {
                     CancelDrag();
                 }
                 else
                 {
-                    _rectEnd = Event.current.mousePosition;
-                    _dragRect = new Rect(Mathf.Min(_rectStart.x, _rectEnd.x), Mathf.Min(_rectStart.y, _rectEnd.y), Mathf.Abs(_rectEnd.x - _rectStart.x), Mathf.Abs(_rectEnd.y - _rectStart.y));
-                    if (_dragRect.width >= minimumRectSize && _dragRect.height >= minimumRectSize)
+                    m_rectEnd = Event.current.mousePosition;
+                    m_dragRect = new Rect(Mathf.Min(m_rectStart.x, m_rectEnd.x), Mathf.Min(m_rectStart.y, m_rectEnd.y), Mathf.Abs(m_rectEnd.x - m_rectStart.x), Mathf.Abs(m_rectEnd.y - m_rectStart.y));
+                    if (m_dragRect.width >= minimumRectSize && m_dragRect.height >= minimumRectSize)
                     {
                         Color col = highlightColor;
                         col.a = 0.4f;
                         Handles.BeginGUI();
-                        EditorGUI.DrawRect(_dragRect, col);
+                        EditorGUI.DrawRect(m_dragRect, col);
                         Handles.EndGUI();
                         SceneView.RepaintAll();
                     }
@@ -153,7 +153,7 @@ namespace Dreamteck.Splines.Editor
 
             if (selectedPoints.Count > 1)
             {
-                _tangentMode = false;
+                m_tangentMode = false;
             }
 
             for (int i = 0; i < points.Length; i++)
@@ -171,7 +171,7 @@ namespace Dreamteck.Splines.Editor
                     if (Event.current.type == EventType.Repaint)
                         Handles.DrawDottedLine(points[i].position, points[i].tangent2, 4f);
 
-                    if (_tangentMode && selectedPoints.Count == 1)
+                    if (m_tangentMode && selectedPoints.Count == 1)
                     {
                         Handles.color = highlightColor;
                     }
@@ -186,7 +186,7 @@ namespace Dreamteck.Splines.Editor
                     }
                     lastTangentPos = points[i].tangent2;
                     newPos = SplineEditorHandles.FreeMoveCircle(points[i].tangent2, HandleUtility.GetHandleSize(points[i].tangent2) * 0.22f);
-                    if (!__holdInteraction && lastTangentPos != newPos)
+                    if (!s_holdInteraction && lastTangentPos != newPos)
                     {
                         points[i].SetTangent2Position(newPos);
                         RegisterChange();
@@ -204,7 +204,7 @@ namespace Dreamteck.Splines.Editor
                         Handles.Label(points[i].position + Camera.current.transform.up * HandleUtility.GetHandleSize(points[i].position) * 0.3f, (i + 1).ToString());
                     }
                 }
-                if (!eventModule.alt && !__holdInteraction)
+                if (!m_eventModule.alt && !s_holdInteraction)
                 {
                     if (excludeSelected && isSelected)
                     {
@@ -217,10 +217,10 @@ namespace Dreamteck.Splines.Editor
                     }
                 }
 
-                if (!__holdInteraction && lastPos != points[i].position)
+                if (!s_holdInteraction && lastPos != points[i].position)
                 {
-                    _tangentMode = false;
-                    _pointsMoved = true;
+                    m_tangentMode = false;
+                    m_pointsMoved = true;
                     if (isSelected)
                     {
                         for (int n = 0; n < selectedPoints.Count; n++)
@@ -236,29 +236,29 @@ namespace Dreamteck.Splines.Editor
                     RegisterChange();
                 }
 
-                if (!_pointsMoved && !eventModule.alt && editor.eventModule.mouseLeftUp)
+                if (!m_pointsMoved && !m_eventModule.alt && m_editor.eventModule.mouseLeftUp)
                 {
                     if(SplineEditorHandles.HoverArea(points[i].position, 0.12f))
                     {
-                        if (eventModule.control && selectedPoints.Contains(i))
+                        if (m_eventModule.control && selectedPoints.Contains(i))
                         {
                             DeselectPoint(i);
                         }
                         else
                         {
-                            if (eventModule.shift) ShiftSelect(i, points.Length);
-                            else if (eventModule.control) AddPointSelection(i);
+                            if (m_eventModule.shift) ShiftSelect(i, points.Length);
+                            else if (m_eventModule.control) AddPointSelection(i);
                             else SelectPoint(i);
                         }
-                        _tangentMode = false;
+                        m_tangentMode = false;
                     } else if(splineType == Spline.Type.Bezier)
                     {
                         if (SplineEditorHandles.HoverArea(points[i].tangent, 0.23f))
                         {
-                            if (eventModule.shift) ShiftSelect(i, points.Length);
-                            else if (eventModule.control) AddPointSelection(i);
+                            if (m_eventModule.shift) ShiftSelect(i, points.Length);
+                            else if (m_eventModule.control) AddPointSelection(i);
                             else SelectPoint(i);
-                            _tangentMode = true;
+                            m_tangentMode = true;
                         }
                     }
                 }
@@ -267,7 +267,7 @@ namespace Dreamteck.Splines.Editor
                 {
                     if (Event.current.type == EventType.Repaint)
                     {
-                        SplineEditorHandles.DrawPoint(points[i].position, isSelected && (!_tangentMode || selectedPoints.Count != 1));
+                        SplineEditorHandles.DrawPoint(points[i].position, isSelected && (!m_tangentMode || selectedPoints.Count != 1));
                     }
                 }
             }
@@ -279,25 +279,25 @@ namespace Dreamteck.Splines.Editor
                 bool mouseIsOutside = false;
 #if UNITY_2022_1_OR_NEWER
                 Vector2 mousePos = Event.current.mousePosition;
-                Vector2 viewportSize = new Vector2(_currentSceneView.position.width, _currentSceneView.position.height);
+                Vector2 viewportSize = new Vector2(m_currentSceneView.position.width, m_currentSceneView.position.height);
                 mouseIsOutside = mousePos.x <= 0 || mousePos.y <= 0f || mousePos.x >= viewportSize.x || mousePos.y >= viewportSize.y;
 #else
                 mouseIsOutside = !SceneView.currentDrawingSceneView.camera.pixelRect.Contains(Event.current.mousePosition);
 #endif
-                if (eventModule.alt || mouseIsOutside || !eventModule.mouseLeft)
+                if (m_eventModule.alt || mouseIsOutside || !m_eventModule.mouseLeft)
                 {
                     FinishDrag();
                 }
             }
 
-            if (eventModule.mouseLeftUp)
+            if (m_eventModule.mouseLeftUp)
             {
-                _pointsMoved = false;
+                m_pointsMoved = false;
             }
 
-            __holdInteraction = false;
+            s_holdInteraction = false;
 
-            __isDragging = isDragging;
+            s_isDragging = isDragging;
         }
 
         void ShiftSelect(int index, int pointCount)
@@ -328,23 +328,23 @@ namespace Dreamteck.Splines.Editor
 
         public void StartDrag(Vector2 position)
         {
-            if (__holdInteraction) return;
-            _rectStart = position;
-            _drag = true;
-            _finalizeDrag = false;
+            if (s_holdInteraction) return;
+            m_rectStart = position;
+            m_drag = true;
+            m_finalizeDrag = false;
         }
 
         public void FinishDrag()
         {
-            if (!_drag) return;
-            _drag = false;
-            _finalizeDrag = true;
+            if (!m_drag) return;
+            m_drag = false;
+            m_finalizeDrag = true;
         }
 
         public void CancelDrag()
         {
-            _drag = false;
-            _finalizeDrag = false;
+            m_drag = false;
+            m_finalizeDrag = false;
         }
     }
 }

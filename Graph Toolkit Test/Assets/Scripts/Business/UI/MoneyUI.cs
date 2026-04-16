@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class MoneyUI : MonoBehaviour
+public class MoneyUi : MonoBehaviour
 {
     public GameBootstrap bootstrap;
     public TMP_Text moneyText;

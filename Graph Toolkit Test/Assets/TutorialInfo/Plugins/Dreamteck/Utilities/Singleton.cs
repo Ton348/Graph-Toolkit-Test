@@ -9,12 +9,12 @@ namespace Dreamteck
         {
             get
             {
-                if (_instance == null)
+                if (s_instance == null)
                 {
-                    _instance = Object.FindObjectsOfType<T>().FirstOrDefault();
+                    s_instance = Object.FindObjectsOfType<T>().FirstOrDefault();
                 }
 
-                return _instance;
+                return s_instance;
             }
         }
     }

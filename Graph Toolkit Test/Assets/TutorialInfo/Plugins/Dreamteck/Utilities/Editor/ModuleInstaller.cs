@@ -8,113 +8,113 @@ namespace Dreamteck.Editor
 
     public class ModuleInstaller
     {
-        protected const string DREAMTECK_FOLDER_NAME = "Dreamteck";
+        protected const string s_dReamteckFolderName = "Dreamteck";
 
         /// <summary>
         /// Local directory within the Dreamteck folder of the unitypackage
         /// </summary>
-        private string _packageDirectory = "";
-        private string _packageName = "";
-        private List<string> _scriptingDefines = new List<string>();
-        private List<string> _uninstallDirectories = new List<string>();
-        private Dictionary<string, List<string>> _assemblyLinks = new Dictionary<string, List<string>>();
+        private string m_packageDirectory = "";
+        private string m_packageName = "";
+        private List<string> m_scriptingDefines = new List<string>();
+        private List<string> m_uninstallDirectories = new List<string>();
+        private Dictionary<string, List<string>> m_assemblyLinks = new Dictionary<string, List<string>>();
 
         public ModuleInstaller(string packageDirectory, string packageName)
         {
-            _packageDirectory = packageDirectory;
-            _packageName = packageName;
+            m_packageDirectory = packageDirectory;
+            m_packageName = packageName;
         }
 
         public void AddAssemblyLink(string dreamteckAssemblyDirectory, string dreamteckAssemblyName, string addedAssemblyName)
         {
-            string localFilePath = Path.Combine(DREAMTECK_FOLDER_NAME, dreamteckAssemblyDirectory, dreamteckAssemblyName + ".asmdef");
-            if (_assemblyLinks.ContainsKey(localFilePath))
+            string localFilePath = Path.Combine(s_dReamteckFolderName, dreamteckAssemblyDirectory, dreamteckAssemblyName + ".asmdef");
+            if (m_assemblyLinks.ContainsKey(localFilePath))
             {
-                _assemblyLinks[localFilePath].Add(addedAssemblyName);
+                m_assemblyLinks[localFilePath].Add(addedAssemblyName);
             } else
             {
-                _assemblyLinks.Add(localFilePath, new List<string>(new string[] { addedAssemblyName }));
+                m_assemblyLinks.Add(localFilePath, new List<string>(new string[] { addedAssemblyName }));
             }
         }
 
         public void AddUninstallDirectory(string dreamteckLocalDirectory)
         {
-            if (!_uninstallDirectories.Contains(dreamteckLocalDirectory))
+            if (!m_uninstallDirectories.Contains(dreamteckLocalDirectory))
             {
-                _uninstallDirectories.Add(dreamteckLocalDirectory);
+                m_uninstallDirectories.Add(dreamteckLocalDirectory);
             }
         }
 
         public void AddScriptingDefine(string define)
         {
-            if (!_scriptingDefines.Contains(define))
+            if (!m_scriptingDefines.Contains(define))
             {
-                _scriptingDefines.Add(define);
+                m_scriptingDefines.Add(define);
             }
         }
 
         public void Install()
         {
-            string globalPath = ResourceUtility.FindFolder(Application.dataPath, DREAMTECK_FOLDER_NAME + "/" + _packageDirectory);
+            string globalPath = ResourceUtility.FindFolder(Application.dataPath, s_dReamteckFolderName + "/" + m_packageDirectory);
             if (!Directory.Exists(globalPath))
             {
-                EditorUtility.DisplayDialog("Missing Package", "Package directory not found: " + _packageDirectory, "OK");
+                EditorUtility.DisplayDialog("Missing Package", "Package directory not found: " + m_packageDirectory, "OK");
                 return;
             }
-            globalPath = Path.Combine(globalPath, _packageName + ".unitypackage");
+            globalPath = Path.Combine(globalPath, m_packageName + ".unitypackage");
             if (!File.Exists(globalPath))
             {
-                EditorUtility.DisplayDialog("Missing Package", "Package file not found: " + _packageDirectory, "OK");
+                EditorUtility.DisplayDialog("Missing Package", "Package file not found: " + m_packageDirectory, "OK");
                 return;
             }
 
-            foreach (var key in _assemblyLinks.Keys)
+            foreach (var key in m_assemblyLinks.Keys)
             {
-                for (int i = 0; i < _assemblyLinks[key].Count; i++)
+                for (int i = 0; i < m_assemblyLinks[key].Count; i++)
                 {
-                    AddAssemblyReference(key, _assemblyLinks[key][i]);
+                    AddAssemblyReference(key, m_assemblyLinks[key][i]);
                 }
             }
 
             AssetDatabase.ImportPackage(globalPath, false);
-            EditorUtility.DisplayDialog("Import Complete", _packageName + " is now installed.", "OK");
-            for (int i = 0; i < _scriptingDefines.Count; i++)
+            EditorUtility.DisplayDialog("Import Complete", m_packageName + " is now installed.", "OK");
+            for (int i = 0; i < m_scriptingDefines.Count; i++)
             {
-                ScriptingDefineUtility.Add(_scriptingDefines[i], EditorUserBuildSettings.selectedBuildTargetGroup, true);
+                ScriptingDefineUtility.Add(m_scriptingDefines[i], EditorUserBuildSettings.selectedBuildTargetGroup, true);
             }
         }
 
         public void Uninstall()
         {
             string dialogText = "The assets in the following folders will be removed: \n";
-            for (int i = 0; i < _uninstallDirectories.Count; i++)
+            for (int i = 0; i < m_uninstallDirectories.Count; i++)
             {
-                dialogText += _uninstallDirectories[i] + "\n";
+                dialogText += m_uninstallDirectories[i] + "\n";
             }
             bool result = EditorUtility.DisplayDialog("Uninstalling", dialogText, "OK", "Cancel");
             if (!result) return;
 
-            for (int i = 0; i < _uninstallDirectories.Count; i++)
+            for (int i = 0; i < m_uninstallDirectories.Count; i++)
             {
-                string globalPath = ResourceUtility.FindFolder(Application.dataPath, DREAMTECK_FOLDER_NAME + "/" + _uninstallDirectories[i]);
+                string globalPath = ResourceUtility.FindFolder(Application.dataPath, s_dReamteckFolderName + "/" + m_uninstallDirectories[i]);
                 string relativePath = "Assets" + globalPath.Substring(Application.dataPath.Length);
                 Debug.Log("Uninstalling " + relativePath);
                 AssetDatabase.DeleteAsset(relativePath);
             }
 
-            foreach (var key in _assemblyLinks.Keys)
+            foreach (var key in m_assemblyLinks.Keys)
             {
-                for (int i = 0; i < _assemblyLinks[key].Count; i++)
+                for (int i = 0; i < m_assemblyLinks[key].Count; i++)
                 {
-                    RemoveAssemblyReference(key, _assemblyLinks[key][i]);
+                    RemoveAssemblyReference(key, m_assemblyLinks[key][i]);
                 }
             }
 
             
 
-            for (int i = 0; i < _scriptingDefines.Count; i++)
+            for (int i = 0; i < m_scriptingDefines.Count; i++)
             {
-                ScriptingDefineUtility.Remove(_scriptingDefines[i], EditorUserBuildSettings.selectedBuildTargetGroup, true);
+                ScriptingDefineUtility.Remove(m_scriptingDefines[i], EditorUserBuildSettings.selectedBuildTargetGroup, true);
             }
         }
 
@@ -127,7 +127,7 @@ namespace Dreamteck.Editor
                 data = reader.ReadToEnd();
             }
 
-            var asmDef = AssemblyDefinition.CreateFromJSON(data);
+            var asmDef = AssemblyDefinition.CreateFromJson(data);
             foreach (var reference in asmDef.references)
             {
                 if (reference == addedAssemblyName) return;
@@ -150,7 +150,7 @@ namespace Dreamteck.Editor
                 data = reader.ReadToEnd();
             }
 
-            var asmDef = AssemblyDefinition.CreateFromJSON(data);
+            var asmDef = AssemblyDefinition.CreateFromJson(data);
             bool contains = false;
             foreach (var reference in asmDef.references)
             {
@@ -184,7 +184,7 @@ namespace Dreamteck.Editor
             public string[] versionDefines;
             public bool noEngineReferences;
 
-            public static AssemblyDefinition CreateFromJSON(string json)
+            public static AssemblyDefinition CreateFromJson(string json)
             {
                 return JsonUtility.FromJson<AssemblyDefinition>(json);
             }

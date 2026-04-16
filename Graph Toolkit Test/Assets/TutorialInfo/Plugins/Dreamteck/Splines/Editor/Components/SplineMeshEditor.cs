@@ -8,10 +8,10 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class SplineMeshEditor : MeshGenEditor
     {
-        private int selectedChannel = -1;
-        SplineMesh.Channel renameChannel = null;
-        MeshDefinitionWindow definitionWindow = null;
-        MeshScaleModifierEditor scaleModifierEditor;
+        private int m_selectedChannel = -1;
+        SplineMesh.Channel m_renameChannel = null;
+        MeshDefinitionWindow m_definitionWindow = null;
+        MeshScaleModifierEditor m_scaleModifierEditor;
 
         private Mesh GetMeshFromObject(Object obj)
         {
@@ -74,7 +74,7 @@ namespace Dreamteck.Splines.Editor
         void OnRenameChannel(object index)
         {
             SplineMesh extruder = (SplineMesh)target;
-            renameChannel = extruder.GetChannel((int)index);
+            m_renameChannel = extruder.GetChannel((int)index);
             Repaint();
         }
 
@@ -99,18 +99,18 @@ namespace Dreamteck.Splines.Editor
             Repaint();
         }
 
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
-            base.DuringSceneGUI(currentSceneView);
-            if (scaleModifierEditor != null) scaleModifierEditor.DrawScene();
+            base.DuringSceneGui(currentSceneView);
+            if (m_scaleModifierEditor != null) m_scaleModifierEditor.DrawScene();
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            showSize = false;
-            showDoubleSided = false;
-            showFlipFaces = false;
-            base.BodyGUI();
+            m_showSize = false;
+            m_showDoubleSided = false;
+            m_showFlipFaces = false;
+            base.BodyGui();
 
             SplineMesh user = (SplineMesh)target;
             EditorGUI.BeginChangeCheck();
@@ -137,15 +137,15 @@ namespace Dreamteck.Splines.Editor
                         Repaint();
                         if (Event.current.button == 0)
                         {
-                            if (selectedChannel == i)
+                            if (m_selectedChannel == i)
                             {
-                                selectedChannel = -1;
+                                m_selectedChannel = -1;
                             }
                             else
                             {
-                                selectedChannel = i;
-                                scaleModifierEditor = new MeshScaleModifierEditor(user, this, i);
-                                scaleModifierEditor.alwaysOpen = true;
+                                m_selectedChannel = i;
+                                m_scaleModifierEditor = new MeshScaleModifierEditor(user, this, i);
+                                m_scaleModifierEditor.alwaysOpen = true;
                             }
                         }
                         else if (Event.current.button == 1)
@@ -172,15 +172,15 @@ namespace Dreamteck.Splines.Editor
         bool ChannelPanel(int channelIndex)
         {
             SplineMesh.Channel channel = ((SplineMesh)target).GetChannel(channelIndex);
-            bool open = selectedChannel == channelIndex;
+            bool open = m_selectedChannel == channelIndex;
 
             GUILayout.BeginVertical(EditorStyles.helpBox);
-            if (renameChannel == channel && Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
+            if (m_renameChannel == channel && Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
             {
-                renameChannel = null;
+                m_renameChannel = null;
                 Repaint();
             }
-            if (renameChannel == channel) channel.name = EditorGUILayout.TextField(channel.name);
+            if (m_renameChannel == channel) channel.name = EditorGUILayout.TextField(channel.name);
             else EditorGUILayout.LabelField(channel.name, EditorStyles.boldLabel);
             if (!open)
             {
@@ -329,8 +329,8 @@ namespace Dreamteck.Splines.Editor
 
             if (channel.type == SplineMesh.Channel.Type.Extrude)
             {
-                channel.overrideUVs = (SplineMesh.Channel.UVOverride)EditorGUILayout.EnumPopup("UVs", channel.overrideUVs);
-                if(channel.overrideUVs != SplineMesh.Channel.UVOverride.None)
+                channel.overrideUVs = (SplineMesh.Channel.Uvoverride)EditorGUILayout.EnumPopup("UVs", channel.overrideUVs);
+                if(channel.overrideUVs != SplineMesh.Channel.Uvoverride.None)
                 {
 
                 }
@@ -340,10 +340,10 @@ namespace Dreamteck.Splines.Editor
             if (channel.overrideMaterialID) channel.targetMaterialID = EditorGUILayout.IntField("Target ID", channel.targetMaterialID);
 
 
-            if (scaleModifierEditor != null)
+            if (m_scaleModifierEditor != null)
             {
                 EditorGUILayout.LabelField("Scale Regions", EditorStyles.boldLabel);
-                scaleModifierEditor.DrawInspector();
+                m_scaleModifierEditor.DrawInspector();
             }
             EditorGUI.indentLevel--;
             GUILayout.EndVertical();
@@ -389,8 +389,8 @@ namespace Dreamteck.Splines.Editor
             if (Event.current.type == EventType.MouseDown && rect.Contains(Event.current.mousePosition)){
                 if(Event.current.button == 0)
                 {
-                    definitionWindow = EditorWindow.GetWindow<MeshDefinitionWindow>(true);
-                    definitionWindow.Init((SplineMesh)target, definition);
+                    m_definitionWindow = EditorWindow.GetWindow<MeshDefinitionWindow>(true);
+                    m_definitionWindow.Init((SplineMesh)target, definition);
                 }   
 
                 if(Event.current.button == 1)
@@ -411,7 +411,7 @@ namespace Dreamteck.Splines.Editor
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            if (definitionWindow != null) definitionWindow.Close();
+            if (m_definitionWindow != null) m_definitionWindow.Close();
         }
 
         internal class MeshLink
@@ -439,7 +439,7 @@ namespace Dreamteck.Splines.Editor
                 else titleContent = new GUIContent("Configure Mesh");
             }
 
-            private void OnGUI()
+            private void OnGui()
             {
                 EditorGUILayout.BeginHorizontal();
                 EditorGUILayout.BeginVertical();

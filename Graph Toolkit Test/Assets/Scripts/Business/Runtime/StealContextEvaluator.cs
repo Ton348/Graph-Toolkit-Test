@@ -2,7 +2,7 @@ using UnityEngine;
 
 public static class StealContextEvaluator
 {
-    public static bool CanStealFromNpc(Transform player, NPCManager npc)
+    public static bool CanStealFromNpc(Transform player, Npcmanager npc)
     {
         if (player == null || npc == null)
         {

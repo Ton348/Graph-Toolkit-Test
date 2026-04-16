@@ -2,7 +2,7 @@ using System.Text;
 using TMPro;
 using UnityEngine;
 
-public class QuestListUI : MonoBehaviour
+public class QuestListUi : MonoBehaviour
 {
     public GameBootstrap bootstrap;
     public TMP_Text questsText;

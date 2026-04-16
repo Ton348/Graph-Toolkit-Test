@@ -4,7 +4,7 @@ using GraphCore.Runtime;
 
 public static class ConditionEvaluator
 {
-    static readonly HashSet<string> LoggedFalseNodes = new HashSet<string>();
+    static readonly HashSet<string> s_loggedFalseNodes = new HashSet<string>();
 
     static bool EvaluateCondition(
         ConditionType conditionType,
@@ -144,7 +144,7 @@ public static class ConditionEvaluator
         {
             if (!string.IsNullOrEmpty(node.id))
             {
-                LoggedFalseNodes.Remove(node.id);
+                s_loggedFalseNodes.Remove(node.id);
             }
             return;
         }
@@ -154,6 +154,6 @@ public static class ConditionEvaluator
             return;
         }
 
-        LoggedFalseNodes.Add(node.id);
+        s_loggedFalseNodes.Add(node.id);
     }
 }

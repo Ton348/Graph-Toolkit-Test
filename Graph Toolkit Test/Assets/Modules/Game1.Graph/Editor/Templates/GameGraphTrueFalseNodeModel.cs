@@ -10,8 +10,8 @@ namespace Game1.Graph.Editor.Templates
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public abstract class GameGraphTrueFalseNodeModel : GameGraphEditorNode
 	{
-		protected override string DefaultTitle => "Game True/False Node";
-		protected override string DefaultDescription => "Base template for game node with true/false branching.";
+		protected override string defaultTitle => "Game True/False Node";
+		protected override string defaultDescription => "Base template for game node with true/false branching.";
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{

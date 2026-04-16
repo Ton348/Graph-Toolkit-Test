@@ -6,8 +6,8 @@ namespace Dreamteck.Splines.Editor
 
     public class SplineEditorWindow : EditorWindow
     {
-        protected Editor editor;
-        protected SplineComputerEditor splineEditor;
+        protected Editor m_editor;
+        protected SplineComputerEditor m_splineEditor;
 
         public void Init(Editor e, string inputTitle, Vector2 min, Vector2 max)
         {
@@ -37,9 +37,9 @@ namespace Dreamteck.Splines.Editor
 
         public void Init(Editor e)
         {
-            editor = e;
-            if (editor is SplineComputerEditor) splineEditor = (SplineComputerEditor)editor;
-            else splineEditor = null;
+            m_editor = e;
+            if (m_editor is SplineComputerEditor) m_splineEditor = (SplineComputerEditor)m_editor;
+            else m_splineEditor = null;
             Title(GetTitle());
             OnInitialize();
         }

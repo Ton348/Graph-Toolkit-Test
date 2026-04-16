@@ -9,11 +9,11 @@ namespace Dreamteck.Splines{
         public enum Type {SmoothMirrored, Broken, SmoothFree};
         public Type type
         {
-            get { return _type; }
+            get { return m_type; }
             set
             {
-                isDirty = _type != value;
-                _type = value;
+                isDirty = m_type != value;
+                m_type = value;
                 if (value == Type.SmoothMirrored)
                 {
                     SmoothMirrorTangent2();
@@ -30,7 +30,7 @@ namespace Dreamteck.Splines{
         [FormerlySerializedAs("type")]
         [SerializeField]
         [HideInInspector]
-        private Type _type;
+        private Type m_type;
 
         [HideInInspector]
         [FormerlySerializedAs("_position")]
@@ -97,7 +97,7 @@ namespace Dreamteck.Splines{
             if (tangent != other.tangent) return false;
             if (tangent2 != other.tangent2) return false;
             if (normal != other.normal) return false;
-            if (_type != other._type) return false;
+            if (m_type != other.m_type) return false;
             if (size != other.size) return false;
             if (color != other.color) return false;
             return true;
@@ -124,7 +124,7 @@ namespace Dreamteck.Splines{
         public void SetTangentPosition(Vector3 pos)
         {
             tangent = pos;
-            switch (_type)
+            switch (m_type)
             {
                 case Type.SmoothMirrored: SmoothMirrorTangent2(); break;
                 case Type.SmoothFree: SmoothFreeTangent2(); break;
@@ -134,7 +134,7 @@ namespace Dreamteck.Splines{
         public void SetTangent2Position(Vector3 pos)
         {
             tangent2 = pos;
-            switch (_type)
+            switch (m_type)
             {
                 case Type.SmoothMirrored: SmoothMirrorTangent(); break;
                 case Type.SmoothFree: SmoothFreeTangent(); break;
@@ -149,7 +149,7 @@ namespace Dreamteck.Splines{
             color = Color.white;
             normal = Vector3.up;
             size = 1f;
-            _type = Type.SmoothMirrored;
+            m_type = Type.SmoothMirrored;
             isDirty = false;
             SmoothMirrorTangent2();
         }
@@ -161,7 +161,7 @@ namespace Dreamteck.Splines{
             color = Color.white;
             normal = Vector3.up;
             size = 1f;
-            _type = Type.SmoothMirrored;
+            m_type = Type.SmoothMirrored;
             isDirty = false;
             SmoothMirrorTangent2();
         }	
@@ -173,7 +173,7 @@ namespace Dreamteck.Splines{
             normal = nor;
             size = s;
             color = col;
-            _type = Type.SmoothMirrored;
+            m_type = Type.SmoothMirrored;
             isDirty = false;
             SmoothMirrorTangent2();
         }
@@ -186,9 +186,9 @@ namespace Dreamteck.Splines{
             normal = nor;
             size = s;
             color = col;
-            _type = Type.Broken;
+            m_type = Type.Broken;
             isDirty = false;
-            switch (_type)
+            switch (m_type)
             {
                 case Type.SmoothMirrored: SmoothMirrorTangent2(); break;
                 case Type.SmoothFree: SmoothFreeTangent2(); break;
@@ -203,9 +203,9 @@ namespace Dreamteck.Splines{
             color = source.color;
             normal = source.normal;
             size = source.size;
-            _type = source.type;
+            m_type = source.type;
             isDirty = false;
-            switch (_type)
+            switch (m_type)
             {
                 case Type.SmoothMirrored: SmoothMirrorTangent2(); break;
                 case Type.SmoothFree: SmoothFreeTangent2(); break;
@@ -398,7 +398,7 @@ namespace Dreamteck.Splines{
             unchecked
             {
                 int hash = 17;
-                hash *= hash * 23 + _type.GetHashCode();
+                hash *= hash * 23 + m_type.GetHashCode();
                 hash = hash * 23 + position.GetHashCode();
                 hash = hash * 23 + normal.GetHashCode();
                 hash = hash * 23 + tangent.GetHashCode();

@@ -3,19 +3,19 @@ using UnityEngine;
 
 public class BusinessVisualSpawner : MonoBehaviour
 {
-    [SerializeField] private GameBootstrap bootstrap;
-    [SerializeField] private BusinessVisualRegistry registry;
+    [SerializeField] private GameBootstrap m_bootstrap;
+    [SerializeField] private BusinessVisualRegistry m_registry;
 
-    private readonly Dictionary<string, GameObject> spawnedBySiteId = new Dictionary<string, GameObject>();
-    private readonly Dictionary<string, string> spawnedVisualIdsBySiteId = new Dictionary<string, string>();
-    private readonly Dictionary<string, BusinessWorldRuntime> anchorsBySiteId = new Dictionary<string, BusinessWorldRuntime>();
-    private PlayerStateSync subscribedStateSync;
+    private readonly Dictionary<string, GameObject> m_spawnedBySiteId = new Dictionary<string, GameObject>();
+    private readonly Dictionary<string, string> m_spawnedVisualIdsBySiteId = new Dictionary<string, string>();
+    private readonly Dictionary<string, BusinessWorldRuntime> m_anchorsBySiteId = new Dictionary<string, BusinessWorldRuntime>();
+    private PlayerStateSync m_subscribedStateSync;
 
     public void Initialize(GameBootstrap bootstrap, BusinessVisualRegistry registry)
     {
         Unsubscribe();
-        this.bootstrap = bootstrap;
-        this.registry = registry;
+        this.m_bootstrap = bootstrap;
+        this.m_registry = registry;
         Subscribe();
         RefreshFromState();
     }
@@ -39,22 +39,22 @@ public class BusinessVisualSpawner : MonoBehaviour
 
     private void Subscribe()
     {
-        var stateSync = bootstrap != null ? bootstrap.PlayerStateSync : null;
-        if (stateSync == null || subscribedStateSync == stateSync)
+        var stateSync = m_bootstrap != null ? m_bootstrap.PlayerStateSync : null;
+        if (stateSync == null || m_subscribedStateSync == stateSync)
         {
             return;
         }
 
-        subscribedStateSync = stateSync;
-        subscribedStateSync.SnapshotApplied += OnSnapshotApplied;
+        m_subscribedStateSync = stateSync;
+        m_subscribedStateSync.snapshotApplied += OnSnapshotApplied;
     }
 
     private void Unsubscribe()
     {
-        if (subscribedStateSync != null)
+        if (m_subscribedStateSync != null)
         {
-            subscribedStateSync.SnapshotApplied -= OnSnapshotApplied;
-            subscribedStateSync = null;
+            m_subscribedStateSync.snapshotApplied -= OnSnapshotApplied;
+            m_subscribedStateSync = null;
         }
     }
 
@@ -65,7 +65,7 @@ public class BusinessVisualSpawner : MonoBehaviour
 
     private void RefreshFromState()
     {
-        if (bootstrap == null || registry == null || bootstrap.PlayerStateSync == null)
+        if (m_bootstrap == null || m_registry == null || m_bootstrap.PlayerStateSync == null)
         {
             return;
         }
@@ -73,7 +73,7 @@ public class BusinessVisualSpawner : MonoBehaviour
         RebuildAnchors();
         var desiredSites = new HashSet<string>();
 
-        foreach (var site in bootstrap.PlayerStateSync.ConstructedSites.Values)
+        foreach (var site in m_bootstrap.PlayerStateSync.ConstructedSites.Values)
         {
             if (site == null || string.IsNullOrWhiteSpace(site.siteId))
             {
@@ -92,7 +92,7 @@ public class BusinessVisualSpawner : MonoBehaviour
         }
 
         var sitesToRemove = new List<string>();
-        foreach (var pair in spawnedBySiteId)
+        foreach (var pair in m_spawnedBySiteId)
         {
             if (!desiredSites.Contains(pair.Key))
             {
@@ -108,7 +108,7 @@ public class BusinessVisualSpawner : MonoBehaviour
 
     private void RebuildAnchors()
     {
-        anchorsBySiteId.Clear();
+        m_anchorsBySiteId.Clear();
         var worldRuntimes = Object.FindObjectsByType<BusinessWorldRuntime>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         foreach (var worldRuntime in worldRuntimes)
         {
@@ -118,23 +118,23 @@ public class BusinessVisualSpawner : MonoBehaviour
             }
 
             string siteId = worldRuntime.siteId.Trim();
-            if (!anchorsBySiteId.ContainsKey(siteId))
+            if (!m_anchorsBySiteId.ContainsKey(siteId))
             {
-                anchorsBySiteId.Add(siteId, worldRuntime);
+                m_anchorsBySiteId.Add(siteId, worldRuntime);
             }
         }
     }
 
     private void EnsureSpawned(ConstructedSiteSnapshot site)
     {
-        if (!anchorsBySiteId.TryGetValue(site.siteId, out BusinessWorldRuntime anchor) || anchor == null)
+        if (!m_anchorsBySiteId.TryGetValue(site.siteId, out BusinessWorldRuntime anchor) || anchor == null)
         {
             Debug.LogWarning($"[BusinessVisual] Missing scene anchor for siteId='{site.siteId}'.");
             RemoveSpawned(site.siteId);
             return;
         }
 
-        GameObject prefab = registry.GetPrefab(site.visualId);
+        GameObject prefab = m_registry.GetPrefab(site.visualId);
         if (prefab == null)
         {
             Debug.LogWarning($"[BusinessVisual] Missing prefab for visualId='{site.visualId}'.");
@@ -142,9 +142,9 @@ public class BusinessVisualSpawner : MonoBehaviour
             return;
         }
 
-        if (spawnedBySiteId.TryGetValue(site.siteId, out GameObject existing) &&
+        if (m_spawnedBySiteId.TryGetValue(site.siteId, out GameObject existing) &&
             existing != null &&
-            spawnedVisualIdsBySiteId.TryGetValue(site.siteId, out string existingVisualId) &&
+            m_spawnedVisualIdsBySiteId.TryGetValue(site.siteId, out string existingVisualId) &&
             existingVisualId == site.visualId)
         {
             existing.transform.SetPositionAndRotation(anchor.transform.position, anchor.transform.rotation);
@@ -160,8 +160,8 @@ public class BusinessVisualSpawner : MonoBehaviour
         GameObject instance = Instantiate(prefab, anchor.transform.position, anchor.transform.rotation, anchor.transform);
         instance.name = $"{prefab.name}_{site.siteId}";
         AssignBootstrap(instance);
-        spawnedBySiteId[site.siteId] = instance;
-        spawnedVisualIdsBySiteId[site.siteId] = site.visualId;
+        m_spawnedBySiteId[site.siteId] = instance;
+        m_spawnedVisualIdsBySiteId[site.siteId] = site.visualId;
     }
 
     private void RemoveSpawned(string siteId)
@@ -171,18 +171,18 @@ public class BusinessVisualSpawner : MonoBehaviour
             return;
         }
 
-        if (spawnedBySiteId.TryGetValue(siteId, out GameObject instance) && instance != null)
+        if (m_spawnedBySiteId.TryGetValue(siteId, out GameObject instance) && instance != null)
         {
             Destroy(instance);
         }
 
-        spawnedBySiteId.Remove(siteId);
-        spawnedVisualIdsBySiteId.Remove(siteId);
+        m_spawnedBySiteId.Remove(siteId);
+        m_spawnedVisualIdsBySiteId.Remove(siteId);
     }
 
     private void ClearAllSpawned()
     {
-        foreach (var pair in spawnedBySiteId)
+        foreach (var pair in m_spawnedBySiteId)
         {
             if (pair.Value != null)
             {
@@ -190,13 +190,13 @@ public class BusinessVisualSpawner : MonoBehaviour
             }
         }
 
-        spawnedBySiteId.Clear();
-        spawnedVisualIdsBySiteId.Clear();
+        m_spawnedBySiteId.Clear();
+        m_spawnedVisualIdsBySiteId.Clear();
     }
 
     private void AssignBootstrap(GameObject instance)
     {
-        if (instance == null || bootstrap == null)
+        if (instance == null || m_bootstrap == null)
         {
             return;
         }
@@ -208,19 +208,19 @@ public class BusinessVisualSpawner : MonoBehaviour
             {
                 if (interactable != null)
                 {
-                    interactable.bootstrap = bootstrap;
+                    interactable.bootstrap = m_bootstrap;
                 }
             }
         }
 
-        var npcManagers = instance.GetComponentsInChildren<NPCManager>(true);
+        var npcManagers = instance.GetComponentsInChildren<Npcmanager>(true);
         if (npcManagers != null)
         {
             foreach (var npc in npcManagers)
             {
                 if (npc != null)
                 {
-                    npc.bootstrap = bootstrap;
+                    npc.bootstrap = m_bootstrap;
                 }
             }
         }

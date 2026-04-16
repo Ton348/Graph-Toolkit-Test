@@ -8,23 +8,23 @@ using UnityEngine.Networking;
 
 public class BusinessDebugWindow : EditorWindow
 {
-    private string baseUrl = "http://127.0.0.1:3000";
-    private string playerId = "player";
-    private float timeoutSeconds = 5f;
-    private bool logRawResponse = true;
-    private bool enableBusinessDebugLogs;
-    private bool enableSimTickLogs;
+    private string m_baseUrl = "http://127.0.0.1:3000";
+    private string m_playerId = "player";
+    private float m_timeoutSeconds = 5f;
+    private bool m_logRawResponse = true;
+    private bool m_enableBusinessDebugLogs;
+    private bool m_enableSimTickLogs;
 
-    private string lotId = "lot_market_01";
-    private string businessTypeId = "grocery_store";
-    private string moduleId = "storage";
-    private string supplierId = "supplier_wholesale_01";
-    private string roleId = "cashier";
-    private string contactId = "supplier_wholesale_01";
-    private int markupPercent = 10;
-    private int moneyAmount = 1000;
-    private int stockAmount = 100;
-    private int shelfAmount = 50;
+    private string m_lotId = "lot_market_01";
+    private string m_businessTypeId = "grocery_store";
+    private string m_moduleId = "storage";
+    private string m_supplierId = "supplier_wholesale_01";
+    private string m_roleId = "cashier";
+    private string m_contactId = "supplier_wholesale_01";
+    private int m_markupPercent = 10;
+    private int m_moneyAmount = 1000;
+    private int m_stockAmount = 100;
+    private int m_shelfAmount = 50;
 
     [MenuItem("Tools/Business/Debug")]
     private static void Open()
@@ -37,32 +37,32 @@ public class BusinessDebugWindow : EditorWindow
         TryLoadFromBootstrap();
     }
 
-    private void OnGUI()
+    private void OnGui()
     {
         EditorGUILayout.LabelField("Server", EditorStyles.boldLabel);
-        baseUrl = EditorGUILayout.TextField("Base Url", baseUrl);
-        playerId = EditorGUILayout.TextField("Player Id", playerId);
-        timeoutSeconds = EditorGUILayout.FloatField("Timeout (sec)", timeoutSeconds);
-        logRawResponse = EditorGUILayout.Toggle("Log Raw Response", logRawResponse);
+        m_baseUrl = EditorGUILayout.TextField("Base Url", m_baseUrl);
+        m_playerId = EditorGUILayout.TextField("Player Id", m_playerId);
+        m_timeoutSeconds = EditorGUILayout.FloatField("Timeout (sec)", m_timeoutSeconds);
+        m_logRawResponse = EditorGUILayout.Toggle("Log Raw Response", m_logRawResponse);
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("Debug Toggles", EditorStyles.boldLabel);
-        enableBusinessDebugLogs = EditorGUILayout.Toggle("Business Debug Logs", enableBusinessDebugLogs);
-        enableSimTickLogs = EditorGUILayout.Toggle("Simulation Tick Logs", enableSimTickLogs);
+        m_enableBusinessDebugLogs = EditorGUILayout.Toggle("Business Debug Logs", m_enableBusinessDebugLogs);
+        m_enableSimTickLogs = EditorGUILayout.Toggle("Simulation Tick Logs", m_enableSimTickLogs);
         ApplyDebugToggles();
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("Business Data", EditorStyles.boldLabel);
-        lotId = EditorGUILayout.TextField("Lot Id", lotId);
-        businessTypeId = EditorGUILayout.TextField("Business Type Id", businessTypeId);
-        moduleId = EditorGUILayout.TextField("Module Id", moduleId);
-        supplierId = EditorGUILayout.TextField("Supplier Id", supplierId);
-        roleId = EditorGUILayout.TextField("Role Id", roleId);
-        contactId = EditorGUILayout.TextField("Contact Id", contactId);
-        markupPercent = EditorGUILayout.IntField("Markup %", markupPercent);
-        moneyAmount = EditorGUILayout.IntField("Add Money", moneyAmount);
-        stockAmount = EditorGUILayout.IntField("Storage Amount", stockAmount);
-        shelfAmount = EditorGUILayout.IntField("Shelves Amount", shelfAmount);
+        m_lotId = EditorGUILayout.TextField("Lot Id", m_lotId);
+        m_businessTypeId = EditorGUILayout.TextField("Business Type Id", m_businessTypeId);
+        m_moduleId = EditorGUILayout.TextField("Module Id", m_moduleId);
+        m_supplierId = EditorGUILayout.TextField("Supplier Id", m_supplierId);
+        m_roleId = EditorGUILayout.TextField("Role Id", m_roleId);
+        m_contactId = EditorGUILayout.TextField("Contact Id", m_contactId);
+        m_markupPercent = EditorGUILayout.IntField("Markup %", m_markupPercent);
+        m_moneyAmount = EditorGUILayout.IntField("Add Money", m_moneyAmount);
+        m_stockAmount = EditorGUILayout.IntField("Storage Amount", m_stockAmount);
+        m_shelfAmount = EditorGUILayout.IntField("Shelves Amount", m_shelfAmount);
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("Quick Actions", EditorStyles.boldLabel);
@@ -73,7 +73,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "add_money",
                 playerId = ResolvePlayerId(),
-                data = new MoneyData { amount = moneyAmount }
+                data = new MoneyData { amount = m_moneyAmount }
             }));
         }
         if (GUILayout.Button("Reset Current Player"))
@@ -98,7 +98,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "rent_business",
                 playerId = ResolvePlayerId(),
-                data = new RentBusinessData { lotId = lotId }
+                data = new RentBusinessData { lotId = m_lotId }
             }));
         }
 
@@ -108,7 +108,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "assign_business_type",
                 playerId = ResolvePlayerId(),
-                data = new AssignBusinessTypeData { lotId = lotId, businessTypeId = businessTypeId }
+                data = new AssignBusinessTypeData { lotId = m_lotId, businessTypeId = m_businessTypeId }
             }));
         }
 
@@ -118,7 +118,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "install_business_module",
                 playerId = ResolvePlayerId(),
-                data = new InstallModuleData { lotId = lotId, moduleId = moduleId }
+                data = new InstallModuleData { lotId = m_lotId, moduleId = m_moduleId }
             }));
         }
 
@@ -128,7 +128,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "unlock_contact",
                 playerId = ResolvePlayerId(),
-                data = new UnlockContactData { contactId = contactId }
+                data = new UnlockContactData { contactId = m_contactId }
             }));
         }
 
@@ -138,7 +138,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "assign_supplier",
                 playerId = ResolvePlayerId(),
-                data = new AssignSupplierData { lotId = lotId, supplierId = supplierId }
+                data = new AssignSupplierData { lotId = m_lotId, supplierId = m_supplierId }
             }));
         }
 
@@ -148,7 +148,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "hire_business_worker",
                 playerId = ResolvePlayerId(),
-                data = new HireWorkerData { lotId = lotId, roleId = roleId, contactId = contactId }
+                data = new HireWorkerData { lotId = m_lotId, roleId = m_roleId, contactId = m_contactId }
             }));
         }
 
@@ -159,7 +159,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "open_business",
                 playerId = ResolvePlayerId(),
-                data = new LotOnlyData { lotId = lotId }
+                data = new LotOnlyData { lotId = m_lotId }
             }));
         }
         if (GUILayout.Button("Close Business"))
@@ -168,7 +168,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "close_business",
                 playerId = ResolvePlayerId(),
-                data = new LotOnlyData { lotId = lotId }
+                data = new LotOnlyData { lotId = m_lotId }
             }));
         }
         EditorGUILayout.EndHorizontal();
@@ -179,7 +179,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "add_business_stock",
                 playerId = ResolvePlayerId(),
-                data = new StockData { lotId = lotId, amount = stockAmount }
+                data = new StockData { lotId = m_lotId, amount = m_stockAmount }
             }));
         }
 
@@ -189,7 +189,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "add_business_shelf_stock",
                 playerId = ResolvePlayerId(),
-                data = new StockData { lotId = lotId, amount = shelfAmount }
+                data = new StockData { lotId = m_lotId, amount = m_shelfAmount }
             }));
         }
 
@@ -199,7 +199,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "clear_business_stock",
                 playerId = ResolvePlayerId(),
-                data = new LotOnlyData { lotId = lotId }
+                data = new LotOnlyData { lotId = m_lotId }
             }));
         }
 
@@ -209,7 +209,7 @@ public class BusinessDebugWindow : EditorWindow
             {
                 action = "set_business_markup",
                 playerId = ResolvePlayerId(),
-                data = new SetMarkupData { lotId = lotId, markupPercent = markupPercent }
+                data = new SetMarkupData { lotId = m_lotId, markupPercent = m_markupPercent }
             }));
         }
 
@@ -244,31 +244,31 @@ public class BusinessDebugWindow : EditorWindow
 
     private void ApplyDebugToggles()
     {
-        BusinessDebugLog.Enabled = enableBusinessDebugLogs;
+        BusinessDebugLog.enabled = m_enableBusinessDebugLogs;
         if (EditorApplication.isPlaying)
         {
             var bootstrap = FindObjectOfType<GameBootstrap>();
             if (bootstrap != null && bootstrap.BusinessSimulationService != null)
             {
-                bootstrap.BusinessSimulationService.DebugLogTicks = enableSimTickLogs;
+                bootstrap.BusinessSimulationService.DebugLogTicks = m_enableSimTickLogs;
             }
         }
     }
 
     private string ResolvePlayerId()
     {
-        return string.IsNullOrWhiteSpace(playerId) ? "player" : playerId;
+        return string.IsNullOrWhiteSpace(m_playerId) ? "player" : m_playerId;
     }
 
     private async Task SendActionAsync(string action, string json)
     {
-        if (string.IsNullOrWhiteSpace(baseUrl))
+        if (string.IsNullOrWhiteSpace(m_baseUrl))
         {
             Debug.LogWarning("[BusinessDebug] Base Url is empty.");
             return;
         }
 
-        string url = $"{baseUrl.TrimEnd('/')}/api/action";
+        string url = $"{m_baseUrl.TrimEnd('/')}/api/action";
         Debug.Log($"[BusinessDebug] POST {url}\n{json}");
 
         using var request = new UnityWebRequest(url, "POST");
@@ -276,16 +276,16 @@ public class BusinessDebugWindow : EditorWindow
         request.uploadHandler = new UploadHandlerRaw(body);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        if (timeoutSeconds >= 1f)
+        if (m_timeoutSeconds >= 1f)
         {
-            request.timeout = Mathf.CeilToInt(timeoutSeconds);
+            request.timeout = Mathf.CeilToInt(m_timeoutSeconds);
         }
 
         var start = DateTime.UtcNow;
         var op = request.SendWebRequest();
         while (!op.isDone)
         {
-            if (timeoutSeconds > 0f && timeoutSeconds < 1f && (DateTime.UtcNow - start).TotalSeconds >= timeoutSeconds)
+            if (m_timeoutSeconds > 0f && m_timeoutSeconds < 1f && (DateTime.UtcNow - start).TotalSeconds >= m_timeoutSeconds)
             {
                 request.Abort();
                 Debug.LogWarning("[BusinessDebug] Timeout");
@@ -297,7 +297,7 @@ public class BusinessDebugWindow : EditorWindow
         string responseText = request.downloadHandler != null ? request.downloadHandler.text : string.Empty;
         double elapsedMs = (DateTime.UtcNow - start).TotalMilliseconds;
 
-        if (logRawResponse)
+        if (m_logRawResponse)
         {
             Debug.Log($"[BusinessDebug] Response ({request.responseCode}) in {elapsedMs:0.0}ms: {responseText}");
         }
@@ -344,9 +344,9 @@ public class BusinessDebugWindow : EditorWindow
             return;
         }
 
-        baseUrl = bootstrap.remoteBaseUrl;
-        playerId = bootstrap.remotePlayerId;
-        timeoutSeconds = bootstrap.remoteTimeoutSeconds;
+        m_baseUrl = bootstrap.remoteBaseUrl;
+        m_playerId = bootstrap.remotePlayerId;
+        m_timeoutSeconds = bootstrap.remoteTimeoutSeconds;
     }
 
     private void SimulateSeconds(float seconds)

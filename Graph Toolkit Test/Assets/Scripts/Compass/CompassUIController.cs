@@ -1,26 +1,26 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CompassUIController : MonoBehaviour
+public class CompassUicontroller : MonoBehaviour
 {
     [Header("References")]
-    [SerializeField] private CompassManager compassManager;
-    [SerializeField] private RectTransform compassBar;
-    [SerializeField] private Transform markersContainer;
-    [SerializeField] private CompassMarkerView markerPrefab;
-    [SerializeField] private Transform ticksContainer;
-    [SerializeField] private CompassTickView tickPrefab;
+    [SerializeField] private CompassManager m_compassManager;
+    [SerializeField] private RectTransform m_compassBar;
+    [SerializeField] private Transform m_markersContainer;
+    [SerializeField] private CompassMarkerView m_markerPrefab;
+    [SerializeField] private Transform m_ticksContainer;
+    [SerializeField] private CompassTickView m_tickPrefab;
 
     [Header("Settings")]
-    [SerializeField] private float maxVisibleAngle = 90f;
-    [SerializeField] private List<TickDefinition> tickDefinitions = new List<TickDefinition>();
+    [SerializeField] private float m_maxVisibleAngle = 90f;
+    [SerializeField] private List<TickDefinition> m_tickDefinitions = new List<TickDefinition>();
 
-    private readonly Dictionary<string, CompassMarkerView> _markers = new Dictionary<string, CompassMarkerView>();
-    private readonly HashSet<string> _activeIds = new HashSet<string>();
-    private readonly List<string> _toRemove = new List<string>();
-    private readonly List<TickRuntime> _ticks = new List<TickRuntime>();
+    private readonly Dictionary<string, CompassMarkerView> m_markers = new Dictionary<string, CompassMarkerView>();
+    private readonly HashSet<string> m_activeIds = new HashSet<string>();
+    private readonly List<string> m_toRemove = new List<string>();
+    private readonly List<TickRuntime> m_ticks = new List<TickRuntime>();
 
-    private float _halfWidth;
+    private float m_halfWidth;
 
     [System.Serializable]
     public struct TickDefinition
@@ -37,29 +37,29 @@ public class CompassUIController : MonoBehaviour
 
     private void Awake()
     {
-        if (compassManager == null)
+        if (m_compassManager == null)
         {
-            compassManager = CompassManager.Instance;
+            m_compassManager = CompassManager.Instance;
         }
 
-        if (compassBar == null)
+        if (m_compassBar == null)
         {
-            compassBar = GetComponent<RectTransform>();
+            m_compassBar = GetComponent<RectTransform>();
         }
 
-        if (markersContainer == null && compassBar != null)
+        if (m_markersContainer == null && m_compassBar != null)
         {
-            markersContainer = compassBar;
+            m_markersContainer = m_compassBar;
         }
 
-        if (ticksContainer == null && compassBar != null)
+        if (m_ticksContainer == null && m_compassBar != null)
         {
-            ticksContainer = compassBar;
+            m_ticksContainer = m_compassBar;
         }
 
-        if (!IsSceneTransform(ticksContainer))
+        if (!IsSceneTransform(m_ticksContainer))
         {
-            ticksContainer = IsSceneTransform(compassBar) ? compassBar : transform;
+            m_ticksContainer = IsSceneTransform(m_compassBar) ? m_compassBar : transform;
         }
 
         EnsureDefaultTicks();
@@ -68,9 +68,9 @@ public class CompassUIController : MonoBehaviour
 
     private void OnEnable()
     {
-        if (compassManager != null)
+        if (m_compassManager != null)
         {
-            compassManager.ActiveTargetsChanged += SyncMarkers;
+            m_compassManager.activeTargetsChanged += SyncMarkers;
         }
 
         EnsureTicks();
@@ -79,9 +79,9 @@ public class CompassUIController : MonoBehaviour
 
     private void OnDisable()
     {
-        if (compassManager != null)
+        if (m_compassManager != null)
         {
-            compassManager.ActiveTargetsChanged -= SyncMarkers;
+            m_compassManager.activeTargetsChanged -= SyncMarkers;
         }
     }
 
@@ -98,59 +98,59 @@ public class CompassUIController : MonoBehaviour
 
     private void CacheHalfWidth()
     {
-        if (compassBar != null)
+        if (m_compassBar != null)
         {
-            _halfWidth = compassBar.rect.width * 0.5f;
+            m_halfWidth = m_compassBar.rect.width * 0.5f;
         }
     }
 
     private void SyncMarkers()
     {
-        if (compassManager == null || markerPrefab == null) return;
+        if (m_compassManager == null || m_markerPrefab == null) return;
 
-        _activeIds.Clear();
+        m_activeIds.Clear();
 
-        foreach (var target in compassManager.ActiveTargets)
+        foreach (var target in m_compassManager.ActiveTargets)
         {
             if (target == null) continue;
 
             string id = target.TargetId;
             if (string.IsNullOrWhiteSpace(id)) continue;
 
-            _activeIds.Add(id);
+            m_activeIds.Add(id);
 
-            if (!_markers.TryGetValue(id, out var view) || view == null)
+            if (!m_markers.TryGetValue(id, out var view) || view == null)
             {
-                var instance = Instantiate(markerPrefab, markersContainer);
-                _markers[id] = instance;
+                var instance = Instantiate(m_markerPrefab, m_markersContainer);
+                m_markers[id] = instance;
             }
         }
 
-        _toRemove.Clear();
-        foreach (var kvp in _markers)
+        m_toRemove.Clear();
+        foreach (var kvp in m_markers)
         {
-            if (!_activeIds.Contains(kvp.Key))
+            if (!m_activeIds.Contains(kvp.Key))
             {
-                _toRemove.Add(kvp.Key);
+                m_toRemove.Add(kvp.Key);
             }
         }
 
-        for (int i = 0; i < _toRemove.Count; i++)
+        for (int i = 0; i < m_toRemove.Count; i++)
         {
-            string id = _toRemove[i];
-            if (_markers.TryGetValue(id, out var view) && view != null)
+            string id = m_toRemove[i];
+            if (m_markers.TryGetValue(id, out var view) && view != null)
             {
                 Destroy(view.gameObject);
             }
-            _markers.Remove(id);
+            m_markers.Remove(id);
         }
     }
 
     private void EnsureDefaultTicks()
     {
-        if (tickDefinitions != null && tickDefinitions.Count > 0) return;
+        if (m_tickDefinitions != null && m_tickDefinitions.Count > 0) return;
 
-        tickDefinitions = new List<TickDefinition>
+        m_tickDefinitions = new List<TickDefinition>
         {
             new TickDefinition { label = "N", worldYaw = 0f },
             new TickDefinition { label = "E", worldYaw = 90f },
@@ -161,21 +161,21 @@ public class CompassUIController : MonoBehaviour
 
     private void EnsureTicks()
     {
-        if (tickPrefab == null || ticksContainer == null) return;
-        if (_ticks.Count > 0) return;
+        if (m_tickPrefab == null || m_ticksContainer == null) return;
+        if (m_ticks.Count > 0) return;
 
-        if (!IsSceneTransform(ticksContainer))
+        if (!IsSceneTransform(m_ticksContainer))
         {
-            ticksContainer = IsSceneTransform(compassBar) ? compassBar : transform;
+            m_ticksContainer = IsSceneTransform(m_compassBar) ? m_compassBar : transform;
         }
 
         EnsureDefaultTicks();
 
-        for (int i = 0; i < tickDefinitions.Count; i++)
+        for (int i = 0; i < m_tickDefinitions.Count; i++)
         {
-            var instance = Instantiate(tickPrefab, ticksContainer);
-            instance.SetLabel(tickDefinitions[i].label);
-            _ticks.Add(new TickRuntime { def = tickDefinitions[i], view = instance });
+            var instance = Instantiate(m_tickPrefab, m_ticksContainer);
+            instance.SetLabel(m_tickDefinitions[i].label);
+            m_ticks.Add(new TickRuntime { def = m_tickDefinitions[i], view = instance });
         }
     }
 
@@ -186,22 +186,22 @@ public class CompassUIController : MonoBehaviour
 
     private void UpdateMarkers()
     {
-        if (compassManager == null || compassManager.Player == null) return;
+        if (m_compassManager == null || m_compassManager.Player == null) return;
 
-        Vector3 playerPos = compassManager.Player.position;
-        Vector3 playerForward = compassManager.Player.forward;
+        Vector3 playerPos = m_compassManager.Player.position;
+        Vector3 playerForward = m_compassManager.Player.forward;
         playerForward.y = 0f;
         if (playerForward.sqrMagnitude < 0.0001f)
         {
             playerForward = Vector3.forward;
         }
 
-        foreach (var target in compassManager.ActiveTargets)
+        foreach (var target in m_compassManager.ActiveTargets)
         {
             if (target == null) continue;
 
             string id = target.TargetId;
-            if (!_markers.TryGetValue(id, out var view) || view == null) continue;
+            if (!m_markers.TryGetValue(id, out var view) || view == null) continue;
 
             Vector3 direction = target.GetMarkerWorldPosition() - playerPos;
             direction.y = 0f;
@@ -216,15 +216,15 @@ public class CompassUIController : MonoBehaviour
             float angle = Vector3.SignedAngle(playerForward, direction, Vector3.up);
 
             float normalized;
-            if (Mathf.Abs(angle) > maxVisibleAngle)
+            if (Mathf.Abs(angle) > m_maxVisibleAngle)
             {
                 normalized = Mathf.Sign(angle);
             }
             else
             {
-                normalized = Mathf.Clamp(angle / maxVisibleAngle, -1f, 1f);
+                normalized = Mathf.Clamp(angle / m_maxVisibleAngle, -1f, 1f);
             }
-            float x = normalized * _halfWidth;
+            float x = normalized * m_halfWidth;
 
             view.SetVisible(true);
             view.SetPositionX(x);
@@ -233,10 +233,10 @@ public class CompassUIController : MonoBehaviour
 
     private void UpdateTicks()
     {
-        if (compassManager == null || compassManager.Player == null) return;
-        if (_ticks.Count == 0) return;
+        if (m_compassManager == null || m_compassManager.Player == null) return;
+        if (m_ticks.Count == 0) return;
 
-        Vector3 forward = compassManager.Player.forward;
+        Vector3 forward = m_compassManager.Player.forward;
         forward.y = 0f;
         if (forward.sqrMagnitude < 0.0001f)
         {
@@ -245,20 +245,20 @@ public class CompassUIController : MonoBehaviour
 
         float playerYaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
 
-        for (int i = 0; i < _ticks.Count; i++)
+        for (int i = 0; i < m_ticks.Count; i++)
         {
-            var tick = _ticks[i];
+            var tick = m_ticks[i];
             if (tick.view == null) continue;
 
             float angle = Mathf.DeltaAngle(playerYaw, tick.def.worldYaw);
-            if (Mathf.Abs(angle) > maxVisibleAngle)
+            if (Mathf.Abs(angle) > m_maxVisibleAngle)
             {
                 tick.view.SetVisible(false);
                 continue;
             }
 
-            float normalized = Mathf.Clamp(angle / maxVisibleAngle, -1f, 1f);
-            float x = normalized * _halfWidth;
+            float normalized = Mathf.Clamp(angle / m_maxVisibleAngle, -1f, 1f);
+            float x = normalized * m_halfWidth;
 
             tick.view.SetVisible(true);
             tick.view.SetPositionX(x);

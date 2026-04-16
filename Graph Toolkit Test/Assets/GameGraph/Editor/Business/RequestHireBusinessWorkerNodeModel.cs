@@ -14,8 +14,8 @@ public sealed class RequestHireBusinessWorkerNodeModel : GameGraphSuccessFailNod
 	public const string RoleIdOption = "RoleId";
 	public const string ContactIdOption = "ContactId";
 
-	protected override string DefaultTitle => "Нанять сотрудника";
-	protected override string DefaultDescription => "Запрашивает найм сотрудника для бизнеса.";
+	protected override string defaultTitle => "Нанять сотрудника";
+	protected override string defaultDescription => "Запрашивает найм сотрудника для бизнеса.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

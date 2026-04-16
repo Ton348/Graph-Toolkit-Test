@@ -4,7 +4,7 @@ using System.Collections;
 namespace Dreamteck
 {
     [System.Serializable]
-    public class TS_Bounds
+    public class TsBounds
     {
         public Vector3 center = Vector3.zero;
         public Vector3 extents = Vector3.zero;
@@ -12,12 +12,12 @@ namespace Dreamteck
         public Vector3 min = Vector3.zero;
         public Vector3 size = Vector3.zero;
 
-        public TS_Bounds()
+        public TsBounds()
         {
 
         }
 
-        public TS_Bounds(Bounds bounds)
+        public TsBounds(Bounds bounds)
         {
             center = bounds.center;
             extents = bounds.extents;
@@ -26,7 +26,7 @@ namespace Dreamteck
             size = bounds.size;
         }
 
-        public TS_Bounds(Vector3 c, Vector3 s)
+        public TsBounds(Vector3 c, Vector3 s)
         {
             center = c;
             size = s;
@@ -35,7 +35,7 @@ namespace Dreamteck
             min = center - extents;
         }
 
-        public TS_Bounds(Vector3 min, Vector3 max, Vector3 center)
+        public TsBounds(Vector3 min, Vector3 max, Vector3 center)
         {
             size = new Vector3(max.x - min.x, max.y - min.y, max.z - min.z);
             extents = size / 2f;

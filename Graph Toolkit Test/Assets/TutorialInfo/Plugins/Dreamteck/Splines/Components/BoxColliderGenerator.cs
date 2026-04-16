@@ -4,24 +4,24 @@
 
     public class BoxColliderGenerator : SplineUser, ISerializationCallbackReceiver
     {
-        [SerializeField] private Vector2 _boxSize = Vector2.one;
-        [SerializeField] private bool _debugDraw = false;
-        [SerializeField] private Color _debugDrawColor = Color.white;
+        [SerializeField] private Vector2 m_boxSize = Vector2.one;
+        [SerializeField] private bool m_debugDraw = false;
+        [SerializeField] private Color m_debugDrawColor = Color.white;
 
 
         [SerializeField]
         [HideInInspector]
-        public ColliderObject[] _colliders = new ColliderObject[0];
+        public ColliderObject[] colliders = new ColliderObject[0];
 
 
         public Vector2 boxSize
         {
-            get { return _boxSize; }
+            get { return m_boxSize; }
             set
             {
-                if (value != _boxSize)
+                if (value != m_boxSize)
                 {
-                    _boxSize = value;
+                    m_boxSize = value;
                     Rebuild();
                 }
             }
@@ -49,23 +49,23 @@
 
             if (sampleCount == 0)
             {
-                for (int i = 0; i < _colliders.Length; i++)
+                for (int i = 0; i < colliders.Length; i++)
                 {
-                    DestroyCollider(_colliders[i]);
+                    DestroyCollider(colliders[i]);
                 }
-                _colliders = new ColliderObject[0];
+                colliders = new ColliderObject[0];
                 return;
             }
 
             int objectCount = sampleCount - 1;
-            if (objectCount != _colliders.Length)
+            if (objectCount != colliders.Length)
             {
                 ColliderObject[] newColliders = new ColliderObject[objectCount];
                 for (int i = 0; i < newColliders.Length; i++)
                 {
-                    if (i < _colliders.Length)
+                    if (i < colliders.Length)
                     {
-                        newColliders[i] = _colliders[i];
+                        newColliders[i] = colliders[i];
                     }
                     else
                     {
@@ -75,14 +75,14 @@
                         newColliders[i] = new ColliderObject(newObject.transform, newObject.AddComponent<BoxCollider>());
                     }
                 }
-                if (newColliders.Length < _colliders.Length)
+                if (newColliders.Length < colliders.Length)
                 {
-                    for (int i = newColliders.Length; i < _colliders.Length; i++)
+                    for (int i = newColliders.Length; i < colliders.Length; i++)
                     {
-                        DestroyCollider(_colliders[i]);
+                        DestroyCollider(colliders[i]);
                     }
                 }
-                _colliders = newColliders;
+                colliders = newColliders;
             }
 
             SplineSample current = new SplineSample();
@@ -93,10 +93,10 @@
             {
                 double nextPercent = (double)(i + 1) / (sampleCount - 1);
                 Evaluate(nextPercent, ref next);
-                _colliders[i].transform.position = Vector3.Lerp(current.position, next.position, 0.5f);
-                _colliders[i].transform.rotation = Quaternion.LookRotation(next.position - current.position, Vector3.Slerp(current.up, next.up, 0.5f));
+                colliders[i].transform.position = Vector3.Lerp(current.position, next.position, 0.5f);
+                colliders[i].transform.rotation = Quaternion.LookRotation(next.position - current.position, Vector3.Slerp(current.up, next.up, 0.5f));
                 float size = Mathf.Lerp(current.size, next.size, 0.5f);
-                _colliders[i].collider.size = new Vector3(_boxSize.x * size, _boxSize.y * size, Vector3.Distance(current.position, next.position));
+                colliders[i].collider.size = new Vector3(m_boxSize.x * size, m_boxSize.y * size, Vector3.Distance(current.position, next.position));
                 current = next;
             }
         }
@@ -109,13 +109,13 @@
 
         private void OnDrawGizmos()
         {
-            if (_debugDraw)
+            if (m_debugDraw)
             {
-                for (int i = 0; i < _colliders.Length; i++)
+                for (int i = 0; i < colliders.Length; i++)
                 {
-                    Gizmos.matrix = _colliders[i].transform.localToWorldMatrix;
-                    Gizmos.color = _debugDrawColor;
-                    Gizmos.DrawCube(Vector3.zero, _colliders[i].collider.size);
+                    Gizmos.matrix = colliders[i].transform.localToWorldMatrix;
+                    Gizmos.color = m_debugDrawColor;
+                    Gizmos.DrawCube(Vector3.zero, colliders[i].collider.size);
                 }
                 Gizmos.matrix = Matrix4x4.identity;
             }
@@ -124,15 +124,15 @@
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            for (int i = 0; i < _colliders.Length; i++)
+            for (int i = 0; i < colliders.Length; i++)
             {
 #if UNITY_EDITOR
                 if (!Application.isPlaying)
                 {
-                    DestroyImmediate(_colliders[i].transform.gameObject);
+                    DestroyImmediate(colliders[i].transform.gameObject);
                 } else
                 {
-                    Destroy(_colliders[i].transform.gameObject);
+                    Destroy(colliders[i].transform.gameObject);
                 }
 #else
                 Destroy(_colliders[i].transform.gameObject);

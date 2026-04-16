@@ -9,7 +9,7 @@ using Game1.Graph.Runtime;
 
 using Game1.Graph.Runtime.Infrastructure;
 using GraphCore.Runtime;
-public class NPCManager : Interactable
+public class Npcmanager : Interactable
 {
     [FormerlySerializedAs("questGraph")]
     [FormerlySerializedAs("dialogueGraph")]
@@ -24,12 +24,12 @@ public class NPCManager : Interactable
     public string ownerId;
     public GameBootstrap bootstrap;
     public DialogueService dialogueService;
-    public ChoiceUIService choiceUIService;
-    public TradeOfferUIService tradeOfferUIService;
+    public ChoiceUiservice choiceUiservice;
+    public TradeOfferUiservice tradeOfferUiservice;
     public MapMarkerService mapMarkerService;
     public Transform playerTransform;
-    private CommonGraphRunner baseRunner;
-    private CommonGraph currentBaseGraph;
+    private CommonGraphRunner m_baseRunner;
+    private CommonGraph m_currentBaseGraph;
 
     public override void Interact(Transform player)
     {
@@ -81,15 +81,15 @@ public class NPCManager : Interactable
             return;
         }
 
-        if (baseRunner != null && baseRunner.IsRunning)
+        if (m_baseRunner != null && m_baseRunner.IsRunning)
         {
             return;
         }
 
-        if (baseRunner == null || currentBaseGraph != graph)
+        if (m_baseRunner == null || m_currentBaseGraph != graph)
         {
-            baseRunner = new CommonGraphRunner(GameGraphRuntimeRegistryFactory.Create());
-            currentBaseGraph = graph;
+            m_baseRunner = new CommonGraphRunner(GameGraphRuntimeRegistryFactory.Create());
+            m_currentBaseGraph = graph;
         }
 
         IGraphQuestService questService = bootstrap != null && bootstrap.GameServer != null
@@ -99,17 +99,17 @@ public class NPCManager : Interactable
         GraphExecutionContext context = new GraphExecutionContext(
             new GraphRuntimeServices(
                 dialogueService,
-                choiceUIService,
+                choiceUiservice,
                 null,
                 null,
                 null,
                 questService));
-        context.Set(GraphContextKeys.RuntimeBootstrap, bootstrap);
-        context.Set(GraphContextKeys.RuntimeMapMarkerService, mapMarkerService);
-        context.Set(GraphContextKeys.RuntimePlayerTransform, playerTransform);
+        context.Set(GraphContextKeys.runtimeBootstrap, bootstrap);
+        context.Set(GraphContextKeys.runtimeMapMarkerService, mapMarkerService);
+        context.Set(GraphContextKeys.runtimePlayerTransform, playerTransform);
         context.ImmediateChoiceAfterDialogue = true;
 
-        _ = baseRunner.RunAsync(graph, context);
+        _ = m_baseRunner.RunAsync(graph, context);
     }
 
     private static bool HasGraphContent(CommonGraph graph)
@@ -120,7 +120,7 @@ public class NPCManager : Interactable
 
     private sealed class GraphQuestServiceAdapter : IGraphQuestService
     {
-        private static readonly BindingFlags InstancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        private static readonly BindingFlags s_instancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
         private readonly object m_gameServer;
         private readonly UnityEngine.Object m_logContext;
@@ -147,16 +147,16 @@ public class NPCManager : Interactable
             }
 
             QuestActionOutcome outcome = await ConvertToQuestActionOutcomeAsync(invocationResult);
-            if (outcome.Success)
+            if (outcome.success)
             {
-                bool snapshotApplied = TryApplyProfileSnapshot(outcome.ProfileSnapshot);
+                bool snapshotApplied = TryApplyProfileSnapshot(outcome.profileSnapshot);
                 if (!snapshotApplied)
                 {
                     await TryRefreshProfileAsync(cancellationToken);
                 }
             }
 
-            return outcome.Success;
+            return outcome.success;
         }
 
         public async UniTask<bool> CompleteQuestAsync(string questId, CancellationToken cancellationToken)
@@ -175,24 +175,24 @@ public class NPCManager : Interactable
             }
 
             QuestActionOutcome outcome = await ConvertToQuestActionOutcomeAsync(invocationResult);
-            if (outcome.Success)
+            if (outcome.success)
             {
-                bool snapshotApplied = TryApplyProfileSnapshot(outcome.ProfileSnapshot);
+                bool snapshotApplied = TryApplyProfileSnapshot(outcome.profileSnapshot);
                 if (!snapshotApplied)
                 {
                     await TryRefreshProfileAsync(cancellationToken);
                 }
             }
 
-            return outcome.Success;
+            return outcome.success;
         }
 
         Cysharp.Threading.Tasks.UniTask<GraphCore.Runtime.Nodes.Server.QuestState> IGraphQuestService.GetQuestStateAsync(string questId, CancellationToken cancellationToken)
         {
-            return GetQuestStateAsyncInternal(questId, cancellationToken);
+            return GetQuestStateAsyncInternalAsync(questId, cancellationToken);
         }
 
-        private async Cysharp.Threading.Tasks.UniTask<GraphCore.Runtime.Nodes.Server.QuestState> GetQuestStateAsyncInternal(string questId, CancellationToken cancellationToken)
+        private async Cysharp.Threading.Tasks.UniTask<GraphCore.Runtime.Nodes.Server.QuestState> GetQuestStateAsyncInternalAsync(string questId, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(questId))
             {
@@ -250,7 +250,7 @@ public class NPCManager : Interactable
                 return false;
             }
 
-            if (m_logContext is not NPCManager npcManager || npcManager.bootstrap == null)
+            if (m_logContext is not Npcmanager npcManager || npcManager.bootstrap == null)
             {
                 return false;
             }
@@ -284,7 +284,7 @@ public class NPCManager : Interactable
                 return false;
             }
 
-            MethodInfo method = playerStateSync.GetType().GetMethod(methodName, InstancePublicAndNonPublic, null, new[] { typeof(string) }, null);
+            MethodInfo method = playerStateSync.GetType().GetMethod(methodName, s_instancePublicAndNonPublic, null, new[] { typeof(string) }, null);
             if (method == null)
             {
                 return false;
@@ -315,13 +315,13 @@ public class NPCManager : Interactable
         {
             for (int i = 0; i < methodNames.Length; i++)
             {
-                MethodInfo method = m_gameServer.GetType().GetMethod(methodNames[i], InstancePublicAndNonPublic, null, new[] { typeof(string), typeof(CancellationToken) }, null);
+                MethodInfo method = m_gameServer.GetType().GetMethod(methodNames[i], s_instancePublicAndNonPublic, null, new[] { typeof(string), typeof(CancellationToken) }, null);
                 if (method != null)
                 {
                     return method.Invoke(m_gameServer, new object[] { questId, cancellationToken });
                 }
 
-                method = m_gameServer.GetType().GetMethod(methodNames[i], InstancePublicAndNonPublic, null, new[] { typeof(string) }, null);
+                method = m_gameServer.GetType().GetMethod(methodNames[i], s_instancePublicAndNonPublic, null, new[] { typeof(string) }, null);
                 if (method != null)
                 {
                     return method.Invoke(m_gameServer, new object[] { questId });
@@ -333,7 +333,7 @@ public class NPCManager : Interactable
 
         private async UniTask TryRefreshProfileAsync(CancellationToken cancellationToken)
         {
-            if (m_logContext is not NPCManager npcManager || npcManager.bootstrap == null)
+            if (m_logContext is not Npcmanager npcManager || npcManager.bootstrap == null)
             {
                 return;
             }
@@ -362,13 +362,13 @@ public class NPCManager : Interactable
                 return null;
             }
 
-            PropertyInfo property = target.GetType().GetProperty(memberName, InstancePublicAndNonPublic);
+            PropertyInfo property = target.GetType().GetProperty(memberName, s_instancePublicAndNonPublic);
             if (property != null)
             {
                 return property.GetValue(target);
             }
 
-            FieldInfo field = target.GetType().GetField(memberName, InstancePublicAndNonPublic);
+            FieldInfo field = target.GetType().GetField(memberName, s_instancePublicAndNonPublic);
             if (field != null)
             {
                 return field.GetValue(target);
@@ -400,7 +400,7 @@ public class NPCManager : Interactable
 
             for (int i = 0; i < methodNames.Length; i++)
             {
-                MethodInfo method = target.GetType().GetMethod(methodNames[i], InstancePublicAndNonPublic, null, new[] { typeof(CancellationToken) }, null);
+                MethodInfo method = target.GetType().GetMethod(methodNames[i], s_instancePublicAndNonPublic, null, new[] { typeof(CancellationToken) }, null);
                 if (method != null)
                 {
                     object result = method.Invoke(target, new object[] { cancellationToken });
@@ -408,7 +408,7 @@ public class NPCManager : Interactable
                     return true;
                 }
 
-                method = target.GetType().GetMethod(methodNames[i], InstancePublicAndNonPublic, null, Type.EmptyTypes, null);
+                method = target.GetType().GetMethod(methodNames[i], s_instancePublicAndNonPublic, null, Type.EmptyTypes, null);
                 if (method != null)
                 {
                     object result = method.Invoke(target, null);
@@ -452,7 +452,7 @@ public class NPCManager : Interactable
                 return false;
             }
 
-            if (m_logContext is not NPCManager npcManager || npcManager.bootstrap == null)
+            if (m_logContext is not Npcmanager npcManager || npcManager.bootstrap == null)
             {
                 return false;
             }
@@ -481,14 +481,14 @@ public class NPCManager : Interactable
             }
 
             Type snapshotType = snapshot.GetType();
-            MethodInfo method = target.GetType().GetMethod("ApplySnapshot", InstancePublicAndNonPublic, null, new[] { snapshotType }, null);
+            MethodInfo method = target.GetType().GetMethod("ApplySnapshot", s_instancePublicAndNonPublic, null, new[] { snapshotType }, null);
             if (method != null)
             {
                 method.Invoke(target, new[] { snapshot });
                 return true;
             }
 
-            MethodInfo[] methods = target.GetType().GetMethods(InstancePublicAndNonPublic);
+            MethodInfo[] methods = target.GetType().GetMethods(s_instancePublicAndNonPublic);
             for (int i = 0; i < methods.Length; i++)
             {
                 MethodInfo candidate = methods[i];
@@ -514,72 +514,72 @@ public class NPCManager : Interactable
         {
             if (result == null)
             {
-                return QuestActionOutcome.Failed;
+                return QuestActionOutcome.failed;
             }
 
             if (result is bool directBool)
             {
-                return directBool ? QuestActionOutcome.SuccessWithoutSnapshot : QuestActionOutcome.Failed;
+                return directBool ? QuestActionOutcome.successWithoutSnapshot : QuestActionOutcome.failed;
             }
 
             if (result is UniTask<bool> uniTaskBool)
             {
                 bool success = await uniTaskBool;
-                return success ? QuestActionOutcome.SuccessWithoutSnapshot : QuestActionOutcome.Failed;
+                return success ? QuestActionOutcome.successWithoutSnapshot : QuestActionOutcome.failed;
             }
 
             if (result is Task<bool> taskBool)
             {
                 bool success = await taskBool;
-                return success ? QuestActionOutcome.SuccessWithoutSnapshot : QuestActionOutcome.Failed;
+                return success ? QuestActionOutcome.successWithoutSnapshot : QuestActionOutcome.failed;
             }
 
             if (result is ValueTask<bool> valueTaskBool)
             {
                 bool success = await valueTaskBool;
-                return success ? QuestActionOutcome.SuccessWithoutSnapshot : QuestActionOutcome.Failed;
+                return success ? QuestActionOutcome.successWithoutSnapshot : QuestActionOutcome.failed;
             }
 
             if (result is UniTask uniTask)
             {
                 await uniTask;
-                return QuestActionOutcome.Failed;
+                return QuestActionOutcome.failed;
             }
 
             if (result is Task task)
             {
                 await task;
 
-                PropertyInfo resultProperty = task.GetType().GetProperty("Result", InstancePublicAndNonPublic);
+                PropertyInfo resultProperty = task.GetType().GetProperty("Result", s_instancePublicAndNonPublic);
                 if (resultProperty != null)
                 {
                     object taskResult = resultProperty.GetValue(task);
                     return await ConvertToQuestActionOutcomeAsync(taskResult);
                 }
 
-                return QuestActionOutcome.Failed;
+                return QuestActionOutcome.failed;
             }
 
             if (result is ValueTask valueTask)
             {
                 await valueTask;
-                return QuestActionOutcome.Failed;
+                return QuestActionOutcome.failed;
             }
 
             if (TryExtractSuccessAndSnapshot(result, out bool successValue, out object snapshot))
             {
                 return successValue
                     ? new QuestActionOutcome(true, snapshot)
-                    : QuestActionOutcome.Failed;
+                    : QuestActionOutcome.failed;
             }
 
-            return QuestActionOutcome.Failed;
+            return QuestActionOutcome.failed;
         }
 
         private static async UniTask<bool> ConvertToBoolAsync(object result)
         {
             QuestActionOutcome outcome = await ConvertToQuestActionOutcomeAsync(result);
-            return outcome.Success;
+            return outcome.success;
         }
 
         private static bool TryExtractSuccessAndSnapshot(object result, out bool success, out object profileSnapshot)
@@ -593,7 +593,7 @@ public class NPCManager : Interactable
             }
 
             Type resultType = result.GetType();
-            PropertyInfo successProperty = resultType.GetProperty("Success", InstancePublicAndNonPublic);
+            PropertyInfo successProperty = resultType.GetProperty("Success", s_instancePublicAndNonPublic);
             if (successProperty == null || successProperty.PropertyType != typeof(bool))
             {
                 return false;
@@ -607,7 +607,7 @@ public class NPCManager : Interactable
 
             success = typedSuccess;
 
-            PropertyInfo snapshotProperty = resultType.GetProperty("ProfileSnapshot", InstancePublicAndNonPublic);
+            PropertyInfo snapshotProperty = resultType.GetProperty("ProfileSnapshot", s_instancePublicAndNonPublic);
             if (snapshotProperty != null)
             {
                 profileSnapshot = snapshotProperty.GetValue(result);
@@ -664,16 +664,16 @@ public class NPCManager : Interactable
 
         private readonly struct QuestActionOutcome
         {
-            public static readonly QuestActionOutcome Failed = new QuestActionOutcome(false, null);
-            public static readonly QuestActionOutcome SuccessWithoutSnapshot = new QuestActionOutcome(true, null);
+            public static readonly QuestActionOutcome failed = new QuestActionOutcome(false, null);
+            public static readonly QuestActionOutcome successWithoutSnapshot = new QuestActionOutcome(true, null);
 
-            public readonly bool Success;
-            public readonly object ProfileSnapshot;
+            public readonly bool success;
+            public readonly object profileSnapshot;
 
             public QuestActionOutcome(bool success, object profileSnapshot)
             {
-                Success = success;
-                ProfileSnapshot = profileSnapshot;
+                this.success = success;
+                this.profileSnapshot = profileSnapshot;
             }
         }
     }

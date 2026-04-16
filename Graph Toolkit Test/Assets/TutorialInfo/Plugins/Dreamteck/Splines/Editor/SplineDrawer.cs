@@ -9,7 +9,7 @@ namespace Dreamteck.Splines.Editor
     [InitializeOnLoad]
     public static class SplineDrawer
     {
-        private static Vector3[] positions = new Vector3[0];
+        private static Vector3[] s_positions = new Vector3[0];
 
         public static void DrawSpline(Spline spline, Color color, double from = 0.0, double to = 1.0, bool drawThickness = false, bool thicknessAutoRotate = false)
         {
@@ -22,7 +22,7 @@ namespace Dreamteck.Splines.Editor
             if (drawThickness)
             {
                 Transform editorCamera = SceneView.currentDrawingSceneView.camera.transform;
-                if (positions.Length != iterations * 6) positions = new Vector3[iterations * 6];
+                if (s_positions.Length != iterations * 6) s_positions = new Vector3[iterations * 6];
                 SplineSample prevResult = spline.Evaluate(from);
                 Vector3 prevNormal = prevResult.up;
                 if (thicknessAutoRotate) prevNormal = (editorCamera.position - prevResult.position).normalized;
@@ -30,41 +30,41 @@ namespace Dreamteck.Splines.Editor
                 int pointIndex = 0;
                 for (int i = 1; i < iterations; i++)
                 {
-                    double p = DMath.Lerp(from, to, (double)i / (iterations - 1));
+                    double p = Dmath.Lerp(from, to, (double)i / (iterations - 1));
                     SplineSample newResult = spline.Evaluate(p);
                     Vector3 newNormal = newResult.up;
                     if (thicknessAutoRotate) newNormal = (editorCamera.position - newResult.position).normalized;
                     Vector3 newRight = Vector3.Cross(newResult.forward, newNormal).normalized * newResult.size * 0.5f;
 
-                    positions[pointIndex] = prevResult.position + prevRight;
-                    positions[pointIndex + iterations * 2] = prevResult.position - prevRight;
-                    positions[pointIndex + iterations * 4] = newResult.position - newRight;
+                    s_positions[pointIndex] = prevResult.position + prevRight;
+                    s_positions[pointIndex + iterations * 2] = prevResult.position - prevRight;
+                    s_positions[pointIndex + iterations * 4] = newResult.position - newRight;
                     pointIndex++;
-                    positions[pointIndex] = newResult.position + newRight;
-                    positions[pointIndex + iterations * 2] = newResult.position - newRight;
-                    positions[pointIndex + iterations * 4] = newResult.position + newRight;
+                    s_positions[pointIndex] = newResult.position + newRight;
+                    s_positions[pointIndex + iterations * 2] = newResult.position - newRight;
+                    s_positions[pointIndex + iterations * 4] = newResult.position + newRight;
                     pointIndex++;
                     prevResult = newResult;
                     prevRight = newRight;
                     prevNormal = newNormal;
                 }
-                Handles.DrawLines(positions);
+                Handles.DrawLines(s_positions);
             }
             else
             {
-                if (positions.Length != iterations * 2) positions = new Vector3[iterations * 2];
+                if (s_positions.Length != iterations * 2) s_positions = new Vector3[iterations * 2];
                 Vector3 prevPoint = spline.EvaluatePosition(from);
                 int pointIndex = 0;
                 for (int i = 1; i < iterations; i++)
                 {
-                    double p = DMath.Lerp(from, to, (double)i / (iterations - 1));
-                    positions[pointIndex] = prevPoint;
+                    double p = Dmath.Lerp(from, to, (double)i / (iterations - 1));
+                    s_positions[pointIndex] = prevPoint;
                     pointIndex++;
-                    positions[pointIndex] = spline.EvaluatePosition(p);
+                    s_positions[pointIndex] = spline.EvaluatePosition(p);
                     pointIndex++;
-                    prevPoint = positions[pointIndex - 1];
+                    prevPoint = s_positions[pointIndex - 1];
                 }
-                Handles.DrawLines(positions);
+                Handles.DrawLines(s_positions);
             }
             Handles.color = prevColor;
         }

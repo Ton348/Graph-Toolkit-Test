@@ -4,7 +4,7 @@ using System;
 
 namespace Dreamteck
 {
-    public static class DMath
+    public static class Dmath
     {
         public static double Sin(double a)
         {

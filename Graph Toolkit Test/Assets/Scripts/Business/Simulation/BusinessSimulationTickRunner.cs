@@ -6,8 +6,8 @@ public class BusinessSimulationTickRunner : MonoBehaviour
     public float tickIntervalSeconds = 1f;
     public float timeScale = 1f;
 
-    private BusinessSimulationService simulationService;
-    private BusinessSimulationClock clock;
+    private BusinessSimulationService m_simulationService;
+    private BusinessSimulationClock m_clock;
 
     private void Awake()
     {
@@ -18,10 +18,10 @@ public class BusinessSimulationTickRunner : MonoBehaviour
 
         if (bootstrap != null)
         {
-            simulationService = bootstrap.BusinessSimulationService;
+            m_simulationService = bootstrap.BusinessSimulationService;
         }
 
-        clock = new BusinessSimulationClock
+        m_clock = new BusinessSimulationClock
         {
             tickIntervalSeconds = tickIntervalSeconds
         };
@@ -29,17 +29,17 @@ public class BusinessSimulationTickRunner : MonoBehaviour
 
     private void Update()
     {
-        if (simulationService == null || clock == null)
+        if (m_simulationService == null || m_clock == null)
         {
             return;
         }
 
-        clock.tickIntervalSeconds = tickIntervalSeconds;
-        simulationService.TimeScale = timeScale;
-        clock.Update(Time.deltaTime);
-        while (clock.TryConsumeTick(out var delta))
+        m_clock.tickIntervalSeconds = tickIntervalSeconds;
+        m_simulationService.TimeScale = timeScale;
+        m_clock.Update(Time.deltaTime);
+        while (m_clock.TryConsumeTick(out var delta))
         {
-            simulationService.RunTick(delta);
+            m_simulationService.RunTick(delta);
         }
     }
 }

@@ -7,5 +7,5 @@ public enum InteractionContextType
 public class InteractionContext
 {
     public InteractionContextType contextType;
-    public NPCManager sourceNpc;
+    public Npcmanager sourceNpc;
 }

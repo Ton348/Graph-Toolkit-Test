@@ -7,8 +7,8 @@ public class BusinessListView : MonoBehaviour
 {
     public TMP_Dropdown dropdown;
 
-    private readonly List<BusinessInstanceSnapshot> entries = new List<BusinessInstanceSnapshot>();
-    public event Action<BusinessInstanceSnapshot> SelectionChanged;
+    private readonly List<BusinessInstanceSnapshot> m_entries = new List<BusinessInstanceSnapshot>();
+    public event Action<BusinessInstanceSnapshot> selectionChanged;
 
     private void Awake()
     {
@@ -20,7 +20,7 @@ public class BusinessListView : MonoBehaviour
 
     public void SetBusinesses(IEnumerable<BusinessInstanceSnapshot> businesses, Func<BusinessInstanceSnapshot, string> labelProvider = null)
     {
-        entries.Clear();
+        m_entries.Clear();
         if (dropdown == null)
         {
             return;
@@ -34,7 +34,7 @@ public class BusinessListView : MonoBehaviour
             foreach (var business in businesses)
             {
                 if (business == null) continue;
-                entries.Add(business);
+                m_entries.Add(business);
                 string label = labelProvider != null ? labelProvider(business) : null;
                 if (string.IsNullOrWhiteSpace(label))
                 {
@@ -58,18 +58,18 @@ public class BusinessListView : MonoBehaviour
 
     private void OnDropdownChanged(int index)
     {
-        if (entries.Count == 0)
+        if (m_entries.Count == 0)
         {
-            SelectionChanged?.Invoke(null);
+            selectionChanged?.Invoke(null);
             return;
         }
 
-        if (index < 0 || index >= entries.Count)
+        if (index < 0 || index >= m_entries.Count)
         {
-            SelectionChanged?.Invoke(null);
+            selectionChanged?.Invoke(null);
             return;
         }
 
-        SelectionChanged?.Invoke(entries[index]);
+        selectionChanged?.Invoke(m_entries[index]);
     }
 }

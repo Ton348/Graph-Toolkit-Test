@@ -44,37 +44,37 @@ namespace Dreamteck.Splines
         public LengthEvent[] lengthEvents = new LengthEvent[0];
         [HideInInspector]
         public float idealLength = 1f;
-        private float _length = 0f;
-        private float lastLength = 0f;
+        private float m_length = 0f;
+        private float m_lastLength = 0f;
         public float length
         {
             get {
-                return _length;
+                return m_length;
             }
         }
 
         protected override void Awake()
         {
             base.Awake();
-            _length = CalculateLength();
-            lastLength = _length;
+            m_length = CalculateLength();
+            m_lastLength = m_length;
             for (int i = 0; i < lengthEvents.Length; i++)
             {
-                if (lengthEvents[i].targetLength == _length) lengthEvents[i].onChange.Invoke();
+                if (lengthEvents[i].targetLength == m_length) lengthEvents[i].onChange.Invoke();
             }
         }
 
         protected override void Build()
         {
             base.Build();
-            _length = CalculateLength();
-            if (lastLength != _length)
+            m_length = CalculateLength();
+            if (m_lastLength != m_length)
             {
                 for (int i = 0; i < lengthEvents.Length; i++)
                 {
-                    lengthEvents[i].Check(lastLength, _length);
+                    lengthEvents[i].Check(m_lastLength, m_length);
                 }
-                lastLength = _length;
+                m_lastLength = m_length;
             }
         }
 

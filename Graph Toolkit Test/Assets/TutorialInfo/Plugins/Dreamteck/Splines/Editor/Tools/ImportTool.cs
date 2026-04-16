@@ -9,29 +9,29 @@ namespace Dreamteck.Splines.Editor
 
     public class ImportExportTool : SplineTool
     {
-        private float scaleFactor = 1f;
-        private bool alwaysDraw = true;
-        private string importPath = "";
-        private string exportPath = "";
-        List<SplinePoint[]> originalPoints = new List<SplinePoint[]>();
-        List<SplineComputer> imported = new List<SplineComputer>();
-        List<SplineComputer> exported = new List<SplineComputer>();
-        GameObject importedParent = null;
+        private float m_scaleFactor = 1f;
+        private bool m_alwaysDraw = true;
+        private string m_importPath = "";
+        private string m_exportPath = "";
+        List<SplinePoint[]> m_originalPoints = new List<SplinePoint[]>();
+        List<SplineComputer> m_imported = new List<SplineComputer>();
+        List<SplineComputer> m_exported = new List<SplineComputer>();
+        GameObject m_importedParent = null;
 
         enum Mode { None, Import, Export }
         enum ExportFormat { SVG, CSV }
         enum Axis { X, Y, Z }
 
-        Mode mode = Mode.None;
-        ExportFormat format = ExportFormat.SVG;
-        Axis importAxis = Axis.Z;
-        Axis exportAxis = Axis.Z;
+        Mode m_mode = Mode.None;
+        ExportFormat m_format = ExportFormat.SVG;
+        Axis m_importAxis = Axis.Z;
+        Axis m_exportAxis = Axis.Z;
 
-        bool importOptions = false;
+        bool m_importOptions = false;
 
-        List<CSV.ColumnType> exportColumns = new List<CSV.ColumnType>();
-        List<CSV.ColumnType> importColumns = new List<CSV.ColumnType>();
-        bool flatCSV = false;
+        List<Csv.ColumnType> m_exportColumns = new List<Csv.ColumnType>();
+        List<Csv.ColumnType> m_importColumns = new List<Csv.ColumnType>();
+        bool m_flatCsv = false;
 
         public override string GetName()
         {
@@ -46,61 +46,61 @@ namespace Dreamteck.Splines.Editor
         public override void Open(EditorWindow window)
         {
             base.Open(window);
-            importPath = LoadString("importPath", "");
-            exportPath = LoadString("exportPath", "");
-            alwaysDraw = LoadBool("alwaysDraw", true);
-            flatCSV = LoadBool("flatCSV", false);
-            importAxis = (Axis)LoadInt("importAxis", 2);
-            exportAxis = (Axis)LoadInt("exportAxis", 2);
-            LoadColumns("importColumns", ref importColumns);
-            LoadColumns("exportColumns", ref exportColumns);
+            m_importPath = LoadString("importPath", "");
+            m_exportPath = LoadString("exportPath", "");
+            m_alwaysDraw = LoadBool("alwaysDraw", true);
+            m_flatCsv = LoadBool("flatCSV", false);
+            m_importAxis = (Axis)LoadInt("importAxis", 2);
+            m_exportAxis = (Axis)LoadInt("exportAxis", 2);
+            LoadColumns("importColumns", ref m_importColumns);
+            LoadColumns("exportColumns", ref m_exportColumns);
         }
 
-        void LoadColumns(string name, ref List<CSV.ColumnType> destination)
+        void LoadColumns(string name, ref List<Csv.ColumnType> destination)
         {
             string text = LoadString(name, "");
-            destination = new List<CSV.ColumnType>();
+            destination = new List<Csv.ColumnType>();
             if (text == "")
             {
-                destination.Add(CSV.ColumnType.Position);
-                destination.Add(CSV.ColumnType.Tangent);
-                destination.Add(CSV.ColumnType.Tangent2);
-                destination.Add(CSV.ColumnType.Normal);
-                destination.Add(CSV.ColumnType.Size);
-                destination.Add(CSV.ColumnType.Color);
+                destination.Add(Csv.ColumnType.Position);
+                destination.Add(Csv.ColumnType.Tangent);
+                destination.Add(Csv.ColumnType.Tangent2);
+                destination.Add(Csv.ColumnType.Normal);
+                destination.Add(Csv.ColumnType.Size);
+                destination.Add(Csv.ColumnType.Color);
                 return;
             }
             string[] elements = text.Split(',');
             foreach (string element in elements)
             {
                 int i = 0;
-                if (int.TryParse(element, out i)) destination.Add((CSV.ColumnType)i);
+                if (int.TryParse(element, out i)) destination.Add((Csv.ColumnType)i);
             } 
         }
 
         public override void Close()
         {
             base.Close(); 
-            if(importPath != "") SaveString("importPath", Path.GetDirectoryName(importPath));
-            if (exportPath != "")  SaveString("exportPath", Path.GetDirectoryName(exportPath));
+            if(m_importPath != "") SaveString("importPath", Path.GetDirectoryName(m_importPath));
+            if (m_exportPath != "")  SaveString("exportPath", Path.GetDirectoryName(m_exportPath));
             string columnString = ""; 
-            foreach(CSV.ColumnType col in importColumns)
+            foreach(Csv.ColumnType col in m_importColumns)
             {
                 if (columnString != "") columnString += ",";
                 columnString += ((int)col).ToString();
             }
             SaveString("importColumns", columnString);
             columnString = "";
-            foreach (CSV.ColumnType col in exportColumns)
+            foreach (Csv.ColumnType col in m_exportColumns)
             {
                 if (columnString != "") columnString += ",";
                 columnString += ((int)col).ToString();
             }
             SaveString("exportColumns", columnString);
-            SaveBool("alwaysDraw", alwaysDraw);
-            SaveBool("flatCSV", flatCSV);
-            SaveInt("importAxis", (int)importAxis);
-            SaveInt("exportAxis", (int)exportAxis);
+            SaveBool("alwaysDraw", m_alwaysDraw);
+            SaveBool("flatCSV", m_flatCsv);
+            SaveInt("importAxis", (int)m_importAxis);
+            SaveInt("exportAxis", (int)m_exportAxis);
 
 #if UNITY_2019_1_OR_NEWER
             SceneView.duringSceneGui -= OnScene;
@@ -113,13 +113,13 @@ namespace Dreamteck.Splines.Editor
         protected override void Save()
         {
             base.Save();
-            if (importedParent != null)
+            if (m_importedParent != null)
             {
-                Selection.activeGameObject = importedParent;
-                importedParent = null;
+                Selection.activeGameObject = m_importedParent;
+                m_importedParent = null;
             } else
             {
-                foreach(SplineComputer comp in imported)
+                foreach(SplineComputer comp in m_imported)
                 {
                     if(comp != null)
                     {
@@ -128,22 +128,22 @@ namespace Dreamteck.Splines.Editor
                     }
                 }
             }
-            imported.Clear();
+            m_imported.Clear();
 #if UNITY_2019_1_OR_NEWER
             SceneView.duringSceneGui -= OnScene;
 #else
             SceneView.onSceneGUIDelegate -= OnScene;
 #endif
 
-            mode = Mode.None;
+            m_mode = Mode.None;
         }
 
         protected override void Cancel()
         {
             base.Cancel();
-            foreach (SplineComputer spline in imported) GameObject.DestroyImmediate(spline.gameObject);
-            GameObject.DestroyImmediate(importedParent);
-            imported.Clear();
+            foreach (SplineComputer spline in m_imported) GameObject.DestroyImmediate(spline.gameObject);
+            GameObject.DestroyImmediate(m_importedParent);
+            m_imported.Clear();
             SceneView.RepaintAll();
 #if UNITY_2019_1_OR_NEWER
             SceneView.duringSceneGui -= OnScene;
@@ -151,59 +151,59 @@ namespace Dreamteck.Splines.Editor
             SceneView.onSceneGUIDelegate -= OnScene;
 #endif
 
-            mode = Mode.None;
+            m_mode = Mode.None;
         }
 
-        void CSVColumnUI(List<CSV.ColumnType> columns)
+        void CsvcolumnUi(List<Csv.ColumnType> columns)
         {
             EditorGUILayout.LabelField("Dataset Columns");
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("-", GUILayout.MaxWidth(30)) && columns.Count > 0) columns.RemoveAt(columns.Count - 1);
             for (int i = 0; i < columns.Count; i++)
             {
-                columns[i] = (CSV.ColumnType)EditorGUILayout.EnumPopup(columns[i]);
+                columns[i] = (Csv.ColumnType)EditorGUILayout.EnumPopup(columns[i]);
             }
-            if (GUILayout.Button("+", GUILayout.MaxWidth(30)) && columns.Count > 0) columns.Add(CSV.ColumnType.Position);
+            if (GUILayout.Button("+", GUILayout.MaxWidth(30)) && columns.Count > 0) columns.Add(Csv.ColumnType.Position);
             EditorGUILayout.EndHorizontal();
         }
 
         void OnScene(SceneView current)
         {
-            for (int i = 0; i < imported.Count; i++)
+            for (int i = 0; i < m_imported.Count; i++)
             {
-                DSSplineDrawer.DrawSplineComputer(imported[i]);
+                DssplineDrawer.DrawSplineComputer(m_imported[i]);
             }
         }
 
-        void ImportUI()
+        void ImportUi()
         {
             EditorGUI.BeginChangeCheck();
-            scaleFactor = EditorGUILayout.FloatField("Scale Factor", scaleFactor);
-            importAxis = (Axis)EditorGUILayout.EnumPopup("Facing Axis", importAxis);
-            alwaysDraw = EditorGUILayout.Toggle("Always Draw", alwaysDraw);
+            m_scaleFactor = EditorGUILayout.FloatField("Scale Factor", m_scaleFactor);
+            m_importAxis = (Axis)EditorGUILayout.EnumPopup("Facing Axis", m_importAxis);
+            m_alwaysDraw = EditorGUILayout.Toggle("Always Draw", m_alwaysDraw);
             if (EditorGUI.EndChangeCheck()) ApplyPoints();
-            SaveCancelUI();
+            SaveCancelUi();
         }
 
-        void ExportUI()
+        void ExportUi()
         {
-            if(exported.Count == 0)
+            if(m_exported.Count == 0)
             {
-                mode = Mode.None;
+                m_mode = Mode.None;
                 return;
             }
             EditorGUILayout.Space();
-            format = (ExportFormat)EditorGUILayout.EnumPopup("Format", format);
-            if (format == ExportFormat.SVG)
+            m_format = (ExportFormat)EditorGUILayout.EnumPopup("Format", m_format);
+            if (m_format == ExportFormat.SVG)
             {
-                exportAxis = (Axis)EditorGUILayout.EnumPopup("Projection Axis", exportAxis);
+                m_exportAxis = (Axis)EditorGUILayout.EnumPopup("Projection Axis", m_exportAxis);
                 EditorGUILayout.HelpBox("The SVG is a 2D vector format so the exported spline will be flattened along the selected axis", MessageType.Info);
             }
             else
             {
-                CSVColumnUI(exportColumns);
-                flatCSV = EditorGUILayout.Toggle("Flat", flatCSV);
-                if(flatCSV) exportAxis = (Axis)EditorGUILayout.EnumPopup("Projection Axis", exportAxis);
+                CsvcolumnUi(m_exportColumns);
+                m_flatCsv = EditorGUILayout.Toggle("Flat", m_flatCsv);
+                if(m_flatCsv) m_exportAxis = (Axis)EditorGUILayout.EnumPopup("Projection Axis", m_exportAxis);
                 EditorGUILayout.HelpBox("The exported splined will be flattened along the selected axis.", MessageType.Info);
 
             }
@@ -211,20 +211,20 @@ namespace Dreamteck.Splines.Editor
             if (GUILayout.Button("Save File"))
             {
                 string extension = "*";
-                switch (format)
+                switch (m_format)
                 {
                     case ExportFormat.SVG: extension = "svg"; break;
                     case ExportFormat.CSV: extension = "csv"; break;
                 }
-                exportPath = EditorUtility.SaveFilePanel("Export splines", exportPath, "spline", extension);
-                if (exportPath != "")
+                m_exportPath = EditorUtility.SaveFilePanel("Export splines", m_exportPath, "spline", extension);
+                if (m_exportPath != "")
                 {
-                    if (Directory.Exists(Path.GetDirectoryName(exportPath)))
+                    if (Directory.Exists(Path.GetDirectoryName(m_exportPath)))
                     {
-                        switch (format)
+                        switch (m_format)
                         {
-                            case ExportFormat.SVG: ExportSVG(exportPath); break;
-                            case ExportFormat.CSV: ExportCSV(exportPath); break;
+                            case ExportFormat.SVG: ExportSvg(m_exportPath); break;
+                            case ExportFormat.CSV: ExportCsv(m_exportPath); break;
                         }
                     }
                 }
@@ -233,35 +233,35 @@ namespace Dreamteck.Splines.Editor
 
         public override void Draw(Rect windowRect)
         {
-            if (mode == Mode.Import)
+            if (m_mode == Mode.Import)
             {
-                ImportUI();
+                ImportUi();
             } 
             else
             {
-                importOptions = EditorGUILayout.Foldout(importOptions, "Import Options");
-                if (importOptions) CSVColumnUI(importColumns);
+                m_importOptions = EditorGUILayout.Foldout(m_importOptions, "Import Options");
+                if (m_importOptions) CsvcolumnUi(m_importColumns);
                 if (GUILayout.Button("Import"))
                 {
-                    importPath = EditorUtility.OpenFilePanel("Browse File", importPath, "svg,csv");
-                    if (File.Exists(importPath))
+                    m_importPath = EditorUtility.OpenFilePanel("Browse File", m_importPath, "svg,csv");
+                    if (File.Exists(m_importPath))
                     {
-                        splines.Clear();
-                        string ext = Path.GetExtension(importPath).ToLower();
+                        m_splines.Clear();
+                        string ext = Path.GetExtension(m_importPath).ToLower();
                         switch (ext)
                         {
-                            case ".svg": ImportSVG(importPath); break;
-                            case ".csv": ImportCSV(importPath); break;
-                            case ".xml": ImportSVG(importPath); break;
+                            case ".svg": ImportSvg(m_importPath); break;
+                            case ".csv": ImportCsv(m_importPath); break;
+                            case ".xml": ImportSvg(m_importPath); break;
                         }
                     }
                 }
-                exported = GetSelectedSplines();
-                if (exported.Count == 0) GUI.color = new Color(1f, 1f, 1f, 0.5f);
-                if (mode == Mode.Export) ExportUI();
-                if (mode != Mode.Export)
+                m_exported = GetSelectedSplines();
+                if (m_exported.Count == 0) GUI.color = new Color(1f, 1f, 1f, 0.5f);
+                if (m_mode == Mode.Export) ExportUi();
+                if (m_mode != Mode.Export)
                 {
-                    if (GUILayout.Button("Export") && exported.Count > 0) mode = Mode.Export;
+                    if (GUILayout.Button("Export") && m_exported.Count > 0) m_mode = Mode.Export;
                 }
             }
         }
@@ -279,38 +279,38 @@ namespace Dreamteck.Splines.Editor
 
         void ApplyPoints()
         {
-            if (originalPoints.Count != imported.Count) return;
-            if (imported.Count == 0) return;
+            if (m_originalPoints.Count != m_imported.Count) return;
+            if (m_imported.Count == 0) return;
             Quaternion lookRot = Quaternion.identity;
-            switch (importAxis)
+            switch (m_importAxis)
             {
                 case Axis.X: lookRot = Quaternion.LookRotation(Vector3.right); break;
                 case Axis.Y: lookRot = Quaternion.LookRotation(Vector3.down); break;
                 case Axis.Z: lookRot = Quaternion.LookRotation(Vector3.forward); break;
             }
-            for (int i = 0; i < imported.Count; i++)
+            for (int i = 0; i < m_imported.Count; i++)
             {
-                SplinePoint[] transformed = new SplinePoint[originalPoints[i].Length];
-                originalPoints[i].CopyTo(transformed, 0);
+                SplinePoint[] transformed = new SplinePoint[m_originalPoints[i].Length];
+                m_originalPoints[i].CopyTo(transformed, 0);
                 for (int j = 0; j < transformed.Length; j++)
                 {
-                    transformed[j].position *= scaleFactor;
-                    transformed[j].tangent *= scaleFactor;
-                    transformed[j].tangent2 *= scaleFactor;
+                    transformed[j].position *= m_scaleFactor;
+                    transformed[j].tangent *= m_scaleFactor;
+                    transformed[j].tangent2 *= m_scaleFactor;
 
                     transformed[j].position = lookRot * transformed[j].position;
                     transformed[j].tangent = lookRot * transformed[j].tangent;
                     transformed[j].tangent2 = lookRot * transformed[j].tangent2;
                     transformed[j].normal = lookRot * transformed[j].normal;
                 }
-                imported[i].SetPoints(transformed);
-                if (alwaysDraw)
+                m_imported[i].SetPoints(transformed);
+                if (m_alwaysDraw)
                 {
-                    DSSplineDrawer.RegisterComputer(imported[i]);
+                    DssplineDrawer.RegisterComputer(m_imported[i]);
                 }
                 else
                 {
-                    DSSplineDrawer.UnregisterComputer(imported[i]);
+                    DssplineDrawer.UnregisterComputer(m_imported[i]);
                 }
             }
             SceneView.RepaintAll();
@@ -318,24 +318,24 @@ namespace Dreamteck.Splines.Editor
 
         void GetImportedPoints()
         {
-            foreach (SplineComputer comp in imported)
+            foreach (SplineComputer comp in m_imported)
             {
                 if (comp != null)
                 {
-                    originalPoints.Add(comp.GetPoints(SplineComputer.Space.Local));
-                    mode = Mode.Import;
-                } else imported.Remove(comp);
+                    m_originalPoints.Add(comp.GetPoints(SplineComputer.Space.Local));
+                    m_mode = Mode.Import;
+                } else m_imported.Remove(comp);
             }
         }
 
-        void ImportSVG(string file)
+        void ImportSvg(string file)
         {
-            SVG svg = new SVG(file);
-            originalPoints.Clear();
-            imported = svg.CreateSplineComputers(Vector3.zero, Quaternion.identity);
-            if (imported.Count == 0) return;
-            importedParent = new GameObject(svg.name);
-            foreach (SplineComputer comp in imported) comp.transform.parent = importedParent.transform;
+            Svg svg = new Svg(file);
+            m_originalPoints.Clear();
+            m_imported = svg.CreateSplineComputers(Vector3.zero, Quaternion.identity);
+            if (m_imported.Count == 0) return;
+            m_importedParent = new GameObject(svg.name);
+            foreach (SplineComputer comp in m_imported) comp.transform.parent = m_importedParent.transform;
 #if UNITY_2019_1_OR_NEWER
             SceneView.duringSceneGui += OnScene;
 #else
@@ -344,22 +344,22 @@ namespace Dreamteck.Splines.Editor
 
             GetImportedPoints();
             ApplyPoints();
-            promptSave = true;
+            m_promptSave = true;
         }
 
-        void ExportSVG(string file)
+        void ExportSvg(string file)
         {
-            SVG svg = new SVG(exported);
-            svg.Write(file, (SVG.Axis)((int)exportAxis));
+            Svg svg = new Svg(m_exported);
+            svg.Write(file, (Svg.Axis)((int)m_exportAxis));
         }
 
-        void ExportCSV(string file)
+        void ExportCsv(string file)
         {
-            CSV csv = new CSV(exported[0]);
-            csv.columns = exportColumns;
-            if (flatCSV)
+            Csv csv = new Csv(m_exported[0]);
+            csv.columns = m_exportColumns;
+            if (m_flatCsv)
             { 
-                switch (exportAxis)
+                switch (m_exportAxis)
                 {
                     case Axis.X: csv.FlatX(); break;
                     case Axis.Y: csv.FlatY(); break;
@@ -370,13 +370,13 @@ namespace Dreamteck.Splines.Editor
         }
 
 
-        void ImportCSV(string file)
+        void ImportCsv(string file)
         {
-            CSV csv = new CSV(file, importColumns);
-            originalPoints.Clear();
-            imported.Clear();
-            imported.Add(csv.CreateSplineComputer(Vector3.zero, Quaternion.identity));
-            if (imported.Count == 0) return;
+            Csv csv = new Csv(file, m_importColumns);
+            m_originalPoints.Clear();
+            m_imported.Clear();
+            m_imported.Add(csv.CreateSplineComputer(Vector3.zero, Quaternion.identity));
+            if (m_imported.Count == 0) return;
 #if UNITY_2019_1_OR_NEWER
             SceneView.duringSceneGui += OnScene;
 #else
@@ -385,7 +385,7 @@ namespace Dreamteck.Splines.Editor
 
             GetImportedPoints();
             ApplyPoints();
-            promptSave = true;
+            m_promptSave = true;
         }
     }
 }

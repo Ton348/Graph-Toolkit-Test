@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 public class GraphProgressService
 {
-    private readonly Dictionary<string, string> checkpoints = new Dictionary<string, string>();
+    private readonly Dictionary<string, string> m_checkpoints = new Dictionary<string, string>();
 
     public void SetCheckpoint(string ownerId, string graphId, string checkpointId)
     {
@@ -11,7 +11,7 @@ public class GraphProgressService
             return;
         }
 
-        checkpoints[MakeKey(ownerId, graphId)] = checkpointId;
+        m_checkpoints[MakeKey(ownerId, graphId)] = checkpointId;
     }
 
     public bool TryGetCheckpoint(string ownerId, string graphId, out string checkpointId)
@@ -22,7 +22,7 @@ public class GraphProgressService
             return false;
         }
 
-        return checkpoints.TryGetValue(MakeKey(ownerId, graphId), out checkpointId);
+        return m_checkpoints.TryGetValue(MakeKey(ownerId, graphId), out checkpointId);
     }
 
     public void ClearCheckpoint(string ownerId, string graphId)
@@ -32,7 +32,7 @@ public class GraphProgressService
             return;
         }
 
-        checkpoints.Remove(MakeKey(ownerId, graphId));
+        m_checkpoints.Remove(MakeKey(ownerId, graphId));
     }
 
     private string MakeKey(string ownerId, string graphId)

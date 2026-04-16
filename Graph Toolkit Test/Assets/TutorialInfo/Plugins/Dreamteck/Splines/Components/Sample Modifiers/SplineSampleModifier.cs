@@ -38,22 +38,22 @@
         {
             public double start
             {
-                get { return _featherStart; }
+                get { return m_featherStart; }
                 set {
-                    if (value != _featherStart)
+                    if (value != m_featherStart)
                     {
-                        _featherStart = DMath.Clamp01(value);
+                        m_featherStart = Dmath.Clamp01(value);
                     }
                 }
             }
 
             public double end
             {
-                get { return _featherEnd; }
+                get { return m_featherEnd; }
                 set {
-                    if (value != _featherEnd)
+                    if (value != m_featherEnd)
                     {
-                        _featherEnd = DMath.Clamp01(value);
+                        m_featherEnd = Dmath.Clamp01(value);
                     }
                 }
 
@@ -61,24 +61,24 @@
 
             public double centerStart
             {
-                get { return _centerStart; }
+                get { return m_centerStart; }
                 set {
-                    if (value != _centerStart)
+                    if (value != m_centerStart)
                     {
-                        _centerStart = DMath.Clamp01(value);
-                        if (_centerStart > _centerEnd) _centerStart = _centerEnd;
+                        m_centerStart = Dmath.Clamp01(value);
+                        if (m_centerStart > m_centerEnd) m_centerStart = m_centerEnd;
                     }
                 }
             }
 
             public double centerEnd
             {
-                get { return _centerEnd; }
+                get { return m_centerEnd; }
                 set {
-                    if (value != _centerEnd)
+                    if (value != m_centerEnd)
                     {
-                        _centerEnd = DMath.Clamp01(value);
-                        if (_centerEnd < _centerStart) _centerEnd = _centerStart;
+                        m_centerEnd = Dmath.Clamp01(value);
+                        if (m_centerEnd < m_centerStart) m_centerEnd = m_centerStart;
                     }
                 }
             }
@@ -91,7 +91,7 @@
                 }
                 set
                 {
-                    centerStart = DMath.Clamp01(GlobalToLocalPercent(value));
+                    centerStart = Dmath.Clamp01(GlobalToLocalPercent(value));
                 }
             }
 
@@ -103,7 +103,7 @@
                 }
                 set
                 {
-                    centerEnd = DMath.Clamp01(GlobalToLocalPercent(value));
+                    centerEnd = Dmath.Clamp01(GlobalToLocalPercent(value));
                 }
             }
 
@@ -111,16 +111,16 @@
             {
                 get
                 {
-                    double center = DMath.Lerp(_centerStart, _centerEnd, 0.5);
+                    double center = Dmath.Lerp(m_centerStart, m_centerEnd, 0.5);
                     if (start > end)
                     {
-                        double fromToEndDistance = 1.0 - _featherStart;
-                        double centerDistance = center * (fromToEndDistance + _featherEnd);
-                        double pos = _featherStart + centerDistance;
+                        double fromToEndDistance = 1.0 - m_featherStart;
+                        double centerDistance = center * (fromToEndDistance + m_featherEnd);
+                        double pos = m_featherStart + centerDistance;
                         if (pos > 1.0) pos -= 1.0;
                         return pos;
                     }
-                    else return DMath.Lerp(_featherStart, _featherEnd, center);
+                    else return Dmath.Lerp(m_featherStart, m_featherEnd, center);
 
                 }
                 set
@@ -131,7 +131,7 @@
                 }
             }
 
-            [SerializeField] private double _featherStart = 0.0, _featherEnd = 0.0, _centerStart = 0.25, _centerEnd = 0.75;
+            [SerializeField] private double m_featherStart = 0.0, m_featherEnd = 0.0, m_centerStart = 0.25, m_centerEnd = 0.75;
             public AnimationCurve interpolation;
             public float blend = 1f;
 
@@ -144,37 +144,37 @@
 
             private double GlobalToLocalPercent(double t)
             {
-                if (_featherStart > _featherEnd)
+                if (m_featherStart > m_featherEnd)
                 {
-                    if (t > _featherStart) return DMath.InverseLerp(_featherStart, _featherStart + (1.0 - _featherStart) + _featherEnd, t);
-                    else if (t < _featherEnd) return DMath.InverseLerp(-(1.0 - _featherStart), _featherEnd, t);
+                    if (t > m_featherStart) return Dmath.InverseLerp(m_featherStart, m_featherStart + (1.0 - m_featherStart) + m_featherEnd, t);
+                    else if (t < m_featherEnd) return Dmath.InverseLerp(-(1.0 - m_featherStart), m_featherEnd, t);
                     else return 0f;
                 }
-                return DMath.InverseLerp(_featherStart, _featherEnd, t);
+                return Dmath.InverseLerp(m_featherStart, m_featherEnd, t);
             }
 
             private double LocalToGlobalPercent(double t)
             {
-                if (_featherStart > _featherEnd)
+                if (m_featherStart > m_featherEnd)
                 {
-                    t = DMath.Lerp(_featherStart, _featherStart + (1.0 - _featherStart) + _featherEnd, t);
+                    t = Dmath.Lerp(m_featherStart, m_featherStart + (1.0 - m_featherStart) + m_featherEnd, t);
                     if (t > 1.0) t -= 1.0;
                     return t;
                 }
-                return DMath.Lerp(_featherStart, _featherEnd, t);
+                return Dmath.Lerp(m_featherStart, m_featherEnd, t);
             }
 
             public float Evaluate(double t)
             {
                 t = (float)GlobalToLocalPercent(t);
-                if (t < _centerStart)
+                if (t < m_centerStart)
                 {
-                    return interpolation.Evaluate((float)(t / _centerStart)) * blend;
+                    return interpolation.Evaluate((float)(t / m_centerStart)) * blend;
                 }
 
-                if (t > _centerEnd)
+                if (t > m_centerEnd)
                 {
-                    return interpolation.Evaluate(1f - (float)DMath.InverseLerp(_centerEnd, 1.0, t)) * blend;
+                    return interpolation.Evaluate(1f - (float)Dmath.InverseLerp(m_centerEnd, 1.0, t)) * blend;
                 }
                 return interpolation.Evaluate(1f) * blend;
             }
@@ -182,8 +182,8 @@
             public virtual Key Duplicate()
             {
                 Key newKey = new Key(start, end);
-                newKey._centerStart = _centerStart;
-                newKey._centerEnd = _centerEnd;
+                newKey.m_centerStart = m_centerStart;
+                newKey.m_centerEnd = m_centerEnd;
                 newKey.blend = blend;
                 newKey.interpolation = DuplicateUtility.DuplicateCurve(interpolation);
                 return newKey;

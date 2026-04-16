@@ -8,32 +8,32 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class MeshGenEditor : SplineUserEditor
     {
-        protected bool showSize = true;
-        protected bool showColor = true;
-        protected bool showDoubleSided = true;
-        protected bool showFlipFaces = true;
-        protected bool showRotation = true;
-        protected bool showInfo = false;
-        protected bool showOffset = true;
-        protected bool showTangents = true;
-        protected bool showNormalMethod = true;
+        protected bool m_showSize = true;
+        protected bool m_showColor = true;
+        protected bool m_showDoubleSided = true;
+        protected bool m_showFlipFaces = true;
+        protected bool m_showRotation = true;
+        protected bool m_showInfo = false;
+        protected bool m_showOffset = true;
+        protected bool m_showTangents = true;
+        protected bool m_showNormalMethod = true;
 
-        private int _framesPassed = 0;
-        private bool _commonFoldout = false;
+        private int m_framesPassed = 0;
+        private bool m_commonFoldout = false;
 
-        MeshGenerator[] generators = new MeshGenerator[0];
+        MeshGenerator[] m_generators = new MeshGenerator[0];
 
-        BakeMeshWindow bakeWindow = null;
+        BakeMeshWindow m_bakeWindow = null;
 
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
-            base.DuringSceneGUI(currentSceneView);
+            base.DuringSceneGui(currentSceneView);
             MeshGenerator generator = (MeshGenerator)target;
             if (Application.isPlaying) return;
-            _framesPassed++;
-            if(_framesPassed >= 100)
+            m_framesPassed++;
+            if(m_framesPassed >= 100)
             {
-                _framesPassed = 0;
+                m_framesPassed = 0;
                 if (generator != null && generator.GetComponent<MeshCollider>() != null) generator.UpdateCollider();
             }
         }
@@ -41,10 +41,10 @@ namespace Dreamteck.Splines.Editor
         protected override void OnEnable()
         {
             base.OnEnable();
-            generators = new MeshGenerator[targets.Length];
+            m_generators = new MeshGenerator[targets.Length];
             for (int i = 0; i < targets.Length; i++)
             {
-                generators[i] = (MeshGenerator)targets[i];
+                m_generators[i] = (MeshGenerator)targets[i];
             }
             MeshGenerator user = (MeshGenerator)target;
         }
@@ -54,13 +54,13 @@ namespace Dreamteck.Splines.Editor
             MeshGenerator generator = (MeshGenerator)target;
             if (generator.baked)
             {
-                SplineEditorGUI.SetHighlightColors(SplinePrefs.highlightColor, SplinePrefs.highlightContentColor);
-                if (SplineEditorGUI.EditorLayoutSelectableButton(new GUIContent("Revert Bake", "Makes the mesh dynamic again and allows editing"), true, true))
+                SplineEditorGui.SetHighlightColors(SplinePrefs.highlightColor, SplinePrefs.highlightContentColor);
+                if (SplineEditorGui.EditorLayoutSelectableButton(new GUIContent("Revert Bake", "Makes the mesh dynamic again and allows editing"), true, true))
                 {
-                    for (int i = 0; i < generators.Length; i++)
+                    for (int i = 0; i < m_generators.Length; i++)
                     {
-                        generators[i].Unbake();
-                        EditorUtility.SetDirty(generators[i]);
+                        m_generators[i].Unbake();
+                        EditorUtility.SetDirty(m_generators[i]);
                     }
                 }
                 return;
@@ -68,9 +68,9 @@ namespace Dreamteck.Splines.Editor
             base.OnInspectorGUI();
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             MeshGenerator generator = (MeshGenerator)target;
             serializedObject.Update();
             SerializedProperty calculateTangents = serializedObject.FindProperty("_calculateTangents");
@@ -90,16 +90,16 @@ namespace Dreamteck.Splines.Editor
 
             EditorGUILayout.Space();
 
-            _commonFoldout = EditorGUILayout.Foldout(_commonFoldout, "Common", foldoutHeaderStyle);
-            if (_commonFoldout)
+            m_commonFoldout = EditorGUILayout.Foldout(m_commonFoldout, "Common", m_foldoutHeaderStyle);
+            if (m_commonFoldout)
             {
                 EditorGUI.indentLevel++;
-                if (showSize) EditorGUILayout.PropertyField(size, new GUIContent("Size"));
-                if (showColor) EditorGUILayout.PropertyField(color, new GUIContent("Color"));
-                if (showNormalMethod) EditorGUILayout.PropertyField(normalMethod, new GUIContent("Normal Method"));
-                if (showOffset) EditorGUILayout.PropertyField(offset, new GUIContent("Offset"));
-                if (showRotation) EditorGUILayout.PropertyField(rotation, new GUIContent("Rotation"));
-                if (showTangents) EditorGUILayout.PropertyField(calculateTangents, new GUIContent("Calculate Tangents"));
+                if (m_showSize) EditorGUILayout.PropertyField(size, new GUIContent("Size"));
+                if (m_showColor) EditorGUILayout.PropertyField(color, new GUIContent("Color"));
+                if (m_showNormalMethod) EditorGUILayout.PropertyField(normalMethod, new GUIContent("Normal Method"));
+                if (m_showOffset) EditorGUILayout.PropertyField(offset, new GUIContent("Offset"));
+                if (m_showRotation) EditorGUILayout.PropertyField(rotation, new GUIContent("Rotation"));
+                if (m_showTangents) EditorGUILayout.PropertyField(calculateTangents, new GUIContent("Calculate Tangents"));
 
                 EditorGUILayout.PropertyField(useSplineSize, new GUIContent("Use Spline Size"));
                 EditorGUILayout.PropertyField(useSplineColor, new GUIContent("Use Spline Color"));
@@ -112,12 +112,12 @@ namespace Dreamteck.Splines.Editor
                 EditorGUI.indentLevel--;
             }
 
-            if (showDoubleSided || showFlipFaces)
+            if (m_showDoubleSided || m_showFlipFaces)
             {
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Faces", EditorStyles.boldLabel);
-                if (showDoubleSided) EditorGUILayout.PropertyField(doubleSided, new GUIContent("Double-sided"));
-                if (!generator.doubleSided && showFlipFaces) EditorGUILayout.PropertyField(flipFaces, new GUIContent("Flip Faces"));
+                if (m_showDoubleSided) EditorGUILayout.PropertyField(doubleSided, new GUIContent("Double-sided"));
+                if (!generator.doubleSided && m_showFlipFaces) EditorGUILayout.PropertyField(flipFaces, new GUIContent("Flip Faces"));
             }
 
             if (generator.GetComponent<MeshCollider>() != null)
@@ -129,18 +129,18 @@ namespace Dreamteck.Splines.Editor
             if (EditorGUI.EndChangeCheck())
             {
                 serializedObject.ApplyModifiedProperties();
-                for (int i = 0; i < generators.Length; i++)
+                for (int i = 0; i < m_generators.Length; i++)
                 {
-                    generators[i].Rebuild();
+                    m_generators[i].Rebuild();
                 }
             }
         }
 
-        protected override void FooterGUI()
+        protected override void FooterGui()
         {
-            base.FooterGUI();
-            showInfo = EditorGUILayout.Foldout(showInfo, "Info & Components");
-            if (showInfo)
+            base.FooterGui();
+            m_showInfo = EditorGUILayout.Foldout(m_showInfo, "Info & Components");
+            if (m_showInfo)
             {
                 MeshGenerator generator = (MeshGenerator)target;
                 MeshFilter filter = generator.GetComponent<MeshFilter>();
@@ -167,13 +167,13 @@ namespace Dreamteck.Splines.Editor
                     else renderer.hideFlags = HideFlags.HideInInspector;
                 }
             }
-            if (generators.Length == 1)
+            if (m_generators.Length == 1)
             {
                 if (GUILayout.Button("Bake Mesh"))
                 {
                     MeshGenerator generator = (MeshGenerator)target;
-                    bakeWindow = EditorWindow.GetWindow<BakeMeshWindow>();
-                    bakeWindow.Init(generator);
+                    m_bakeWindow = EditorWindow.GetWindow<BakeMeshWindow>();
+                    m_bakeWindow.Init(generator);
                 }
             }
         }
@@ -193,7 +193,7 @@ namespace Dreamteck.Splines.Editor
             MeshGenerator gen = (MeshGenerator)target;
             if (gen == null) return;
             if (gen.GetComponent<MeshCollider>() != null) generator.UpdateCollider();
-            if (bakeWindow != null) bakeWindow.Close();
+            if (m_bakeWindow != null) m_bakeWindow.Close();
         }
 
         protected override void OnDelete()
@@ -207,7 +207,7 @@ namespace Dreamteck.Splines.Editor
             if (renderer != null) renderer.hideFlags = HideFlags.None;
         }
 
-        protected virtual void UVControls(MeshGenerator generator)
+        protected virtual void Uvcontrols(MeshGenerator generator)
         {
             serializedObject.Update();
             SerializedProperty uvMode = serializedObject.FindProperty("_uvMode");

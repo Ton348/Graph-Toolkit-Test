@@ -27,10 +27,10 @@ public class BusinessDeliveryZone : MonoBehaviour
             return;
         }
 
-        TryDeliver(carrier);
+        TryDeliverAsync(carrier);
     }
 
-    private async void TryDeliver(PlayerCarryItem carrier)
+    private async void TryDeliverAsync(PlayerCarryItem carrier)
     {
         if (worldRuntime == null)
         {

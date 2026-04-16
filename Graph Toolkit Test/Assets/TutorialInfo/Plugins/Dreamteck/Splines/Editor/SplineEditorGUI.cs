@@ -5,11 +5,11 @@ namespace Dreamteck.Splines.Editor
     using System.Text.RegularExpressions;
 
 
-    public static class SplineEditorGUI
+    public static class SplineEditorGui
     {
         public static readonly GUIStyle leftButtonStyle, midButtonStyle, rightButtonStyle, boxStyle;
 
-        private static Color previousContentColor, previousBackgroundColor, highLightBGColor, highlightContentColor;
+        private static Color s_previousContentColor, s_previousBackgroundColor, s_highLightBgcolor, s_highlightContentColor;
 
 
         public static readonly GUIStyle defaultButton = null;
@@ -23,66 +23,66 @@ namespace Dreamteck.Splines.Editor
         {
             get
             {
-                if (_whiteBox.normal.background == null) _whiteBox.normal.background = white;
-                return _whiteBox;
+                if (s_whiteBox.normal.background == null) s_whiteBox.normal.background = white;
+                return s_whiteBox;
             }
         }
-        private static readonly GUIStyle _whiteBox = null;
+        private static readonly GUIStyle s_whiteBox = null;
         public static GUIStyle defaultField
         {
             get
             {
-                if (_defaultField.normal.background == null) _defaultField.normal.background = white;
-                return _defaultField;
+                if (s_defaultField.normal.background == null) s_defaultField.normal.background = white;
+                return s_defaultField;
             }
         }
-        private static GUIStyle _defaultField = null;
+        private static GUIStyle s_defaultField = null;
         public static GUIStyle smallField
         {
             get
             {
-                if (_smallField.normal.background == null) _smallField.normal.background = white;
-                return _smallField;
+                if (s_smallField.normal.background == null) s_smallField.normal.background = white;
+                return s_smallField;
             }
         }
-        private static GUIStyle _smallField = null;
+        private static GUIStyle s_smallField = null;
         public static readonly Color inactiveColor = new Color(0.7f, 0.7f, 0.7f, 0.3f);
         public static readonly Color textColor = new Color(0.2f, 0.2f, 0.2f, 1f);
         public static readonly Color activeColor = new Color(1f, 1f, 1f, 1f);
         public static readonly Color blackColor = new Color(0, 0, 0, 0.7f);
         public static readonly Color buttonContentColor = Color.black;
-        private static bool[] controlStates = new bool[0];
-        private static string[] floatFieldContents = new string[0];
-        private static int controlIndex = 0;
+        private static bool[] s_controlStates = new bool[0];
+        private static string[] s_floatFieldContents = new string[0];
+        private static int s_controlIndex = 0;
 
         public static float scale = 1f;
         public static Texture2D white
         {
             get
             {
-                if (_white == null)
+                if (s_white == null)
                 {
-                    _white = new Texture2D(1, 1);
-                    _white.SetPixel(0, 0, Color.white);
-                    _white.Apply();
+                    s_white = new Texture2D(1, 1);
+                    s_white.SetPixel(0, 0, Color.white);
+                    s_white.Apply();
                 }
-                return _white;
+                return s_white;
             }
         }
-        private static Texture2D _white = null;
+        private static Texture2D s_white = null;
 
         public static void Update()
         {
-            controlStates = new bool[0];
-            floatFieldContents = new string[0];
+            s_controlStates = new bool[0];
+            s_floatFieldContents = new string[0];
         }
 
         public static void Reset()
         {
-            controlIndex = 0;
+            s_controlIndex = 0;
         }
 
-        static SplineEditorGUI()
+        static SplineEditorGui()
         {
             midButtonStyle = new GUIStyle(GUI.skin.button);
             midButtonStyle.margin = new RectOffset(0, 0, midButtonStyle.margin.top, midButtonStyle.margin.bottom);
@@ -94,21 +94,21 @@ namespace Dreamteck.Splines.Editor
             rightButtonStyle.contentOffset = new Vector2(rightButtonStyle.border.right * 0.5f, 0f);
 
             boxStyle = new GUIStyle(GUI.skin.GetStyle("box"));
-            boxStyle.normal.background = DreamteckEditorGUI.blankImage;
+            boxStyle.normal.background = DreamteckEditorGui.blankImage;
             boxStyle.margin = new RectOffset(0, 0, 0, 2);
 
             defaultButton = new GUIStyle(GUI.skin.GetStyle("button"));
-            _whiteBox = new GUIStyle(GUI.skin.GetStyle("box"));
-            _whiteBox.normal.background = white;
-            _defaultField = new GUIStyle(GUI.skin.GetStyle("textfield"));
-            _defaultField.normal.background = white;
-            _defaultField.normal.textColor = Color.white;
+            s_whiteBox = new GUIStyle(GUI.skin.GetStyle("box"));
+            s_whiteBox.normal.background = white;
+            s_defaultField = new GUIStyle(GUI.skin.GetStyle("textfield"));
+            s_defaultField.normal.background = white;
+            s_defaultField.normal.textColor = Color.white;
             defaultField.alignment = TextAnchor.MiddleLeft;
-            _smallField = new GUIStyle(GUI.skin.GetStyle("textfield"));
-            _smallField.normal.background = white;
-            _smallField.normal.textColor = Color.white;
-            _smallField.alignment = TextAnchor.MiddleLeft;
-            _smallField.clipping = TextClipping.Clip;
+            s_smallField = new GUIStyle(GUI.skin.GetStyle("textfield"));
+            s_smallField.normal.background = white;
+            s_smallField.normal.textColor = Color.white;
+            s_smallField.alignment = TextAnchor.MiddleLeft;
+            s_smallField.clipping = TextClipping.Clip;
             labelText = new GUIStyle(GUI.skin.GetStyle("label"));
             labelText.fontStyle = FontStyle.Bold;
             labelText.alignment = TextAnchor.MiddleRight;
@@ -131,8 +131,8 @@ namespace Dreamteck.Splines.Editor
 
         public static void SetHighlightColors(Color background, Color content)
         {
-            highLightBGColor = background;
-            highlightContentColor = content;
+            s_highLightBgcolor = background;
+            s_highlightContentColor = content;
         }
 
         public static bool LeftButton(GUIContent content, bool selected)
@@ -164,13 +164,13 @@ namespace Dreamteck.Splines.Editor
 
         static Rect ButtonBegin(bool selected, GUIStyle style)
         {
-            previousContentColor = GUI.contentColor;
-            previousBackgroundColor = GUI.backgroundColor;
+            s_previousContentColor = GUI.contentColor;
+            s_previousBackgroundColor = GUI.backgroundColor;
             GUI.contentColor = style.normal.textColor;
             if (selected)
             {
-                GUI.backgroundColor = highLightBGColor;
-                GUI.contentColor = highlightContentColor;
+                GUI.backgroundColor = s_highLightBgcolor;
+                GUI.contentColor = s_highlightContentColor;
             }
             Rect rect = GUILayoutUtility.GetRect(30f, 22f);
             GUI.BeginGroup(rect);
@@ -180,8 +180,8 @@ namespace Dreamteck.Splines.Editor
         public static void ButtonEnd()
         {
             GUI.EndGroup();
-            GUI.contentColor = previousContentColor;
-            GUI.backgroundColor = previousBackgroundColor;
+            GUI.contentColor = s_previousContentColor;
+            GUI.backgroundColor = s_previousBackgroundColor;
         }
 
         public static int ButtonRibbon(GUIContent[] contents, float buttonWidth, int highLighted = -1)
@@ -274,8 +274,8 @@ namespace Dreamteck.Splines.Editor
                 GUI.color = activeColor;
                 if (selected)
                 {
-                    GUI.backgroundColor = highLightBGColor;
-                    GUI.contentColor = highlightContentColor;
+                    GUI.backgroundColor = s_highLightBgcolor;
+                    GUI.contentColor = s_highlightContentColor;
                     selectedStyle = new GUIStyle(selectedStyle);
                     selectedStyle.normal.textColor = Color.white;
                     selectedStyle.hover.textColor = Color.white;
@@ -299,15 +299,15 @@ namespace Dreamteck.Splines.Editor
         }
 
        private static void HandleControlsCount() {
-            if (controlIndex >= controlStates.Length)
+            if (s_controlIndex >= s_controlStates.Length)
             {
-                bool[] newStates = new bool[controlStates.Length + 1];
-                controlStates.CopyTo(newStates, 0);
-                controlStates = newStates;
+                bool[] newStates = new bool[s_controlStates.Length + 1];
+                s_controlStates.CopyTo(newStates, 0);
+                s_controlStates = newStates;
 
-                string[] newContents = new string[controlStates.Length + 1];
-                floatFieldContents.CopyTo(newContents, 0);
-                floatFieldContents = newContents;
+                string[] newContents = new string[s_controlStates.Length + 1];
+                s_floatFieldContents.CopyTo(newContents, 0);
+                s_floatFieldContents = newContents;
             }
         }
 

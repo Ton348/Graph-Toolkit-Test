@@ -8,19 +8,19 @@ namespace Dreamteck.Splines.Editor
     [CanEditMultipleObjects]
     public class SplineRendererEditor : MeshGenEditor
     {
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            showDoubleSided = false;
-            showFlipFaces = false;
-            showRotation = false;
-            showNormalMethod = false;
+            m_showDoubleSided = false;
+            m_showFlipFaces = false;
+            m_showRotation = false;
+            m_showNormalMethod = false;
 
             serializedObject.Update();
             SerializedProperty slices = serializedObject.FindProperty("_slices");
             SerializedProperty autoOrient = serializedObject.FindProperty("autoOrient");
             SerializedProperty updateFrameInterval = serializedObject.FindProperty("updateFrameInterval");
 
-            base.BodyGUI();
+            base.BodyGui();
             EditorGUI.BeginChangeCheck();
             SplineRenderer user = (SplineRenderer)target;
             EditorGUILayout.Space();
@@ -38,7 +38,7 @@ namespace Dreamteck.Splines.Editor
 
             if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
 
-            UVControls(user);
+            Uvcontrols(user);
         }
 
     }

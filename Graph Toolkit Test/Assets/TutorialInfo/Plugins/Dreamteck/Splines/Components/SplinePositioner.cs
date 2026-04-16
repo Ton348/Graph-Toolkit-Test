@@ -12,15 +12,15 @@ namespace Dreamteck.Splines
         {
             get
             {
-                if (_targetObject == null) return gameObject;
-                return _targetObject;
+                if (m_targetObject == null) return gameObject;
+                return m_targetObject;
             }
 
             set
             {
-                if (value != _targetObject)
+                if (value != m_targetObject)
                 {
-                    _targetObject = value;
+                    m_targetObject = value;
                     RefreshTargets();
                     Rebuild();
                 }
@@ -29,24 +29,24 @@ namespace Dreamteck.Splines
 
         public SplineTracer followTarget
         {
-            get { return _followTarget; }
+            get { return m_followTarget; }
             set
             {
-                if(value != _followTarget)
+                if(value != m_followTarget)
                 {
-                    if(_followTarget != null)
+                    if(m_followTarget != null)
                     {
-                        _followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
+                        m_followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
                     }
                     if(value == this)
                     {
                         Debug.Log("You should not be assigning a self-reference to the followTarget field.");
                         return;
                     }
-                    _followTarget = value;
-                    if(_followTarget != null)
+                    m_followTarget = value;
+                    if(m_followTarget != null)
                     {
-                        _followTarget.onMotionApplied += OnFollowTargetMotionApplied;
+                        m_followTarget.onMotionApplied += OnFollowTargetMotionApplied;
                         OnFollowTargetMotionApplied();
                     }
                 }
@@ -55,12 +55,12 @@ namespace Dreamteck.Splines
 
         public float followTargetDistance
         {
-            get { return _followTargetDistance;  }
+            get { return m_followTargetDistance;  }
             set
             {
-                if(value != _followTargetDistance)
+                if(value != m_followTargetDistance)
                 {
-                    _followTargetDistance = value;
+                    m_followTargetDistance = value;
                     if(followTarget != null)
                     {
                         OnFollowTargetMotionApplied();
@@ -71,12 +71,12 @@ namespace Dreamteck.Splines
 
         public bool followLoop
         {
-            get { return _followLoop; }
+            get { return m_followLoop; }
             set
             {
-                if (value != _followLoop)
+                if (value != m_followLoop)
                 {
-                    _followLoop = value;
+                    m_followLoop = value;
                     if (followTarget != null)
                     {
                         OnFollowTargetMotionApplied();
@@ -87,12 +87,12 @@ namespace Dreamteck.Splines
 
         public Spline.Direction followTargetDirection
         {
-            get { return _followTargetDirection; }
+            get { return m_followTargetDirection; }
             set
             {
-                if (value != _followTargetDirection)
+                if (value != m_followTargetDirection)
                 {
-                    _followTargetDirection = value;
+                    m_followTargetDirection = value;
                     if (followTarget != null)
                     {
                         OnFollowTargetMotionApplied();
@@ -105,16 +105,16 @@ namespace Dreamteck.Splines
         {
             get
             {
-                return _result.percent;
+                return m_result.percent;
             }
             set
             {
-                if (value != _position)
+                if (value != m_position)
                 {
-                    _position = (float)value;
+                    m_position = (float)value;
                     if (mode == Mode.Distance)
                     {
-                        SetDistance(_position, true, true);
+                        SetDistance(m_position, true, true);
                     }
                     else
                     {
@@ -126,12 +126,12 @@ namespace Dreamteck.Splines
 
         public Mode mode
         {
-            get { return _mode;  }
+            get { return m_mode;  }
             set
             {
-                if (value != _mode)
+                if (value != m_mode)
                 {
-                    _mode = value;
+                    m_mode = value;
                     Rebuild();
                 }
             }
@@ -139,42 +139,42 @@ namespace Dreamteck.Splines
 
         [SerializeField]
         [HideInInspector]
-        private GameObject _targetObject;
+        private GameObject m_targetObject;
         [SerializeField]
         [HideInInspector]
-        private SplineTracer _followTarget;
+        private SplineTracer m_followTarget;
         [SerializeField]
         [HideInInspector]
-        private float _followTargetDistance;
+        private float m_followTargetDistance;
         [SerializeField]
         [HideInInspector]
-        private bool _followLoop;
+        private bool m_followLoop;
         [SerializeField]
         [HideInInspector]
-        private Spline.Direction _followTargetDirection = Spline.Direction.Backward;
+        private Spline.Direction m_followTargetDirection = Spline.Direction.Backward;
         [SerializeField]
         [HideInInspector]
-        private float _position = 0f;
+        private float m_position = 0f;
         [SerializeField]
         [HideInInspector]
-        private Mode _mode = Mode.Percent;
-        private float _lastPosition = 0f;
+        private Mode m_mode = Mode.Percent;
+        private float m_lastPosition = 0f;
 
         private void OnFollowTargetMotionApplied()
         {
             float moved;
-            double percent = Travel(followTarget.result.percent, _followTargetDistance, _followTargetDirection, out moved);
-            if (_followLoop)
+            double percent = Travel(followTarget.result.percent, m_followTargetDistance, m_followTargetDirection, out moved);
+            if (m_followLoop)
             {
-                if (_followTargetDistance - moved > 0.000001f)
+                if (m_followTargetDistance - moved > 0.000001f)
                 {
                     if (percent <= 0.000001)
                     {
-                        percent = Travel(1.0, _followTargetDistance - moved, _followTargetDirection, out moved);
+                        percent = Travel(1.0, m_followTargetDistance - moved, m_followTargetDirection, out moved);
                     }
                     else if (percent >= 0.999999)
                     {
-                        percent = Travel(0.0, _followTargetDistance - moved, _followTargetDirection, out moved);
+                        percent = Travel(0.0, m_followTargetDistance - moved, m_followTargetDirection, out moved);
                     }
                 }
             }
@@ -184,34 +184,34 @@ namespace Dreamteck.Splines
         protected override void Awake()
         {
             base.Awake();
-            if(_followTarget != null)
+            if(m_followTarget != null)
             {
-                _followTarget.onMotionApplied += OnFollowTargetMotionApplied;
+                m_followTarget.onMotionApplied += OnFollowTargetMotionApplied;
             }
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            if (_followTarget != null)
+            if (m_followTarget != null)
             {
-                _followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
+                m_followTarget.onMotionApplied -= OnFollowTargetMotionApplied;
             }
         }
 
 
         protected override void OnDidApplyAnimationProperties()
         {
-            if (_lastPosition != _position)
+            if (m_lastPosition != m_position)
             {
-                _lastPosition = _position;
+                m_lastPosition = m_position;
                 if (mode == Mode.Distance)
                 {
-                    SetDistance(_position, true);
+                    SetDistance(m_position, true);
                 }
                 else
                 {
-                    SetPercent(_position, true);
+                    SetPercent(m_position, true);
                 }
             }
             base.OnDidApplyAnimationProperties();
@@ -235,14 +235,14 @@ namespace Dreamteck.Splines
         protected override void PostBuild()
         {
             base.PostBuild();
-            if (mode == Mode.Distance) SetDistance((float)_position, true);
-            else SetPercent(_position, true);
+            if (mode == Mode.Distance) SetDistance((float)m_position, true);
+            else SetPercent(m_position, true);
         }
 
         public override void SetPercent(double percent, bool checkTriggers = false, bool handleJunctions = false)
         {
             base.SetPercent(percent, checkTriggers, handleJunctions);
-            _position = (float)percent;
+            m_position = (float)percent;
 
             if (!handleJunctions) return;
 
@@ -251,22 +251,22 @@ namespace Dreamteck.Splines
 
         public override void SetDistance(float distance, bool checkTriggers = false, bool handleJunctions = false)
         {
-            double lastPercent = _result.percent;
+            double lastPercent = m_result.percent;
             double travel = Travel(0.0, distance, Spline.Direction.Forward);
-            Evaluate(travel, ref _result);
+            Evaluate(travel, ref m_result);
             ApplyMotion();
 
             if (checkTriggers)
             {
-                CheckTriggers(lastPercent, _result.percent);
+                CheckTriggers(lastPercent, m_result.percent);
                 InvokeTriggers();
             }
             if (handleJunctions)
             {
-                CheckNodes(lastPercent, _result.percent);
+                CheckNodes(lastPercent, m_result.percent);
             }
 
-            _position = mode == Mode.Distance ? distance : (float)travel;
+            m_position = mode == Mode.Distance ? distance : (float)travel;
 
             if (!handleJunctions) return;
 

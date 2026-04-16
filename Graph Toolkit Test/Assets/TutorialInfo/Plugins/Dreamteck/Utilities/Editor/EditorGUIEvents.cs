@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace Dreamteck
 {
-    public class EditorGUIEvents
+    public class EditorGuievents
     {
         public bool mouseLeft = false;
         public bool mouseRight = false;

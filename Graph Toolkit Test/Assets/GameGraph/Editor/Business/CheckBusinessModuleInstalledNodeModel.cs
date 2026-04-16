@@ -13,8 +13,8 @@ public sealed class CheckBusinessModuleInstalledNodeModel : GameGraphTrueFalseNo
 	public const string LotIdOption = "LotId";
 	public const string ModuleIdOption = "ModuleId";
 
-	protected override string DefaultTitle => "Проверка установки модуля";
-	protected override string DefaultDescription => "Проверяет, установлен ли модуль в бизнесе.";
+	protected override string defaultTitle => "Проверка установки модуля";
+	protected override string defaultDescription => "Проверяет, установлен ли модуль в бизнесе.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

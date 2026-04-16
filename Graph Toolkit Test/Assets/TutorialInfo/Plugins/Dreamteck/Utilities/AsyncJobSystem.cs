@@ -8,21 +8,21 @@ namespace Dreamteck
 {
     public class AsyncJobSystem : MonoBehaviour
     {
-        private Queue<IJobData> _jobs = new Queue<IJobData>();
+        private Queue<IJobData> m_jobs = new Queue<IJobData>();
 
-        private IJobData _currentJob = null;
+        private IJobData m_currentJob = null;
 
-        private bool _isWorking = false;
+        private bool m_isWorking = false;
 
         public AsyncJobOperation ScheduleJob<T>(JobData<T> data)
         {
-            _jobs.Enqueue(data);
+            m_jobs.Enqueue(data);
             return new AsyncJobOperation(data);
         }
 
         private void Update()
         {
-            if (_jobs.Count > 0 && !_isWorking)
+            if (m_jobs.Count > 0 && !m_isWorking)
             {
                 StartCoroutine(JobCoroutine());
             }
@@ -30,40 +30,40 @@ namespace Dreamteck
 
         private IEnumerator JobCoroutine()
         {
-            _isWorking = true;
+            m_isWorking = true;
             
-            while (_jobs.Count > 0)
+            while (m_jobs.Count > 0)
             {
-                _currentJob = _jobs.Dequeue();
-                _currentJob.Initialize();
+                m_currentJob = m_jobs.Dequeue();
+                m_currentJob.Initialize();
 
-                while (!_currentJob.done)
+                while (!m_currentJob.done)
                 {
-                    _currentJob.Next();
+                    m_currentJob.Next();
                     yield return null;
                 }
 
-                _currentJob.Complete();
-                _currentJob = null;
+                m_currentJob.Complete();
+                m_currentJob = null;
 
                 yield return null;
             }
 
-            _isWorking = false;
+            m_isWorking = false;
         }
 
 
         public class AsyncJobOperation : CustomYieldInstruction
         {
-            private IJobData _job;
+            private IJobData m_job;
             
             public AsyncJobOperation(IJobData job)
             {
-                _job = job;
+                m_job = job;
             }
 
             public override bool keepWaiting {
-                get { return !_job.done; }
+                get { return !m_job.done; }
             }
         }
 
@@ -80,55 +80,55 @@ namespace Dreamteck
 
         public class JobData<T> : IJobData
         {
-            private int _index;
+            private int m_index;
 
-            private int _iterations = 0;
+            private int m_iterations = 0;
 
-            private IEnumerable<T> _collection;
+            private IEnumerable<T> m_collection;
 
-            private Action<JobData<T>> _onComplete;
+            private Action<JobData<T>> m_onComplete;
 
-            private Action<JobData<T>> _onIteration;
+            private Action<JobData<T>> m_onIteration;
 
-            private IEnumerator<T> _enumerator;
+            private IEnumerator<T> m_enumerator;
 
-            public T current { get { return _enumerator.Current; } }
+            public T current { get { return m_enumerator.Current; } }
 
-            public int index  { get  { return _index; } }
+            public int index  { get  { return m_index; } }
 
-            public IEnumerable<T> collection { get { return _collection; } }
+            public IEnumerable<T> collection { get { return m_collection; } }
 
             public bool done { get; private set; }
 
             public JobData(IEnumerable<T> collection, int iterations, Action<JobData<T>> onIteration)
             {
-                _collection = collection;
-                _onIteration = onIteration;
-                _iterations = iterations;
+                m_collection = collection;
+                m_onIteration = onIteration;
+                m_iterations = iterations;
                 done = false;
             }
 
             public JobData(IEnumerable<T> collection, int iterations, Action<JobData<T>> onIteration, Action<JobData<T>> onComplete) :
                 this(collection, iterations, onIteration)
             {
-                _onComplete = onComplete;
+                m_onComplete = onComplete;
             }
 
             public void Initialize()
             {
-                _enumerator = _collection.GetEnumerator();
-                _index = -1;
-                done = !_enumerator.MoveNext();
+                m_enumerator = m_collection.GetEnumerator();
+                m_index = -1;
+                done = !m_enumerator.MoveNext();
             }
 
             public void Complete()
             {
-                _enumerator.Dispose();
+                m_enumerator.Dispose();
 
                 try
                 {
-                    if (_onComplete != null) {
-                        _onComplete(this);
+                    if (m_onComplete != null) {
+                        m_onComplete(this);
                     }
                 }
                 catch (Exception e)
@@ -139,7 +139,7 @@ namespace Dreamteck
 
             public void Next()
             {
-                int counter = _iterations;
+                int counter = m_iterations;
 
                 if (done)
                 {
@@ -147,20 +147,20 @@ namespace Dreamteck
                 }
                 do
                 {
-                    _index++;
+                    m_index++;
 
                     try
                     {
-                        if(_onIteration != null)
+                        if(m_onIteration != null)
                         {
-                            _onIteration(this);
+                            m_onIteration(this);
                         }
                     }
                     catch (Exception e)
                     {
                         Debug.LogException(e);
                     }
-                    done = !_enumerator.MoveNext();
+                    done = !m_enumerator.MoveNext();
                 }
                 while (!done && --counter > 0);
             }

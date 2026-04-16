@@ -9,11 +9,11 @@
     public class PrimitiveEditor
     {
         [System.NonSerialized]
-        protected DreamteckSplinesEditor editor;
+        protected DreamteckSplinesEditor m_editor;
         [System.NonSerialized]
         public Vector3 origin = Vector3.zero;
 
-        protected SplinePrimitive primitive = new SplinePrimitive();
+        protected SplinePrimitive m_primitive = new SplinePrimitive();
 
         public virtual string GetName()
         {
@@ -22,15 +22,15 @@
 
         public virtual void Open(DreamteckSplinesEditor editor)
         {
-            this.editor = editor;
-            primitive.is2D = editor.is2D;
-            primitive.Calculate();
+            this.m_editor = editor;
+            m_primitive.is2D = editor.is2D;
+            m_primitive.Calculate();
         }
 
         public void Draw()
         {
             EditorGUI.BeginChangeCheck();
-            OnGUI();
+            OnGui();
             if (EditorGUI.EndChangeCheck())
             {
                 Update();
@@ -39,25 +39,25 @@
 
         public void Update()
         {
-            primitive.is2D = editor.is2D;
-            primitive.Calculate();
-            editor.SetPointsArray(primitive.GetPoints());
-            editor.SetSplineType(primitive.GetSplineType());
-            editor.SetSplineClosed(primitive.GetIsClosed());
-            editor.ApplyModifiedProperties(true);
+            m_primitive.is2D = m_editor.is2D;
+            m_primitive.Calculate();
+            m_editor.SetPointsArray(m_primitive.GetPoints());
+            m_editor.SetSplineType(m_primitive.GetSplineType());
+            m_editor.SetSplineClosed(m_primitive.GetIsClosed());
+            m_editor.ApplyModifiedProperties(true);
         }
 
-        protected virtual void OnGUI()
+        protected virtual void OnGui()
         {
-            primitive.is2D = editor.is2D;
-            primitive.offset = EditorGUILayout.Vector3Field("Offset", primitive.offset);
-            if (editor.is2D)
+            m_primitive.is2D = m_editor.is2D;
+            m_primitive.offset = EditorGUILayout.Vector3Field("Offset", m_primitive.offset);
+            if (m_editor.is2D)
             {
-                float rot = primitive.rotation.z;
+                float rot = m_primitive.rotation.z;
                 rot = EditorGUILayout.FloatField("Rotation", rot);
-                primitive.rotation = new Vector3(0f, 0f, rot);
+                m_primitive.rotation = new Vector3(0f, 0f, rot);
             }
-             else primitive.rotation = EditorGUILayout.Vector3Field("Rotation", primitive.rotation);
+             else m_primitive.rotation = EditorGUILayout.Vector3Field("Rotation", m_primitive.rotation);
         }
     }
 }

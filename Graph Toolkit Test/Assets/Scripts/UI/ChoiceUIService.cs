@@ -8,7 +8,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
+public class ChoiceUiservice : MonoBehaviour, IGraphChoiceService
 {
     public UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken)
     {
@@ -46,7 +46,7 @@ public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
     public Button[] optionButtons = new Button[4];
     public TMP_Text[] optionTexts = new TMP_Text[4];
 
-    private Action<int> onSelected;
+    private Action<int> m_onSelected;
 
     private void Awake()
     {
@@ -58,7 +58,7 @@ public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
 
     public void ShowChoices(IReadOnlyList<ChoiceOption> options, Action<int> onSelectedCallback)
     {
-        onSelected = onSelectedCallback;
+        m_onSelected = onSelectedCallback;
         ApplyOptions(options);
     }
 
@@ -107,8 +107,8 @@ public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
             panel.SetActive(false);
         }
 
-        var callback = onSelected;
-        onSelected = null;
+        var callback = m_onSelected;
+        m_onSelected = null;
         callback?.Invoke(index);
     }
 
@@ -119,7 +119,7 @@ public class ChoiceUIService : MonoBehaviour, IGraphChoiceService
             panel.SetActive(false);
         }
 
-        onSelected = null;
+        m_onSelected = null;
 
         if (optionButtons == null)
         {

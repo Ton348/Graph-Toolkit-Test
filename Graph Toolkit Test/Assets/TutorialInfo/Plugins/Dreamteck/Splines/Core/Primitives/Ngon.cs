@@ -17,13 +17,13 @@ namespace Dreamteck.Splines.Primitives
         protected override void Generate()
         {
             base.Generate();
-            closed = true;
+            m_closed = true;
             CreatePoints(sides, SplinePoint.Type.SmoothMirrored);
             for (int i = 0; i < sides; i++)
             {
                 float percent = (float)i / sides;
                 Vector3 pos = Quaternion.AngleAxis(360f * percent, Vector3.forward) * Vector3.up * radius;
-                points[i].SetPosition(pos);
+                m_points[i].SetPosition(pos);
             }
         }
     }

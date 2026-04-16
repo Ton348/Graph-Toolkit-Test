@@ -3,10 +3,10 @@ using UnityEngine;
 
 public class BusinessStateSyncService
 {
-    private readonly BusinessDefinitionsRepository definitions;
-    private readonly Dictionary<string, BusinessInstanceSnapshot> businessesByInstanceId = new Dictionary<string, BusinessInstanceSnapshot>();
-    private readonly Dictionary<string, BusinessInstanceSnapshot> businessesByLotId = new Dictionary<string, BusinessInstanceSnapshot>();
-    private readonly HashSet<string> knownContacts = new HashSet<string>();
+    private readonly BusinessDefinitionsRepository m_definitions;
+    private readonly Dictionary<string, BusinessInstanceSnapshot> m_businessesByInstanceId = new Dictionary<string, BusinessInstanceSnapshot>();
+    private readonly Dictionary<string, BusinessInstanceSnapshot> m_businessesByLotId = new Dictionary<string, BusinessInstanceSnapshot>();
+    private readonly HashSet<string> m_knownContacts = new HashSet<string>();
 
     public BusinessStateSyncService()
     {
@@ -14,40 +14,40 @@ public class BusinessStateSyncService
 
     public BusinessStateSyncService(BusinessDefinitionsRepository definitions)
     {
-        this.definitions = definitions;
+        this.m_definitions = definitions;
     }
 
-    public IReadOnlyCollection<BusinessInstanceSnapshot> Businesses => businessesByInstanceId.Values;
-    public IReadOnlyCollection<string> KnownContacts => knownContacts;
+    public IReadOnlyCollection<BusinessInstanceSnapshot> Businesses => m_businessesByInstanceId.Values;
+    public IReadOnlyCollection<string> KnownContacts => m_knownContacts;
 
-    public event System.Action StateChanged;
+    public event System.Action stateChanged;
 
     public void ApplySnapshot(ProfileSnapshot snapshot)
     {
-        businessesByInstanceId.Clear();
-        businessesByLotId.Clear();
-        knownContacts.Clear();
+        m_businessesByInstanceId.Clear();
+        m_businessesByLotId.Clear();
+        m_knownContacts.Clear();
 
         if (snapshot == null)
         {
             return;
         }
 
-        if (snapshot.KnownContacts != null)
+        if (snapshot.knownContacts != null)
         {
-            foreach (var contactId in snapshot.KnownContacts)
+            foreach (var contactId in snapshot.knownContacts)
             {
                 if (!string.IsNullOrWhiteSpace(contactId))
                 {
-                    knownContacts.Add(contactId);
+                    m_knownContacts.Add(contactId);
                 }
             }
         }
 
-        if (snapshot.Businesses != null)
+        if (snapshot.businesses != null)
         {
             var usedLots = new HashSet<string>();
-            foreach (var business in snapshot.Businesses)
+            foreach (var business in snapshot.businesses)
             {
                 if (business == null)
                 {
@@ -67,7 +67,7 @@ public class BusinessStateSyncService
                     continue;
                 }
 
-                if (businessesByInstanceId.ContainsKey(business.instanceId))
+                if (m_businessesByInstanceId.ContainsKey(business.instanceId))
                 {
                     BusinessDebugLog.Warn($"[Business] Duplicate instanceId '{business.instanceId}' detected. Skipped duplicate.");
                     continue;
@@ -79,27 +79,27 @@ public class BusinessStateSyncService
                     continue;
                 }
 
-                NormalizeBusiness(business, knownContacts);
-                businessesByInstanceId[business.instanceId] = business;
-                businessesByLotId[business.lotId] = business;
+                NormalizeBusiness(business, m_knownContacts);
+                m_businessesByInstanceId[business.instanceId] = business;
+                m_businessesByLotId[business.lotId] = business;
             }
         }
 
-        BusinessDebugLog.Log($"[Business] Sync applied. businesses={businessesByInstanceId.Count} contacts={knownContacts.Count}");
-        StateChanged?.Invoke();
+        BusinessDebugLog.Log($"[Business] Sync applied. businesses={m_businessesByInstanceId.Count} contacts={m_knownContacts.Count}");
+        stateChanged?.Invoke();
     }
 
     public BusinessInstanceSnapshot GetBusiness(string instanceId)
     {
         if (string.IsNullOrWhiteSpace(instanceId)) return null;
-        businessesByInstanceId.TryGetValue(instanceId, out var value);
+        m_businessesByInstanceId.TryGetValue(instanceId, out var value);
         return value;
     }
 
     public BusinessInstanceSnapshot GetBusinessByLotId(string lotId)
     {
         if (string.IsNullOrWhiteSpace(lotId)) return null;
-        businessesByLotId.TryGetValue(lotId, out var value);
+        m_businessesByLotId.TryGetValue(lotId, out var value);
         return value;
     }
 
@@ -122,17 +122,17 @@ public class BusinessStateSyncService
 
     public IEnumerable<BusinessInstanceSnapshot> GetAllBusinesses()
     {
-        return businessesByInstanceId.Values;
+        return m_businessesByInstanceId.Values;
     }
 
     public IReadOnlyCollection<string> GetKnownContacts()
     {
-        return knownContacts;
+        return m_knownContacts;
     }
 
     public bool HasKnownContact(string contactId)
     {
-        return !string.IsNullOrWhiteSpace(contactId) && knownContacts.Contains(contactId);
+        return !string.IsNullOrWhiteSpace(contactId) && m_knownContacts.Contains(contactId);
     }
 
     private void NormalizeBusiness(BusinessInstanceSnapshot business, HashSet<string> contacts)
@@ -191,7 +191,7 @@ public class BusinessStateSyncService
                 continue;
             }
 
-            if (definitions != null && !definitions.HasModule(moduleId))
+            if (m_definitions != null && !m_definitions.HasModule(moduleId))
             {
                 BusinessDebugLog.Warn($"[Business] Unknown moduleId '{moduleId}' on lotId='{business.lotId}'. Removed.");
                 business.installedModules.RemoveAt(i);
@@ -200,7 +200,7 @@ public class BusinessStateSyncService
 
         if (!string.IsNullOrWhiteSpace(business.selectedSupplierId))
         {
-            if (definitions != null && !definitions.HasSupplier(business.selectedSupplierId))
+            if (m_definitions != null && !m_definitions.HasSupplier(business.selectedSupplierId))
             {
                 BusinessDebugLog.Warn($"[Business] Unknown supplierId '{business.selectedSupplierId}' on lotId='{business.lotId}'. Cleared.");
                 business.selectedSupplierId = null;
@@ -228,7 +228,7 @@ public class BusinessStateSyncService
         {
             BusinessDebugLog.Warn($"[Business] Missing businessTypeId on lotId='{business.lotId}'.");
         }
-        else if (definitions != null && !definitions.HasBusinessType(business.businessTypeId))
+        else if (m_definitions != null && !m_definitions.HasBusinessType(business.businessTypeId))
         {
             BusinessDebugLog.Warn($"[Business] Unknown businessTypeId '{business.businessTypeId}' on lotId='{business.lotId}'.");
         }
@@ -240,9 +240,9 @@ public class BusinessStateSyncService
                 BusinessDebugLog.Warn($"[Business] Open business without businessTypeId on lotId='{business.lotId}'. Closing.");
                 business.isOpen = false;
             }
-            else if (definitions != null)
+            else if (m_definitions != null)
             {
-                var required = definitions.GetRequiredModules(business.businessTypeId);
+                var required = m_definitions.GetRequiredModules(business.businessTypeId);
                 foreach (var moduleId in required)
                 {
                     if (!business.installedModules.Contains(moduleId))

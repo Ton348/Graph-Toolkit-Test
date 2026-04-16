@@ -2,12 +2,12 @@ using System.Collections.Generic;
 
 public sealed class BusinessDefinitionsRepository
 {
-    private readonly Dictionary<string, BusinessTypeDefinitionData> businessTypes = new Dictionary<string, BusinessTypeDefinitionData>();
-    private readonly Dictionary<string, BusinessModuleDefinitionData> modules = new Dictionary<string, BusinessModuleDefinitionData>();
-    private readonly Dictionary<string, SupplierDefinitionData> suppliers = new Dictionary<string, SupplierDefinitionData>();
-    private readonly Dictionary<string, StaffRoleDefinitionData> staffRoles = new Dictionary<string, StaffRoleDefinitionData>();
-    private readonly Dictionary<string, StaffContactDefinitionData> staffContacts = new Dictionary<string, StaffContactDefinitionData>();
-    private readonly Dictionary<string, CustomerBehaviorDefinitionData> behaviors = new Dictionary<string, CustomerBehaviorDefinitionData>();
+    private readonly Dictionary<string, BusinessTypeDefinitionData> m_businessTypes = new Dictionary<string, BusinessTypeDefinitionData>();
+    private readonly Dictionary<string, BusinessModuleDefinitionData> m_modules = new Dictionary<string, BusinessModuleDefinitionData>();
+    private readonly Dictionary<string, SupplierDefinitionData> m_suppliers = new Dictionary<string, SupplierDefinitionData>();
+    private readonly Dictionary<string, StaffRoleDefinitionData> m_staffRoles = new Dictionary<string, StaffRoleDefinitionData>();
+    private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new Dictionary<string, StaffContactDefinitionData>();
+    private readonly Dictionary<string, CustomerBehaviorDefinitionData> m_behaviors = new Dictionary<string, CustomerBehaviorDefinitionData>();
 
     public BusinessDefinitionsRepository(
         BusinessTypeDatabaseData businessTypeDb,
@@ -21,9 +21,9 @@ public sealed class BusinessDefinitionsRepository
         {
             foreach (var item in businessTypeDb.businessTypes)
             {
-                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !businessTypes.ContainsKey(item.id))
+                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_businessTypes.ContainsKey(item.id))
                 {
-                    businessTypes[item.id] = item;
+                    m_businessTypes[item.id] = item;
                 }
             }
         }
@@ -32,9 +32,9 @@ public sealed class BusinessDefinitionsRepository
         {
             foreach (var item in moduleDb.modules)
             {
-                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !modules.ContainsKey(item.id))
+                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_modules.ContainsKey(item.id))
                 {
-                    modules[item.id] = item;
+                    m_modules[item.id] = item;
                 }
             }
         }
@@ -43,9 +43,9 @@ public sealed class BusinessDefinitionsRepository
         {
             foreach (var item in supplierDb.suppliers)
             {
-                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !suppliers.ContainsKey(item.id))
+                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_suppliers.ContainsKey(item.id))
                 {
-                    suppliers[item.id] = item;
+                    m_suppliers[item.id] = item;
                 }
             }
         }
@@ -54,9 +54,9 @@ public sealed class BusinessDefinitionsRepository
         {
             foreach (var item in staffRoleDb.roles)
             {
-                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !staffRoles.ContainsKey(item.id))
+                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_staffRoles.ContainsKey(item.id))
                 {
-                    staffRoles[item.id] = item;
+                    m_staffRoles[item.id] = item;
                 }
             }
         }
@@ -65,9 +65,9 @@ public sealed class BusinessDefinitionsRepository
         {
             foreach (var item in staffContactDb.contacts)
             {
-                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !staffContacts.ContainsKey(item.id))
+                if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_staffContacts.ContainsKey(item.id))
                 {
-                    staffContacts[item.id] = item;
+                    m_staffContacts[item.id] = item;
                 }
             }
         }
@@ -76,9 +76,9 @@ public sealed class BusinessDefinitionsRepository
         {
             foreach (var item in behaviorDb.behaviors)
             {
-                if (item != null && !string.IsNullOrWhiteSpace(item.businessTypeId) && !behaviors.ContainsKey(item.businessTypeId))
+                if (item != null && !string.IsNullOrWhiteSpace(item.businessTypeId) && !m_behaviors.ContainsKey(item.businessTypeId))
                 {
-                    behaviors[item.businessTypeId] = item;
+                    m_behaviors[item.businessTypeId] = item;
                 }
             }
         }
@@ -87,7 +87,7 @@ public sealed class BusinessDefinitionsRepository
     public BusinessTypeDefinitionData GetBusinessType(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        businessTypes.TryGetValue(id, out var value);
+        m_businessTypes.TryGetValue(id, out var value);
         return value;
     }
 
@@ -107,39 +107,39 @@ public sealed class BusinessDefinitionsRepository
     public BusinessModuleDefinitionData GetModule(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        modules.TryGetValue(id, out var value);
+        m_modules.TryGetValue(id, out var value);
         return value;
     }
 
     public SupplierDefinitionData GetSupplier(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        suppliers.TryGetValue(id, out var value);
+        m_suppliers.TryGetValue(id, out var value);
         return value;
     }
 
     public StaffRoleDefinitionData GetStaffRole(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        staffRoles.TryGetValue(id, out var value);
+        m_staffRoles.TryGetValue(id, out var value);
         return value;
     }
 
     public CustomerBehaviorDefinitionData GetCustomerBehavior(string businessTypeId)
     {
         if (string.IsNullOrWhiteSpace(businessTypeId)) return null;
-        behaviors.TryGetValue(businessTypeId, out var value);
+        m_behaviors.TryGetValue(businessTypeId, out var value);
         return value;
     }
 
     public StaffContactDefinitionData GetStaffContact(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return null;
-        staffContacts.TryGetValue(id, out var value);
+        m_staffContacts.TryGetValue(id, out var value);
         return value;
     }
 
-    public IEnumerable<StaffContactDefinitionData> GetAllStaffContacts() => staffContacts.Values;
+    public IEnumerable<StaffContactDefinitionData> GetAllStaffContacts() => m_staffContacts.Values;
 
     public IEnumerable<StaffContactDefinitionData> GetStaffContactsByRole(string roleId)
     {
@@ -148,7 +148,7 @@ public sealed class BusinessDefinitionsRepository
             yield break;
         }
 
-        foreach (var contact in staffContacts.Values)
+        foreach (var contact in m_staffContacts.Values)
         {
             if (contact != null && contact.roleId == roleId)
             {
@@ -164,9 +164,9 @@ public sealed class BusinessDefinitionsRepository
     public bool HasStaffContact(string id) => GetStaffContact(id) != null;
     public bool HasCustomerBehavior(string businessTypeId) => GetCustomerBehavior(businessTypeId) != null;
 
-    public IEnumerable<BusinessTypeDefinitionData> GetAllBusinessTypes() => businessTypes.Values;
-    public IEnumerable<BusinessModuleDefinitionData> GetAllModules() => modules.Values;
-    public IEnumerable<SupplierDefinitionData> GetAllSuppliers() => suppliers.Values;
-    public IEnumerable<StaffRoleDefinitionData> GetAllStaffRoles() => staffRoles.Values;
-    public IEnumerable<CustomerBehaviorDefinitionData> GetAllCustomerBehaviors() => behaviors.Values;
+    public IEnumerable<BusinessTypeDefinitionData> GetAllBusinessTypes() => m_businessTypes.Values;
+    public IEnumerable<BusinessModuleDefinitionData> GetAllModules() => m_modules.Values;
+    public IEnumerable<SupplierDefinitionData> GetAllSuppliers() => m_suppliers.Values;
+    public IEnumerable<StaffRoleDefinitionData> GetAllStaffRoles() => m_staffRoles.Values;
+    public IEnumerable<CustomerBehaviorDefinitionData> GetAllCustomerBehaviors() => m_behaviors.Values;
 }

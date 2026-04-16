@@ -9,12 +9,12 @@ namespace Dreamteck.Splines
     {
         public float offset
         {
-            get { return _offset; }
+            get { return m_offset; }
             set
             {
-                if (value != _offset)
+                if (value != m_offset)
                 {
-                    _offset = value;
+                    m_offset = value;
                     Rebuild();
                 }
             }
@@ -22,25 +22,25 @@ namespace Dreamteck.Splines
 
         [SerializeField]
         [HideInInspector]
-        private float _offset = 0f;
+        private float m_offset = 0f;
         [SerializeField]
         [HideInInspector]
-        protected EdgeCollider2D edgeCollider;
+        protected EdgeCollider2D m_edgeCollider;
 
         [SerializeField]
         [HideInInspector]
-        protected Vector2[] vertices = new Vector2[0];
+        protected Vector2[] m_vertices = new Vector2[0];
 
         [HideInInspector]
         public float updateRate = 0.1f;
-        protected float lastUpdateTime = 0f;
+        protected float m_lastUpdateTime = 0f;
 
-        private bool updateCollider = false;
+        private bool m_updateCollider = false;
 
         protected override void Awake()
         {
             base.Awake();
-            edgeCollider = GetComponent<EdgeCollider2D>();
+            m_edgeCollider = GetComponent<EdgeCollider2D>();
         }
 
 
@@ -67,15 +67,15 @@ namespace Dreamteck.Splines
         protected override void LateRun()
         {
             base.LateRun();
-            if (updateCollider)
+            if (m_updateCollider)
             {
-                if (edgeCollider != null)
+                if (m_edgeCollider != null)
                 {
-                    if (Time.time - lastUpdateTime >= updateRate)
+                    if (Time.time - m_lastUpdateTime >= updateRate)
                     {
-                        lastUpdateTime = Time.time;
-                        updateCollider = false;
-                        edgeCollider.points = vertices;
+                        m_lastUpdateTime = Time.time;
+                        m_updateCollider = false;
+                        m_edgeCollider.points = m_vertices;
                     }
                 }
             }
@@ -84,16 +84,16 @@ namespace Dreamteck.Splines
         protected override void Build()
         {
             base.Build();
-            if (vertices.Length != sampleCount) vertices = new Vector2[sampleCount];
+            if (m_vertices.Length != sampleCount) m_vertices = new Vector2[sampleCount];
             bool hasOffset = offset != 0f;
             for (int i = 0; i < sampleCount; i++)
             {
-                GetSample(i, ref evalResult);
-                vertices[i] = evalResult.position;
+                GetSample(i, ref m_evalResult);
+                m_vertices[i] = m_evalResult.position;
                 if (hasOffset)
                 {
-                    Vector2 right = new Vector2(-evalResult.forward.y, evalResult.forward.x).normalized * evalResult.size;
-                    vertices[i] += right * offset;
+                    Vector2 right = new Vector2(-m_evalResult.forward.y, m_evalResult.forward.x).normalized * m_evalResult.size;
+                    m_vertices[i] += right * offset;
                 }
             }
         }
@@ -101,14 +101,14 @@ namespace Dreamteck.Splines
         protected override void PostBuild()
         {
             base.PostBuild();
-            if (edgeCollider == null) return;
-            for(int i = 0; i < vertices.Length; i++) vertices[i] = transform.InverseTransformPoint(vertices[i]);
+            if (m_edgeCollider == null) return;
+            for(int i = 0; i < m_vertices.Length; i++) m_vertices[i] = transform.InverseTransformPoint(m_vertices[i]);
             
 #if UNITY_EDITOR
             if (!Application.isPlaying || updateRate <= 0f)
             {
-                edgeCollider.points = vertices;
-            } else updateCollider = true;
+                m_edgeCollider.points = m_vertices;
+            } else m_updateCollider = true;
 #else
             if(updateRate == 0f) edgeCollider.points = vertices;
             else updateCollider = true;

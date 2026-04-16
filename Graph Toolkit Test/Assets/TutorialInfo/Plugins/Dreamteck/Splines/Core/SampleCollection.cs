@@ -8,8 +8,8 @@ namespace Dreamteck.Splines
         [HideInInspector]
         [UnityEngine.Serialization.FormerlySerializedAs("samples")]
         public SplineSample[] samples = new SplineSample[0];
-        private static bool __useModifier = false;
-        private static ISampleModifier __modifier = null;
+        private static bool s_useModifier = false;
+        private static ISampleModifier s_modifier = null;
 
         public int length
         {
@@ -21,7 +21,7 @@ namespace Dreamteck.Splines
             get { return samples.Length > 0; }
         }
         public SplineComputer.SampleMode sampleMode = SplineComputer.SampleMode.Default;
-        private SplineSample _workSample = new SplineSample();
+        private SplineSample m_workSample = new SplineSample();
 
         public SampleCollection()
         {
@@ -39,8 +39,8 @@ namespace Dreamteck.Splines
             startIndex = endIndex = 0;
             if (sampleMode == SplineComputer.SampleMode.Default)
             {
-                startIndex = DMath.FloorInt((samples.Length - 1) * clipFrom);
-                endIndex = DMath.CeilInt((samples.Length - 1) * clipTo);
+                startIndex = Dmath.FloorInt((samples.Length - 1) * clipFrom);
+                endIndex = Dmath.CeilInt((samples.Length - 1) * clipTo);
             }
             else
             {
@@ -65,7 +65,7 @@ namespace Dreamteck.Splines
             if (sampleMode == SplineComputer.SampleMode.Optimized)
             {
                 double indexValue = percent * (optimizedIndices.Length - 1);
-                int index = DMath.FloorInt(indexValue);
+                int index = Dmath.FloorInt(indexValue);
                 sampleIndex = optimizedIndices[index];
                 double lerpPercent = 0.0;
                 if (index < optimizedIndices.Length - 1)
@@ -75,16 +75,16 @@ namespace Dreamteck.Splines
                     double sampleIndexPercent = (double)index / (optimizedIndices.Length - 1);
                     double nextSampleIndexPercent = (double)(index + 1) / (optimizedIndices.Length - 1);
                     //Percent 0-1 of the sample between the sampleIndices' percents
-                    lerpPercent = DMath.Lerp(sampleIndexPercent, nextSampleIndexPercent, indexLerp);
+                    lerpPercent = Dmath.Lerp(sampleIndexPercent, nextSampleIndexPercent, indexLerp);
                 }
                 if (sampleIndex < samples.Length - 1)
                 {
-                    lerp = DMath.InverseLerp(samples[sampleIndex].percent, samples[sampleIndex + 1].percent, lerpPercent);
+                    lerp = Dmath.InverseLerp(samples[sampleIndex].percent, samples[sampleIndex + 1].percent, lerpPercent);
                 }
                 return;
             }
 
-            sampleIndex = DMath.FloorInt(percent * (samples.Length - 1));
+            sampleIndex = Dmath.FloorInt(percent * (samples.Length - 1));
             lerp = (samples.Length - 1) * percent - sampleIndex;
         }
 
@@ -312,7 +312,7 @@ namespace Dreamteck.Splines
             {
                 lerpPercent = moveExcess / lastDistance;
             }
-            double p = DMath.Lerp(lastPercent, samples[sampleIndex].percent, 1f - lerpPercent);
+            double p = Dmath.Lerp(lastPercent, samples[sampleIndex].percent, 1f - lerpPercent);
             moved -= moveExcess;
             return p;
         }
@@ -335,8 +335,8 @@ namespace Dreamteck.Splines
             double lastPercent = start;
             if (distance == 0f) return lastPercent;
 
-            Evaluate(start, ref _workSample);
-            Vector3 lastPos = _workSample.position + _workSample.up * (offset.y * _workSample.size) + _workSample.right * (offset.x * _workSample.size) + _workSample.forward * (offset.z * _workSample.size);
+            Evaluate(start, ref m_workSample);
+            Vector3 lastPos = m_workSample.position + m_workSample.up * (offset.y * m_workSample.size) + m_workSample.right * (offset.x * m_workSample.size) + m_workSample.forward * (offset.z * m_workSample.size);
 
             int sampleIndex;
             double lerp;
@@ -413,7 +413,7 @@ namespace Dreamteck.Splines
                 moveExcess = moved - distance;
             }
 
-            double p = DMath.Lerp(lastPercent, samples[sampleIndex].percent, 1f - moveExcess / lastDistance);
+            double p = Dmath.Lerp(lastPercent, samples[sampleIndex].percent, 1f - moveExcess / lastDistance);
             moved -= moveExcess;
             return p;
         }
@@ -426,8 +426,8 @@ namespace Dreamteck.Splines
 
         private Vector3 GetModifiedPosition(ref SplineSample sample)
         {
-            if (!__useModifier) return sample.position;
-            return __modifier.GetModifiedSamplePosition(ref sample);
+            if (!s_useModifier) return sample.position;
+            return s_modifier.GetModifiedSamplePosition(ref sample);
         }
 
         /// <summary>
@@ -448,8 +448,8 @@ namespace Dreamteck.Splines
                 result.FastCopy(ref samples[0]);
                 return;
             }
-            __useModifier = modifier != null;
-            __modifier = modifier;
+            s_useModifier = modifier != null;
+            s_modifier = modifier;
             Spline.FormatFromTo(ref from, ref to);
             //First make a very rough sample of the from-to region
             int steps = (controlPointCount - 1) * 4; //Sampling four points per segment is enough to find the closest point range
@@ -519,23 +519,23 @@ namespace Dreamteck.Splines
                 if ((position - back).sqrMagnitude < (position - front).sqrMagnitude)
                 {
                     SplineSample.Lerp(ref samples[backIndex], ref samples[index], backProjectDist / backLength, ref result);
-                    if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = DMath.Lerp(GetSamplePercent(backIndex), GetSamplePercent(index), backProjectDist / backLength);
+                    if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = Dmath.Lerp(GetSamplePercent(backIndex), GetSamplePercent(index), backProjectDist / backLength);
                 }
                 else
                 {
                     SplineSample.Lerp(ref samples[frontIndex], ref samples[index], frontProjectDist / frontLength, ref result);
-                    if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = DMath.Lerp(GetSamplePercent(frontIndex), GetSamplePercent(index), frontProjectDist / frontLength);
+                    if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = Dmath.Lerp(GetSamplePercent(frontIndex), GetSamplePercent(index), frontProjectDist / frontLength);
                 }
             }
             else if (backIndex < index)
             {
                 SplineSample.Lerp(ref samples[backIndex], ref samples[index], backProjectDist / backLength, ref result);
-                if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = DMath.Lerp(GetSamplePercent(backIndex), GetSamplePercent(index), backProjectDist / backLength);
+                if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = Dmath.Lerp(GetSamplePercent(backIndex), GetSamplePercent(index), backProjectDist / backLength);
             }
             else
             {
                 SplineSample.Lerp(ref samples[frontIndex], ref samples[index], frontProjectDist / frontLength, ref result);
-                if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = DMath.Lerp(GetSamplePercent(frontIndex), GetSamplePercent(index), frontProjectDist / frontLength);
+                if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = Dmath.Lerp(GetSamplePercent(frontIndex), GetSamplePercent(index), frontProjectDist / frontLength);
             }
 
             if (from == 0.0 && to == 1.0 && result.percent < samples[1].percent) //Handle looped splines
@@ -548,11 +548,11 @@ namespace Dreamteck.Splines
                 {
                     double l = LinearAlgebraUtility.InverseLerp(pos1, pos2, projected);
                     SplineSample.Lerp(ref samples[samples.Length - 1], ref samples[samples.Length - 2], l, ref result);
-                    if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = DMath.Lerp(GetSamplePercent(samples.Length - 1), GetSamplePercent(samples.Length - 2), l);
+                    if (sampleMode == SplineComputer.SampleMode.Uniform) result.percent = Dmath.Lerp(GetSamplePercent(samples.Length - 1), GetSamplePercent(samples.Length - 2), l);
                 }
             }
 
-            if (__useModifier)
+            if (s_useModifier)
             {
                 modifier.ApplySampleModifiers(ref result);
             }
@@ -615,8 +615,8 @@ namespace Dreamteck.Splines
             if (!hasSamples) return 0f;
             Spline.FormatFromTo(ref from, ref to);
             float length = 0f;
-            Evaluate(from, ref _workSample);
-            Vector3 lastPos = _workSample.position + _workSample.up * (offset.y * _workSample.size) + _workSample.right * (offset.x * _workSample.size) + _workSample.forward * (offset.z * _workSample.size);
+            Evaluate(from, ref m_workSample);
+            Vector3 lastPos = m_workSample.position + m_workSample.up * (offset.y * m_workSample.size) + m_workSample.right * (offset.x * m_workSample.size) + m_workSample.forward * (offset.z * m_workSample.size);
             int fromIndex, toIndex;
             double lerp;
             GetSamplingValues(from, out fromIndex, out lerp);
@@ -634,9 +634,9 @@ namespace Dreamteck.Splines
                 lastPos = newPos;
             }
 
-            Evaluate(to, ref _workSample);
-            _workSample.position += _workSample.up * (offset.y * _workSample.size) + _workSample.right * (offset.x * _workSample.size) + _workSample.forward * (offset.z * _workSample.size);
-            length += Vector3.Distance(_workSample.position, lastPos);
+            Evaluate(to, ref m_workSample);
+            m_workSample.position += m_workSample.up * (offset.y * m_workSample.size) + m_workSample.right * (offset.x * m_workSample.size) + m_workSample.forward * (offset.z * m_workSample.size);
+            length += Vector3.Distance(m_workSample.position, lastPos);
             return length;
         }
     }

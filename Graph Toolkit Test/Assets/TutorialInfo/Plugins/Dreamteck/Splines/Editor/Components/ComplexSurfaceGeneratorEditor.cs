@@ -8,16 +8,16 @@ namespace Dreamteck.Splines
     [CustomEditor(typeof(ComplexSurfaceGenerator), true)]
     public class ComplexSurfaceGeneratorEditor : MeshGenEditor
     {
-        private SplineComputer _lastEditedComputer;
-        private SplineComputer _highlightedComputer;
-        private int _lastEditedPointIndex = -1;
-        private bool _positionHandle = false;
-        private Vector2 _scroll = Vector2.zero;
+        private SplineComputer m_lastEditedComputer;
+        private SplineComputer m_highlightedComputer;
+        private int m_lastEditedPointIndex = -1;
+        private bool m_positionHandle = false;
+        private Vector2 m_scroll = Vector2.zero;
 
         protected override void Awake()
         {
             base.Awake();
-            _positionHandle = EditorPrefs.GetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", false);
+            m_positionHandle = EditorPrefs.GetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", false);
             if (Application.isPlaying) return;
             SerializedProperty initProperty = serializedObject.FindProperty("_initializedInEditor");
             ComplexSurfaceGenerator gen = (ComplexSurfaceGenerator)target;
@@ -36,12 +36,12 @@ namespace Dreamteck.Splines
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            EditorPrefs.SetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", _positionHandle);
+            EditorPrefs.SetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", m_positionHandle);
         }
 
-        protected override void BodyGUI()
+        protected override void BodyGui()
         {
-            base.BodyGUI();
+            base.BodyGui();
             ComplexSurfaceGenerator gen = (ComplexSurfaceGenerator)target;
             EditorGUI.BeginChangeCheck();
             gen.separateMaterialIDs = EditorGUILayout.Toggle("Separate Material IDs", gen.separateMaterialIDs);
@@ -71,11 +71,11 @@ namespace Dreamteck.Splines
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Splines", EditorStyles.boldLabel);
-            _positionHandle = EditorGUILayout.Toggle("Toggle Move Handles", _positionHandle);
+            m_positionHandle = EditorGUILayout.Toggle("Toggle Move Handles", m_positionHandle);
             EditorGUILayout.Space();
             EditorGUI.indentLevel++;
 
-            _scroll = EditorGUILayout.BeginScrollView(_scroll, GUILayout.Height(Mathf.Min(computersProperty.arraySize * 22, 300)));
+            m_scroll = EditorGUILayout.BeginScrollView(m_scroll, GUILayout.Height(Mathf.Min(computersProperty.arraySize * 22, 300)));
             for (int i = 0; i < computersProperty.arraySize; i++)
             {
                 SerializedProperty compProperty = computersProperty.GetArrayElementAtIndex(i);
@@ -89,12 +89,12 @@ namespace Dreamteck.Splines
 
                 if (GUILayout.Button("Highlight", GUILayout.MaxWidth(75)))
                 {
-                    if(_highlightedComputer == spline)
+                    if(m_highlightedComputer == spline)
                     {
-                        _highlightedComputer = null;
+                        m_highlightedComputer = null;
                     } else
                     {
-                        _highlightedComputer = spline;
+                        m_highlightedComputer = spline;
                     }
                 }
                 if (GUILayout.Button("Remove", GUILayout.MaxWidth(75)))
@@ -149,7 +149,7 @@ namespace Dreamteck.Splines
             EditorGUILayout.PropertyField(subdivisionsProperty);
             if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
 
-            UVControls(gen);
+            Uvcontrols(gen);
         }
 
         private void ValidateSplines(ComplexSurfaceGenerator gen, SerializedProperty computersProperty)
@@ -236,17 +236,17 @@ namespace Dreamteck.Splines
 
         public override void OnInspectorGUI()
         {
-            showSize = false;
-            showRotation = false;
-            showNormalMethod = false;
-            showOffset = false;
+            m_showSize = false;
+            m_showRotation = false;
+            m_showNormalMethod = false;
+            m_showOffset = false;
             base.OnInspectorGUI();
         }
 
-        protected override void DuringSceneGUI(SceneView currentSceneView)
+        protected override void DuringSceneGui(SceneView currentSceneView)
         {
             ComplexSurfaceGenerator gen = (ComplexSurfaceGenerator)target;
-            base.DuringSceneGUI(currentSceneView);
+            base.DuringSceneGui(currentSceneView);
             for (int i = 0; i < gen.otherComputers.Length; i++)
             {
                 //SplineDrawer.DrawSplineComputer(gen.otherComputers[i]);
@@ -269,7 +269,7 @@ namespace Dreamteck.Splines
 
                     Vector3 newPos = point;
 
-                    if (_positionHandle)
+                    if (m_positionHandle)
                     {
                         newPos = Handles.PositionHandle(newPos, Quaternion.identity);
                     } else
@@ -281,15 +281,15 @@ namespace Dreamteck.Splines
 
                     if (Vector3.Distance(point, newPos) > 0.01f)
                     {
-                        _lastEditedComputer = otherSplines[i];
-                        _lastEditedPointIndex = j;
-                        _highlightedComputer = null;
+                        m_lastEditedComputer = otherSplines[i];
+                        m_lastEditedPointIndex = j;
+                        m_highlightedComputer = null;
                         MainPointModule.HoldInteraction();
                         markDirty = true;
                         otherSplines[i].SetPointPosition(j, newPos);
                     }
 
-                    bool isSelected = (_lastEditedComputer == otherSplines[i] && _lastEditedPointIndex == j) || (_highlightedComputer == otherSplines[i]);
+                    bool isSelected = (m_lastEditedComputer == otherSplines[i] && m_lastEditedPointIndex == j) || (m_highlightedComputer == otherSplines[i]);
  
 
                     if (Event.current.type == EventType.Repaint)
@@ -300,8 +300,8 @@ namespace Dreamteck.Splines
 
                 if(Event.current.type == EventType.MouseUp && Event.current.button == 0)
                 {
-                    _lastEditedPointIndex = -1;
-                    _lastEditedComputer = null;
+                    m_lastEditedPointIndex = -1;
+                    m_lastEditedComputer = null;
                 }
 
                 if (markDirty)
@@ -312,9 +312,9 @@ namespace Dreamteck.Splines
             }
             if (rebuild)
             {
-                for (int i = 0; i < users.Length; i++)
+                for (int i = 0; i < m_users.Length; i++)
                 {
-                    users[i].RebuildImmediate();
+                    m_users[i].RebuildImmediate();
                 }
             }
         }

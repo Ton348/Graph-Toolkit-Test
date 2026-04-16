@@ -7,8 +7,8 @@ namespace Dreamteck
 {
     public class MeshUtility
     {
-        private static Vector3[] tan1 = new Vector3[0];
-        private static Vector3[] tan2 = new Vector3[0];
+        private static Vector3[] s_tan1 = new Vector3[0];
+        private static Vector3[] s_tan2 = new Vector3[0];
 
         public static int[] GeneratePlaneTriangles(int x, int z, bool flip, int startTriangleIndex = 0, int startVertex = 0)
         {
@@ -59,14 +59,14 @@ namespace Dreamteck
             return triangles;
         }
 
-        public static void CalculateTangents(TS_Mesh mesh)
+        public static void CalculateTangents(TsMesh mesh)
         {
             int triangleCount = mesh.triangles.Length / 3;
             if (mesh.tangents.Length != mesh.vertexCount)  mesh.tangents = new Vector4[mesh.vertexCount];
-            if (tan1.Length != mesh.vertexCount)
+            if (s_tan1.Length != mesh.vertexCount)
             {
-                tan1 = new Vector3[mesh.vertexCount];
-                tan2 = new Vector3[mesh.vertexCount];
+                s_tan1 = new Vector3[mesh.vertexCount];
+                s_tan2 = new Vector3[mesh.vertexCount];
             }
 
             int tri = 0;
@@ -94,13 +94,13 @@ namespace Dreamteck
                 Vector3 sdir = new Vector3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r, (t2 * z1 - t1 * z2) * r);
                 Vector3 tdir = new Vector3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r, (s1 * z2 - s2 * z1) * r);
 
-                tan1[i1] += sdir;
-                tan1[i2] += sdir;
-                tan1[i3] += sdir;
+                s_tan1[i1] += sdir;
+                s_tan1[i2] += sdir;
+                s_tan1[i3] += sdir;
 
-                tan2[i1] += tdir;
-                tan2[i2] += tdir;
-                tan2[i3] += tdir;
+                s_tan2[i1] += tdir;
+                s_tan2[i2] += tdir;
+                s_tan2[i3] += tdir;
 
                 tri += 3;
             }
@@ -108,12 +108,12 @@ namespace Dreamteck
             for (int i = 0; i < mesh.vertexCount; i++)
             {
                 Vector3 n = mesh.normals[i];
-                Vector3 t = tan1[i];
+                Vector3 t = s_tan1[i];
                 Vector3.OrthoNormalize(ref n, ref t);
                 mesh.tangents[i].x = t.x;
                 mesh.tangents[i].y = t.y;
                 mesh.tangents[i].z = t.z;
-                mesh.tangents[i].w = (Vector3.Dot(Vector3.Cross(n, t), tan2[i]) < 0.0f) ? -1.0f : 1.0f;
+                mesh.tangents[i].w = (Vector3.Dot(Vector3.Cross(n, t), s_tan2[i]) < 0.0f) ? -1.0f : 1.0f;
             }
         }
 
@@ -191,7 +191,7 @@ namespace Dreamteck
             for (int i = 0; i < newSubmeshes.Count; i++) input.SetTriangles(newSubmeshes[i], i);
         }
 
-        public static void MakeDoublesided(TS_Mesh input)
+        public static void MakeDoublesided(TsMesh input)
         {
             Vector3[] vertices = input.vertices;
             Vector3[] normals = input.normals;
@@ -264,7 +264,7 @@ namespace Dreamteck
             input.subMeshes = newSubmeshes;
         }
 
-        public static void MakeDoublesidedHalf(TS_Mesh input)
+        public static void MakeDoublesidedHalf(TsMesh input)
         {
             int vertexHalf = input.vertices.Length / 2;
             int trisHalf = input.triangles.Length / 2;
@@ -299,7 +299,7 @@ namespace Dreamteck
             }
         }
 
-        public static void TransformMesh(TS_Mesh input, Matrix4x4 matrix)
+        public static void TransformMesh(TsMesh input, Matrix4x4 matrix)
         {
             if (input.vertices == null || input.normals == null) return;
             for (int i = 0; i < input.vertices.Length; i++)
@@ -340,7 +340,7 @@ namespace Dreamteck
             }
         }
 
-        public static string ToOBJString(Mesh mesh, Material[] materials)
+        public static string ToObjstring(Mesh mesh, Material[] materials)
         {
             int numVertices = 0;
             if (mesh == null)
@@ -494,7 +494,7 @@ namespace Dreamteck
             }
         }
 
-        public static void FlipFaces(TS_Mesh input)
+        public static void FlipFaces(TsMesh input)
         {
             for (int i = 0; i < input.subMeshes.Count; i++)
             {
@@ -633,17 +633,17 @@ namespace Dreamteck
             return true;
         }
 
-        private static bool InsideTriangle(Vector2 A, Vector2 B, Vector2 C, Vector2 P)
+        private static bool InsideTriangle(Vector2 a, Vector2 b, Vector2 c, Vector2 p)
         {
             float ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
             float cCROSSap, bCROSScp, aCROSSbp;
 
-            ax = C.x - B.x; ay = C.y - B.y;
-            bx = A.x - C.x; by = A.y - C.y;
-            cx = B.x - A.x; cy = B.y - A.y;
-            apx = P.x - A.x; apy = P.y - A.y;
-            bpx = P.x - B.x; bpy = P.y - B.y;
-            cpx = P.x - C.x; cpy = P.y - C.y;
+            ax = c.x - b.x; ay = c.y - b.y;
+            bx = a.x - c.x; by = a.y - c.y;
+            cx = b.x - a.x; cy = b.y - a.y;
+            apx = p.x - a.x; apy = p.y - a.y;
+            bpx = p.x - b.x; bpy = p.y - b.y;
+            cpx = p.x - c.x; cpy = p.y - c.y;
 
             aCROSSbp = ax * bpy - ay * bpx;
             cCROSSap = cx * apy - cy * apx;

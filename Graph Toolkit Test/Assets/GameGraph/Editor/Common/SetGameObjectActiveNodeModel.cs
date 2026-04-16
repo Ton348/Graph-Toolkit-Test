@@ -13,8 +13,8 @@ public sealed class SetGameObjectActiveNodeModel : GameGraphEditorNode
 	public const string VisualIdOption = "VisualId";
 	public const string IsActiveOption = "IsActive";
 
-	protected override string DefaultTitle => "Активировать объект";
-	protected override string DefaultDescription => "Изменяет активность визуального объекта.";
+	protected override string defaultTitle => "Активировать объект";
+	protected override string defaultDescription => "Изменяет активность визуального объекта.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

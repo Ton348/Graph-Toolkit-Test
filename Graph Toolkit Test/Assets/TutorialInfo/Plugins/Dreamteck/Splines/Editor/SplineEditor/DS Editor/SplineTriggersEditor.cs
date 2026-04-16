@@ -7,27 +7,27 @@ namespace Dreamteck.Splines.Editor
 
     public class SplineTriggersEditor : SplineEditorBase
     {
-        private int selected = -1, selectedGroup = -1;
-        private bool renameTrigger = false, renameGroup = false;
-        SplineComputer spline;
-        SplineTrigger.Type addTriggerType = SplineTrigger.Type.Double;
-        private int setDistanceGroup, setDistanceTrigger;
+        private int m_selected = -1, m_selectedGroup = -1;
+        private bool m_renameTrigger = false, m_renameGroup = false;
+        SplineComputer m_spline;
+        SplineTrigger.Type m_addTriggerType = SplineTrigger.Type.Double;
+        private int m_setDistanceGroup, m_setDistanceTrigger;
 
         public SplineTriggersEditor(SplineComputer spline, SerializedObject serializedObject) : base(serializedObject)
         {
-            this.spline = spline;
+            this.m_spline = spline;
         }
 
         protected override void Load()
         {
             base.Load();
-            addTriggerType = (SplineTrigger.Type)LoadInt("addTriggerType");
+            m_addTriggerType = (SplineTrigger.Type)LoadInt("addTriggerType");
         }
 
         protected override void Save()
         {
             base.Save();
-            SaveInt("addTriggerType", (int)addTriggerType);
+            SaveInt("addTriggerType", (int)m_addTriggerType);
         }
 
         public override void DrawInspector()
@@ -35,14 +35,14 @@ namespace Dreamteck.Splines.Editor
             base.DrawInspector();
             EditorGUI.BeginChangeCheck();
             EditorGUILayout.BeginVertical();
-            for (int i = 0; i < spline.triggerGroups.Length; i++) DrawGroupGUI(i);
+            for (int i = 0; i < m_spline.triggerGroups.Length; i++) DrawGroupGui(i);
             EditorGUILayout.Space();
             if(GUILayout.Button("New Group"))
             {
                 RecordUndo("Add Trigger Group");
                 TriggerGroup group = new TriggerGroup();
-                group.name = "Trigger Group " + (spline.triggerGroups.Length+1);
-                ArrayUtility.Add(ref spline.triggerGroups, group);
+                group.name = "Trigger Group " + (m_spline.triggerGroups.Length+1);
+                ArrayUtility.Add(ref m_spline.triggerGroups, group);
             }
             EditorGUILayout.EndVertical();
             if (EditorGUI.EndChangeCheck()) SceneView.RepaintAll();
@@ -52,18 +52,18 @@ namespace Dreamteck.Splines.Editor
         {
             base.DrawScene(current);
 
-            if (spline == null) return;
+            if (m_spline == null) return;
 
-            for (int i = 0; i < spline.triggerGroups.Length; i++)
+            for (int i = 0; i < m_spline.triggerGroups.Length; i++)
             {
-                if (!spline.triggerGroups[i].open) continue;
+                if (!m_spline.triggerGroups[i].open) continue;
                 DrawGroupScene(i);
             }
         }
 
         void DrawGroupScene(int index)
         {
-            TriggerGroup group = spline.triggerGroups[index];
+            TriggerGroup group = m_spline.triggerGroups[index];
             for (int i = 0; i < group.triggers.Length; i++)
             {
                 SplineComputerEditorHandles.SplineSliderGizmo gizmo = SplineComputerEditorHandles.SplineSliderGizmo.DualArrow;
@@ -74,7 +74,7 @@ namespace Dreamteck.Splines.Editor
                     case SplineTrigger.Type.Double: gizmo = SplineComputerEditorHandles.SplineSliderGizmo.DualArrow; break;
                 }
                 double last = group.triggers[i].position;
-                if (SplineComputerEditorHandles.Slider(spline, ref group.triggers[i].position, group.triggers[i].color, group.triggers[i].name, gizmo) || last != group.triggers[i].position)
+                if (SplineComputerEditorHandles.Slider(m_spline, ref group.triggers[i].position, group.triggers[i].color, group.triggers[i].name, gizmo) || last != group.triggers[i].position)
                 {
                     Select(index, i);
                     Repaint();
@@ -84,32 +84,32 @@ namespace Dreamteck.Splines.Editor
 
         void OnSetDistance(float distance)
         {
-            SerializedObject serializedObject = new SerializedObject(spline);
+            SerializedObject serializedObject = new SerializedObject(m_spline);
             SerializedProperty groups = serializedObject.FindProperty("triggerGroups");
-            SerializedProperty groupProperty = groups.GetArrayElementAtIndex(setDistanceGroup);
+            SerializedProperty groupProperty = groups.GetArrayElementAtIndex(m_setDistanceGroup);
 
             SerializedProperty triggersProperty = groupProperty.FindPropertyRelative("triggers");
-            SerializedProperty triggerProperty = triggersProperty.GetArrayElementAtIndex(setDistanceTrigger);
+            SerializedProperty triggerProperty = triggersProperty.GetArrayElementAtIndex(m_setDistanceTrigger);
 
             SerializedProperty position = triggerProperty.FindPropertyRelative("position");
 
-            double travel = spline.Travel(0.0, distance, Spline.Direction.Forward);
+            double travel = m_spline.Travel(0.0, distance, Spline.Direction.Forward);
             position.floatValue = (float)travel;
             serializedObject.ApplyModifiedProperties();
         }
 
-        void DrawGroupGUI(int index)
+        void DrawGroupGui(int index)
         {
-            TriggerGroup group = spline.triggerGroups[index];
-            SerializedObject serializedObject = new SerializedObject(spline);
+            TriggerGroup group = m_spline.triggerGroups[index];
+            SerializedObject serializedObject = new SerializedObject(m_spline);
             SerializedProperty groups = serializedObject.FindProperty("triggerGroups");
             SerializedProperty groupProperty = groups.GetArrayElementAtIndex(index);
             EditorGUI.indentLevel += 2;
-            if(selectedGroup == index && renameGroup)
+            if(m_selectedGroup == index && m_renameGroup)
             {
                 if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
                 {
-                    renameGroup  = false;
+                    m_renameGroup  = false;
                     Repaint();
                 }
                 group.name = EditorGUILayout.TextField(group.name);
@@ -118,10 +118,10 @@ namespace Dreamteck.Splines.Editor
             if(lastRect.Contains(Event.current.mousePosition) && Event.current.type == EventType.MouseDown && Event.current.button == 1)
             {
                 GenericMenu menu = new GenericMenu();
-                menu.AddItem(new GUIContent("Rename"), false, delegate { RecordUndo("Rename Trigger Group"); selectedGroup = index; renameGroup = true; renameTrigger = false; Repaint(); });
+                menu.AddItem(new GUIContent("Rename"), false, delegate { RecordUndo("Rename Trigger Group"); m_selectedGroup = index; m_renameGroup = true; m_renameTrigger = false; Repaint(); });
                 menu.AddItem(new GUIContent("Delete"), false, delegate {
                     RecordUndo("Delete Trigger Group");
-                    ArrayUtility.RemoveAt(ref spline.triggerGroups, index);
+                    ArrayUtility.RemoveAt(ref m_spline.triggerGroups, index);
                     Repaint();
                 });
                 menu.ShowAsContext();
@@ -129,18 +129,18 @@ namespace Dreamteck.Splines.Editor
             EditorGUI.indentLevel -= 2;
             if (!group.open) return;
 
-            for (int i = 0; i < group.triggers.Length; i++) DrawTriggerGUI(i, index, groupProperty);
+            for (int i = 0; i < group.triggers.Length; i++) DrawTriggerGui(i, index, groupProperty);
             if (GUI.changed) serializedObject.ApplyModifiedProperties();
 
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("Add Trigger"))
             {
                 RecordUndo("Add Trigger");
-                SplineTrigger newTrigger = new SplineTrigger(addTriggerType);
+                SplineTrigger newTrigger = new SplineTrigger(m_addTriggerType);
                 newTrigger.name = "Trigger " + (group.triggers.Length + 1);
                 ArrayUtility.Add(ref group.triggers, newTrigger);
             }
-            addTriggerType = (SplineTrigger.Type)EditorGUILayout.EnumPopup(addTriggerType);
+            m_addTriggerType = (SplineTrigger.Type)EditorGUILayout.EnumPopup(m_addTriggerType);
             EditorGUILayout.EndHorizontal();
             EditorGUILayout.Space();
             EditorGUILayout.Space();
@@ -148,17 +148,17 @@ namespace Dreamteck.Splines.Editor
 
         void Select(int group, int trigger)
         {
-            selected = trigger;
-            selectedGroup = group;
-            renameTrigger = false;
-            renameGroup = false;
+            m_selected = trigger;
+            m_selectedGroup = group;
+            m_renameTrigger = false;
+            m_renameGroup = false;
             Repaint();
         }
 
-        void DrawTriggerGUI(int index, int groupIndex, SerializedProperty groupProperty)
+        void DrawTriggerGui(int index, int groupIndex, SerializedProperty groupProperty)
         {
-            bool isSelected = selected == index && selectedGroup == groupIndex;
-            TriggerGroup group = spline.triggerGroups[groupIndex];
+            bool isSelected = m_selected == index && m_selectedGroup == groupIndex;
+            TriggerGroup group = m_spline.triggerGroups[groupIndex];
             SplineTrigger trigger = group.triggers[index];
             SerializedProperty triggersProperty = groupProperty.FindPropertyRelative("triggers");
             SerializedProperty triggerProperty = triggersProperty.GetArrayElementAtIndex(index);
@@ -188,11 +188,11 @@ namespace Dreamteck.Splines.Editor
             }
 
 
-            if (isSelected && renameTrigger)
+            if (isSelected && m_renameTrigger)
             {
                 if (Event.current.type == EventType.KeyDown && (Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter))
                 {
-                    renameTrigger = false;
+                    m_renameTrigger = false;
                     Repaint();
                 }
                 nameProperty.stringValue = EditorGUILayout.TextField(nameProperty.stringValue);
@@ -213,9 +213,9 @@ namespace Dreamteck.Splines.Editor
                 if (GUILayout.Button("Set Distance", GUILayout.Width(85)))
                 {
                     DistanceWindow w = EditorWindow.GetWindow<DistanceWindow>(true);
-                    w.Init(OnSetDistance, spline.CalculateLength());
-                    setDistanceGroup = groupIndex;
-                    setDistanceTrigger = index;
+                    w.Init(OnSetDistance, m_spline.CalculateLength());
+                    m_setDistanceGroup = groupIndex;
+                    m_setDistanceTrigger = index;
                 }
                 EditorGUILayout.EndHorizontal();
                 EditorGUILayout.PropertyField(typeProperty);
@@ -233,7 +233,7 @@ namespace Dreamteck.Splines.Editor
                 {
                     GenericMenu menu = new GenericMenu();
                     menu.AddItem(new GUIContent("Deselect"), false, delegate { Select(-1, -1); });
-                    menu.AddItem(new GUIContent("Rename"), false, delegate { Select(groupIndex, index); renameTrigger = true; renameGroup = false; });
+                    menu.AddItem(new GUIContent("Rename"), false, delegate { Select(groupIndex, index); m_renameTrigger = true; m_renameGroup = false; });
                     if (index > 0)
                     {
                         menu.AddItem(new GUIContent("Move Up"), false, delegate {
@@ -241,8 +241,8 @@ namespace Dreamteck.Splines.Editor
                             SplineTrigger temp = group.triggers[index - 1];
                             group.triggers[index - 1] = trigger;
                             group.triggers[index] = temp;
-                            selected--;
-                            renameTrigger = false;
+                            m_selected--;
+                            m_renameTrigger = false;
                         });
                     }
                     else
@@ -256,8 +256,8 @@ namespace Dreamteck.Splines.Editor
                             SplineTrigger temp = group.triggers[index + 1];
                             group.triggers[index + 1] = trigger;
                             group.triggers[index] = temp;
-                            selected--;
-                            renameTrigger = false;
+                            m_selected--;
+                            m_renameTrigger = false;
                         });
                     }
                     else

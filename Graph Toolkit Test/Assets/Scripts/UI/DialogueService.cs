@@ -6,7 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class DialogueUIService : MonoBehaviour
+public class DialogueUiservice : MonoBehaviour
 {
     public GameObject panel;
     public TMP_Text titleText;
@@ -15,7 +15,7 @@ public class DialogueUIService : MonoBehaviour
     public Button continueButton;
     public bool hidePanelOnContinue = false;
 
-    private Action onContinue;
+    private Action m_onContinue;
 
     private void Awake()
     {
@@ -37,7 +37,7 @@ public class DialogueUIService : MonoBehaviour
 
     private void Update()
     {
-        if (panel == null || !panel.activeSelf || onContinue == null)
+        if (panel == null || !panel.activeSelf || m_onContinue == null)
         {
             return;
         }
@@ -56,7 +56,7 @@ public class DialogueUIService : MonoBehaviour
 
     public void ShowDialogue(string title, string body, Action continueCallback, Sprite screenshot = null)
     {
-        onContinue = continueCallback;
+        m_onContinue = continueCallback;
 
         if (titleText != null)
         {
@@ -91,7 +91,7 @@ public class DialogueUIService : MonoBehaviour
             panel.SetActive(false);
         }
 
-        onContinue = null;
+        m_onContinue = null;
     }
 
     private void HandleContinue()
@@ -101,13 +101,13 @@ public class DialogueUIService : MonoBehaviour
             panel.SetActive(false);
         }
 
-        var callback = onContinue;
-        onContinue = null;
+        var callback = m_onContinue;
+        m_onContinue = null;
         callback?.Invoke();
     }
 }
 
-public class DialogueService : DialogueUIService, IGraphDialogueService
+public class DialogueService : DialogueUiservice, IGraphDialogueService
 {
     public UniTask ShowAsync(string title, string body, CancellationToken cancellationToken)
     {
@@ -122,7 +122,7 @@ public class DialogueService : DialogueUIService, IGraphDialogueService
         HideDialogue();
     }
 
-    private static async UniTask AwaitWithCleanupAsync(DialogueUIService dialogueUIService, UniTaskCompletionSource completionSource, CancellationTokenRegistration registration)
+    private static async UniTask AwaitWithCleanupAsync(DialogueUiservice dialogueUiservice, UniTaskCompletionSource completionSource, CancellationTokenRegistration registration)
     {
         try
         {

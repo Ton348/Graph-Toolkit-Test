@@ -5,19 +5,19 @@ namespace Dreamteck
 
     public class PrivateSingleton<T> : MonoBehaviour where T : Component
     {
-        [SerializeField] protected bool _dontDestryOnLoad = true;
-        [SerializeField] protected bool _overrideInstance = false;
+        [SerializeField] protected bool m_dontDestryOnLoad = true;
+        [SerializeField] protected bool m_overrideInstance = false;
 
-        protected static T _instance;
+        protected static T s_instance;
 
         protected virtual void Awake()
         {
-            if (_instance != null && _instance != this)
+            if (s_instance != null && s_instance != this)
             {
-                if (_overrideInstance)
+                if (m_overrideInstance)
                 {
-                    Destroy(_instance.gameObject);
-                    _instance = this as T;
+                    Destroy(s_instance.gameObject);
+                    s_instance = this as T;
                     Init();
                 }
                 else
@@ -27,9 +27,9 @@ namespace Dreamteck
             }
             else
             {
-                _instance = this as T;
+                s_instance = this as T;
 
-                if (_dontDestryOnLoad)
+                if (m_dontDestryOnLoad)
                 {
                     DontDestroyOnLoad(gameObject);
                 }
@@ -43,9 +43,9 @@ namespace Dreamteck
 
         protected virtual void OnDestroy()
         {
-            if (_instance == this && !_overrideInstance)
+            if (s_instance == this && !m_overrideInstance)
             {
-                _instance = null;
+                s_instance = null;
             }
         }
     }

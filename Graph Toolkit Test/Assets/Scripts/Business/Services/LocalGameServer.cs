@@ -4,18 +4,18 @@ using UnityEngine;
 
 public class LocalGameServer : IGameServer
 {
-    private readonly GameRuntimeState runtime;
-    private readonly GameDataRepository dataRepository;
-    private readonly BusinessDefinitionsRepository businessRepository;
-    private readonly int minDelayMs;
-    private readonly int maxDelayMs;
-    private readonly float networkErrorChance;
-    private readonly float timeoutChance;
-    private readonly Dictionary<string, string> graphCheckpoints = new Dictionary<string, string>();
-    private readonly List<ConstructedSiteSnapshot> constructedSites = new List<ConstructedSiteSnapshot>();
-    private readonly List<BusinessInstanceSnapshot> businesses = new List<BusinessInstanceSnapshot>();
-    private readonly HashSet<string> knownContacts = new HashSet<string>();
-    private static readonly System.Random Random = new System.Random();
+    private readonly GameRuntimeState m_runtime;
+    private readonly GameDataRepository m_dataRepository;
+    private readonly BusinessDefinitionsRepository m_businessRepository;
+    private readonly int m_minDelayMs;
+    private readonly int m_maxDelayMs;
+    private readonly float m_networkErrorChance;
+    private readonly float m_timeoutChance;
+    private readonly Dictionary<string, string> m_graphCheckpoints = new Dictionary<string, string>();
+    private readonly List<ConstructedSiteSnapshot> m_constructedSites = new List<ConstructedSiteSnapshot>();
+    private readonly List<BusinessInstanceSnapshot> m_businesses = new List<BusinessInstanceSnapshot>();
+    private readonly HashSet<string> m_knownContacts = new HashSet<string>();
+    private static readonly System.Random s_random = new System.Random();
 
     public LocalGameServer(
         GameRuntimeState runtime,
@@ -26,13 +26,13 @@ public class LocalGameServer : IGameServer
         float networkErrorChance = 0.05f,
         float timeoutChance = 0.03f)
     {
-        this.runtime = runtime;
-        this.dataRepository = dataRepository;
-        this.businessRepository = businessRepository;
-        this.minDelayMs = Mathf.Clamp(minDelayMs, 0, 60000);
-        this.maxDelayMs = Mathf.Max(this.minDelayMs, Mathf.Clamp(maxDelayMs, 0, 60000));
-        this.networkErrorChance = Mathf.Clamp01(networkErrorChance);
-        this.timeoutChance = Mathf.Clamp01(timeoutChance);
+        this.m_runtime = runtime;
+        this.m_dataRepository = dataRepository;
+        this.m_businessRepository = businessRepository;
+        this.m_minDelayMs = Mathf.Clamp(minDelayMs, 0, 60000);
+        this.m_maxDelayMs = Mathf.Max(this.m_minDelayMs, Mathf.Clamp(maxDelayMs, 0, 60000));
+        this.m_networkErrorChance = Mathf.Clamp01(networkErrorChance);
+        this.m_timeoutChance = Mathf.Clamp01(timeoutChance);
     }
 
     public async Task<ServerActionResult> TryGetProfileAsync()
@@ -47,7 +47,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
         }
 
-        if (runtime == null)
+        if (m_runtime == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
@@ -72,18 +72,18 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingIdEmpty", "Building id is empty.");
         }
 
-        if (runtime == null || runtime.Buildings == null || runtime.Player == null)
+        if (m_runtime == null || m_runtime.buildings == null || m_runtime.player == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
-        BuildingState building = FindBuilding(buildingId, runtime.Buildings);
-        if (building == null || building.Definition == null)
+        BuildingState building = FindBuilding(buildingId, m_runtime.buildings);
+        if (building == null || building.definition == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingNotFound", "Building not found.");
         }
 
-        if (building.IsOwned)
+        if (building.isOwned)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingAlreadyOwned", "Building already owned.");
         }
@@ -97,7 +97,7 @@ public class LocalGameServer : IGameServer
                 return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestIdEmpty", "Quest id is empty.");
             }
 
-            questDefinition = dataRepository != null ? dataRepository.GetQuestById(questId) : null;
+            questDefinition = m_dataRepository != null ? m_dataRepository.GetQuestById(questId) : null;
             if (questDefinition == null)
             {
                 return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotFound", "Quest definition not found.");
@@ -107,36 +107,36 @@ public class LocalGameServer : IGameServer
 
             if (questAction == QuestActionType.StartQuest)
             {
-                if (questState != null && questState.Status == QuestStatus.Active)
+                if (questState != null && questState.status == QuestStatus.Active)
                 {
                     return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestAlreadyActive", "Quest already active.");
                 }
-                if (questState != null && questState.Status == QuestStatus.Completed)
+                if (questState != null && questState.status == QuestStatus.Completed)
                 {
                     return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestAlreadyCompleted", "Quest already completed.");
                 }
             }
             else if (questAction == QuestActionType.CompleteQuest)
             {
-                if (questState == null || questState.Status != QuestStatus.Active)
+                if (questState == null || questState.status != QuestStatus.Active)
                 {
                     return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest is not active.");
                 }
             }
         }
 
-        int cost = building.Definition.purchaseCost;
-        if (runtime.Player.Money < cost)
+        int cost = building.definition.purchaseCost;
+        if (m_runtime.player.money < cost)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
         }
 
-        if (!TryBuyBuilding(building, runtime.Player))
+        if (!TryBuyBuilding(building, m_runtime.player))
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuyFailed", "Buy building failed.");
         }
 
-        TryConstructSiteFromBuildingDefinition(building.Definition);
+        TryConstructSiteFromBuildingDefinition(building.definition);
 
         if (questAction == QuestActionType.StartQuest)
         {
@@ -144,9 +144,9 @@ public class LocalGameServer : IGameServer
         }
         else if (questAction == QuestActionType.CompleteQuest)
         {
-            if (questDefinition != null && runtime != null && runtime.Player != null)
+            if (questDefinition != null && m_runtime != null && m_runtime.player != null)
             {
-                runtime.Player.Money += questDefinition.rewardMoney;
+                m_runtime.player.money += questDefinition.rewardMoney;
             }
             CompleteQuest(questId);
         }
@@ -171,7 +171,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotFound", "Quest id is empty.");
         }
 
-        QuestDefinitionData questDefinition = dataRepository != null ? dataRepository.GetQuestById(questId) : null;
+        QuestDefinitionData questDefinition = m_dataRepository != null ? m_dataRepository.GetQuestById(questId) : null;
         if (questDefinition == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotFound", "Quest definition not found.");
@@ -197,13 +197,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest id is empty.");
         }
 
-        if (runtime == null || runtime.Quests == null)
+        if (m_runtime == null || m_runtime.quests == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
         QuestState quest = GetQuestById(questId);
-        if (quest == null || quest.Status != QuestStatus.Active)
+        if (quest == null || quest.status != QuestStatus.Active)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest is not active.");
         }
@@ -229,13 +229,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest id is empty.");
         }
 
-        if (runtime == null || runtime.Quests == null)
+        if (m_runtime == null || m_runtime.quests == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
         QuestState quest = GetQuestById(questId);
-        if (quest == null || quest.Status != QuestStatus.Active)
+        if (quest == null || quest.status != QuestStatus.Active)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotActive", "Quest is not active.");
         }
@@ -256,7 +256,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
         }
 
-        if (runtime == null || runtime.Player == null)
+        if (m_runtime == null || m_runtime.player == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
@@ -266,7 +266,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidAmount", "Amount must be > 0.");
         }
 
-        runtime.Player.Money += amount;
+        m_runtime.player.money += amount;
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Add money success.");
     }
 
@@ -282,7 +282,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
         }
 
-        if (runtime == null || runtime.Player == null)
+        if (m_runtime == null || m_runtime.player == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
@@ -292,12 +292,12 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidAmount", "Amount must be > 0.");
         }
 
-        if (runtime.Player.Money < amount)
+        if (m_runtime.player.money < amount)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
         }
 
-        runtime.Player.Money -= amount;
+        m_runtime.player.money -= amount;
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Spend money success.");
     }
 
@@ -313,21 +313,21 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
         }
 
-        if (runtime == null || runtime.Player == null)
+        if (m_runtime == null || m_runtime.player == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
         if (!canFail)
         {
-            runtime.Player.Money += amount;
+            m_runtime.player.money += amount;
             return ServerActionResult.SuccessResult(BuildSnapshot(), "Steal success.");
         }
 
         int roll;
-        lock (Random)
+        lock (s_random)
         {
-            roll = Random.Next(0, 100);
+            roll = s_random.Next(0, 100);
         }
 
         bool success = roll < Mathf.Clamp(successChance, 0, 100);
@@ -336,7 +336,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StealFailed", "Steal failed.");
         }
 
-        runtime.Player.Money += amount;
+        m_runtime.player.money += amount;
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Steal success.");
     }
 
@@ -359,11 +359,11 @@ public class LocalGameServer : IGameServer
 
         if (string.IsNullOrEmpty(checkpointId))
         {
-            graphCheckpoints.Remove(graphId);
+            m_graphCheckpoints.Remove(graphId);
             return ServerActionResult.SuccessResult(BuildSnapshot(), "Checkpoint cleared.");
         }
 
-        graphCheckpoints[graphId] = checkpointId;
+        m_graphCheckpoints[graphId] = checkpointId;
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Checkpoint saved.");
     }
 
@@ -389,41 +389,41 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidOffer", "Offer must be >= 1.");
         }
 
-        if (runtime == null || runtime.Buildings == null || runtime.Player == null)
+        if (m_runtime == null || m_runtime.buildings == null || m_runtime.player == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
-        BuildingState building = FindBuilding(buildingId, runtime.Buildings);
-        if (building == null || building.Definition == null)
+        BuildingState building = FindBuilding(buildingId, m_runtime.buildings);
+        if (building == null || building.definition == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingNotFound", "Building not found.");
         }
 
-        if (building.IsOwned)
+        if (building.isOwned)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BuildingAlreadyOwned", "Building already owned.");
         }
 
-        int fullPrice = building.Definition.purchaseCost;
+        int fullPrice = building.definition.purchaseCost;
         if (offeredAmount > fullPrice)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "OfferTooHigh", "Offer exceeds full price.");
         }
 
-        if (runtime.Player.Money < offeredAmount)
+        if (m_runtime.player.money < offeredAmount)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
         }
 
         int baseChance = GetBaseTradeChance(offeredAmount, fullPrice);
-        int tradingBonus = runtime.Player.Trading;
+        int tradingBonus = m_runtime.player.trading;
         int finalChance = Mathf.Clamp(baseChance + tradingBonus, 0, 95);
 
         int roll;
-        lock (Random)
+        lock (s_random)
         {
-            roll = Random.Next(0, 100);
+            roll = s_random.Next(0, 100);
         }
 
         if (roll >= finalChance)
@@ -431,9 +431,9 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "TradeRejected", "Trade offer rejected.");
         }
 
-        runtime.Player.Money -= offeredAmount;
-        building.IsOwned = true;
-        TryConstructSiteFromBuildingDefinition(building.Definition);
+        m_runtime.player.money -= offeredAmount;
+        building.isOwned = true;
+        TryConstructSiteFromBuildingDefinition(building.definition);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Trade offer accepted.");
     }
 
@@ -459,7 +459,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessAlreadyRented", "Business already rented for this lot.");
         }
 
-        var lotDef = dataRepository?.GetLotById(lotId);
+        var lotDef = m_dataRepository?.GetLotById(lotId);
         if (lotDef == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotNotFound", "Lot not found.");
@@ -485,7 +485,7 @@ public class LocalGameServer : IGameServer
             hiredMerchContactId = null
         };
 
-        businesses.Add(business);
+        m_businesses.Add(business);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Rent business success.");
     }
 
@@ -518,7 +518,7 @@ public class LocalGameServer : IGameServer
             {
                 siteId = siteId.Trim()
             };
-            constructedSites.Add(site);
+            m_constructedSites.Add(site);
         }
 
         site.isConstructed = true;
@@ -546,7 +546,7 @@ public class LocalGameServer : IGameServer
         var site = FindConstructedSiteBySiteId(siteId);
         if (site != null)
         {
-            constructedSites.Remove(site);
+            m_constructedSites.Remove(site);
         }
 
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Remove site visual success.");
@@ -580,7 +580,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
         }
 
-        var lotDef = dataRepository?.GetLotById(lotId);
+        var lotDef = m_dataRepository?.GetLotById(lotId);
         if (lotDef == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotNotFound", "Lot not found.");
@@ -592,7 +592,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeNotAllowedForLot", "Business type not allowed for this lot.");
         }
 
-        var typeDef = businessRepository?.GetBusinessType(businessTypeId);
+        var typeDef = m_businessRepository?.GetBusinessType(businessTypeId);
         if (typeDef == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeNotFound", "Business type not found.");
@@ -632,7 +632,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
         }
 
-        var moduleDef = businessRepository?.GetModule(moduleId);
+        var moduleDef = m_businessRepository?.GetModule(moduleId);
         if (moduleDef == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleNotFound", "Module not found.");
@@ -643,17 +643,17 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleAlreadyInstalled", "Module already installed.");
         }
 
-        if (runtime == null || runtime.Player == null)
+        if (m_runtime == null || m_runtime.player == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
-        if (runtime.Player.Money < moduleDef.installCost)
+        if (m_runtime.player.money < moduleDef.installCost)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney", "Not enough money.");
         }
 
-        runtime.Player.Money -= moduleDef.installCost;
+        m_runtime.player.money -= moduleDef.installCost;
         business.installedModules.Add(moduleId);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Install module success.");
     }
@@ -686,13 +686,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
         }
 
-        var supplier = businessRepository?.GetSupplier(supplierId);
+        var supplier = m_businessRepository?.GetSupplier(supplierId);
         if (supplier == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "SupplierNotFound", "Supplier not found.");
         }
 
-        if (!knownContacts.Contains(supplierId))
+        if (!m_knownContacts.Contains(supplierId))
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactNotKnown", "Supplier contact not unlocked.");
         }
@@ -734,13 +734,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound", "Business not found.");
         }
 
-        var role = businessRepository?.GetStaffRole(roleId);
+        var role = m_businessRepository?.GetStaffRole(roleId);
         if (role == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidWorkerRole", "Worker role not found.");
         }
 
-        if (!knownContacts.Contains(contactId))
+        if (!m_knownContacts.Contains(contactId))
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactNotKnown", "Contact not unlocked.");
         }
@@ -794,7 +794,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeMissing", "Business type not assigned.");
         }
 
-        var typeDef = businessRepository?.GetBusinessType(business.businessTypeId);
+        var typeDef = m_businessRepository?.GetBusinessType(business.businessTypeId);
         if (typeDef == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessTypeNotFound", "Business type not found.");
@@ -889,7 +889,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactIdEmpty", "contactId is required.");
         }
 
-        knownContacts.Add(contactId);
+        m_knownContacts.Add(contactId);
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Unlock contact success.");
     }
 
@@ -1023,7 +1023,7 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
         }
 
-        businesses.Clear();
+        m_businesses.Clear();
         return ServerActionResult.SuccessResult(BuildSnapshot(), "Businesses reset.");
     }
 
@@ -1034,7 +1034,7 @@ public class LocalGameServer : IGameServer
         for (int i = 0; i < buildings.Count; i++)
         {
             BuildingState state = buildings[i];
-            if (state != null && state.Definition != null && state.Definition.id == buildingId)
+            if (state != null && state.definition != null && state.definition.id == buildingId)
             {
                 return state;
             }
@@ -1047,9 +1047,9 @@ public class LocalGameServer : IGameServer
     {
         if (string.IsNullOrWhiteSpace(lotId)) return null;
 
-        for (int i = 0; i < businesses.Count; i++)
+        for (int i = 0; i < m_businesses.Count; i++)
         {
-            var business = businesses[i];
+            var business = m_businesses[i];
             if (business != null && business.lotId == lotId)
             {
                 return business;
@@ -1064,9 +1064,9 @@ public class LocalGameServer : IGameServer
         if (string.IsNullOrWhiteSpace(siteId)) return null;
 
         string normalizedSiteId = siteId.Trim();
-        for (int i = 0; i < constructedSites.Count; i++)
+        for (int i = 0; i < m_constructedSites.Count; i++)
         {
-            var site = constructedSites[i];
+            var site = m_constructedSites[i];
             if (site != null && site.siteId == normalizedSiteId)
             {
                 return site;
@@ -1089,7 +1089,7 @@ public class LocalGameServer : IGameServer
         var existing = FindConstructedSiteBySiteId(normalizedSiteId);
         if (existing == null)
         {
-            constructedSites.Add(new ConstructedSiteSnapshot
+            m_constructedSites.Add(new ConstructedSiteSnapshot
             {
                 siteId = normalizedSiteId,
                 visualId = normalizedVisualId,
@@ -1106,68 +1106,68 @@ public class LocalGameServer : IGameServer
     {
         var snapshot = new ProfileSnapshot();
 
-        if (runtime != null && runtime.Player != null)
+        if (m_runtime != null && m_runtime.player != null)
         {
-            snapshot.Money = runtime.Player.Money;
-            snapshot.Bargaining = runtime.Player.Bargaining;
-            snapshot.Speech = runtime.Player.Speech;
-            snapshot.Trading = runtime.Player.Trading;
-            snapshot.Speed = runtime.Player.Speed;
-            snapshot.Damage = runtime.Player.Damage;
-            snapshot.Health = runtime.Player.Health;
+            snapshot.money = m_runtime.player.money;
+            snapshot.bargaining = m_runtime.player.bargaining;
+            snapshot.speech = m_runtime.player.speech;
+            snapshot.trading = m_runtime.player.trading;
+            snapshot.speed = m_runtime.player.speed;
+            snapshot.damage = m_runtime.player.damage;
+            snapshot.health = m_runtime.player.health;
         }
 
-        if (runtime != null && runtime.Quests != null)
+        if (m_runtime != null && m_runtime.quests != null)
         {
-            foreach (QuestState quest in runtime.Quests)
+            foreach (QuestState quest in m_runtime.quests)
             {
-                if (quest == null || quest.Definition == null)
+                if (quest == null || quest.definition == null)
                 {
                     continue;
                 }
 
-                string id = quest.Definition.id;
-                if (quest.Status == QuestStatus.Active)
+                string id = quest.definition.id;
+                if (quest.status == QuestStatus.Active)
                 {
-                    snapshot.ActiveQuestIds.Add(id);
+                    snapshot.activeQuestIds.Add(id);
                 }
-                else if (quest.Status == QuestStatus.Completed)
+                else if (quest.status == QuestStatus.Completed)
                 {
-                    snapshot.CompletedQuestIds.Add(id);
+                    snapshot.completedQuestIds.Add(id);
                 }
             }
         }
 
-        if (runtime != null && runtime.Buildings != null)
+        if (m_runtime != null && m_runtime.buildings != null)
         {
-            foreach (BuildingState building in runtime.Buildings)
+            foreach (BuildingState building in m_runtime.buildings)
             {
-                if (building == null || building.Definition == null)
+                if (building == null || building.definition == null)
                 {
                     continue;
                 }
 
-                if (building.IsOwned)
+                if (building.isOwned)
                 {
                     var buildingSnapshot = new BuildingStateSnapshot
                     {
-                        id = building.Definition.id,
+                        id = building.definition.id,
                         owned = true,
-                        level = building.Level,
-                        currentIncome = building.CurrentIncome,
-                        currentExpenses = building.CurrentExpenses
+                        level = building.level,
+                        currentIncome = building.currentIncome,
+                        currentExpenses = building.currentExpenses
                     };
-                    snapshot.BuildingStates.Add(buildingSnapshot);
-                    snapshot.OwnedBuildingIds.Add(building.Definition.id);
+                    snapshot.buildingStates.Add(buildingSnapshot);
+                    snapshot.ownedBuildingIds.Add(building.definition.id);
                 }
             }
         }
 
-        if (graphCheckpoints.Count > 0)
+        if (m_graphCheckpoints.Count > 0)
         {
-            foreach (var pair in graphCheckpoints)
+            foreach (var pair in m_graphCheckpoints)
             {
-                snapshot.GraphCheckpoints.Add(new GraphCheckpointSnapshot
+                snapshot.graphCheckpoints.Add(new GraphCheckpointSnapshot
                 {
                     graphId = pair.Key,
                     checkpointId = pair.Value
@@ -1175,16 +1175,16 @@ public class LocalGameServer : IGameServer
             }
         }
 
-        if (constructedSites.Count > 0)
+        if (m_constructedSites.Count > 0)
         {
-            foreach (var site in constructedSites)
+            foreach (var site in m_constructedSites)
             {
                 if (site == null || string.IsNullOrWhiteSpace(site.siteId))
                 {
                     continue;
                 }
 
-                snapshot.ConstructedSites.Add(new ConstructedSiteSnapshot
+                snapshot.constructedSites.Add(new ConstructedSiteSnapshot
                 {
                     siteId = site.siteId,
                     visualId = site.isConstructed ? site.visualId : null,
@@ -1193,9 +1193,9 @@ public class LocalGameServer : IGameServer
             }
         }
 
-        if (businesses.Count > 0)
+        if (m_businesses.Count > 0)
         {
-            foreach (var business in businesses)
+            foreach (var business in m_businesses)
             {
                 if (business == null || string.IsNullOrEmpty(business.instanceId))
                 {
@@ -1226,13 +1226,13 @@ public class LocalGameServer : IGameServer
                     businessSnapshot.installedModules.AddRange(business.installedModules);
                 }
 
-                snapshot.Businesses.Add(businessSnapshot);
+                snapshot.businesses.Add(businessSnapshot);
             }
         }
 
-        if (knownContacts.Count > 0)
+        if (m_knownContacts.Count > 0)
         {
-            snapshot.KnownContacts.AddRange(knownContacts);
+            snapshot.knownContacts.AddRange(m_knownContacts);
         }
 
         return snapshot;
@@ -1245,13 +1245,13 @@ public class LocalGameServer : IGameServer
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestNotFound", "Quest definition is null.");
         }
 
-        if (runtime == null || runtime.Quests == null)
+        if (m_runtime == null || m_runtime.quests == null)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing", "Runtime state is not available.");
         }
 
         QuestState existing = GetQuestById(questDefinition.id);
-        if (existing != null && existing.Status == QuestStatus.Active)
+        if (existing != null && existing.status == QuestStatus.Active)
         {
             return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "QuestAlreadyActive", "Quest already active.");
         }
@@ -1262,30 +1262,30 @@ public class LocalGameServer : IGameServer
 
     private bool TryBuyBuilding(BuildingState building, PlayerProfileState player)
     {
-        if (building == null || player == null || building.Definition == null)
+        if (building == null || player == null || building.definition == null)
         {
             return false;
         }
 
-        if (building.IsOwned)
+        if (building.isOwned)
         {
             return false;
         }
 
-        int cost = building.Definition.purchaseCost;
-        if (player.Money < cost)
+        int cost = building.definition.purchaseCost;
+        if (player.money < cost)
         {
             return false;
         }
 
-        player.Money -= cost;
-        building.IsOwned = true;
+        player.money -= cost;
+        building.isOwned = true;
         return true;
     }
 
     private void AcceptQuest(QuestDefinitionData definition)
     {
-        if (runtime == null || runtime.Quests == null || definition == null)
+        if (m_runtime == null || m_runtime.quests == null || definition == null)
         {
             return;
         }
@@ -1299,50 +1299,50 @@ public class LocalGameServer : IGameServer
         if (quest == null)
         {
             quest = new QuestState(definition);
-            runtime.Quests.Add(quest);
+            m_runtime.quests.Add(quest);
         }
         else
         {
-            quest.Definition = definition;
+            quest.definition = definition;
         }
 
-        quest.Status = QuestStatus.Active;
+        quest.status = QuestStatus.Active;
     }
 
     private void CompleteQuest(string questId)
     {
         QuestState quest = GetQuestById(questId);
-        if (quest != null && quest.Status == QuestStatus.Active)
+        if (quest != null && quest.status == QuestStatus.Active)
         {
-            quest.Status = QuestStatus.Completed;
+            quest.status = QuestStatus.Completed;
         }
     }
 
     private void FailQuest(string questId)
     {
         QuestState quest = GetQuestById(questId);
-        if (quest != null && quest.Status == QuestStatus.Active)
+        if (quest != null && quest.status == QuestStatus.Active)
         {
-            quest.Status = QuestStatus.Failed;
+            quest.status = QuestStatus.Failed;
         }
     }
 
     private bool HasActiveQuest(string questId)
     {
         QuestState quest = GetQuestById(questId);
-        return quest != null && quest.Status == QuestStatus.Active;
+        return quest != null && quest.status == QuestStatus.Active;
     }
 
     private QuestState GetQuestById(string questId)
     {
-        if (runtime == null || runtime.Quests == null || string.IsNullOrEmpty(questId))
+        if (m_runtime == null || m_runtime.quests == null || string.IsNullOrEmpty(questId))
         {
             return null;
         }
 
-        foreach (QuestState quest in runtime.Quests)
+        foreach (QuestState quest in m_runtime.quests)
         {
-            if (quest?.Definition != null && quest.Definition.id == questId)
+            if (quest?.definition != null && quest.definition.id == questId)
             {
                 return quest;
             }
@@ -1353,9 +1353,9 @@ public class LocalGameServer : IGameServer
 
     private int NextDelayMs()
     {
-        lock (Random)
+        lock (s_random)
         {
-            return Random.Next(minDelayMs, maxDelayMs + 1);
+            return s_random.Next(m_minDelayMs, m_maxDelayMs + 1);
         }
     }
 
@@ -1383,17 +1383,17 @@ public class LocalGameServer : IGameServer
     private ServerActionResult.ErrorType SampleNetworkIssue()
     {
         double roll;
-        lock (Random)
+        lock (s_random)
         {
-            roll = Random.NextDouble();
+            roll = s_random.NextDouble();
         }
 
-        if (roll < networkErrorChance)
+        if (roll < m_networkErrorChance)
         {
             return ServerActionResult.ErrorType.NetworkError;
         }
 
-        if (roll < networkErrorChance + timeoutChance)
+        if (roll < m_networkErrorChance + m_timeoutChance)
         {
             return ServerActionResult.ErrorType.Timeout;
         }

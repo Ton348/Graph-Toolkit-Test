@@ -6,16 +6,16 @@ public class CompassManager : MonoBehaviour
 {
     public static CompassManager Instance { get; private set; }
 
-    [SerializeField] private Transform player;
+    [SerializeField] private Transform m_player;
 
-    private readonly Dictionary<string, CompassTarget> _activeTargets = new Dictionary<string, CompassTarget>();
-    private readonly HashSet<string> _pendingShow = new HashSet<string>();
+    private readonly Dictionary<string, CompassTarget> m_activeTargets = new Dictionary<string, CompassTarget>();
+    private readonly HashSet<string> m_pendingShow = new HashSet<string>();
 
-    public event Action ActiveTargetsChanged;
+    public event Action activeTargetsChanged;
 
-    public Transform Player => player;
+    public Transform Player => m_player;
 
-    public IReadOnlyCollection<CompassTarget> ActiveTargets => _activeTargets.Values;
+    public IReadOnlyCollection<CompassTarget> ActiveTargets => m_activeTargets.Values;
 
     private void Awake()
     {
@@ -33,8 +33,8 @@ public class CompassManager : MonoBehaviour
         var registry = CompassTargetRegistry.Instance;
         if (registry != null)
         {
-            registry.TargetRegistered += OnTargetRegistered;
-            registry.TargetUnregistered += OnTargetUnregistered;
+            registry.targetRegistered += OnTargetRegistered;
+            registry.targetUnregistered += OnTargetUnregistered;
         }
     }
 
@@ -43,27 +43,27 @@ public class CompassManager : MonoBehaviour
         var registry = CompassTargetRegistry.Instance;
         if (registry != null)
         {
-            registry.TargetRegistered -= OnTargetRegistered;
-            registry.TargetUnregistered -= OnTargetUnregistered;
+            registry.targetRegistered -= OnTargetRegistered;
+            registry.targetUnregistered -= OnTargetUnregistered;
         }
     }
 
     public void ShowTarget(string id)
     {
         if (string.IsNullOrWhiteSpace(id)) return;
-        if (_activeTargets.ContainsKey(id)) return;
+        if (m_activeTargets.ContainsKey(id)) return;
 
         var registry = CompassTargetRegistry.Instance;
         var target = registry != null ? registry.GetTarget(id) : null;
 
         if (target != null)
         {
-            _activeTargets[id] = target;
-            ActiveTargetsChanged?.Invoke();
+            m_activeTargets[id] = target;
+            activeTargetsChanged?.Invoke();
         }
         else
         {
-            _pendingShow.Add(id);
+            m_pendingShow.Add(id);
         }
     }
 
@@ -71,12 +71,12 @@ public class CompassManager : MonoBehaviour
     {
         if (string.IsNullOrWhiteSpace(id)) return;
 
-        bool removed = _activeTargets.Remove(id);
-        _pendingShow.Remove(id);
+        bool removed = m_activeTargets.Remove(id);
+        m_pendingShow.Remove(id);
 
         if (removed)
         {
-            ActiveTargetsChanged?.Invoke();
+            activeTargetsChanged?.Invoke();
         }
     }
 
@@ -87,11 +87,11 @@ public class CompassManager : MonoBehaviour
         string id = target.TargetId;
         if (string.IsNullOrWhiteSpace(id)) return;
 
-        if (_pendingShow.Contains(id) || _activeTargets.ContainsKey(id))
+        if (m_pendingShow.Contains(id) || m_activeTargets.ContainsKey(id))
         {
-            _pendingShow.Remove(id);
-            _activeTargets[id] = target;
-            ActiveTargetsChanged?.Invoke();
+            m_pendingShow.Remove(id);
+            m_activeTargets[id] = target;
+            activeTargetsChanged?.Invoke();
         }
     }
 
@@ -102,10 +102,10 @@ public class CompassManager : MonoBehaviour
         string id = target.TargetId;
         if (string.IsNullOrWhiteSpace(id)) return;
 
-        if (_activeTargets.TryGetValue(id, out var existing) && existing == target)
+        if (m_activeTargets.TryGetValue(id, out var existing) && existing == target)
         {
-            _activeTargets.Remove(id);
-            ActiveTargetsChanged?.Invoke();
+            m_activeTargets.Remove(id);
+            activeTargetsChanged?.Invoke();
         }
     }
 }

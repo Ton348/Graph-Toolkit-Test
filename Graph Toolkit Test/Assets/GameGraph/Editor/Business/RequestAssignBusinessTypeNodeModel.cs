@@ -13,8 +13,8 @@ public sealed class RequestAssignBusinessTypeNodeModel : GameGraphSuccessFailNod
 	public const string LotIdOption = "LotId";
 	public const string BusinessTypeIdOption = "BusinessTypeId";
 
-	protected override string DefaultTitle => "Назначить тип бизнеса";
-	protected override string DefaultDescription => "Назначает тип бизнеса для участка.";
+	protected override string defaultTitle => "Назначить тип бизнеса";
+	protected override string defaultDescription => "Назначает тип бизнеса для участка.";
 
 	protected override void OnDefineOptions(IOptionDefinitionContext context)
 	{

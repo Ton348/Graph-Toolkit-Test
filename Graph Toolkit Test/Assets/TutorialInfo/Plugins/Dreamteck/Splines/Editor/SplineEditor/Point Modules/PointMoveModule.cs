@@ -13,7 +13,7 @@ namespace Dreamteck.Splines.Editor
         public float surfaceOffset = 0f;
         public LayerMask surfaceLayerMask = ~0;
 
-        private bool useTangentHandles => editor.mainModule.tangentMode || editor.selectedPoints.Count != 1;
+        private bool useTangentHandles => m_editor.mainModule.tangentMode || m_editor.selectedPoints.Count != 1;
 
         public PointMoveModule(SplineEditor editor) : base(editor)
         {
@@ -62,7 +62,7 @@ namespace Dreamteck.Splines.Editor
             surfaceMode = EditorGUILayout.Toggle("Move On Surface", surfaceMode);
             if (surfaceMode)
             {
-                surfaceLayerMask = DreamteckEditorGUI.LayermaskField("Surface Mask", surfaceLayerMask);
+                surfaceLayerMask = DreamteckEditorGui.LayermaskField("Surface Mask", surfaceLayerMask);
                 surfaceOffset = EditorGUILayout.FloatField("Surface Offset", surfaceOffset);
             }
             snap = EditorGUILayout.Toggle("Snap to Grid", snap);
@@ -101,7 +101,7 @@ namespace Dreamteck.Splines.Editor
             }
             else
             {
-                c = Handles.PositionHandle(c, rotation);
+                c = Handles.PositionHandle(c, m_rotation);
             }
             if (lastPos != c)
             {
@@ -123,7 +123,7 @@ namespace Dreamteck.Splines.Editor
                     newPos = SurfaceMoveHandle(points[index].tangent, 0.15f);
                 } else
                 {
-                    newPos = Handles.PositionHandle(points[index].tangent, rotation);
+                    newPos = Handles.PositionHandle(points[index].tangent, m_rotation);
                 }
 
                 if (snap) newPos = SnapPoint(newPos);
@@ -139,7 +139,7 @@ namespace Dreamteck.Splines.Editor
                     newPos = SurfaceMoveHandle(points[index].tangent2, 0.15f);
                 } else
                 {
-                    newPos = Handles.PositionHandle(points[index].tangent2, rotation);
+                    newPos = Handles.PositionHandle(points[index].tangent2, m_rotation);
                 }
                     
                 if (snap) newPos = SnapPoint(newPos);

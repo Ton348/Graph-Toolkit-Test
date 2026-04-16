@@ -10,15 +10,15 @@ namespace Dreamteck.Splines.Editor
 
         public bool splineChanged
         {
-            get { return _splineChanged; }
+            get { return m_splineChanged; }
         }
 
-        private Transform _transform;
-        private DSCreatePointModule _createPointModule = null;
-        private Dreamteck.Editor.Toolbar _nodesToolbar;
-        private bool _splineChanged = false;
+        private Transform m_transform;
+        private DscreatePointModule m_createPointModule = null;
+        private Dreamteck.Editor.Toolbar m_nodesToolbar;
+        private bool m_splineChanged = false;
 
-        private List<Vector3> _triggerWorldPositions = new List<Vector3>();
+        private List<Vector3> m_triggerWorldPositions = new List<Vector3>();
 
 
         protected override string editorName { get { return "DreamteckSplines"; } }
@@ -26,7 +26,7 @@ namespace Dreamteck.Splines.Editor
         public DreamteckSplinesEditor(SplineComputer splineComputer, SerializedObject splineHolder) : base (splineComputer.transform.localToWorldMatrix, splineHolder, "_spline")
         {
             spline = splineComputer;
-            _transform = spline.transform;
+            m_transform = spline.transform;
             evaluate = spline.Evaluate;
             evaluateAtPoint = spline.Evaluate;
             evaluatePosition = spline.EvaluatePosition;
@@ -49,13 +49,13 @@ namespace Dreamteck.Splines.Editor
             nodeToolbarContents[0] = new GUIContent("Select");
             nodeToolbarContents[1] = new GUIContent("Delete");
             nodeToolbarContents[2] = new GUIContent("Disconnect");
-            _nodesToolbar = new Dreamteck.Editor.Toolbar(nodeToolbarContents);
+            m_nodesToolbar = new Dreamteck.Editor.Toolbar(nodeToolbarContents);
         }
 
         protected override void Load()
         {
-            pointOperations.Add(new PointOperation { name = "Center To Transform", action = delegate { CenterSelection(); } });
-            pointOperations.Add(new PointOperation { name = "Move Transform To", action = delegate { MoveTransformToSelection(); } });
+            m_pointOperations.Add(new PointOperation { name = "Center To Transform", action = delegate { CenterSelection(); } });
+            m_pointOperations.Add(new PointOperation { name = "Move Transform To", action = delegate { MoveTransformToSelection(); } });
             base.Load();
         }
 
@@ -85,11 +85,11 @@ namespace Dreamteck.Splines.Editor
 
         public void CacheTriggerPositions()
         {
-            _triggerWorldPositions.Clear();
+            m_triggerWorldPositions.Clear();
             LoopTriggerProperties((trigger) =>
             {
                 SerializedProperty positionProperty = trigger.FindPropertyRelative("position");
-                _triggerWorldPositions.Add(spline.EvaluatePosition(positionProperty.floatValue));
+                m_triggerWorldPositions.Add(spline.EvaluatePosition(positionProperty.floatValue));
             });
         }
 
@@ -99,12 +99,12 @@ namespace Dreamteck.Splines.Editor
             int index = 0;
             LoopTriggerProperties((trigger) =>
             {
-                spline.Project(_triggerWorldPositions[index], ref projectSample);
+                spline.Project(m_triggerWorldPositions[index], ref projectSample);
                 SerializedProperty positionProperty = trigger.FindPropertyRelative("position");
                 positionProperty.floatValue = (float)projectSample.percent;
                 index++;
             });
-            _serializedObject.ApplyModifiedProperties();
+            m_serializedObject.ApplyModifiedProperties();
         }
 
         private void OnBeforeDeleteSelectedPoints()
@@ -169,8 +169,8 @@ namespace Dreamteck.Splines.Editor
             if (nodesCount > 0)
             {
                 int option = -1;
-                _nodesToolbar.center = false;
-                _nodesToolbar.Draw(ref option);
+                m_nodesToolbar.center = false;
+                m_nodesToolbar.Draw(ref option);
                 if(option == 0)
                 {
                     List<Node> nodeList = new List<Node>();
@@ -248,8 +248,8 @@ namespace Dreamteck.Splines.Editor
         }
         protected override void OnModuleList(List<PointModule> list)
         {
-            _createPointModule = new DSCreatePointModule(this);
-            list.Add(_createPointModule);
+            m_createPointModule = new DscreatePointModule(this);
+            list.Add(m_createPointModule);
             list.Add(new DeletePointModule(this));
             list.Add(new PointMoveModule(this));
             list.Add(new PointRotateModule(this));
@@ -268,16 +268,16 @@ namespace Dreamteck.Splines.Editor
             }
         }
 
-        public override void BeforeSceneGUI(SceneView current)
+        public override void BeforeSceneGui(SceneView current)
         {
             for (int i = 0; i < moduleCount; i++)
             {
                 SetupModule(GetModule(i));
             }
             SetupModule(mainModule);
-            _createPointModule.createPointColor = SplinePrefs.createPointColor;
-            _createPointModule.createPointSize = SplinePrefs.createPointSize;
-            base.BeforeSceneGUI(current);
+            m_createPointModule.createPointColor = SplinePrefs.createPointColor;
+            m_createPointModule.createPointSize = SplinePrefs.createPointSize;
+            base.BeforeSceneGui(current);
         }
 
         public override void DeletePoint(int index)
@@ -292,7 +292,7 @@ namespace Dreamteck.Splines.Editor
                     nodes.Add(node.Key - 1, node.Value);
                 }
             }
-            var nodesProperty = _serializedObject.FindProperty("_nodes");
+            var nodesProperty = m_serializedObject.FindProperty("_nodes");
             for (int i = 0; i < nodesProperty.arraySize; i++)
             {
                 var indexProperty = nodesProperty.GetArrayElementAtIndex(i).FindPropertyRelative("pointIndex");
@@ -303,7 +303,7 @@ namespace Dreamteck.Splines.Editor
                 }
             }
             InverseTransformPoints();
-            _pointsProperty.DeleteArrayElementAtIndex(index);
+            pointsProperty.DeleteArrayElementAtIndex(index);
 
             foreach (var node in nodes)
             {
@@ -316,7 +316,7 @@ namespace Dreamteck.Splines.Editor
                 lastIndexProperty.intValue = node.Key;
             }
 
-            _serializedObject.ApplyModifiedProperties();
+            m_serializedObject.ApplyModifiedProperties();
             GetPointsFromSpline();
             spline.Rebuild(true);
             WriteTriggerPositions();
@@ -326,7 +326,7 @@ namespace Dreamteck.Splines.Editor
         {
             base.GetPointsFromSpline();
 
-            if (_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
+            if (m_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
             {
                 TransformPoints();
             }
@@ -334,7 +334,7 @@ namespace Dreamteck.Splines.Editor
 
         public override void ApplyModifiedProperties(bool forceAllUpdate = false)
         {
-            if (_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
+            if (m_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
             {
                 InverseTransformPoints();
             }
@@ -347,20 +347,20 @@ namespace Dreamteck.Splines.Editor
                 }
             }
 
-            _splineChanged = true;
+            m_splineChanged = true;
 
             if (spline.isClosed && points.Length < 3)
             {
                 SetSplineClosed(false);
             }
 
-            _serializedObject.FindProperty("_is2D").boolValue = is2D;
+            m_serializedObject.FindProperty("_is2D").boolValue = is2D;
 
             base.ApplyModifiedProperties(forceAllUpdate);
 
             spline.EditorUpdateConnectedNodes();
 
-            if (_serializedObject.FindProperty("editorUpdateMode").enumValueIndex == (int)SplineComputer.EditorUpdateMode.Default)
+            if (m_serializedObject.FindProperty("editorUpdateMode").enumValueIndex == (int)SplineComputer.EditorUpdateMode.Default)
             {
                 spline.RebuildImmediate(true, forceAllUpdate);
             }
@@ -395,22 +395,22 @@ namespace Dreamteck.Splines.Editor
 
         private void TransformPoints()
         {
-            _matrix = spline.transform.localToWorldMatrix;
+            m_matrix = spline.transform.localToWorldMatrix;
             for (int i = 0; i < points.Length; i++)
             {
                 bool changed = points[i].changed;
-                points[i].position = _matrix.MultiplyPoint3x4(points[i].position);
-                points[i].tangent = _matrix.MultiplyPoint3x4(points[i].tangent);
-                points[i].tangent2 = _matrix.MultiplyPoint3x4(points[i].tangent2);
-                points[i].normal = _matrix.MultiplyVector(points[i].normal);
+                points[i].position = m_matrix.MultiplyPoint3x4(points[i].position);
+                points[i].tangent = m_matrix.MultiplyPoint3x4(points[i].tangent);
+                points[i].tangent2 = m_matrix.MultiplyPoint3x4(points[i].tangent2);
+                points[i].normal = m_matrix.MultiplyVector(points[i].normal);
                 points[i].changed = changed;
             }
         }
 
         private void InverseTransformPoints()
         {
-            _matrix = spline.transform.localToWorldMatrix;
-            Matrix4x4 invMatrix = _matrix.inverse;
+            m_matrix = spline.transform.localToWorldMatrix;
+            Matrix4x4 invMatrix = m_matrix.inverse;
             for (int i = 0; i < points.Length; i++)
             {
                 bool changed = points[i].changed;
@@ -434,14 +434,14 @@ namespace Dreamteck.Splines.Editor
 
         public void MoveTransformToSelection()
         {
-            Undo.RecordObject(_transform, "Move Transform To");
+            Undo.RecordObject(m_transform, "Move Transform To");
             Vector3 avg = Vector3.zero;
             for (int i = 0; i < selectedPoints.Count; i++)
             {
                 avg += points[selectedPoints[i]].position;
             }
             avg /= selectedPoints.Count;
-            _transform.position = avg;
+            m_transform.position = avg;
             ApplyModifiedProperties(true);
             ResetCurrentModule();
         }
@@ -455,7 +455,7 @@ namespace Dreamteck.Splines.Editor
                 avg += points[selectedPoints[i]].position;
             }
             avg /= selectedPoints.Count;
-            Vector3 delta = _transform.position - avg;
+            Vector3 delta = m_transform.position - avg;
             for (int i = 0; i < selectedPoints.Count; i++)
             {
                 points[selectedPoints[i]].SetPosition(points[selectedPoints[i]].position + delta);

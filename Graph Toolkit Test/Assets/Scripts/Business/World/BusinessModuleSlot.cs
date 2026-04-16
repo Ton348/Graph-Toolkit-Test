@@ -8,24 +8,24 @@ public class BusinessModuleSlot : MonoBehaviour
     public KeyCode interactKey = KeyCode.E;
     public string playerTag = "Player";
 
-    private bool isInstalled;
-    private BusinessStateSyncService stateSync;
+    private bool m_isInstalled;
+    private BusinessStateSyncService m_stateSync;
 
     private void OnEnable()
     {
         ResolveStateSync();
         RefreshFromState();
-        if (stateSync != null)
+        if (m_stateSync != null)
         {
-            stateSync.StateChanged += RefreshFromState;
+            m_stateSync.stateChanged += RefreshFromState;
         }
     }
 
     private void OnDisable()
     {
-        if (stateSync != null)
+        if (m_stateSync != null)
         {
-            stateSync.StateChanged -= RefreshFromState;
+            m_stateSync.stateChanged -= RefreshFromState;
         }
     }
 
@@ -36,7 +36,7 @@ public class BusinessModuleSlot : MonoBehaviour
             worldRuntime = GetComponentInParent<BusinessWorldRuntime>();
         }
 
-        stateSync = worldRuntime != null && worldRuntime.bootstrap != null
+        m_stateSync = worldRuntime != null && worldRuntime.bootstrap != null
             ? worldRuntime.bootstrap.BusinessStateSyncService
             : null;
     }
@@ -64,12 +64,12 @@ public class BusinessModuleSlot : MonoBehaviour
             return;
         }
 
-        TryInstall(carrier);
+        TryInstallAsync(carrier);
     }
 
-    private async void TryInstall(PlayerCarryItem carrier)
+    private async void TryInstallAsync(PlayerCarryItem carrier)
     {
-        if (isInstalled)
+        if (m_isInstalled)
         {
             BusinessDebugLog.Log($"[BusinessWorld] Module already installed '{moduleId}' lotId='{worldRuntime?.lotId}'.");
             return;
@@ -104,7 +104,7 @@ public class BusinessModuleSlot : MonoBehaviour
         if (result != null && result.Success)
         {
             carrier.TryConsume(moduleId);
-            isInstalled = true;
+            m_isInstalled = true;
             SetVisual(true);
             BusinessDebugLog.Log($"[BusinessWorld] Module installed '{moduleId}' lotId='{worldRuntime.lotId}'");
         }
@@ -122,8 +122,8 @@ public class BusinessModuleSlot : MonoBehaviour
         }
 
         var business = worldRuntime != null ? worldRuntime.GetBusiness() : null;
-        isInstalled = business != null && business.installedModules != null && business.installedModules.Contains(moduleId);
-        SetVisual(isInstalled);
+        m_isInstalled = business != null && business.installedModules != null && business.installedModules.Contains(moduleId);
+        SetVisual(m_isInstalled);
     }
 
     private void SetVisual(bool active)
