@@ -1,126 +1,127 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	public class SplineEditorBase
-	{
-		public delegate void EmptyHandler();
+    using UnityEditor;
+    using UnityEngine;
 
-		public delegate void UndoHandler(string title);
+    public class SplineEditorBase
+    {
+        public bool open = false;
+        public EditorGUIEvents eventModule = null;
 
-		protected readonly SerializedObject m_serializedObject;
-		public EditorGuievents eventModule;
+        public delegate void UndoHandler(string title);
+        public delegate void EmptyHandler();
 
-		public bool open;
-		public EmptyHandler repaintHandler;
+        public UndoHandler undoHandler;
+        public EmptyHandler repaintHandler;
 
-		public UndoHandler undoHandler;
+        protected bool gizmosEnabled
+        {
+            get { return _gizmosEnabled; }
+        }
 
-		public SplineEditorBase(SerializedObject serializedObject)
-		{
-			Load();
-			m_serializedObject = serializedObject;
-			eventModule = new EditorGuievents();
-		}
+        private bool _gizmosEnabled = true;
 
-		protected bool gizmosEnabled { get; private set; } = true;
+        protected readonly SerializedObject _serializedObject;
 
-		public virtual void Destroy()
-		{
-			Save();
-		}
+        public SplineEditorBase(SerializedObject serializedObject)
+        {
+            Load();
+            this._serializedObject = serializedObject;
+            eventModule = new EditorGUIEvents();
+        }
 
-		protected virtual void Load()
-		{
-			open = LoadBool("open");
-		}
+        public virtual void Destroy()
+        {
+            Save();
+        }
 
-		protected virtual void Save()
-		{
-			SaveBool("open", open);
-		}
+        protected virtual void Load()
+        {
+            open = LoadBool("open");
+        }
 
-		public virtual void DrawInspector()
-		{
-			if (SceneView.lastActiveSceneView != null)
-			{
+        protected virtual void Save()
+        {
+            SaveBool("open", open);
+        }
+
+        public virtual void DrawInspector()
+        {
+            if(SceneView.lastActiveSceneView != null)
+            {
 #if UNITY_2019_1_OR_NEWER
-				gizmosEnabled = SceneView.lastActiveSceneView.drawGizmos;
+                _gizmosEnabled = SceneView.lastActiveSceneView.drawGizmos;
 #endif
-			}
+            }
+            eventModule.Update(Event.current);
+        }
 
-			eventModule.Update(Event.current);
-		}
+        public virtual void DrawScene(SceneView current)
+        {
+            eventModule.Update(Event.current);
+        }
 
-		public virtual void DrawScene(SceneView current)
-		{
-			eventModule.Update(Event.current);
-		}
+        protected virtual void RecordUndo(string title)
+        {
+            if (undoHandler != null) undoHandler(title);
+        }
 
-		protected virtual void RecordUndo(string title)
-		{
-			if (undoHandler != null)
-			{
-				undoHandler(title);
-			}
-		}
+        protected virtual void Repaint()
+        {
+            if (repaintHandler != null)
+            {
+                repaintHandler();
+            }
+        }
 
-		protected virtual void Repaint()
-		{
-			if (repaintHandler != null)
-			{
-				repaintHandler();
-			}
-		}
+        public virtual void UndoRedoPerformed()
+        {
+            
+        }
 
-		public virtual void UndoRedoPerformed()
-		{
-		}
+        protected string GetSaveName(string valueName)
+        {
+            return GetType().FullName + "." + valueName;
+        }
 
-		protected string GetSaveName(string valueName)
-		{
-			return GetType().FullName + "." + valueName;
-		}
+        protected void SaveBool(string variableName, bool value)
+        {
+            EditorPrefs.SetBool(GetType().ToString() + "." + variableName, value);
+        }
 
-		protected void SaveBool(string variableName, bool value)
-		{
-			EditorPrefs.SetBool(GetType() + "." + variableName, value);
-		}
+        protected void SaveInt(string variableName, int value)
+        {
+            EditorPrefs.SetInt(GetType().ToString() + "." + variableName, value);
+        }
 
-		protected void SaveInt(string variableName, int value)
-		{
-			EditorPrefs.SetInt(GetType() + "." + variableName, value);
-		}
+        protected void SaveFloat(string variableName, float value)
+        {
+            EditorPrefs.SetFloat(GetType().ToString() + "." + variableName, value);
+        }
 
-		protected void SaveFloat(string variableName, float value)
-		{
-			EditorPrefs.SetFloat(GetType() + "." + variableName, value);
-		}
+        protected void SaveString(string variableName, string value)
+        {
+            EditorPrefs.SetString(GetType().ToString() + "." + variableName, value);
+        }
 
-		protected void SaveString(string variableName, string value)
-		{
-			EditorPrefs.SetString(GetType() + "." + variableName, value);
-		}
+        protected bool LoadBool(string variableName, bool defaultValue = false)
+        {
+            return EditorPrefs.GetBool(GetType().ToString() + "." + variableName, defaultValue);
+        }
 
-		protected bool LoadBool(string variableName, bool defaultValue = false)
-		{
-			return EditorPrefs.GetBool(GetType() + "." + variableName, defaultValue);
-		}
+        protected int LoadInt(string variableName, int defaultValue = 0)
+        {
+            return EditorPrefs.GetInt(GetType().ToString() + "." + variableName, defaultValue);
+        }
 
-		protected int LoadInt(string variableName, int defaultValue = 0)
-		{
-			return EditorPrefs.GetInt(GetType() + "." + variableName, defaultValue);
-		}
+        protected float LoadFloat(string variableName, float d = 0f)
+        {
+            return EditorPrefs.GetFloat(GetType().ToString() + "." + variableName, d);
+        }
 
-		protected float LoadFloat(string variableName, float d = 0f)
-		{
-			return EditorPrefs.GetFloat(GetType() + "." + variableName, d);
-		}
-
-		protected string LoadString(string variableName)
-		{
-			return EditorPrefs.GetString(GetType() + "." + variableName, "");
-		}
-	}
+        protected string LoadString(string variableName)
+        {
+            return EditorPrefs.GetString(GetType().ToString() + "." + variableName, "");
+        }
+    }
 }

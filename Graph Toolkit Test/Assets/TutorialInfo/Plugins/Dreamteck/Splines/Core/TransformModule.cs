@@ -1,425 +1,363 @@
-using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Dreamteck.Splines
 {
-	[Serializable]
-	public class TransformModule : ISerializationCallbackReceiver
-	{
-		public enum VelocityHandleMode
-		{
-			Zero,
-			Preserve,
-			Align,
-			AlignRealistic
-		}
 
-		//These are used to save allocations
-		private static Vector3 s_position = Vector3.zero;
-		private static Quaternion s_rotation = Quaternion.identity;
+    [System.Serializable]
+    public class TransformModule : ISerializationCallbackReceiver
+    {
+        public Vector2 offset
+        {
+            get { return _offset; }
+            set
+            {
+                if (value != _offset)
+                {
+                    _offset = value;
+                    _hasOffset = _offset != Vector2.zero;
+                    if (targetUser != null)
+                    {
+                        targetUser.Rebuild();
+                    }
+                }
+            }
+        }
+        public Vector3 rotationOffset
+        {
+            get { return _rotationOffset; }
+            set
+            {
+                if (value != _rotationOffset)
+                {
+                    _rotationOffset = value;
+                    _hasRotationOffset = _rotationOffset != Vector3.zero;
+                    if (targetUser != null)
+                    {
+                        targetUser.Rebuild();
+                    }
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private bool m_hasOffset;
+        public bool hasOffset
+        {
+            get { return _hasOffset; }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private bool m_hasRotationOffset;
+        public bool hasRotationOffset
+        {
+            get { return _hasRotationOffset; }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Vector2 m_offset;
+        public Vector3 baseScale
+        {
+            get { return _baseScale; }
+            set
+            {
+                if (value != _baseScale)
+                {
+                    _baseScale = value;
+                    if (targetUser != null)
+                    {
+                        targetUser.Rebuild();
+                    }
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Vector3 m_rotationOffset = Vector3.zero;
+        public bool is2D
+        {
+            get { return _2dMode; }
+            set
+            {
+                _2dMode = value;
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private Vector3 m_baseScale = Vector3.one;
+        [SerializeField]
+        [HideInInspector]
+        private bool _hasOffset = false;
+        [SerializeField]
+        [HideInInspector]
+        private bool _hasRotationOffset = false;
 
-		[SerializeField]
-		[HideInInspector]
-		private bool m_2dMode;
+        [SerializeField]
+        [HideInInspector]
+        private Vector2 _offset;
+        [SerializeField]
+        [HideInInspector]
+        private Vector3 _rotationOffset = Vector3.zero;
+        [SerializeField]
+        [HideInInspector]
+        private Vector3 _baseScale = Vector3.one;
+        [SerializeField]
+        [HideInInspector]
+        private bool _2dMode = false;
+        public enum VelocityHandleMode { Zero, Preserve, Align, AlignRealistic }
+        public VelocityHandleMode velocityHandleMode = VelocityHandleMode.Zero;
+        public SplineSample splineResult
+        {
+            get
+            {
+                return _splineResult;
+            }
+            set
+            {
+                _splineResult = value;
+            }
+        }
+        private SplineSample _splineResult;
 
-		public VelocityHandleMode velocityHandleMode = VelocityHandleMode.Zero;
+        public bool applyPositionX = true;
+        public bool applyPositionY = true;
+        public bool applyPositionZ = true;
+        public bool applyPosition2D = true;
+        public bool retainLocalPosition = false;
 
-		public bool applyPositionX = true;
-		public bool applyPositionY = true;
-		public bool applyPositionZ = true;
-		public bool applyPosition2D = true;
-		public bool retainLocalPosition;
+        public Spline.Direction direction = Spline.Direction.Forward;
+        public bool applyPosition
+        {
+            get
+            {
+                if (_2dMode)
+                {
+                    return applyPosition2D;
+                }
+                return applyPositionX || applyPositionY || applyPositionZ;
+            }
+            set
+            {
+                applyPositionX = applyPositionY = applyPositionZ = applyPosition2D = value;
+            }
+        }
 
-		public Spline.Direction direction = Spline.Direction.Forward;
+        public bool applyRotationX = true;
+        public bool applyRotationY = true;
+        public bool applyRotationZ = true;
+        public bool applyRotation2D = true;
+        public bool retainLocalRotation = false;
+        public bool applyRotation
+        {
+            get
+            {
+                if (_2dMode)
+                {
+                    return applyRotation2D;
+                }
+                return applyRotationX || applyRotationY || applyRotationZ;
+            }
+            set
+            {
+                applyRotationX = applyRotationY = applyRotationZ = applyRotation2D = value;
+            }
+        }
 
-		public bool applyRotationX = true;
-		public bool applyRotationY = true;
-		public bool applyRotationZ = true;
-		public bool applyRotation2D = true;
-		public bool retainLocalRotation;
+        public bool applyScaleX = false;
+        public bool applyScaleY = false;
+        public bool applyScaleZ = false;
+        public bool applyScale
+        {
+            get
+            {
+                return applyScaleX || applyScaleY || applyScaleZ;
+            }
+            set
+            {
+                applyScaleX = applyScaleY = applyScaleZ = value;
+            }
+        }
+        [HideInInspector]
+        public SplineUser targetUser = null;
 
-		public bool applyScaleX;
-		public bool applyScaleY;
-		public bool applyScaleZ;
+        //These are used to save allocations
+        private static Vector3 position = Vector3.zero;
+        private static Quaternion rotation = Quaternion.identity;
 
-		[HideInInspector]
-		public SplineUser targetUser;
+        public void ApplyTransform(Transform input)
+        {
+            input.position = GetPosition(input.position);
+            input.rotation = GetRotation(input.rotation);
+            input.localScale = GetScale(input.localScale);
+        }
 
-		private SplineSample m_splineResult;
-
-		public Vector2 offset
-		{
-			get => m_offset;
-			set
-			{
-				if (value != m_offset)
-				{
-					m_offset = value;
-					m_hasOffset = m_offset != Vector2.zero;
-					if (targetUser != null)
-					{
-						targetUser.Rebuild();
-					}
-				}
-			}
-		}
-
-		public Vector3 rotationOffset
-		{
-			get => m_rotationOffset;
-			set
-			{
-				if (value != m_rotationOffset)
-				{
-					m_rotationOffset = value;
-					m_hasRotationOffset = m_rotationOffset != Vector3.zero;
-					if (targetUser != null)
-					{
-						targetUser.Rebuild();
-					}
-				}
-			}
-		}
-
-		public bool hasOffset => m_hasOffset;
-
-		public bool hasRotationOffset => m_hasRotationOffset;
-
-		public Vector3 baseScale
-		{
-			get => m_baseScale;
-			set
-			{
-				if (value != m_baseScale)
-				{
-					m_baseScale = value;
-					if (targetUser != null)
-					{
-						targetUser.Rebuild();
-					}
-				}
-			}
-		}
-
-		public bool is2D
-		{
-			get => m_2dMode;
-			set => m_2dMode = value;
-		}
-
-		public SplineSample splineResult
-		{
-			get => m_splineResult;
-			set => m_splineResult = value;
-		}
-
-		public bool applyPosition
-		{
-			get
-			{
-				if (m_2dMode)
-				{
-					return applyPosition2D;
-				}
-
-				return applyPositionX || applyPositionY || applyPositionZ;
-			}
-			set => applyPositionX = applyPositionY = applyPositionZ = applyPosition2D = value;
-		}
-
-		public bool applyRotation
-		{
-			get
-			{
-				if (m_2dMode)
-				{
-					return applyRotation2D;
-				}
-
-				return applyRotationX || applyRotationY || applyRotationZ;
-			}
-			set => applyRotationX = applyRotationY = applyRotationZ = applyRotation2D = value;
-		}
-
-		public bool applyScale
-		{
-			get => applyScaleX || applyScaleY || applyScaleZ;
-			set => applyScaleX = applyScaleY = applyScaleZ = value;
-		}
-
-		public void OnBeforeSerialize()
-		{
-		}
-
-		public void OnAfterDeserialize()
-		{
-			m_hasRotationOffset = m_rotationOffset != Vector3.zero;
-			m_hasOffset = m_offset != Vector2.zero;
-		}
-
-		public void ApplyTransform(Transform input)
-		{
-			input.position = GetPosition(input.position);
-			input.rotation = GetRotation(input.rotation);
-			input.localScale = GetScale(input.localScale);
-		}
-
-		public void ApplyRigidbody(Rigidbody input)
-		{
+        public void ApplyRigidbody(Rigidbody input)
+        {
 #if UNITY_EDITOR
-			if (!Application.isPlaying)
-			{
-				ApplyTransform(input.transform);
-				return;
-			}
+            if (!Application.isPlaying)
+            {
+                ApplyTransform(input.transform);
+                return;
+            }
 #endif
-			input.transform.localScale = GetScale(input.transform.localScale);
-			input.MovePosition(GetPosition(input.position));
-			if (!input.isKinematic)
-			{
+            input.transform.localScale = GetScale(input.transform.localScale);
+            input.MovePosition(GetPosition(input.position));
+            if (!input.isKinematic)
+            {
 #if UNITY_6000_0_OR_NEWER
-				input.linearVelocity = HandleVelocity(input.linearVelocity);
+                input.linearVelocity = HandleVelocity(input.linearVelocity);
 #else
                 input.velocity = HandleVelocity(input.velocity);
 #endif
-			}
+            }
+            input.MoveRotation(GetRotation(input.rotation));
+            Vector3 angularVelocity = input.angularVelocity;
+            if (applyRotationX)
+            {
+                angularVelocity.x = 0f;
+            }
+            if (applyRotationY)
+            {
+                angularVelocity.y = 0f;
+            }
+            if (applyRotationZ || applyRotation2D)
+            {
+                angularVelocity.z = 0f;
+            }
+            input.angularVelocity = angularVelocity;
+        }
 
-			input.MoveRotation(GetRotation(input.rotation));
-			Vector3 angularVelocity = input.angularVelocity;
-			if (applyRotationX)
-			{
-				angularVelocity.x = 0f;
-			}
-
-			if (applyRotationY)
-			{
-				angularVelocity.y = 0f;
-			}
-
-			if (applyRotationZ || applyRotation2D)
-			{
-				angularVelocity.z = 0f;
-			}
-
-			input.angularVelocity = angularVelocity;
-		}
-
-		public void ApplyRigidbody2D(Rigidbody2D input)
-		{
+        public void ApplyRigidbody2D(Rigidbody2D input)
+        {
 #if UNITY_EDITOR
-			if (!Application.isPlaying)
-			{
-				ApplyTransform(input.transform);
-				input.transform.rotation =
-					Quaternion.AngleAxis(GetRotation(Quaternion.Euler(0f, 0f, input.rotation)).eulerAngles.z,
-						Vector3.forward);
-				return;
-			}
+            if (!Application.isPlaying)
+            {
+                ApplyTransform(input.transform);
+                input.transform.rotation = Quaternion.AngleAxis(GetRotation(Quaternion.Euler(0f, 0f, input.rotation)).eulerAngles.z, Vector3.forward);
+                return;
+            }
 #endif
-			input.transform.localScale = GetScale(input.transform.localScale);
-			input.position = GetPosition(input.position);
-			if (!input.isKinematic)
-			{
+            input.transform.localScale = GetScale(input.transform.localScale);
+            input.position = GetPosition(input.position);
+            if (!input.isKinematic)
+            {
 #if UNITY_6000_OR_NEWER
             input.linearVelocity = HandleVelocity(input.linearVelocity);
 #else
-				input.linearVelocity = HandleVelocity(input.linearVelocity);
+                input.linearVelocity = HandleVelocity(input.linearVelocity);
 #endif
-			}
+            }
+            input.rotation = GetRotation(Quaternion.Euler(0f, 0f, input.rotation)).eulerAngles.z;
+            if (applyRotationX)
+            {
+                input.angularVelocity = 0f;
+            }
+        }
 
-			input.rotation = GetRotation(Quaternion.Euler(0f, 0f, input.rotation)).eulerAngles.z;
-			if (applyRotationX)
-			{
-				input.angularVelocity = 0f;
-			}
-		}
+        Vector3 HandleVelocity(Vector3 velocity)
+        {
+            Vector3 idealVelocity = Vector3.zero;
+            Vector3 direction = Vector3.right;
+            switch (velocityHandleMode)
+            {
+                case VelocityHandleMode.Preserve: idealVelocity = velocity; break;
+                case VelocityHandleMode.Align:
+                    direction = _splineResult.forward;
+                    if (Vector3.Dot(velocity, direction) < 0f) direction *= -1f;
+                    idealVelocity = direction * velocity.magnitude; break;
+                case VelocityHandleMode.AlignRealistic:
+                    direction = _splineResult.forward;
+                    if (Vector3.Dot(velocity, direction) < 0f) direction *= -1f;
+                    idealVelocity = direction * velocity.magnitude * Vector3.Dot(velocity.normalized, direction); break;
+            }
+            if (applyPositionX) velocity.x = idealVelocity.x;
+            if (applyPositionY) velocity.y = idealVelocity.y;
+            if (applyPositionZ) velocity.z = idealVelocity.z;
+            return velocity;
+        }
 
-		private Vector3 HandleVelocity(Vector3 velocity)
-		{
-			Vector3 idealVelocity = Vector3.zero;
-			Vector3 direction = Vector3.right;
-			switch (velocityHandleMode)
-			{
-				case VelocityHandleMode.Preserve: idealVelocity = velocity; break;
-				case VelocityHandleMode.Align:
-					direction = m_splineResult.forward;
-					if (Vector3.Dot(velocity, direction) < 0f)
-					{
-						direction *= -1f;
-					}
+        private Vector3 GetPosition(Vector3 inputPosition)
+        {
+            position = _splineResult.position;
+            Vector2 finalOffset = _offset;
+            if (finalOffset != Vector2.zero)
+            {
+                position += _splineResult.right * finalOffset.x * _splineResult.size + _splineResult.up * finalOffset.y * _splineResult.size;
+            }
+            if (retainLocalPosition)
+            {
+                Matrix4x4 matrix = Matrix4x4.TRS(position, _splineResult.rotation, Vector3.one);
+                Vector3 splineLocalPosition = matrix.inverse.MultiplyPoint3x4(targetUser.transform.position);
+                splineLocalPosition.x = applyPositionX ? 0f : splineLocalPosition.x;
+                splineLocalPosition.y = applyPositionY ? 0f : splineLocalPosition.y;
+                splineLocalPosition.z = applyPositionZ ? 0f : splineLocalPosition.z;
+                inputPosition = matrix.MultiplyPoint3x4(splineLocalPosition);
+            } else
+            {
+                if (applyPositionX) inputPosition.x = position.x;
+                if (applyPositionY) inputPosition.y = position.y;
+                if (applyPositionZ) inputPosition.z = position.z;
+            }
+            return inputPosition;
+        }
 
-					idealVelocity = direction * velocity.magnitude;
-					break;
-				case VelocityHandleMode.AlignRealistic:
-					direction = m_splineResult.forward;
-					if (Vector3.Dot(velocity, direction) < 0f)
-					{
-						direction *= -1f;
-					}
+        private Quaternion GetRotation(Quaternion inputRotation)
+        {
+            rotation = Quaternion.LookRotation(_splineResult.forward * (direction == Spline.Direction.Forward ? 1f : -1f), _splineResult.up);
+            if (_2dMode)
+            {
+                if (applyRotation2D)
+                {
+                    rotation *= Quaternion.Euler(90, -90, 0);
+                    inputRotation = Quaternion.AngleAxis(rotation.eulerAngles.z + _rotationOffset.z, Vector3.forward);
+                }
+                return inputRotation;
+            }
+            else
+            {
+                if (_rotationOffset != Vector3.zero)
+                {
+                    rotation = rotation * Quaternion.Euler(_rotationOffset);
+                }
+            }
 
-					idealVelocity = direction * velocity.magnitude * Vector3.Dot(velocity.normalized, direction);
-					break;
-			}
+            if (retainLocalRotation)
+            {
+                Quaternion localRotation = Quaternion.Inverse(rotation) * inputRotation;
+                Vector3 targetEuler = localRotation.eulerAngles;
+                targetEuler.x = applyRotationX ? 0f : targetEuler.x;
+                targetEuler.y = applyRotationY ? 0f : targetEuler.y;
+                targetEuler.z = applyRotationZ ? 0f : targetEuler.z;
+                inputRotation = rotation * Quaternion.Euler(targetEuler);
+            } else
+            {
+                if (!applyRotationX || !applyRotationY || !applyRotationZ)
+                {
+                    Vector3 targetEuler = rotation.eulerAngles;
+                    Vector3 sourceEuler = inputRotation.eulerAngles;
+                    if (!applyRotationX) targetEuler.x = sourceEuler.x;
+                    if (!applyRotationY) targetEuler.y = sourceEuler.y;
+                    if (!applyRotationZ) targetEuler.z = sourceEuler.z;
+                    inputRotation.eulerAngles = targetEuler;
+                }
+                else 
+                {
+                    inputRotation = rotation;
+                }
+            }
 
-			if (applyPositionX)
-			{
-				velocity.x = idealVelocity.x;
-			}
+            return inputRotation;
+        }
 
-			if (applyPositionY)
-			{
-				velocity.y = idealVelocity.y;
-			}
+        private Vector3 GetScale(Vector3 inputScale)
+        {
+            if (applyScaleX) inputScale.x = _baseScale.x * _splineResult.size;
+            if (applyScaleY) inputScale.y = _baseScale.y * _splineResult.size;
+            if (applyScaleZ) inputScale.z = _baseScale.z * _splineResult.size;
+            return inputScale;
+        }
 
-			if (applyPositionZ)
-			{
-				velocity.z = idealVelocity.z;
-			}
+        public void OnBeforeSerialize()
+        {
+            
+        }
 
-			return velocity;
-		}
-
-		private Vector3 GetPosition(Vector3 inputPosition)
-		{
-			s_position = m_splineResult.position;
-			Vector2 finalOffset = m_offset;
-			if (finalOffset != Vector2.zero)
-			{
-				s_position += m_splineResult.right * finalOffset.x * m_splineResult.size +
-				              m_splineResult.up * finalOffset.y * m_splineResult.size;
-			}
-
-			if (retainLocalPosition)
-			{
-				Matrix4x4 matrix = Matrix4x4.TRS(s_position, m_splineResult.rotation, Vector3.one);
-				Vector3 splineLocalPosition = matrix.inverse.MultiplyPoint3x4(targetUser.transform.position);
-				splineLocalPosition.x = applyPositionX ? 0f : splineLocalPosition.x;
-				splineLocalPosition.y = applyPositionY ? 0f : splineLocalPosition.y;
-				splineLocalPosition.z = applyPositionZ ? 0f : splineLocalPosition.z;
-				inputPosition = matrix.MultiplyPoint3x4(splineLocalPosition);
-			}
-			else
-			{
-				if (applyPositionX)
-				{
-					inputPosition.x = s_position.x;
-				}
-
-				if (applyPositionY)
-				{
-					inputPosition.y = s_position.y;
-				}
-
-				if (applyPositionZ)
-				{
-					inputPosition.z = s_position.z;
-				}
-			}
-
-			return inputPosition;
-		}
-
-		private Quaternion GetRotation(Quaternion inputRotation)
-		{
-			s_rotation =
-				Quaternion.LookRotation(m_splineResult.forward * (direction == Spline.Direction.Forward ? 1f : -1f),
-					m_splineResult.up);
-			if (m_2dMode)
-			{
-				if (applyRotation2D)
-				{
-					s_rotation *= Quaternion.Euler(90, -90, 0);
-					inputRotation =
-						Quaternion.AngleAxis(s_rotation.eulerAngles.z + m_rotationOffset.z, Vector3.forward);
-				}
-
-				return inputRotation;
-			}
-
-			if (m_rotationOffset != Vector3.zero)
-			{
-				s_rotation = s_rotation * Quaternion.Euler(m_rotationOffset);
-			}
-
-			if (retainLocalRotation)
-			{
-				Quaternion localRotation = Quaternion.Inverse(s_rotation) * inputRotation;
-				Vector3 targetEuler = localRotation.eulerAngles;
-				targetEuler.x = applyRotationX ? 0f : targetEuler.x;
-				targetEuler.y = applyRotationY ? 0f : targetEuler.y;
-				targetEuler.z = applyRotationZ ? 0f : targetEuler.z;
-				inputRotation = s_rotation * Quaternion.Euler(targetEuler);
-			}
-			else
-			{
-				if (!applyRotationX || !applyRotationY || !applyRotationZ)
-				{
-					Vector3 targetEuler = s_rotation.eulerAngles;
-					Vector3 sourceEuler = inputRotation.eulerAngles;
-					if (!applyRotationX)
-					{
-						targetEuler.x = sourceEuler.x;
-					}
-
-					if (!applyRotationY)
-					{
-						targetEuler.y = sourceEuler.y;
-					}
-
-					if (!applyRotationZ)
-					{
-						targetEuler.z = sourceEuler.z;
-					}
-
-					inputRotation.eulerAngles = targetEuler;
-				}
-				else
-				{
-					inputRotation = s_rotation;
-				}
-			}
-
-			return inputRotation;
-		}
-
-		private Vector3 GetScale(Vector3 inputScale)
-		{
-			if (applyScaleX)
-			{
-				inputScale.x = m_baseScale.x * m_splineResult.size;
-			}
-
-			if (applyScaleY)
-			{
-				inputScale.y = m_baseScale.y * m_splineResult.size;
-			}
-
-			if (applyScaleZ)
-			{
-				inputScale.z = m_baseScale.z * m_splineResult.size;
-			}
-
-			return inputScale;
-		}
-	}
+        public void OnAfterDeserialize()
+        {
+            _hasRotationOffset = _rotationOffset != Vector3.zero;
+            _hasOffset = _offset != Vector2.zero;
+        }
+    }
 }

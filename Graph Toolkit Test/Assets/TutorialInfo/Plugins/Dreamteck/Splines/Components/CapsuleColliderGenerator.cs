@@ -1,243 +1,213 @@
-﻿using System;
-using UnityEngine;
-
-namespace Dreamteck.Splines
+﻿namespace Dreamteck.Splines
 {
-	public class CapsuleColliderGenerator : SplineUser, ISerializationCallbackReceiver
-	{
-		public enum CapsuleColliderZdirection
-		{
-			X = 0,
-			Y = 1,
-			Z = 2
-		}
+    using UnityEngine;
 
-		[SerializeField]
-		[HideInInspector]
-		[Min(0f)]
-		private float m_radius = 1f;
+    public class CapsuleColliderGenerator : SplineUser, ISerializationCallbackReceiver
+    {
+        [SerializeField, HideInInspector, Min(0f)] private float _radius = 1f;
+        [SerializeField, HideInInspector, Min(0f)] private float _height = 1f;
+        [SerializeField, HideInInspector] private bool _overlapCaps = true;
+        [SerializeField, HideInInspector] private CapsuleColliderZDirection _direction = CapsuleColliderZDirection.Z;
+        [SerializeField, HideInInspector] private ColliderObject[] _colliders = new ColliderObject[0];
 
-		[SerializeField]
-		[HideInInspector]
-		[Min(0f)]
-		private float m_height = 1f;
+        public float radius
+        {
+            get { return _radius; }
+            set
+            {
+                if (value != _radius)
+                {
+                    _radius = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private bool m_overlapCaps = true;
+        public float height
+        {
+            get { return _height; }
+            set
+            {
+                if (value != _height)
+                {
+                    _height = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private CapsuleColliderZdirection m_direction = CapsuleColliderZdirection.Z;
+        public bool overlapCaps
+        {
+            get { return _overlapCaps; }
+            set
+            {
+                if (value != _overlapCaps)
+                {
+                    _overlapCaps = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		[SerializeField]
-		[HideInInspector]
-		private ColliderObject[] m_colliders = new ColliderObject[0];
+        public CapsuleColliderZDirection direction
+        {
+            get { return _direction; }
+            set
+            {
+                if (value != _direction)
+                {
+                    _direction = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		public float radius
-		{
-			get => m_radius;
-			set
-			{
-				if (value != m_radius)
-				{
-					m_radius = value;
-					Rebuild();
-				}
-			}
-		}
-
-		public float height
-		{
-			get => m_height;
-			set
-			{
-				if (value != m_height)
-				{
-					m_height = value;
-					Rebuild();
-				}
-			}
-		}
-
-		public bool overlapCaps
-		{
-			get => m_overlapCaps;
-			set
-			{
-				if (value != m_overlapCaps)
-				{
-					m_overlapCaps = value;
-					Rebuild();
-				}
-			}
-		}
-
-		public CapsuleColliderZdirection direction
-		{
-			get => m_direction;
-			set
-			{
-				if (value != m_direction)
-				{
-					m_direction = value;
-					Rebuild();
-				}
-			}
-		}
-
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-			for (var i = 0; i < m_colliders.Length; i++)
-			{
+        private void DestroyCollider(ColliderObject collider)
+        {
 #if UNITY_EDITOR
-				if (!Application.isPlaying)
-				{
-					DestroyImmediate(m_colliders[i].transform.gameObject);
-				}
-				else
-				{
-					Destroy(m_colliders[i].transform.gameObject);
-				}
-#else
-                Destroy(_colliders[i].transform.gameObject);
-#endif
-			}
-		}
-
-		public override void OnBeforeSerialize()
-		{
-			base.OnBeforeSerialize();
-			Build();
-		}
-
-		private void DestroyCollider(ColliderObject collider)
-		{
-#if UNITY_EDITOR
-			if (Application.isPlaying)
-			{
-				Destroy(collider.transform.gameObject);
-			}
-			else
-			{
-				DestroyImmediate(collider.transform.gameObject);
-			}
+            if (Application.isPlaying)
+            {
+                Destroy(collider.transform.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(collider.transform.gameObject);
+            }
 #else
             Destroy(collider.transform.gameObject);
 #endif
-		}
+        }
 
-		protected override void Build()
-		{
-			base.Build();
+        protected override void Build()
+        {
+            base.Build();
 
-			if (sampleCount == 0)
-			{
-				for (var i = 0; i < m_colliders.Length; i++)
-				{
-					DestroyCollider(m_colliders[i]);
-				}
+            if (sampleCount == 0)
+            {
+                for (int i = 0; i < _colliders.Length; i++)
+                {
+                    DestroyCollider(_colliders[i]);
+                }
+                _colliders = new ColliderObject[0];
+                return;
+            }
 
-				m_colliders = new ColliderObject[0];
-				return;
-			}
+            int objectCount = sampleCount - 1;
+            if (objectCount != _colliders.Length)
+            {
+                GenerateColliders(objectCount);
+            }
 
-			int objectCount = sampleCount - 1;
-			if (objectCount != m_colliders.Length)
-			{
-				GenerateColliders(objectCount);
-			}
+            SplineSample current = new SplineSample();
+            SplineSample next = new SplineSample();
+            Evaluate(0.0, ref current);
 
-			var current = new SplineSample();
-			var next = new SplineSample();
-			Evaluate(0.0, ref current);
+            bool controlHeight = _direction == CapsuleColliderZDirection.Z;
 
-			bool controlHeight = m_direction == CapsuleColliderZdirection.Z;
+            for (int i = 0; i < objectCount; i++)
+            {
+                double nextPercent = (double)(i + 1) / (sampleCount - 1);
+                Evaluate(nextPercent, ref next);
+                _colliders[i].transform.position = Vector3.Lerp(current.position, next.position, 0.5f);
+                _colliders[i].transform.rotation = Quaternion.LookRotation(next.position - current.position, Vector3.Slerp(current.up, next.up, 0.5f));
+                
+                _colliders[i].collider.radius = _radius;
+                _colliders[i].collider.direction = (int)_direction;
 
-			for (var i = 0; i < objectCount; i++)
-			{
-				double nextPercent = (double)(i + 1) / (sampleCount - 1);
-				Evaluate(nextPercent, ref next);
-				m_colliders[i].transform.position = Vector3.Lerp(current.position, next.position, 0.5f);
-				m_colliders[i].transform.rotation = Quaternion.LookRotation(next.position - current.position,
-					Vector3.Slerp(current.up, next.up, 0.5f));
+                var distance = Vector3.Distance(current.position, next.position);
 
-				m_colliders[i].collider.radius = m_radius;
-				m_colliders[i].collider.direction = (int)m_direction;
+                if (controlHeight)
+                {
+                    if (_overlapCaps)
+                    {
+                        _colliders[i].collider.height = distance + _radius * 2f;
+                    } else
+                    {
+                        _colliders[i].collider.height = distance;
+                    }
+                    _colliders[i].collider.radius = _radius;
+                }
+                else
+                {
+                    _colliders[i].collider.height = _height;
+                    _colliders[i].collider.radius = distance * 0.5f;
+                }
 
-				float distance = Vector3.Distance(current.position, next.position);
+                current = next;
+            }
+        }
 
-				if (controlHeight)
-				{
-					if (m_overlapCaps)
-					{
-						m_colliders[i].collider.height = distance + m_radius * 2f;
-					}
-					else
-					{
-						m_colliders[i].collider.height = distance;
-					}
+        private void GenerateColliders(int count)
+        {
+            ColliderObject[] newColliders = new ColliderObject[count];
+            for (int i = 0; i < newColliders.Length; i++)
+            {
+                if (i < _colliders.Length)
+                {
+                    newColliders[i] = _colliders[i];
+                }
+                else
+                {
+                    GameObject newObject = new GameObject("Collider " + i);
+                    newObject.layer = gameObject.layer;
+                    newObject.transform.parent = trs;
+                    newColliders[i] = new ColliderObject(newObject.transform, newObject.AddComponent<CapsuleCollider>(), _direction, _height);
+                }
+            }
+            if (newColliders.Length < _colliders.Length)
+            {
+                for (int i = newColliders.Length; i < _colliders.Length; i++)
+                {
+                    DestroyCollider(_colliders[i]);
+                }
+            }
+            _colliders = newColliders;
+        }
 
-					m_colliders[i].collider.radius = m_radius;
-				}
-				else
-				{
-					m_colliders[i].collider.height = m_height;
-					m_colliders[i].collider.radius = distance * 0.5f;
-				}
+        public override void OnBeforeSerialize()
+        {
+            base.OnBeforeSerialize();
+            Build();
+        }
 
-				current = next;
-			}
-		}
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            for (int i = 0; i < _colliders.Length; i++)
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    DestroyImmediate(_colliders[i].transform.gameObject);
+                }
+                else
+                {
+                    Destroy(_colliders[i].transform.gameObject);
+                }
+#else
+                Destroy(_colliders[i].transform.gameObject);
+#endif
+            }
+        }
 
-		private void GenerateColliders(int count)
-		{
-			var newColliders = new ColliderObject[count];
-			for (var i = 0; i < newColliders.Length; i++)
-			{
-				if (i < m_colliders.Length)
-				{
-					newColliders[i] = m_colliders[i];
-				}
-				else
-				{
-					var newObject = new GameObject("Collider " + i);
-					newObject.layer = gameObject.layer;
-					newObject.transform.parent = trs;
-					newColliders[i] = new ColliderObject(newObject.transform, newObject.AddComponent<CapsuleCollider>(),
-						m_direction, m_height);
-				}
-			}
+        [System.Serializable]
+        public class ColliderObject
+        {
+            public Transform transform;
+            public CapsuleCollider collider;
 
-			if (newColliders.Length < m_colliders.Length)
-			{
-				for (int i = newColliders.Length; i < m_colliders.Length; i++)
-				{
-					DestroyCollider(m_colliders[i]);
-				}
-			}
+            public ColliderObject(Transform transform, CapsuleCollider collider, CapsuleColliderZDirection direction, float height)
+            {
+                this.transform = transform;
+                this.collider = collider;
+                this.collider.direction = (int)direction;
+                this.collider.height = height;
+            }
+        }
 
-			m_colliders = newColliders;
-		}
-
-		[Serializable]
-		public class ColliderObject
-		{
-			public Transform transform;
-			public CapsuleCollider collider;
-
-			public ColliderObject(
-				Transform transform,
-				CapsuleCollider collider,
-				CapsuleColliderZdirection direction,
-				float height)
-			{
-				this.transform = transform;
-				this.collider = collider;
-				this.collider.direction = (int)direction;
-				this.collider.height = height;
-			}
-		}
-	}
+        public enum CapsuleColliderZDirection
+        {
+            X = 0, Y = 1, Z = 2,
+        }
+    }
 }

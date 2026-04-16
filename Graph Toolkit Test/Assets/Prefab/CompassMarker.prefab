@@ -88,4 +88,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c811a5dcfca9a457b8767ded1cfa3218, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompassMarkerView
-  rectTransform: {fileID: 0}
+  m_rectTransform: {fileID: 0}

@@ -1,79 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using UnityEngine;
-
-namespace Dreamteck.Splines
+﻿namespace Dreamteck.Splines
 {
-	[Serializable]
-	public class OffsetModifier : SplineSampleModifier
-	{
-		public OffsetKey[] keys = new OffsetKey[0];
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-		public OffsetModifier()
-		{
-			keys = new OffsetKey[0];
-		}
+    [System.Serializable]
+    public class OffsetModifier : SplineSampleModifier
+    {
+        [System.Serializable]
+        public class OffsetKey : Key
+        {
+            public Vector2 offset = Vector2.zero;
+            public OffsetKey(Vector2 o, double f, double t) : base(f, t)
+            {
+                offset = o;
+            }
+        }
 
-		public override bool hasKeys => keys.Length > 0;
+        public override bool hasKeys => keys.Length > 0;
+        public OffsetKey[] keys = new OffsetKey[0];
 
-		public override List<Key> GetKeys()
-		{
-			return new List<Key>(keys);
-		}
+        public OffsetModifier()
+        {
+            keys = new OffsetKey[0];
+        }
 
-		public override void SetKeys(List<Key> input)
-		{
-			keys = new OffsetKey[input.Count];
-			for (var i = 0; i < input.Count; i++)
-			{
-				keys[i] = (OffsetKey)input[i];
-			}
+        public override List<Key> GetKeys()
+        {
+            return new List<Key>(keys);
+        }
 
-			base.SetKeys(input);
-		}
+        public override void SetKeys(List<Key> input)
+        {
+            keys = new OffsetKey[input.Count];
+            for (int i = 0; i < input.Count; i++)
+            {
+                keys[i] = (OffsetKey)input[i];
+            }
+            base.SetKeys(input);
+        }
 
-		public void AddKey(Vector2 offset, double f, double t)
-		{
-			ArrayUtility.Add(ref keys, new OffsetKey(offset, f, t));
-		}
+        public void AddKey(Vector2 offset, double f, double t)
+        {
+            ArrayUtility.Add(ref keys, new OffsetKey(offset, f, t));
+        }
 
-		public override void Apply(ref SplineSample result)
-		{
-			if (keys.Length == 0)
-			{
-				return;
-			}
+        public override void Apply(ref SplineSample result)
+        {
+            if (keys.Length == 0) return;
+            base.Apply(ref result);
+            Vector2 offset = Evaluate(result.percent);
+            result.position += result.right * offset.x + result.up * offset.y;
+        }
 
-			base.Apply(ref result);
-			Vector2 offset = Evaluate(result.percent);
-			result.position += result.right * offset.x + result.up * offset.y;
-		}
-
-		public Vector2 Evaluate(double time)
-		{
-			if (keys.Length == 0)
-			{
-				return Vector2.zero;
-			}
-
-			Vector2 offset = Vector2.zero;
-			for (var i = 0; i < keys.Length; i++)
-			{
-				offset += keys[i].offset * keys[i].Evaluate(time);
-			}
-
-			return offset * blend;
-		}
-
-		[Serializable]
-		public class OffsetKey : Key
-		{
-			public Vector2 offset = Vector2.zero;
-
-			public OffsetKey(Vector2 o, double f, double t) : base(f, t)
-			{
-				offset = o;
-			}
-		}
-	}
+        public Vector2 Evaluate(double time)
+        {
+            if (keys.Length == 0) return Vector2.zero;
+            Vector2 offset = Vector2.zero;
+            for (int i = 0; i < keys.Length; i++)
+            {
+                offset += keys[i].offset * keys[i].Evaluate(time);
+            }
+            return offset * blend;
+        }
+    }
 }

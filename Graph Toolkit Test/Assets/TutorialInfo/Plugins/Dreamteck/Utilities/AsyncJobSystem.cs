@@ -1,169 +1,169 @@
 ﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Debug = UnityEngine.Debug;
 
 namespace Dreamteck
 {
-	public class AsyncJobSystem : MonoBehaviour
-	{
-		private readonly Queue<IJobData> m_jobs = new();
+    public class AsyncJobSystem : MonoBehaviour
+    {
+        private Queue<IJobData> _jobs = new Queue<IJobData>();
 
-		private IJobData m_currentJob;
+        private IJobData _currentJob = null;
 
-		private bool m_isWorking;
+        private bool _isWorking = false;
 
-		private void Update()
-		{
-			if (m_jobs.Count > 0 && !m_isWorking)
-			{
-				StartCoroutine(JobCoroutine());
-			}
-		}
+        public AsyncJobOperation ScheduleJob<T>(JobData<T> data)
+        {
+            _jobs.Enqueue(data);
+            return new AsyncJobOperation(data);
+        }
 
-		public AsyncJobOperation ScheduleJob<T>(JobData<T> data)
-		{
-			m_jobs.Enqueue(data);
-			return new AsyncJobOperation(data);
-		}
+        private void Update()
+        {
+            if (_jobs.Count > 0 && !_isWorking)
+            {
+                StartCoroutine(JobCoroutine());
+            }
+        }
 
-		private IEnumerator JobCoroutine()
-		{
-			m_isWorking = true;
+        private IEnumerator JobCoroutine()
+        {
+            _isWorking = true;
+            
+            while (_jobs.Count > 0)
+            {
+                _currentJob = _jobs.Dequeue();
+                _currentJob.Initialize();
 
-			while (m_jobs.Count > 0)
-			{
-				m_currentJob = m_jobs.Dequeue();
-				m_currentJob.Initialize();
+                while (!_currentJob.done)
+                {
+                    _currentJob.Next();
+                    yield return null;
+                }
 
-				while (!m_currentJob.done)
-				{
-					m_currentJob.Next();
-					yield return null;
-				}
+                _currentJob.Complete();
+                _currentJob = null;
 
-				m_currentJob.Complete();
-				m_currentJob = null;
+                yield return null;
+            }
 
-				yield return null;
-			}
-
-			m_isWorking = false;
-		}
+            _isWorking = false;
+        }
 
 
-		public class AsyncJobOperation : CustomYieldInstruction
-		{
-			private readonly IJobData m_job;
+        public class AsyncJobOperation : CustomYieldInstruction
+        {
+            private IJobData _job;
+            
+            public AsyncJobOperation(IJobData job)
+            {
+                _job = job;
+            }
 
-			public AsyncJobOperation(IJobData job)
-			{
-				m_job = job;
-			}
+            public override bool keepWaiting {
+                get { return !_job.done; }
+            }
+        }
 
-			public override bool keepWaiting => !m_job.done;
-		}
+        public interface IJobData
+        {
+            bool done { get; }
 
-		public interface IJobData
-		{
-			bool done { get; }
+            void Initialize();
 
-			void Initialize();
+            void Next();
 
-			void Next();
+            void Complete();
+        }
 
-			void Complete();
-		}
+        public class JobData<T> : IJobData
+        {
+            private int _index;
 
-		public class JobData<T> : IJobData
-		{
-			private readonly int m_iterations;
+            private int _iterations = 0;
 
-			private readonly Action<JobData<T>> m_onComplete;
+            private IEnumerable<T> _collection;
 
-			private readonly Action<JobData<T>> m_onIteration;
+            private Action<JobData<T>> _onComplete;
 
-			private IEnumerator<T> m_enumerator;
+            private Action<JobData<T>> _onIteration;
 
-			public JobData(IEnumerable<T> collection, int iterations, Action<JobData<T>> onIteration)
-			{
-				this.collection = collection;
-				m_onIteration = onIteration;
-				m_iterations = iterations;
-				done = false;
-			}
+            private IEnumerator<T> _enumerator;
 
-			public JobData(
-				IEnumerable<T> collection,
-				int iterations,
-				Action<JobData<T>> onIteration,
-				Action<JobData<T>> onComplete) :
-				this(collection, iterations, onIteration)
-			{
-				m_onComplete = onComplete;
-			}
+            public T current { get { return _enumerator.Current; } }
 
-			public T current => m_enumerator.Current;
+            public int index  { get  { return _index; } }
 
-			public int index { get; private set; }
+            public IEnumerable<T> collection { get { return _collection; } }
 
-			public IEnumerable<T> collection { get; }
+            public bool done { get; private set; }
 
-			public bool done { get; private set; }
+            public JobData(IEnumerable<T> collection, int iterations, Action<JobData<T>> onIteration)
+            {
+                _collection = collection;
+                _onIteration = onIteration;
+                _iterations = iterations;
+                done = false;
+            }
 
-			public void Initialize()
-			{
-				m_enumerator = collection.GetEnumerator();
-				index = -1;
-				done = !m_enumerator.MoveNext();
-			}
+            public JobData(IEnumerable<T> collection, int iterations, Action<JobData<T>> onIteration, Action<JobData<T>> onComplete) :
+                this(collection, iterations, onIteration)
+            {
+                _onComplete = onComplete;
+            }
 
-			public void Complete()
-			{
-				m_enumerator.Dispose();
+            public void Initialize()
+            {
+                _enumerator = _collection.GetEnumerator();
+                _index = -1;
+                done = !_enumerator.MoveNext();
+            }
 
-				try
-				{
-					if (m_onComplete != null)
-					{
-						m_onComplete(this);
-					}
-				}
-				catch (Exception e)
-				{
-					Debug.LogException(e);
-				}
-			}
+            public void Complete()
+            {
+                _enumerator.Dispose();
 
-			public void Next()
-			{
-				int counter = m_iterations;
+                try
+                {
+                    if (_onComplete != null) {
+                        _onComplete(this);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            }
 
-				if (done)
-				{
-					return;
-				}
+            public void Next()
+            {
+                int counter = _iterations;
 
-				do
-				{
-					index++;
+                if (done)
+                {
+                    return;
+                }
+                do
+                {
+                    _index++;
 
-					try
-					{
-						if (m_onIteration != null)
-						{
-							m_onIteration(this);
-						}
-					}
-					catch (Exception e)
-					{
-						Debug.LogException(e);
-					}
-
-					done = !m_enumerator.MoveNext();
-				} while (!done && --counter > 0);
-			}
-		}
-	}
+                    try
+                    {
+                        if(_onIteration != null)
+                        {
+                            _onIteration(this);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                    }
+                    done = !_enumerator.MoveNext();
+                }
+                while (!done && --counter > 0);
+            }
+        }
+    }
 }

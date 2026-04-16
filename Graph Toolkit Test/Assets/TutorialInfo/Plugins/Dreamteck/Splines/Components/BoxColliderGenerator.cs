@@ -1,170 +1,156 @@
-﻿using System;
-using UnityEngine;
-
-namespace Dreamteck.Splines
+﻿namespace Dreamteck.Splines
 {
-	public class BoxColliderGenerator : SplineUser, ISerializationCallbackReceiver
-	{
-		[SerializeField]
-		private Vector2 m_boxSize = Vector2.one;
+    using UnityEngine;
 
-		[SerializeField]
-		private bool m_debugDraw;
-
-		[SerializeField]
-		private Color m_debugDrawColor = Color.white;
+    public class BoxColliderGenerator : SplineUser, ISerializationCallbackReceiver
+    {
+        [SerializeField] private Vector2 _boxSize = Vector2.one;
+        [SerializeField] private bool _debugDraw = false;
+        [SerializeField] private Color _debugDrawColor = Color.white;
 
 
-		[SerializeField]
-		[HideInInspector]
-		public ColliderObject[] colliders = new ColliderObject[0];
+        [SerializeField]
+        [HideInInspector]
+        public ColliderObject[] _colliders = new ColliderObject[0];
 
 
-		public Vector2 boxSize
-		{
-			get => m_boxSize;
-			set
-			{
-				if (value != m_boxSize)
-				{
-					m_boxSize = value;
-					Rebuild();
-				}
-			}
-		}
+        public Vector2 boxSize
+        {
+            get { return _boxSize; }
+            set
+            {
+                if (value != _boxSize)
+                {
+                    _boxSize = value;
+                    Rebuild();
+                }
+            }
+        }
 
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-			for (var i = 0; i < colliders.Length; i++)
-			{
+        private void DestroyCollider(ColliderObject collider)
+        {
 #if UNITY_EDITOR
-				if (!Application.isPlaying)
-				{
-					DestroyImmediate(colliders[i].transform.gameObject);
-				}
-				else
-				{
-					Destroy(colliders[i].transform.gameObject);
-				}
-#else
-                Destroy(_colliders[i].transform.gameObject);
-#endif
-			}
-		}
-
-		private void OnDrawGizmos()
-		{
-			if (m_debugDraw)
-			{
-				for (var i = 0; i < colliders.Length; i++)
-				{
-					Gizmos.matrix = colliders[i].transform.localToWorldMatrix;
-					Gizmos.color = m_debugDrawColor;
-					Gizmos.DrawCube(Vector3.zero, colliders[i].collider.size);
-				}
-
-				Gizmos.matrix = Matrix4x4.identity;
-			}
-		}
-
-		public override void OnBeforeSerialize()
-		{
-			base.OnBeforeSerialize();
-			Build();
-		}
-
-		private void DestroyCollider(ColliderObject collider)
-		{
-#if UNITY_EDITOR
-			if (Application.isPlaying)
-			{
-				Destroy(collider.transform.gameObject);
-			}
-			else
-			{
-				DestroyImmediate(collider.transform.gameObject);
-			}
+            if (Application.isPlaying)
+            {
+                Destroy(collider.transform.gameObject);
+            }
+            else
+            {
+                DestroyImmediate(collider.transform.gameObject);
+            }
 #else
             Destroy(collider.transform.gameObject);
 #endif
-		}
+        }
 
-		protected override void Build()
-		{
-			base.Build();
+        protected override void Build()
+        {
+            base.Build();
 
-			if (sampleCount == 0)
-			{
-				for (var i = 0; i < colliders.Length; i++)
-				{
-					DestroyCollider(colliders[i]);
-				}
+            if (sampleCount == 0)
+            {
+                for (int i = 0; i < _colliders.Length; i++)
+                {
+                    DestroyCollider(_colliders[i]);
+                }
+                _colliders = new ColliderObject[0];
+                return;
+            }
 
-				colliders = new ColliderObject[0];
-				return;
-			}
+            int objectCount = sampleCount - 1;
+            if (objectCount != _colliders.Length)
+            {
+                ColliderObject[] newColliders = new ColliderObject[objectCount];
+                for (int i = 0; i < newColliders.Length; i++)
+                {
+                    if (i < _colliders.Length)
+                    {
+                        newColliders[i] = _colliders[i];
+                    }
+                    else
+                    {
+                        GameObject newObject = new GameObject("Collider " + i);
+                        newObject.layer = gameObject.layer;
+                        newObject.transform.parent = trs;
+                        newColliders[i] = new ColliderObject(newObject.transform, newObject.AddComponent<BoxCollider>());
+                    }
+                }
+                if (newColliders.Length < _colliders.Length)
+                {
+                    for (int i = newColliders.Length; i < _colliders.Length; i++)
+                    {
+                        DestroyCollider(_colliders[i]);
+                    }
+                }
+                _colliders = newColliders;
+            }
 
-			int objectCount = sampleCount - 1;
-			if (objectCount != colliders.Length)
-			{
-				var newColliders = new ColliderObject[objectCount];
-				for (var i = 0; i < newColliders.Length; i++)
-				{
-					if (i < colliders.Length)
-					{
-						newColliders[i] = colliders[i];
-					}
-					else
-					{
-						var newObject = new GameObject("Collider " + i);
-						newObject.layer = gameObject.layer;
-						newObject.transform.parent = trs;
-						newColliders[i] =
-							new ColliderObject(newObject.transform, newObject.AddComponent<BoxCollider>());
-					}
-				}
+            SplineSample current = new SplineSample();
+            SplineSample next = new SplineSample();
+            Evaluate(0.0, ref current);
 
-				if (newColliders.Length < colliders.Length)
-				{
-					for (int i = newColliders.Length; i < colliders.Length; i++)
-					{
-						DestroyCollider(colliders[i]);
-					}
-				}
+            for (int i = 0; i < objectCount; i++)
+            {
+                double nextPercent = (double)(i + 1) / (sampleCount - 1);
+                Evaluate(nextPercent, ref next);
+                _colliders[i].transform.position = Vector3.Lerp(current.position, next.position, 0.5f);
+                _colliders[i].transform.rotation = Quaternion.LookRotation(next.position - current.position, Vector3.Slerp(current.up, next.up, 0.5f));
+                float size = Mathf.Lerp(current.size, next.size, 0.5f);
+                _colliders[i].collider.size = new Vector3(_boxSize.x * size, _boxSize.y * size, Vector3.Distance(current.position, next.position));
+                current = next;
+            }
+        }
 
-				colliders = newColliders;
-			}
+        public override void OnBeforeSerialize()
+        {
+            base.OnBeforeSerialize();
+            Build();
+        }
 
-			var current = new SplineSample();
-			var next = new SplineSample();
-			Evaluate(0.0, ref current);
+        private void OnDrawGizmos()
+        {
+            if (_debugDraw)
+            {
+                for (int i = 0; i < _colliders.Length; i++)
+                {
+                    Gizmos.matrix = _colliders[i].transform.localToWorldMatrix;
+                    Gizmos.color = _debugDrawColor;
+                    Gizmos.DrawCube(Vector3.zero, _colliders[i].collider.size);
+                }
+                Gizmos.matrix = Matrix4x4.identity;
+            }
+        }
 
-			for (var i = 0; i < objectCount; i++)
-			{
-				double nextPercent = (double)(i + 1) / (sampleCount - 1);
-				Evaluate(nextPercent, ref next);
-				colliders[i].transform.position = Vector3.Lerp(current.position, next.position, 0.5f);
-				colliders[i].transform.rotation = Quaternion.LookRotation(next.position - current.position,
-					Vector3.Slerp(current.up, next.up, 0.5f));
-				float size = Mathf.Lerp(current.size, next.size, 0.5f);
-				colliders[i].collider.size = new Vector3(m_boxSize.x * size, m_boxSize.y * size,
-					Vector3.Distance(current.position, next.position));
-				current = next;
-			}
-		}
+        protected override void OnDestroy()
+        {
+            base.OnDestroy();
+            for (int i = 0; i < _colliders.Length; i++)
+            {
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    DestroyImmediate(_colliders[i].transform.gameObject);
+                } else
+                {
+                    Destroy(_colliders[i].transform.gameObject);
+                }
+#else
+                Destroy(_colliders[i].transform.gameObject);
+#endif
+            }
+        }
 
-		[Serializable]
-		public class ColliderObject
-		{
-			public Transform transform;
-			public BoxCollider collider;
+        [System.Serializable]
+        public class ColliderObject
+        {
+            public Transform transform;
+            public BoxCollider collider;
 
-			public ColliderObject(Transform transform, BoxCollider collider)
-			{
-				this.transform = transform;
-				this.collider = collider;
-			}
-		}
-	}
+            public ColliderObject(Transform transform, BoxCollider collider)
+            {
+                this.transform = transform;
+                this.collider = collider;
+            }
+        }
+    }
 }

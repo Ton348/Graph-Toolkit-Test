@@ -1,45 +1,43 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	public class MeshScaleModifierEditor : SplineSampleModifierEditor
-	{
-		private readonly float m_addTime = 0f;
-		public bool allowSelection = true;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-		public MeshScaleModifierEditor(MeshGenerator user, SplineUserEditor editor, int channelIndex) : base(user,
-			editor, "_channels/[" + channelIndex + "]/_scaleModifier")
-		{
-			m_title = "Scale Modifiers";
-		}
+    using UnityEditor;
 
-		public void ClearSelection()
-		{
-			m_selected = -1;
-		}
+    public class MeshScaleModifierEditor : SplineSampleModifierEditor
+    {
+        public bool allowSelection = true;
+        private float addTime = 0f;
 
-		public override void DrawInspector()
-		{
-			base.DrawInspector();
-			if (!isOpen)
-			{
-				return;
-			}
+        public MeshScaleModifierEditor(MeshGenerator user, SplineUserEditor editor, int channelIndex) : base(user, editor, "_channels/["+channelIndex+"]/_scaleModifier")
+        {
+            title = "Scale Modifiers";
+        }
 
-			if (GUILayout.Button("Add New Scale"))
-			{
-				SerializedProperty key = AddKey(m_addTime - 0.1f, m_addTime + 0.1f);
-				key.FindPropertyRelative("scale").vector3Value = Vector3.one;
-				UpdateValues();
-			}
-		}
+        public void ClearSelection()
+        {
+            selected = -1;
+        }
 
-		protected override void KeyGui(SerializedProperty key)
-		{
-			SerializedProperty scale = key.FindPropertyRelative("scale");
-			base.KeyGui(key);
-			EditorGUILayout.PropertyField(scale);
-		}
-	}
+        public override void DrawInspector()
+        {
+            base.DrawInspector();
+            if (!isOpen) return;
+            if (GUILayout.Button("Add New Scale"))
+            {
+                var key = AddKey(addTime - 0.1f, addTime + 0.1f);
+                key.FindPropertyRelative("scale").vector3Value = Vector3.one;
+                UpdateValues();
+            }
+        }
+
+        protected override void KeyGUI(SerializedProperty key)
+        {
+            SerializedProperty scale = key.FindPropertyRelative("scale");
+            base.KeyGUI(key);
+            EditorGUILayout.PropertyField(scale);
+        }
+    }
 }

@@ -1,88 +1,72 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	[CustomEditor(typeof(SplineProjector), true)]
-	[CanEditMultipleObjects]
-	public class SplineProjectorEditor : SplineTracerEditor
-	{
-		private bool m_info;
+    using UnityEngine;
+    using System.Collections;
+    using UnityEditor;
 
-		public override void OnInspectorGUI()
-		{
-			var user = (SplineProjector)target;
-			if (user.mode == SplineProjector.Mode.Accurate)
-			{
-				m_showAveraging = false;
-			}
-			else
-			{
-				m_showAveraging = true;
-			}
+    [CustomEditor(typeof(SplineProjector), true)]
+    [CanEditMultipleObjects]
+    public class SplineProjectorEditor : SplineTracerEditor
+    {
+        private bool info = false;
 
-			base.OnInspectorGUI();
-		}
+        public override void OnInspectorGUI()
+        {
+            SplineProjector user = (SplineProjector)target;
+            if (user.mode == SplineProjector.Mode.Accurate)
+            {
+                showAveraging = false;
+            }
+            else
+            {
+                showAveraging = true;
+            }
+            base.OnInspectorGUI();
+        }
 
-		protected override void BodyGui()
-		{
-			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Projector", EditorStyles.boldLabel);
+        protected override void BodyGUI()
+        {
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Projector", EditorStyles.boldLabel);
 
-			serializedObject.Update();
-			SerializedProperty mode = serializedObject.FindProperty("_mode");
-			SerializedProperty projectTarget = serializedObject.FindProperty("_projectTarget");
-			SerializedProperty targetObject = serializedObject.FindProperty("_targetObject");
-			SerializedProperty autoProject = serializedObject.FindProperty("_autoProject");
+            serializedObject.Update();
+            SerializedProperty mode = serializedObject.FindProperty("_mode");
+            SerializedProperty projectTarget = serializedObject.FindProperty("_projectTarget");
+            SerializedProperty targetObject = serializedObject.FindProperty("_targetObject");
+            SerializedProperty autoProject = serializedObject.FindProperty("_autoProject");
 
 
-			EditorGUI.BeginChangeCheck();
-			EditorGUILayout.PropertyField(mode, new GUIContent("Mode"));
-			if (mode.intValue == (int)SplineProjector.Mode.Accurate)
-			{
-				SerializedProperty subdivide = serializedObject.FindProperty("_subdivide");
-				EditorGUILayout.PropertyField(subdivide, new GUIContent("Subdivide"));
-			}
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(mode, new GUIContent("Mode"));
+            if (mode.intValue == (int)SplineProjector.Mode.Accurate)
+            {
+                SerializedProperty subdivide = serializedObject.FindProperty("_subdivide");
+                EditorGUILayout.PropertyField(subdivide, new GUIContent("Subdivide"));
+            }
+            EditorGUILayout.PropertyField(projectTarget, new GUIContent("Project Target"));
+            EditorGUILayout.PropertyField(targetObject, new GUIContent("Apply Target"));
 
-			EditorGUILayout.PropertyField(projectTarget, new GUIContent("Project Target"));
-			EditorGUILayout.PropertyField(targetObject, new GUIContent("Apply Target"));
+            GUI.color = Color.white;
+            EditorGUILayout.PropertyField(autoProject, new GUIContent("Auto Project"));
 
-			GUI.color = Color.white;
-			EditorGUILayout.PropertyField(autoProject, new GUIContent("Auto Project"));
+            info = EditorGUILayout.Foldout(info, "Info");
+            SerializedProperty percent = serializedObject.FindProperty("_result").FindPropertyRelative("percent");
+            if (info) EditorGUILayout.HelpBox("Projection percent: " + percent.floatValue, MessageType.Info);
 
-			m_info = EditorGUILayout.Foldout(m_info, "Info");
-			SerializedProperty percent = serializedObject.FindProperty("_result").FindPropertyRelative("percent");
-			if (m_info)
-			{
-				EditorGUILayout.HelpBox("Projection percent: " + percent.floatValue, MessageType.Info);
-			}
+            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
+            base.BodyGUI();
+        }
 
-			if (EditorGUI.EndChangeCheck())
-			{
-				serializedObject.ApplyModifiedProperties();
-			}
-
-			base.BodyGui();
-		}
-
-		protected override void DuringSceneGui(SceneView currentSceneView)
-		{
-			base.DuringSceneGui(currentSceneView);
-			for (var i = 0; i < m_users.Length; i++)
-			{
-				var user = (SplineProjector)m_users[i];
-				if (user.spline == null)
-				{
-					return;
-				}
-
-				if (!user.autoProject)
-				{
-					return;
-				}
-
-				DrawResult(user.result);
-			}
-		}
-	}
+        protected override void DuringSceneGUI(SceneView currentSceneView)
+        {
+            base.DuringSceneGUI(currentSceneView);
+            for (int i = 0; i < users.Length; i++)
+            {
+                SplineProjector user = (SplineProjector)users[i];
+                if (user.spline == null) return;
+                if (!user.autoProject) return;
+                DrawResult(user.result);
+            }
+        }
+    }
 }

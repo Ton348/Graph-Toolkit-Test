@@ -1,44 +1,36 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	[CustomEditor(typeof(PolygonColliderGenerator))]
-	[CanEditMultipleObjects]
-	public class PolygonColliderGenEditor : SplineUserEditor
-	{
-		protected override void BodyGui()
-		{
-			base.BodyGui();
-			var generator = (PolygonColliderGenerator)target;
+    using UnityEngine;
+    using System.Collections;
+    using UnityEditor;
 
-			serializedObject.Update();
-			SerializedProperty type = serializedObject.FindProperty("_type");
-			SerializedProperty size = serializedObject.FindProperty("_size");
-			SerializedProperty offset = serializedObject.FindProperty("_offset");
-			SerializedProperty updateRate = serializedObject.FindProperty("updateRate");
+    [CustomEditor(typeof(PolygonColliderGenerator))]
+    [CanEditMultipleObjects]
+    public class PolygonColliderGenEditor : SplineUserEditor
+    {
+        protected override void BodyGUI()
+        {
+            base.BodyGUI();
+            PolygonColliderGenerator generator = (PolygonColliderGenerator)target;
 
-			EditorGUILayout.Space();
-			EditorGUILayout.LabelField("Polygon", EditorStyles.boldLabel);
+            serializedObject.Update();
+            SerializedProperty type = serializedObject.FindProperty("_type");
+            SerializedProperty size = serializedObject.FindProperty("_size");
+            SerializedProperty offset = serializedObject.FindProperty("_offset");
+            SerializedProperty updateRate = serializedObject.FindProperty("updateRate");
 
-			EditorGUI.BeginChangeCheck();
-			EditorGUILayout.PropertyField(type, new GUIContent("Type"));
-			if (type.intValue == (int)PolygonColliderGenerator.Type.Path)
-			{
-				EditorGUILayout.PropertyField(size, new GUIContent("Size"));
-			}
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Polygon", EditorStyles.boldLabel);
 
-			EditorGUILayout.PropertyField(offset, new GUIContent("Offset"));
-			EditorGUILayout.PropertyField(updateRate);
-			if (updateRate.floatValue < 0f)
-			{
-				updateRate.floatValue = 0f;
-			}
-
-			if (EditorGUI.EndChangeCheck())
-			{
-				serializedObject.ApplyModifiedProperties();
-			}
-		}
-	}
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(type, new GUIContent("Type"));
+            if (type.intValue == (int)PolygonColliderGenerator.Type.Path) EditorGUILayout.PropertyField(size, new GUIContent("Size"));
+            EditorGUILayout.PropertyField(offset, new GUIContent("Offset"));
+            EditorGUILayout.PropertyField(updateRate);
+            if (updateRate.floatValue < 0f) updateRate.floatValue = 0f;
+            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
+        }
+        
+    }
 }
+

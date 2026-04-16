@@ -1,67 +1,63 @@
-﻿using System;
-using Dreamteck.Splines.Editor;
-using UnityEditor;
-using UnityEngine;
-
-namespace Dreamteck.Splines.Primitives
+﻿namespace Dreamteck.Splines.Primitives
 {
-	[Serializable]
-	public class PrimitiveEditor
-	{
-		[NonSerialized]
-		protected DreamteckSplinesEditor m_editor;
+    using UnityEngine;
+    using UnityEditor;
+    using System.Collections;
+    using Dreamteck.Splines.Editor;
 
-		protected SplinePrimitive m_primitive = new();
+    [System.Serializable]
+    public class PrimitiveEditor
+    {
+        [System.NonSerialized]
+        protected DreamteckSplinesEditor editor;
+        [System.NonSerialized]
+        public Vector3 origin = Vector3.zero;
 
-		[NonSerialized]
-		public Vector3 origin = Vector3.zero;
+        protected SplinePrimitive primitive = new SplinePrimitive();
 
-		public virtual string GetName()
-		{
-			return "Primitive";
-		}
+        public virtual string GetName()
+        {
+            return "Primitive";
+        }
 
-		public virtual void Open(DreamteckSplinesEditor editor)
-		{
-			m_editor = editor;
-			m_primitive.is2D = editor.is2D;
-			m_primitive.Calculate();
-		}
+        public virtual void Open(DreamteckSplinesEditor editor)
+        {
+            this.editor = editor;
+            primitive.is2D = editor.is2D;
+            primitive.Calculate();
+        }
 
-		public void Draw()
-		{
-			EditorGUI.BeginChangeCheck();
-			OnGui();
-			if (EditorGUI.EndChangeCheck())
-			{
-				Update();
-			}
-		}
+        public void Draw()
+        {
+            EditorGUI.BeginChangeCheck();
+            OnGUI();
+            if (EditorGUI.EndChangeCheck())
+            {
+                Update();
+            }
+        }
 
-		public void Update()
-		{
-			m_primitive.is2D = m_editor.is2D;
-			m_primitive.Calculate();
-			m_editor.SetPointsArray(m_primitive.GetPoints());
-			m_editor.SetSplineType(m_primitive.GetSplineType());
-			m_editor.SetSplineClosed(m_primitive.GetIsClosed());
-			m_editor.ApplyModifiedProperties(true);
-		}
+        public void Update()
+        {
+            primitive.is2D = editor.is2D;
+            primitive.Calculate();
+            editor.SetPointsArray(primitive.GetPoints());
+            editor.SetSplineType(primitive.GetSplineType());
+            editor.SetSplineClosed(primitive.GetIsClosed());
+            editor.ApplyModifiedProperties(true);
+        }
 
-		protected virtual void OnGui()
-		{
-			m_primitive.is2D = m_editor.is2D;
-			m_primitive.offset = EditorGUILayout.Vector3Field("Offset", m_primitive.offset);
-			if (m_editor.is2D)
-			{
-				float rot = m_primitive.rotation.z;
-				rot = EditorGUILayout.FloatField("Rotation", rot);
-				m_primitive.rotation = new Vector3(0f, 0f, rot);
-			}
-			else
-			{
-				m_primitive.rotation = EditorGUILayout.Vector3Field("Rotation", m_primitive.rotation);
-			}
-		}
-	}
+        protected virtual void OnGUI()
+        {
+            primitive.is2D = editor.is2D;
+            primitive.offset = EditorGUILayout.Vector3Field("Offset", primitive.offset);
+            if (editor.is2D)
+            {
+                float rot = primitive.rotation.z;
+                rot = EditorGUILayout.FloatField("Rotation", rot);
+                primitive.rotation = new Vector3(0f, 0f, rot);
+            }
+             else primitive.rotation = EditorGUILayout.Vector3Field("Rotation", primitive.rotation);
+        }
+    }
 }

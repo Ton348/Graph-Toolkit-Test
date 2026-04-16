@@ -1,106 +1,90 @@
-using UnityEngine;
-
 namespace Dreamteck.Splines
 {
-	//Use the CreateAssetMenu attribute to add the object to the Create Asset context menu
-	//After that, go to Assets/Create/Dreamteck/Splines/... and create the scriptable object
-	[CreateAssetMenu(menuName = "Dreamteck/Splines/Object Controller Rules/Sine Rule")]
-	public class ObjectControllerSineRule : ObjectControllerCustomRuleBase
-	{
-		[SerializeField]
-		private bool m_useSplinePercent;
+    using UnityEngine;
 
-		[SerializeField]
-		private float m_frequency = 1f;
+    //Use the CreateAssetMenu attribute to add the object to the Create Asset context menu
+    //After that, go to Assets/Create/Dreamteck/Splines/... and create the scriptable object
+    [CreateAssetMenu(menuName = "Dreamteck/Splines/Object Controller Rules/Sine Rule")]
+    public class ObjectControllerSineRule : ObjectControllerCustomRuleBase
+    {
+        [SerializeField] private bool _useSplinePercent = false;
+        [SerializeField] private float _frequency = 1f;
+        [SerializeField] private float _amplitude = 1f;
+        [SerializeField] private float _angle = 0f;
+        [SerializeField] private float _minScale = 1f;
+        [SerializeField] private float _maxScale = 1f;
+        [SerializeField] [Range(0f, 1f)] private float _offset = 0f;
 
-		[SerializeField]
-		private float m_amplitude = 1f;
+        public bool useSplinePercent
+        {
+            get { return _useSplinePercent; }
+            set { _useSplinePercent = value; }
+        }
 
-		[SerializeField]
-		private float m_angle;
+        public float frequency
+        {
+            get { return _frequency; }
+            set { _frequency = value; }
+        }
 
-		[SerializeField]
-		private float m_minScale = 1f;
+        public float amplitude
+        {
+            get { return _amplitude; }
+            set { _amplitude = value; }
+        }
 
-		[SerializeField]
-		private float m_maxScale = 1f;
+        public float angle
+        {
+            get { return _angle; }
+            set { _angle = value; }
+        }
 
-		[SerializeField]
-		[Range(0f, 1f)]
-		private float m_offset;
+        public float minScale
+        {
+            get { return _minScale; }
+            set { _minScale = value; }
+        }
 
-		public bool useSplinePercent
-		{
-			get => m_useSplinePercent;
-			set => m_useSplinePercent = value;
-		}
+        public float maxScale
+        {
+            get { return _maxScale; }
+            set { _maxScale = value; }
+        }
 
-		public float frequency
-		{
-			get => m_frequency;
-			set => m_frequency = value;
-		}
+        public float offset
+        {
+            get { return _offset; }
+            set { 
+                _offset = value;
+                if(_offset > 1)
+                {
+                    _offset -= Mathf.FloorToInt(_offset);
+                }
+                if(_offset < 0)
+                {
+                    _offset += Mathf.FloorToInt(-_offset);
+                }
+            }
+        }
 
-		public float amplitude
-		{
-			get => m_amplitude;
-			set => m_amplitude = value;
-		}
+        //Override GetOffset, GetRotation and GetScale to implement custom behaviors
+        //Use the information from currentSample, currentObjectIndex, totalObjects and currentObjectPercent
 
-		public float angle
-		{
-			get => m_angle;
-			set => m_angle = value;
-		}
+        public override Vector3 GetOffset()
+        {
+            float sin = GetSine();
+            return Quaternion.AngleAxis(_angle, Vector3.forward) * Vector3.up * sin * _amplitude;
+        }
 
-		public float minScale
-		{
-			get => m_minScale;
-			set => m_minScale = value;
-		}
+        public override Vector3 GetScale()
+        {
+            return Vector3.Lerp(Vector3.one * _minScale, Vector3.one * _maxScale, GetSine());
+        }
 
-		public float maxScale
-		{
-			get => m_maxScale;
-			set => m_maxScale = value;
-		}
-
-		public float offset
-		{
-			get => m_offset;
-			set
-			{
-				m_offset = value;
-				if (m_offset > 1)
-				{
-					m_offset -= Mathf.FloorToInt(m_offset);
-				}
-
-				if (m_offset < 0)
-				{
-					m_offset += Mathf.FloorToInt(-m_offset);
-				}
-			}
-		}
-
-		//Override GetOffset, GetRotation and GetScale to implement custom behaviors
-		//Use the information from currentSample, currentObjectIndex, totalObjects and currentObjectPercent
-
-		public override Vector3 GetOffset()
-		{
-			float sin = GetSine();
-			return Quaternion.AngleAxis(m_angle, Vector3.forward) * Vector3.up * sin * m_amplitude;
-		}
-
-		public override Vector3 GetScale()
-		{
-			return Vector3.Lerp(Vector3.one * m_minScale, Vector3.one * m_maxScale, GetSine());
-		}
-
-		private float GetSine()
-		{
-			float objectPercent = m_useSplinePercent ? (float)m_currentSample.percent : currentObjectPercent;
-			return Mathf.Sin(Mathf.PI * m_offset + objectPercent * Mathf.PI * m_frequency);
-		}
-	}
+        private float GetSine()
+        {
+            float objectPercent = _useSplinePercent ? (float)currentSample.percent : currentObjectPercent;
+            return Mathf.Sin((Mathf.PI * _offset) + objectPercent * Mathf.PI * _frequency);
+        }
+    }
 }

@@ -1,43 +1,42 @@
-using UnityEditor;
-using UnityEngine;
-
 namespace Dreamteck.Splines.Editor
 {
-	public class SizeModifierEditor : SplineSampleModifierEditor
-	{
-		private readonly float m_addTime = 0f;
-		public bool allowSelection = true;
+    using System.Collections;
+    using System.Collections.Generic;
+    using UnityEngine;
 
-		public SizeModifierEditor(SplineUser user, SplineUserEditor editor) : base(user, editor, "_sizeModifier")
-		{
-			m_title = "Size Modifiers";
-		}
+    using UnityEditor;
 
-		public void ClearSelection()
-		{
-			m_selected = -1;
-		}
+    public class SizeModifierEditor : SplineSampleModifierEditor
+    {
+        public bool allowSelection = true;
+        private float addTime = 0f;
 
-		public override void DrawInspector()
-		{
-			base.DrawInspector();
-			if (!isOpen)
-			{
-				return;
-			}
+        public SizeModifierEditor(SplineUser user, SplineUserEditor editor) : base(user, editor, "_sizeModifier")
+        {
+            title = "Size Modifiers";
+        }
 
-			if (GUILayout.Button("Add New Size"))
-			{
-				AddKey(m_addTime - 0.1f, m_addTime + 0.1f);
-				UpdateValues();
-			}
-		}
+        public void ClearSelection()
+        {
+            selected = -1;
+        }
 
-		protected override void KeyGui(SerializedProperty key)
-		{
-			SerializedProperty size = key.FindPropertyRelative("size");
-			base.KeyGui(key);
-			EditorGUILayout.PropertyField(size);
-		}
-	}
+        public override void DrawInspector()
+        {
+            base.DrawInspector();
+            if (!isOpen) return;
+            if (GUILayout.Button("Add New Size"))
+            {
+                AddKey(addTime - 0.1f, addTime + 0.1f);
+                UpdateValues();
+            }
+        }
+
+        protected override void KeyGUI(SerializedProperty key)
+        {
+            SerializedProperty size = key.FindPropertyRelative("size");
+            base.KeyGUI(key);
+            EditorGUILayout.PropertyField(size);
+        }
+    }
 }
