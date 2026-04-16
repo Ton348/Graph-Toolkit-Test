@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class QuestDatabaseData
+namespace Sample.Runtime.GameData
 {
-	public List<QuestDefinitionData> quests = new();
+	[Serializable]
+	public class QuestDatabaseData
+	{
+		public List<QuestDefinitionData> quests = new();
+	}
 }

@@ -1,31 +1,33 @@
 using System;
-using Unity.GraphToolkit.Editor;
-using Game1.Graph.Runtime;
 using Game1.Graph.Editor;
 using Graph.Core.Editor;
+using Unity.GraphToolkit.Editor;
 
-[Serializable]
-[UseWithGraph(typeof(CommonGraphEditorGraph))]
-public sealed class SetGameObjectActiveNodeModel : GameGraphEditorNode
+namespace GameGraph.Editor.Common
 {
-	public const string SiteIdOption = "SiteId";
-	public const string VisualIdOption = "VisualId";
-	public const string IsActiveOption = "IsActive";
-
-	protected override string defaultTitle => "Активировать объект";
-	protected override string defaultDescription => "Изменяет активность визуального объекта.";
-
-	protected override void OnDefineOptions(IOptionDefinitionContext context)
+	[Serializable]
+	[UseWithGraph(typeof(CommonGraphEditorGraph))]
+	public sealed class SetGameObjectActiveNodeModel : GameGraphEditorNode
 	{
-		base.OnDefineOptions(context);
-		context.AddOption<string>(SiteIdOption).WithDisplayName("SiteId");
-		context.AddOption<string>(VisualIdOption).WithDisplayName("VisualId");
-		context.AddOption<bool>(IsActiveOption).WithDisplayName("IsActive");
-	}
+		public const string SiteIdOption = "SiteId";
+		public const string VisualIdOption = "VisualId";
+		public const string IsActiveOption = "IsActive";
 
-	protected override void OnDefinePorts(IPortDefinitionContext context)
-	{
-		AddInputExecutionPort(context);
-		AddNextPort(context);
+		protected override string defaultTitle => "Активировать объект";
+		protected override string defaultDescription => "Изменяет активность визуального объекта.";
+
+		protected override void OnDefineOptions(IOptionDefinitionContext context)
+		{
+			base.OnDefineOptions(context);
+			context.AddOption<string>(SiteIdOption).WithDisplayName("SiteId");
+			context.AddOption<string>(VisualIdOption).WithDisplayName("VisualId");
+			context.AddOption<bool>(IsActiveOption).WithDisplayName("IsActive");
+		}
+
+		protected override void OnDefinePorts(IPortDefinitionContext context)
+		{
+			AddInputExecutionPort(context);
+			AddNextPort(context);
+		}
 	}
 }

@@ -969,9 +969,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="Scripts.Runtime.csproj">
-      <Project>{f071e1f9-de5a-3d75-2cd8-7aafcd510fdd}</Project>
-      <Name>Scripts.Runtime</Name>
+    <ProjectReference Include="Sample.Runtime.csproj">
+      <Project>{879ce974-1b1b-31a5-55fe-75b2b7cdb948}</Project>
+      <Name>Sample.Runtime</Name>
     </ProjectReference>
     <ProjectReference Include="Graph.Core.Runtime.csproj">
       <Project>{0acb810f-4b73-7aef-52f4-0d3c745eb917}</Project>

@@ -1,233 +1,240 @@
 using System.Collections.Generic;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.NPC;
+using Prototype.Business.Runtime;
+using Prototype.Business.Services;
 using UnityEngine;
 
-public class BusinessVisualSpawner : MonoBehaviour
+namespace Prototype.Business.World
 {
-	[SerializeField]
-	private GameBootstrap m_bootstrap;
-
-	[SerializeField]
-	private BusinessVisualRegistry m_registry;
-
-	private readonly Dictionary<string, BusinessWorldRuntime> m_anchorsBySiteId = new();
-
-	private readonly Dictionary<string, GameObject> m_spawnedBySiteId = new();
-	private readonly Dictionary<string, string> m_spawnedVisualIdsBySiteId = new();
-	private PlayerStateSync m_subscribedStateSync;
-
-	private void OnEnable()
+	public class BusinessVisualSpawner : MonoBehaviour
 	{
-		Subscribe();
-		RefreshFromState();
-	}
+		[SerializeField]
+		private GameBootstrap m_bootstrap;
 
-	private void OnDisable()
-	{
-		Unsubscribe();
-	}
+		[SerializeField]
+		private BusinessVisualRegistry m_registry;
 
-	private void OnDestroy()
-	{
-		Unsubscribe();
-		ClearAllSpawned();
-	}
+		private readonly Dictionary<string, BusinessWorldRuntime> m_anchorsBySiteId = new();
 
-	public void Initialize(GameBootstrap bootstrap, BusinessVisualRegistry registry)
-	{
-		Unsubscribe();
-		m_bootstrap = bootstrap;
-		m_registry = registry;
-		Subscribe();
-		RefreshFromState();
-	}
+		private readonly Dictionary<string, GameObject> m_spawnedBySiteId = new();
+		private readonly Dictionary<string, string> m_spawnedVisualIdsBySiteId = new();
+		private PlayerStateSync m_subscribedStateSync;
 
-	private void Subscribe()
-	{
-		PlayerStateSync stateSync = m_bootstrap != null ? m_bootstrap.PlayerStateSync : null;
-		if (stateSync == null || m_subscribedStateSync == stateSync)
+		private void OnEnable()
 		{
-			return;
+			Subscribe();
+			RefreshFromState();
 		}
 
-		m_subscribedStateSync = stateSync;
-		m_subscribedStateSync.snapshotApplied += OnSnapshotApplied;
-	}
-
-	private void Unsubscribe()
-	{
-		if (m_subscribedStateSync != null)
+		private void OnDisable()
 		{
-			m_subscribedStateSync.snapshotApplied -= OnSnapshotApplied;
-			m_subscribedStateSync = null;
-		}
-	}
-
-	private void OnSnapshotApplied(ProfileSnapshot snapshot)
-	{
-		RefreshFromState();
-	}
-
-	private void RefreshFromState()
-	{
-		if (m_bootstrap == null || m_registry == null || m_bootstrap.PlayerStateSync == null)
-		{
-			return;
+			Unsubscribe();
 		}
 
-		RebuildAnchors();
-		var desiredSites = new HashSet<string>();
-
-		foreach (ConstructedSiteSnapshot site in m_bootstrap.PlayerStateSync.ConstructedSites.Values)
+		private void OnDestroy()
 		{
-			if (site == null || string.IsNullOrWhiteSpace(site.siteId))
+			Unsubscribe();
+			ClearAllSpawned();
+		}
+
+		public void Initialize(GameBootstrap bootstrap, BusinessVisualRegistry registry)
+		{
+			Unsubscribe();
+			m_bootstrap = bootstrap;
+			m_registry = registry;
+			Subscribe();
+			RefreshFromState();
+		}
+
+		private void Subscribe()
+		{
+			PlayerStateSync stateSync = m_bootstrap != null ? m_bootstrap.PlayerStateSync : null;
+			if (stateSync == null || m_subscribedStateSync == stateSync)
 			{
-				continue;
+				return;
 			}
 
-			desiredSites.Add(site.siteId);
-
-			if (!site.isConstructed || string.IsNullOrWhiteSpace(site.visualId))
-			{
-				RemoveSpawned(site.siteId);
-				continue;
-			}
-
-			EnsureSpawned(site);
+			m_subscribedStateSync = stateSync;
+			m_subscribedStateSync.snapshotApplied += OnSnapshotApplied;
 		}
 
-		var sitesToRemove = new List<string>();
-		foreach (KeyValuePair<string, GameObject> pair in m_spawnedBySiteId)
+		private void Unsubscribe()
 		{
-			if (!desiredSites.Contains(pair.Key))
+			if (m_subscribedStateSync != null)
 			{
-				sitesToRemove.Add(pair.Key);
+				m_subscribedStateSync.snapshotApplied -= OnSnapshotApplied;
+				m_subscribedStateSync = null;
 			}
 		}
 
-		foreach (string siteId in sitesToRemove)
+		private void OnSnapshotApplied(ProfileSnapshot snapshot)
 		{
-			RemoveSpawned(siteId);
+			RefreshFromState();
 		}
-	}
 
-	private void RebuildAnchors()
-	{
-		m_anchorsBySiteId.Clear();
-		BusinessWorldRuntime[] worldRuntimes =
-			FindObjectsByType<BusinessWorldRuntime>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-		foreach (BusinessWorldRuntime worldRuntime in worldRuntimes)
+		private void RefreshFromState()
 		{
-			if (worldRuntime == null || string.IsNullOrWhiteSpace(worldRuntime.siteId))
+			if (m_bootstrap == null || m_registry == null || m_bootstrap.PlayerStateSync == null)
 			{
-				continue;
+				return;
 			}
 
-			string siteId = worldRuntime.siteId.Trim();
-			if (!m_anchorsBySiteId.ContainsKey(siteId))
+			RebuildAnchors();
+			var desiredSites = new HashSet<string>();
+
+			foreach (ConstructedSiteSnapshot site in m_bootstrap.PlayerStateSync.ConstructedSites.Values)
 			{
-				m_anchorsBySiteId.Add(siteId, worldRuntime);
-			}
-		}
-	}
-
-	private void EnsureSpawned(ConstructedSiteSnapshot site)
-	{
-		if (!m_anchorsBySiteId.TryGetValue(site.siteId, out BusinessWorldRuntime anchor) || anchor == null)
-		{
-			Debug.LogWarning($"[BusinessVisual] Missing scene anchor for siteId='{site.siteId}'.");
-			RemoveSpawned(site.siteId);
-			return;
-		}
-
-		GameObject prefab = m_registry.GetPrefab(site.visualId);
-		if (prefab == null)
-		{
-			Debug.LogWarning($"[BusinessVisual] Missing prefab for visualId='{site.visualId}'.");
-			RemoveSpawned(site.siteId);
-			return;
-		}
-
-		if (m_spawnedBySiteId.TryGetValue(site.siteId, out GameObject existing) &&
-		    existing != null &&
-		    m_spawnedVisualIdsBySiteId.TryGetValue(site.siteId, out string existingVisualId) &&
-		    existingVisualId == site.visualId)
-		{
-			existing.transform.SetPositionAndRotation(anchor.transform.position, anchor.transform.rotation);
-			if (existing.transform.parent != anchor.transform)
-			{
-				existing.transform.SetParent(anchor.transform, true);
-			}
-
-			return;
-		}
-
-		RemoveSpawned(site.siteId);
-
-		GameObject instance =
-			Instantiate(prefab, anchor.transform.position, anchor.transform.rotation, anchor.transform);
-		instance.name = $"{prefab.name}_{site.siteId}";
-		AssignBootstrap(instance);
-		m_spawnedBySiteId[site.siteId] = instance;
-		m_spawnedVisualIdsBySiteId[site.siteId] = site.visualId;
-	}
-
-	private void RemoveSpawned(string siteId)
-	{
-		if (string.IsNullOrWhiteSpace(siteId))
-		{
-			return;
-		}
-
-		if (m_spawnedBySiteId.TryGetValue(siteId, out GameObject instance) && instance != null)
-		{
-			Destroy(instance);
-		}
-
-		m_spawnedBySiteId.Remove(siteId);
-		m_spawnedVisualIdsBySiteId.Remove(siteId);
-	}
-
-	private void ClearAllSpawned()
-	{
-		foreach (KeyValuePair<string, GameObject> pair in m_spawnedBySiteId)
-		{
-			if (pair.Value != null)
-			{
-				Destroy(pair.Value);
-			}
-		}
-
-		m_spawnedBySiteId.Clear();
-		m_spawnedVisualIdsBySiteId.Clear();
-	}
-
-	private void AssignBootstrap(GameObject instance)
-	{
-		if (instance == null || m_bootstrap == null)
-		{
-			return;
-		}
-
-		BuildingInteractable[] buildingInteractables = instance.GetComponentsInChildren<BuildingInteractable>(true);
-		if (buildingInteractables != null)
-		{
-			foreach (BuildingInteractable interactable in buildingInteractables)
-			{
-				if (interactable != null)
+				if (site == null || string.IsNullOrWhiteSpace(site.siteId))
 				{
-					interactable.bootstrap = m_bootstrap;
+					continue;
+				}
+
+				desiredSites.Add(site.siteId);
+
+				if (!site.isConstructed || string.IsNullOrWhiteSpace(site.visualId))
+				{
+					RemoveSpawned(site.siteId);
+					continue;
+				}
+
+				EnsureSpawned(site);
+			}
+
+			var sitesToRemove = new List<string>();
+			foreach (KeyValuePair<string, GameObject> pair in m_spawnedBySiteId)
+			{
+				if (!desiredSites.Contains(pair.Key))
+				{
+					sitesToRemove.Add(pair.Key);
+				}
+			}
+
+			foreach (string siteId in sitesToRemove)
+			{
+				RemoveSpawned(siteId);
+			}
+		}
+
+		private void RebuildAnchors()
+		{
+			m_anchorsBySiteId.Clear();
+			BusinessWorldRuntime[] worldRuntimes =
+				FindObjectsByType<BusinessWorldRuntime>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+			foreach (BusinessWorldRuntime worldRuntime in worldRuntimes)
+			{
+				if (worldRuntime == null || string.IsNullOrWhiteSpace(worldRuntime.siteId))
+				{
+					continue;
+				}
+
+				string siteId = worldRuntime.siteId.Trim();
+				if (!m_anchorsBySiteId.ContainsKey(siteId))
+				{
+					m_anchorsBySiteId.Add(siteId, worldRuntime);
 				}
 			}
 		}
 
-		Npcmanager[] npcManagers = instance.GetComponentsInChildren<Npcmanager>(true);
-		if (npcManagers != null)
+		private void EnsureSpawned(ConstructedSiteSnapshot site)
 		{
-			foreach (Npcmanager npc in npcManagers)
+			if (!m_anchorsBySiteId.TryGetValue(site.siteId, out BusinessWorldRuntime anchor) || anchor == null)
 			{
-				if (npc != null)
+				Debug.LogWarning($"[BusinessVisual] Missing scene anchor for siteId='{site.siteId}'.");
+				RemoveSpawned(site.siteId);
+				return;
+			}
+
+			GameObject prefab = m_registry.GetPrefab(site.visualId);
+			if (prefab == null)
+			{
+				Debug.LogWarning($"[BusinessVisual] Missing prefab for visualId='{site.visualId}'.");
+				RemoveSpawned(site.siteId);
+				return;
+			}
+
+			if (m_spawnedBySiteId.TryGetValue(site.siteId, out GameObject existing) &&
+			    existing != null &&
+			    m_spawnedVisualIdsBySiteId.TryGetValue(site.siteId, out string existingVisualId) &&
+			    existingVisualId == site.visualId)
+			{
+				existing.transform.SetPositionAndRotation(anchor.transform.position, anchor.transform.rotation);
+				if (existing.transform.parent != anchor.transform)
 				{
-					npc.bootstrap = m_bootstrap;
+					existing.transform.SetParent(anchor.transform, true);
+				}
+
+				return;
+			}
+
+			RemoveSpawned(site.siteId);
+
+			GameObject instance =
+				Instantiate(prefab, anchor.transform.position, anchor.transform.rotation, anchor.transform);
+			instance.name = $"{prefab.name}_{site.siteId}";
+			AssignBootstrap(instance);
+			m_spawnedBySiteId[site.siteId] = instance;
+			m_spawnedVisualIdsBySiteId[site.siteId] = site.visualId;
+		}
+
+		private void RemoveSpawned(string siteId)
+		{
+			if (string.IsNullOrWhiteSpace(siteId))
+			{
+				return;
+			}
+
+			if (m_spawnedBySiteId.TryGetValue(siteId, out GameObject instance) && instance != null)
+			{
+				Destroy(instance);
+			}
+
+			m_spawnedBySiteId.Remove(siteId);
+			m_spawnedVisualIdsBySiteId.Remove(siteId);
+		}
+
+		private void ClearAllSpawned()
+		{
+			foreach (KeyValuePair<string, GameObject> pair in m_spawnedBySiteId)
+			{
+				if (pair.Value != null)
+				{
+					Destroy(pair.Value);
+				}
+			}
+
+			m_spawnedBySiteId.Clear();
+			m_spawnedVisualIdsBySiteId.Clear();
+		}
+
+		private void AssignBootstrap(GameObject instance)
+		{
+			if (instance == null || m_bootstrap == null)
+			{
+				return;
+			}
+
+			BuildingInteractable[] buildingInteractables = instance.GetComponentsInChildren<BuildingInteractable>(true);
+			if (buildingInteractables != null)
+			{
+				foreach (BuildingInteractable interactable in buildingInteractables)
+				{
+					if (interactable != null)
+					{
+						interactable.bootstrap = m_bootstrap;
+					}
+				}
+			}
+
+			Npcmanager[] npcManagers = instance.GetComponentsInChildren<Npcmanager>(true);
+			if (npcManagers != null)
+			{
+				foreach (Npcmanager npc in npcManagers)
+				{
+					if (npc != null)
+					{
+						npc.bootstrap = m_bootstrap;
+					}
 				}
 			}
 		}

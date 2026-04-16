@@ -3,28 +3,33 @@ using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Templates;
 using Game1.Graph.Runtime.Templates.Executors;
 using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Services;
 
-public abstract class GameGraphServerRequestExecutor<TNode> : GameGraphSuccessFailNodeExecutor<TNode>
-	where TNode : GameGraphSuccessFailNode
+namespace Prototype.Business.Runtime.GraphExecutors.Infrastructure
 {
-	protected sealed override async UniTask<bool> EvaluateSuccessAsync(
-		TNode node,
-		GraphExecutionContext context,
-		CancellationToken cancellationToken)
+	public abstract class GameGraphServerRequestExecutor<TNode> : GameGraphSuccessFailNodeExecutor<TNode>
+		where TNode : GameGraphSuccessFailNode
 	{
-		if (!GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap) ||
-		    bootstrap.GameServer == null)
+		protected sealed override async UniTask<bool> EvaluateSuccessAsync(
+			TNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
-			return false;
+			if (!GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap) ||
+			    bootstrap.GameServer == null)
+			{
+				return false;
+			}
+
+			ServerActionResult result = await ExecuteRequestAsync(node, bootstrap, context, cancellationToken);
+			return result != null && result.Success;
 		}
 
-		ServerActionResult result = await ExecuteRequestAsync(node, bootstrap, context, cancellationToken);
-		return result != null && result.Success;
+		protected abstract UniTask<ServerActionResult> ExecuteRequestAsync(
+			TNode node,
+			GameBootstrap bootstrap,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken);
 	}
-
-	protected abstract UniTask<ServerActionResult> ExecuteRequestAsync(
-		TNode node,
-		GameBootstrap bootstrap,
-		GraphExecutionContext context,
-		CancellationToken cancellationToken);
 }

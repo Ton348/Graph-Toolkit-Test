@@ -2,68 +2,71 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BusinessVisualRegistry : MonoBehaviour
+namespace Prototype.Business.World
 {
-	[SerializeField]
-	private List<Entry> m_entries = new();
-
-	private readonly Dictionary<string, GameObject> m_prefabByVisualId = new();
-	private bool m_cacheDirty = true;
-
-	public int EntryCount => m_entries != null ? m_entries.Count : 0;
-
-	private void OnValidate()
+	public class BusinessVisualRegistry : MonoBehaviour
 	{
-		m_cacheDirty = true;
-	}
+		[SerializeField]
+		private List<Entry> m_entries = new();
 
-	public GameObject GetPrefab(string visualId)
-	{
-		if (string.IsNullOrWhiteSpace(visualId))
+		private readonly Dictionary<string, GameObject> m_prefabByVisualId = new();
+		private bool m_cacheDirty = true;
+
+		public int EntryCount => m_entries != null ? m_entries.Count : 0;
+
+		private void OnValidate()
 		{
-			return null;
+			m_cacheDirty = true;
 		}
 
-		RebuildCacheIfNeeded();
-		m_prefabByVisualId.TryGetValue(visualId.Trim(), out GameObject prefab);
-		return prefab;
-	}
-
-	public bool HasEntries()
-	{
-		RebuildCacheIfNeeded();
-		return m_prefabByVisualId.Count > 0;
-	}
-
-	private void RebuildCacheIfNeeded()
-	{
-		if (!m_cacheDirty)
+		public GameObject GetPrefab(string visualId)
 		{
-			return;
-		}
-
-		m_prefabByVisualId.Clear();
-		foreach (Entry entry in m_entries)
-		{
-			if (entry == null || string.IsNullOrWhiteSpace(entry.visualId) || entry.prefab == null)
+			if (string.IsNullOrWhiteSpace(visualId))
 			{
-				continue;
+				return null;
 			}
 
-			string visualId = entry.visualId.Trim();
-			if (!m_prefabByVisualId.ContainsKey(visualId))
-			{
-				m_prefabByVisualId.Add(visualId, entry.prefab);
-			}
+			RebuildCacheIfNeeded();
+			m_prefabByVisualId.TryGetValue(visualId.Trim(), out GameObject prefab);
+			return prefab;
 		}
 
-		m_cacheDirty = false;
-	}
+		public bool HasEntries()
+		{
+			RebuildCacheIfNeeded();
+			return m_prefabByVisualId.Count > 0;
+		}
 
-	[Serializable]
-	public class Entry
-	{
-		public string visualId;
-		public GameObject prefab;
+		private void RebuildCacheIfNeeded()
+		{
+			if (!m_cacheDirty)
+			{
+				return;
+			}
+
+			m_prefabByVisualId.Clear();
+			foreach (Entry entry in m_entries)
+			{
+				if (entry == null || string.IsNullOrWhiteSpace(entry.visualId) || entry.prefab == null)
+				{
+					continue;
+				}
+
+				string visualId = entry.visualId.Trim();
+				if (!m_prefabByVisualId.ContainsKey(visualId))
+				{
+					m_prefabByVisualId.Add(visualId, entry.prefab);
+				}
+			}
+
+			m_cacheDirty = false;
+		}
+
+		[Serializable]
+		public class Entry
+		{
+			public string visualId;
+			public GameObject prefab;
+		}
 	}
 }

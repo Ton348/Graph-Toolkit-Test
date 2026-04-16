@@ -1,4 +1,6 @@
 using System.Text;
+using Prototype.Business.Bootstrap;
+using Sample.Runtime.GameData;
 using TMPro;
 using UnityEngine;
 

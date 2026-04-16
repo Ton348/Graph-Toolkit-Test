@@ -1,23 +1,27 @@
+using Prototype.Business.Bootstrap;
 using TMPro;
 using UnityEngine;
 
-public class MoneyUi : MonoBehaviour
+namespace Prototype.Business.UI
 {
-	public GameBootstrap bootstrap;
-	public TMP_Text moneyText;
-
-	private void Update()
+	public class MoneyUi : MonoBehaviour
 	{
-		if (bootstrap == null)
-		{
-			bootstrap = FindObjectOfType<GameBootstrap>();
-		}
+		public GameBootstrap bootstrap;
+		public TMP_Text moneyText;
 
-		if (moneyText == null || bootstrap == null || bootstrap.PlayerStateSync == null)
+		private void Update()
 		{
-			return;
-		}
+			if (bootstrap == null)
+			{
+				bootstrap = FindObjectOfType<GameBootstrap>();
+			}
 
-		moneyText.text = $"Money: {bootstrap.PlayerStateSync.Money}";
+			if (moneyText == null || bootstrap == null || bootstrap.PlayerStateSync == null)
+			{
+				return;
+			}
+
+			moneyText.text = $"Money: {bootstrap.PlayerStateSync.Money}";
+		}
 	}
 }

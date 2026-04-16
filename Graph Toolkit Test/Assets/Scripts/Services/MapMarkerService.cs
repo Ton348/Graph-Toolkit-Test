@@ -3,82 +3,85 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
-public class MapMarkerService : MonoBehaviour
+namespace Sample.Runtime.Services
 {
-	public GameObject markerPrefab;
-	public List<MarkerTarget> markerTargets = new();
-
-	private readonly Dictionary<string, GameObject> m_activeMarkers = new();
-
-	public void ShowMarker(string markerId, Transform targetTransform, string title)
+	public class MapMarkerService : MonoBehaviour
 	{
-		Transform target = targetTransform != null ? targetTransform : GetTarget(markerId);
-		if (target == null || markerPrefab == null)
+		public GameObject markerPrefab;
+		public List<MarkerTarget> markerTargets = new();
+
+		private readonly Dictionary<string, GameObject> m_activeMarkers = new();
+
+		public void ShowMarker(string markerId, Transform targetTransform, string title)
 		{
-			return;
+			Transform target = targetTransform != null ? targetTransform : GetTarget(markerId);
+			if (target == null || markerPrefab == null)
+			{
+				return;
+			}
+
+			if (m_activeMarkers.ContainsKey(markerId))
+			{
+				return;
+			}
+
+			GameObject marker = Instantiate(markerPrefab, target.position, Quaternion.identity, target);
+			SetMarkerTitle(marker, title);
+			m_activeMarkers[markerId] = marker;
 		}
 
-		if (m_activeMarkers.ContainsKey(markerId))
+		public void HideMarker(string markerId)
 		{
-			return;
+			if (!m_activeMarkers.TryGetValue(markerId, out GameObject marker))
+			{
+				return;
+			}
+
+			if (marker != null)
+			{
+				Destroy(marker);
+			}
+
+			m_activeMarkers.Remove(markerId);
 		}
 
-		GameObject marker = Instantiate(markerPrefab, target.position, Quaternion.identity, target);
-		SetMarkerTitle(marker, title);
-		m_activeMarkers[markerId] = marker;
-	}
-
-	public void HideMarker(string markerId)
-	{
-		if (!m_activeMarkers.TryGetValue(markerId, out GameObject marker))
+		public Transform GetTarget(string markerId)
 		{
-			return;
-		}
+			if (string.IsNullOrEmpty(markerId))
+			{
+				return null;
+			}
 
-		if (marker != null)
-		{
-			Destroy(marker);
-		}
+			foreach (MarkerTarget mt in markerTargets)
+			{
+				if (mt != null && mt.markerId == markerId)
+				{
+					return mt.target;
+				}
+			}
 
-		m_activeMarkers.Remove(markerId);
-	}
-
-	public Transform GetTarget(string markerId)
-	{
-		if (string.IsNullOrEmpty(markerId))
-		{
 			return null;
 		}
 
-		foreach (MarkerTarget mt in markerTargets)
+		private void SetMarkerTitle(GameObject marker, string title)
 		{
-			if (mt != null && mt.markerId == markerId)
+			if (marker == null)
 			{
-				return mt.target;
+				return;
+			}
+
+			var label = marker.GetComponentInChildren<TMP_Text>();
+			if (label != null)
+			{
+				label.text = title;
 			}
 		}
 
-		return null;
-	}
-
-	private void SetMarkerTitle(GameObject marker, string title)
-	{
-		if (marker == null)
+		[Serializable]
+		public class MarkerTarget
 		{
-			return;
+			public string markerId;
+			public Transform target;
 		}
-
-		var label = marker.GetComponentInChildren<TMP_Text>();
-		if (label != null)
-		{
-			label.text = title;
-		}
-	}
-
-	[Serializable]
-	public class MarkerTarget
-	{
-		public string markerId;
-		public Transform target;
 	}
 }

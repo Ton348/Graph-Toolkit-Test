@@ -1,13 +1,16 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class LotDefinitionData
+namespace Sample.Runtime.GameData
 {
-	public string id;
-	public string displayName;
-	public int rentPerDay;
-	public string locationId;
-	public int size;
-	public List<string> allowedBusinessTypes = new();
+	[Serializable]
+	public class LotDefinitionData
+	{
+		public string id;
+		public string displayName;
+		public int rentPerDay;
+		public string locationId;
+		public int size;
+		public List<string> allowedBusinessTypes = new();
+	}
 }

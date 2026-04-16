@@ -1,32 +1,28 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using Dreamteck.Splines.Editor;
 using UnityEditor;
-using Dreamteck.Splines.Editor;
 
 namespace Dreamteck.Splines.Primitives
 {
-    public class EllipseEditor : PrimitiveEditor
-    {
-        
+	public class EllipseEditor : PrimitiveEditor
+	{
+		public override string GetName()
+		{
+			return "Ellipse";
+		}
 
-        public override string GetName()
-        {
-            return "Ellipse";
-        }
+		public override void Open(DreamteckSplinesEditor editor)
+		{
+			base.Open(editor);
+			m_primitive = new Ellipse();
+			m_primitive.offset = origin;
+		}
 
-        public override void Open(DreamteckSplinesEditor editor)
-        {
-            base.Open(editor);
-            m_primitive = new Ellipse();
-            m_primitive.offset = origin;
-        }
-
-        protected override void OnGui()
-        {
-            base.OnGui();
-            Ellipse ellipse = (Ellipse)m_primitive;
-            ellipse.xRadius = EditorGUILayout.FloatField("X Radius", ellipse.xRadius);
-            ellipse.yRadius = EditorGUILayout.FloatField("Y Radius", ellipse.yRadius);
-        }
-    }
+		protected override void OnGui()
+		{
+			base.OnGui();
+			var ellipse = (Ellipse)m_primitive;
+			ellipse.xRadius = EditorGUILayout.FloatField("X Radius", ellipse.xRadius);
+			ellipse.yRadius = EditorGUILayout.FloatField("Y Radius", ellipse.yRadius);
+		}
+	}
 }

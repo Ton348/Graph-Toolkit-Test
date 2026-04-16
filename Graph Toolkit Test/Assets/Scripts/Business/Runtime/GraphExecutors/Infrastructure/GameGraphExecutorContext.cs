@@ -1,44 +1,49 @@
 using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Services;
 
-internal static class GameGraphExecutorContext
+namespace Prototype.Business.Runtime.GraphExecutors.Infrastructure
 {
-	public static bool TryGetBootstrap(GraphExecutionContext context, out GameBootstrap bootstrap)
+	internal static class GameGraphExecutorContext
 	{
-		bootstrap = null;
-		return context != null && context.TryGet(GraphContextKeys.runtimeBootstrap, out bootstrap) && bootstrap != null;
-	}
-
-	public static async UniTask<ServerActionResult> ExecuteServerAsync(
-		GraphExecutionContext context,
-		UniTask<ServerActionResult> action)
-	{
-		ServerActionResult result = await action;
-		context?.Set(GraphContextKeys.serverLastResult, result);
-
-		if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) &&
-		    bootstrap.ProfileSyncService != null)
+		public static bool TryGetBootstrap(GraphExecutionContext context, out GameBootstrap bootstrap)
 		{
-			bootstrap.ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+			bootstrap = null;
+			return context != null && context.TryGet(GraphContextKeys.runtimeBootstrap, out bootstrap) && bootstrap != null;
 		}
 
-		return result;
-	}
-
-	public static async UniTask<ServerActionResult> ExecuteServerAsync(
-		GraphExecutionContext context,
-		Task<ServerActionResult> action)
-	{
-		ServerActionResult result = await action;
-		context?.Set(GraphContextKeys.serverLastResult, result);
-
-		if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) &&
-		    bootstrap.ProfileSyncService != null)
+		public static async UniTask<ServerActionResult> ExecuteServerAsync(
+			GraphExecutionContext context,
+			UniTask<ServerActionResult> action)
 		{
-			bootstrap.ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+			ServerActionResult result = await action;
+			context?.Set(GraphContextKeys.serverLastResult, result);
+
+			if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) &&
+			    bootstrap.ProfileSyncService != null)
+			{
+				bootstrap.ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+			}
+
+			return result;
 		}
 
-		return result;
+		public static async UniTask<ServerActionResult> ExecuteServerAsync(
+			GraphExecutionContext context,
+			Task<ServerActionResult> action)
+		{
+			ServerActionResult result = await action;
+			context?.Set(GraphContextKeys.serverLastResult, result);
+
+			if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) &&
+			    bootstrap.ProfileSyncService != null)
+			{
+				bootstrap.ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+			}
+
+			return result;
+		}
 	}
 }

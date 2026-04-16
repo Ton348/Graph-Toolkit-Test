@@ -1,6 +1,9 @@
-public enum UpgradeResult
+namespace Sample.Runtime.Services
 {
-	Success,
-	NotOwned,
-	NotEnoughMoney
+	public enum UpgradeResult
+	{
+		Success,
+		NotOwned,
+		NotEnoughMoney
+	}
 }

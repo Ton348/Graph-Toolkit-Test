@@ -1,19 +1,24 @@
-using Game1.Graph.Runtime;
-using Game1.Graph.Editor;
-
 using Game1.Graph.Editor.Infrastructure.Converters;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeConverter]
-public sealed class RequestInstallBusinessModuleNodeConverter : GameGraphNodeConverterBase<RequestInstallBusinessModuleNodeModel, RequestInstallBusinessModuleNode>
+using GameGraph.Editor.Business;
+using GameGraph.Runtime.Business;
+
+namespace GameGraph.Editor.Converters.Business
 {
-	protected override bool TryConvert(RequestInstallBusinessModuleNodeModel editorNodeModel, out RequestInstallBusinessModuleNode runtimeNode)
+	[GameGraphNodeConverter]
+	public sealed class RequestInstallBusinessModuleNodeConverter : GameGraphNodeConverterBase<
+		RequestInstallBusinessModuleNodeModel, RequestInstallBusinessModuleNode>
 	{
-		runtimeNode = new RequestInstallBusinessModuleNode
+		protected override bool TryConvert(
+			RequestInstallBusinessModuleNodeModel editorNodeModel,
+			out RequestInstallBusinessModuleNode runtimeNode)
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, RequestInstallBusinessModuleNodeModel.LotIdOption),
-			moduleId = GetOptionValue<string>(editorNodeModel, RequestInstallBusinessModuleNodeModel.ModuleIdOption)
-		};
-		return true;
+			runtimeNode = new RequestInstallBusinessModuleNode
+			{
+				lotId = GetOptionValue<string>(editorNodeModel, RequestInstallBusinessModuleNodeModel.LotIdOption),
+				moduleId = GetOptionValue<string>(editorNodeModel, RequestInstallBusinessModuleNodeModel.ModuleIdOption)
+			};
+			return true;
+		}
 	}
 }
-

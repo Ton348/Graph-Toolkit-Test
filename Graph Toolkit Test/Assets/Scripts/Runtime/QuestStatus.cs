@@ -1,7 +1,10 @@
-public enum QuestStatus
+namespace Sample.Runtime.Runtime
 {
-	Inactive,
-	Active,
-	Completed,
-	Failed
+	public enum QuestStatus
+	{
+		Inactive,
+		Active,
+		Completed,
+		Failed
+	}
 }

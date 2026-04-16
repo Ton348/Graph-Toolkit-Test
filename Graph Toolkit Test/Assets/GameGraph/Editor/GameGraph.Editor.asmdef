@@ -1,5 +1,6 @@
 {
   "name": "GameGraph.Editor",
+  "rootNamespace": "GameGraph.Editor",
   "references": [
     "GameGraph.Runtime",
     "Game1.Graph.Runtime",
@@ -20,6 +21,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "GameGraph.Editor"
+  "noEngineReferences": false
 }

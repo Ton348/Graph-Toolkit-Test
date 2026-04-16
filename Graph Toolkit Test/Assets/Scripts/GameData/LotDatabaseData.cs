@@ -1,8 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class LotDatabaseData
+namespace Sample.Runtime.GameData
 {
-	public List<LotDefinitionData> lots = new();
+	[Serializable]
+	public class LotDatabaseData
+	{
+		public List<LotDefinitionData> lots = new();
+	}
 }

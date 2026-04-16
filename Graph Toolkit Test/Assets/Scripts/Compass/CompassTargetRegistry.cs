@@ -2,70 +2,73 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CompassTargetRegistry : MonoBehaviour
+namespace Sample.Runtime.Compass
 {
-	private readonly Dictionary<string, CompassTarget> m_targets = new();
-	public static CompassTargetRegistry Instance { get; private set; }
-
-	private void Awake()
+	public class CompassTargetRegistry : MonoBehaviour
 	{
-		if (Instance != null && Instance != this)
+		private readonly Dictionary<string, CompassTarget> m_targets = new();
+		public static CompassTargetRegistry Instance { get; private set; }
+
+		private void Awake()
 		{
-			Destroy(gameObject);
-			return;
+			if (Instance != null && Instance != this)
+			{
+				Destroy(gameObject);
+				return;
+			}
+
+			Instance = this;
 		}
 
-		Instance = this;
-	}
+		public event Action<CompassTarget> targetRegistered;
+		public event Action<CompassTarget> targetUnregistered;
 
-	public event Action<CompassTarget> targetRegistered;
-	public event Action<CompassTarget> targetUnregistered;
-
-	public void Register(CompassTarget target)
-	{
-		if (target == null)
+		public void Register(CompassTarget target)
 		{
-			return;
+			if (target == null)
+			{
+				return;
+			}
+
+			string id = target.TargetId;
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return;
+			}
+
+			m_targets[id] = target;
+			targetRegistered?.Invoke(target);
 		}
 
-		string id = target.TargetId;
-		if (string.IsNullOrWhiteSpace(id))
+		public void Unregister(CompassTarget target)
 		{
-			return;
+			if (target == null)
+			{
+				return;
+			}
+
+			string id = target.TargetId;
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return;
+			}
+
+			if (m_targets.TryGetValue(id, out CompassTarget existing) && existing == target)
+			{
+				m_targets.Remove(id);
+				targetUnregistered?.Invoke(target);
+			}
 		}
 
-		m_targets[id] = target;
-		targetRegistered?.Invoke(target);
-	}
-
-	public void Unregister(CompassTarget target)
-	{
-		if (target == null)
+		public CompassTarget GetTarget(string id)
 		{
-			return;
-		}
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return null;
+			}
 
-		string id = target.TargetId;
-		if (string.IsNullOrWhiteSpace(id))
-		{
-			return;
+			m_targets.TryGetValue(id, out CompassTarget target);
+			return target;
 		}
-
-		if (m_targets.TryGetValue(id, out CompassTarget existing) && existing == target)
-		{
-			m_targets.Remove(id);
-			targetUnregistered?.Invoke(target);
-		}
-	}
-
-	public CompassTarget GetTarget(string id)
-	{
-		if (string.IsNullOrWhiteSpace(id))
-		{
-			return null;
-		}
-
-		m_targets.TryGetValue(id, out CompassTarget target);
-		return target;
 	}
 }

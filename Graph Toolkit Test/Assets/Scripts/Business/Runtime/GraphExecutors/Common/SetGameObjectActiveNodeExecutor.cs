@@ -2,50 +2,56 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+using GameGraph.Runtime.Common;
 using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Runtime.GraphExecutors.Infrastructure;
 
-[GameGraphNodeExecutorAttribute]
-public sealed class SetGameObjectActiveNodeExecutor : GameGraphNextNodeExecutor<SetGameObjectActiveNode>
+namespace Prototype.Business.Runtime.GraphExecutors.Common
 {
-	protected override async UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
-		SetGameObjectActiveNode node,
-		GraphExecutionContext context,
-		CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class SetGameObjectActiveNodeExecutor : GameGraphNextNodeExecutor<SetGameObjectActiveNode>
 	{
-		if (!GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap) ||
-		    bootstrap.GameServer == null)
+		protected override async UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
+			SetGameObjectActiveNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
-			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
-		}
-
-		string siteId = string.IsNullOrWhiteSpace(node.siteId) ? null : node.siteId.Trim();
-		if (string.IsNullOrEmpty(siteId))
-		{
-			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
-		}
-
-		if (node.isActive)
-		{
-			string visualId = !string.IsNullOrWhiteSpace(node.visualId)
-				? node.visualId.Trim()
-				: node.targetObject != null
-					? node.targetObject.name
-					: null;
-
-			if (string.IsNullOrWhiteSpace(visualId))
+			if (!GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap) ||
+			    bootstrap.GameServer == null)
 			{
 				return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
 			}
 
-			await GameGraphExecutorContext.ExecuteServerAsync(context,
-				bootstrap.GameServer.TryConstructSiteVisualAsync(siteId, visualId));
-		}
-		else
-		{
-			await GameGraphExecutorContext.ExecuteServerAsync(context,
-				bootstrap.GameServer.TryRemoveSiteVisualAsync(siteId));
-		}
+			string siteId = string.IsNullOrWhiteSpace(node.siteId) ? null : node.siteId.Trim();
+			if (string.IsNullOrEmpty(siteId))
+			{
+				return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+			}
 
-		return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+			if (node.isActive)
+			{
+				string visualId = !string.IsNullOrWhiteSpace(node.visualId)
+					? node.visualId.Trim()
+					: node.targetObject != null
+						? node.targetObject.name
+						: null;
+
+				if (string.IsNullOrWhiteSpace(visualId))
+				{
+					return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+				}
+
+				await GameGraphExecutorContext.ExecuteServerAsync(context,
+					bootstrap.GameServer.TryConstructSiteVisualAsync(siteId, visualId));
+			}
+			else
+			{
+				await GameGraphExecutorContext.ExecuteServerAsync(context,
+					bootstrap.GameServer.TryRemoveSiteVisualAsync(siteId));
+			}
+
+			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
+		}
 	}
 }

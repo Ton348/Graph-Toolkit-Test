@@ -1,45 +1,48 @@
+using UnityEditor;
+using UnityEngine;
+
 namespace Dreamteck.Splines.Editor
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
+	public class FollowerSpeedModifierEditor : SplineSampleModifierEditor
+	{
+		private readonly float m_addTime = 0f;
+		public bool allowSelection = true;
 
-    using UnityEditor;
+		public FollowerSpeedModifierEditor(SplineUser user, SplineUserEditor editor) : base(user, editor,
+			"_speedModifier")
+		{
+			m_title = "Speed Modifiers";
+		}
 
-    public class FollowerSpeedModifierEditor : SplineSampleModifierEditor
-    {
-        public bool allowSelection = true;
-        private float m_addTime = 0f;
+		public void ClearSelection()
+		{
+			m_selected = -1;
+		}
 
-        public FollowerSpeedModifierEditor(SplineUser user, SplineUserEditor editor) : base(user, editor, "_speedModifier")
-        {
-            m_title = "Speed Modifiers";
-        }
+		public override void DrawInspector()
+		{
+			base.DrawInspector();
+			if (!isOpen)
+			{
+				return;
+			}
 
-        public void ClearSelection()
-        {
-            m_selected = -1;
-        }
+			if (GUILayout.Button("Add Speed Region"))
+			{
+				AddKey(m_addTime - 0.1f, m_addTime + 0.1f);
+				UpdateValues();
+			}
+		}
 
-        public override void DrawInspector()
-        {
-            base.DrawInspector();
-            if (!isOpen) return;
-            if (GUILayout.Button("Add Speed Region"))
-            {
-                AddKey(m_addTime - 0.1f, m_addTime + 0.1f);
-                UpdateValues();
-            }
-        }
-
-        protected override void KeyGui(SerializedProperty key)
-        {
-            SerializedProperty speed = key.FindPropertyRelative("speed");
-            SerializedProperty mode = key.FindPropertyRelative("mode");
-            base.KeyGui(key);
-            EditorGUILayout.PropertyField(mode);
-            string text = (mode.intValue == (int)FollowerSpeedModifier.SpeedKey.Mode.Add ? "Add" : "Multiply") + " Speed";
-            EditorGUILayout.PropertyField(speed, new GUIContent(text));
-        }
-    }
+		protected override void KeyGui(SerializedProperty key)
+		{
+			SerializedProperty speed = key.FindPropertyRelative("speed");
+			SerializedProperty mode = key.FindPropertyRelative("mode");
+			base.KeyGui(key);
+			EditorGUILayout.PropertyField(mode);
+			string text = (mode.intValue == (int)FollowerSpeedModifier.SpeedKey.Mode.Add ? "Add" : "Multiply") +
+			              " Speed";
+			EditorGUILayout.PropertyField(speed, new GUIContent(text));
+		}
+	}
 }

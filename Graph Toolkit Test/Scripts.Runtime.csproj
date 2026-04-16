@@ -78,7 +78,7 @@
     <Compile Include="Assets\Scripts\GameData\JsonGameDataLoader.cs" />
     <Compile Include="Assets\Scripts\Runtime\GameRuntimeState.cs" />
     <Compile Include="Assets\Scripts\Services\MapMarkerService.cs" />
-    <None Include="Assets\Scripts\Scripts.Runtime.asmdef" />
+    <None Include="Assets\Scripts\Sample.Runtime.asmdef" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\6000.3.12f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
     </Reference>

@@ -1,35 +1,38 @@
 using UnityEngine;
 
-public class DeliveryInteractable : MonoBehaviour
+namespace Prototype.Business.World
 {
-	public string itemId = "goods";
-	public int amount = 1;
-	public KeyCode interactKey = KeyCode.E;
-	public string playerTag = "Player";
-
-	private void OnTriggerStay(Collider other)
+	public class DeliveryInteractable : MonoBehaviour
 	{
-		if (!other.CompareTag(playerTag))
-		{
-			return;
-		}
+		public string itemId = "goods";
+		public int amount = 1;
+		public KeyCode interactKey = KeyCode.E;
+		public string playerTag = "Player";
 
-		if (!Input.GetKeyDown(interactKey))
+		private void OnTriggerStay(Collider other)
 		{
-			return;
-		}
+			if (!other.CompareTag(playerTag))
+			{
+				return;
+			}
 
-		var carrier = other.GetComponentInParent<PlayerCarryItem>();
-		if (carrier == null)
-		{
-			carrier = other.GetComponent<PlayerCarryItem>();
-		}
+			if (!Input.GetKeyDown(interactKey))
+			{
+				return;
+			}
 
-		if (carrier == null)
-		{
-			return;
-		}
+			var carrier = other.GetComponentInParent<PlayerCarryItem>();
+			if (carrier == null)
+			{
+				carrier = other.GetComponent<PlayerCarryItem>();
+			}
 
-		carrier.SetItem(itemId, amount);
+			if (carrier == null)
+			{
+				return;
+			}
+
+			carrier.SetItem(itemId, amount);
+		}
 	}
 }

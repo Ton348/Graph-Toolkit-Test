@@ -2,19 +2,25 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+using GameGraph.Runtime.Business;
 using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Runtime.GraphExecutors.Infrastructure;
 
-[GameGraphNodeExecutorAttribute]
-public sealed class CheckBusinessOpenNodeExecutor : GameGraphTrueFalseNodeExecutor<CheckBusinessOpenNode>
+namespace Prototype.Business.Runtime.GraphExecutors.Business
 {
-	protected override UniTask<bool> EvaluateConditionAsync(
-		CheckBusinessOpenNode node,
-		GraphExecutionContext context,
-		CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class CheckBusinessOpenNodeExecutor : GameGraphTrueFalseNodeExecutor<CheckBusinessOpenNode>
 	{
-		bool result = GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap)
-		              && bootstrap.BusinessStateSyncService != null
-		              && bootstrap.BusinessStateSyncService.IsBusinessOpen(node.lotId);
-		return UniTask.FromResult(result);
+		protected override UniTask<bool> EvaluateConditionAsync(
+			CheckBusinessOpenNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
+		{
+			bool result = GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap)
+			              && bootstrap.BusinessStateSyncService != null
+			              && bootstrap.BusinessStateSyncService.IsBusinessOpen(node.lotId);
+			return UniTask.FromResult(result);
+		}
 	}
 }

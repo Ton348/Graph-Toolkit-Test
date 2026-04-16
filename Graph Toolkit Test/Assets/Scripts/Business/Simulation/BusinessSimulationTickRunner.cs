@@ -1,45 +1,49 @@
+using Prototype.Business.Bootstrap;
 using UnityEngine;
 
-public class BusinessSimulationTickRunner : MonoBehaviour
+namespace Prototype.Business.Simulation
 {
-	public GameBootstrap bootstrap;
-	public float tickIntervalSeconds = 1f;
-	public float timeScale = 1f;
-	private BusinessSimulationClock m_clock;
-
-	private BusinessSimulationService m_simulationService;
-
-	private void Awake()
+	public class BusinessSimulationTickRunner : MonoBehaviour
 	{
-		if (bootstrap == null)
+		public GameBootstrap bootstrap;
+		public float tickIntervalSeconds = 1f;
+		public float timeScale = 1f;
+		private BusinessSimulationClock m_clock;
+
+		private BusinessSimulationService m_simulationService;
+
+		private void Awake()
 		{
-			bootstrap = FindObjectOfType<GameBootstrap>();
+			if (bootstrap == null)
+			{
+				bootstrap = FindObjectOfType<GameBootstrap>();
+			}
+
+			if (bootstrap != null)
+			{
+				m_simulationService = bootstrap.BusinessSimulationService;
+			}
+
+			m_clock = new BusinessSimulationClock
+			{
+				tickIntervalSeconds = tickIntervalSeconds
+			};
 		}
 
-		if (bootstrap != null)
+		private void Update()
 		{
-			m_simulationService = bootstrap.BusinessSimulationService;
-		}
+			if (m_simulationService == null || m_clock == null)
+			{
+				return;
+			}
 
-		m_clock = new BusinessSimulationClock
-		{
-			tickIntervalSeconds = tickIntervalSeconds
-		};
-	}
-
-	private void Update()
-	{
-		if (m_simulationService == null || m_clock == null)
-		{
-			return;
-		}
-
-		m_clock.tickIntervalSeconds = tickIntervalSeconds;
-		m_simulationService.TimeScale = timeScale;
-		m_clock.Update(Time.deltaTime);
-		while (m_clock.TryConsumeTick(out float delta))
-		{
-			m_simulationService.RunTick(delta);
+			m_clock.tickIntervalSeconds = tickIntervalSeconds;
+			m_simulationService.TimeScale = timeScale;
+			m_clock.Update(Time.deltaTime);
+			while (m_clock.TryConsumeTick(out float delta))
+			{
+				m_simulationService.RunTick(delta);
+			}
 		}
 	}
 }

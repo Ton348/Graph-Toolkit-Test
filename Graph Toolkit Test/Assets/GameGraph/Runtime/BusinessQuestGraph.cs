@@ -5,72 +5,75 @@ using Graph.Core.Runtime.Nodes.Server;
 using Graph.Core.Runtime.Templates;
 using UnityEngine;
 
-public class BusinessQuestGraph : ScriptableObject
+namespace GameGraph.Runtime
 {
-	public string startNodeId;
-
-	[SerializeReference]
-	public List<BaseGraphNode> nodes = new List<BaseGraphNode>();
-
-	public BaseGraphNode GetNodeById(string id)
+	public class BusinessQuestGraph : ScriptableObject
 	{
-		if (string.IsNullOrEmpty(id))
-		{
-			return null;
-		}
+		public string startNodeId;
 
-		foreach (BaseGraphNode node in nodes)
+		[SerializeReference]
+		public List<BaseGraphNode> nodes = new();
+
+		public BaseGraphNode GetNodeById(string id)
 		{
-			if (node != null && node.id == id)
+			if (string.IsNullOrEmpty(id))
 			{
-				return node;
+				return null;
 			}
-		}
 
-		return null;
-	}
-
-	public BaseGraphNode GetStartNode()
-	{
-		return GetNodeById(startNodeId);
-	}
-
-	public BaseGraphNode GetNextNode(BaseGraphNode node)
-	{
-		if (node == null)
-		{
-			return null;
-		}
-
-		if (node is CoreGraphNextNode nextNode)
-		{
-			return GetNodeById(nextNode.nextNodeId);
-		}
-
-		FieldInfo field = node.GetType().GetField("nextNodeId", BindingFlags.Public | BindingFlags.Instance);
-		if (field != null && field.FieldType == typeof(string))
-		{
-			return GetNodeById(field.GetValue(node) as string);
-		}
-
-		return null;
-	}
-
-	public CheckpointNode GetCheckpointNodeById(string checkpointId)
-	{
-		if (string.IsNullOrEmpty(checkpointId))
-		{
-			return null;
-		}
-
-		foreach (BaseGraphNode node in nodes)
-		{
-			if (node is CheckpointNode checkpoint && checkpoint.checkpointId == checkpointId)
+			foreach (BaseGraphNode node in nodes)
 			{
-				return checkpoint;
+				if (node != null && node.id == id)
+				{
+					return node;
+				}
 			}
+
+			return null;
 		}
 
-		return null;
+		public BaseGraphNode GetStartNode()
+		{
+			return GetNodeById(startNodeId);
+		}
+
+		public BaseGraphNode GetNextNode(BaseGraphNode node)
+		{
+			if (node == null)
+			{
+				return null;
+			}
+
+			if (node is CoreGraphNextNode nextNode)
+			{
+				return GetNodeById(nextNode.nextNodeId);
+			}
+
+			FieldInfo field = node.GetType().GetField("nextNodeId", BindingFlags.Public | BindingFlags.Instance);
+			if (field != null && field.FieldType == typeof(string))
+			{
+				return GetNodeById(field.GetValue(node) as string);
+			}
+
+			return null;
+		}
+
+		public CheckpointNode GetCheckpointNodeById(string checkpointId)
+		{
+			if (string.IsNullOrEmpty(checkpointId))
+			{
+				return null;
+			}
+
+			foreach (BaseGraphNode node in nodes)
+			{
+				if (node is CheckpointNode checkpoint && checkpoint.checkpointId == checkpointId)
+				{
+					return checkpoint;
+				}
+			}
+
+			return null;
+		}
 	}
 }

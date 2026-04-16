@@ -8,137 +8,140 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ChoiceUiservice : MonoBehaviour, IGraphChoiceService
+namespace Sample.Runtime.UI
 {
-	public GameObject panel;
-	public Button[] optionButtons = new Button[4];
-	public TMP_Text[] optionTexts = new TMP_Text[4];
-
-	private Action<int> m_onSelected;
-
-	private void Awake()
+	public class ChoiceUiservice : MonoBehaviour, IGraphChoiceService
 	{
-		if (panel != null)
-		{
-			panel.SetActive(false);
-		}
-	}
+		public GameObject panel;
+		public Button[] optionButtons = new Button[4];
+		public TMP_Text[] optionTexts = new TMP_Text[4];
 
-	public UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken)
-	{
-		var completionSource = new UniTaskCompletionSource<int>();
-		CancellationTokenRegistration
-			registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
-		var legacyOptions = new List<ChoiceOption>();
-		if (options != null)
+		private Action<int> m_onSelected;
+
+		private void Awake()
 		{
-			for (var i = 0; i < options.Count; i++)
+			if (panel != null)
 			{
-				legacyOptions.Add(new ChoiceOption
+				panel.SetActive(false);
+			}
+		}
+
+		public UniTask<int> ShowAsync(IReadOnlyList<GraphChoiceEntry> options, CancellationToken cancellationToken)
+		{
+			var completionSource = new UniTaskCompletionSource<int>();
+			CancellationTokenRegistration
+				registration = cancellationToken.Register(() => completionSource.TrySetCanceled());
+			var legacyOptions = new List<ChoiceOption>();
+			if (options != null)
+			{
+				for (var i = 0; i < options.Count; i++)
 				{
-					label = options[i].label
-				});
+					legacyOptions.Add(new ChoiceOption
+					{
+						label = options[i].label
+					});
+				}
+			}
+
+			ShowChoices(legacyOptions, index => completionSource.TrySetResult(index));
+			return AwaitWithCleanupAsync(completionSource, registration);
+		}
+
+		private static async UniTask<int> AwaitWithCleanupAsync(
+			UniTaskCompletionSource<int> completionSource,
+			CancellationTokenRegistration registration)
+		{
+			try
+			{
+				return await completionSource.Task;
+			}
+			finally
+			{
+				registration.Dispose();
 			}
 		}
 
-		ShowChoices(legacyOptions, index => completionSource.TrySetResult(index));
-		return AwaitWithCleanupAsync(completionSource, registration);
-	}
-
-	private static async UniTask<int> AwaitWithCleanupAsync(
-		UniTaskCompletionSource<int> completionSource,
-		CancellationTokenRegistration registration)
-	{
-		try
+		public void ShowChoices(IReadOnlyList<ChoiceOption> options, Action<int> onSelectedCallback)
 		{
-			return await completionSource.Task;
-		}
-		finally
-		{
-			registration.Dispose();
-		}
-	}
-
-	public void ShowChoices(IReadOnlyList<ChoiceOption> options, Action<int> onSelectedCallback)
-	{
-		m_onSelected = onSelectedCallback;
-		ApplyOptions(options);
-	}
-
-	private void ApplyOptions(IReadOnlyList<ChoiceOption> options)
-	{
-		if (panel != null)
-		{
-			panel.SetActive(true);
+			m_onSelected = onSelectedCallback;
+			ApplyOptions(options);
 		}
 
-		for (var i = 0; i < 4; i++)
+		private void ApplyOptions(IReadOnlyList<ChoiceOption> options)
 		{
-			Button button = optionButtons != null && i < optionButtons.Length ? optionButtons[i] : null;
-			TMP_Text label = optionTexts != null && i < optionTexts.Length ? optionTexts[i] : null;
-
-			if (button == null)
+			if (panel != null)
 			{
-				continue;
+				panel.SetActive(true);
 			}
 
-			button.onClick.RemoveAllListeners();
-
-			ChoiceOption option = options != null && i < options.Count ? options[i] : null;
-			if (option == null || string.IsNullOrWhiteSpace(option.label))
+			for (var i = 0; i < 4; i++)
 			{
+				Button button = optionButtons != null && i < optionButtons.Length ? optionButtons[i] : null;
+				TMP_Text label = optionTexts != null && i < optionTexts.Length ? optionTexts[i] : null;
+
+				if (button == null)
+				{
+					continue;
+				}
+
+				button.onClick.RemoveAllListeners();
+
+				ChoiceOption option = options != null && i < options.Count ? options[i] : null;
+				if (option == null || string.IsNullOrWhiteSpace(option.label))
+				{
+					button.gameObject.SetActive(false);
+					continue;
+				}
+
+				button.gameObject.SetActive(true);
+
+				if (label != null)
+				{
+					label.text = option.label ?? string.Empty;
+				}
+
+				int index = i;
+				button.onClick.AddListener(() => HandleSelect(index));
+			}
+		}
+
+		private void HandleSelect(int index)
+		{
+			if (panel != null)
+			{
+				panel.SetActive(false);
+			}
+
+			Action<int> callback = m_onSelected;
+			m_onSelected = null;
+			callback?.Invoke(index);
+		}
+
+		public void HideChoices()
+		{
+			if (panel != null)
+			{
+				panel.SetActive(false);
+			}
+
+			m_onSelected = null;
+
+			if (optionButtons == null)
+			{
+				return;
+			}
+
+			for (var i = 0; i < optionButtons.Length; i++)
+			{
+				Button button = optionButtons[i];
+				if (button == null)
+				{
+					continue;
+				}
+
+				button.onClick.RemoveAllListeners();
 				button.gameObject.SetActive(false);
-				continue;
 			}
-
-			button.gameObject.SetActive(true);
-
-			if (label != null)
-			{
-				label.text = option.label ?? string.Empty;
-			}
-
-			int index = i;
-			button.onClick.AddListener(() => HandleSelect(index));
-		}
-	}
-
-	private void HandleSelect(int index)
-	{
-		if (panel != null)
-		{
-			panel.SetActive(false);
-		}
-
-		Action<int> callback = m_onSelected;
-		m_onSelected = null;
-		callback?.Invoke(index);
-	}
-
-	public void HideChoices()
-	{
-		if (panel != null)
-		{
-			panel.SetActive(false);
-		}
-
-		m_onSelected = null;
-
-		if (optionButtons == null)
-		{
-			return;
-		}
-
-		for (var i = 0; i < optionButtons.Length; i++)
-		{
-			Button button = optionButtons[i];
-			if (button == null)
-			{
-				continue;
-			}
-
-			button.onClick.RemoveAllListeners();
-			button.gameObject.SetActive(false);
 		}
 	}
 }

@@ -5,319 +5,352 @@ using UnityEngine;
 
 namespace Dreamteck.Splines
 {
-    [CustomEditor(typeof(ComplexSurfaceGenerator), true)]
-    public class ComplexSurfaceGeneratorEditor : MeshGenEditor
-    {
-        private SplineComputer m_lastEditedComputer;
-        private SplineComputer m_highlightedComputer;
-        private int m_lastEditedPointIndex = -1;
-        private bool m_positionHandle = false;
-        private Vector2 m_scroll = Vector2.zero;
+	[CustomEditor(typeof(ComplexSurfaceGenerator), true)]
+	public class ComplexSurfaceGeneratorEditor : MeshGenEditor
+	{
+		private SplineComputer m_highlightedComputer;
+		private SplineComputer m_lastEditedComputer;
+		private int m_lastEditedPointIndex = -1;
+		private bool m_positionHandle;
+		private Vector2 m_scroll = Vector2.zero;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            m_positionHandle = EditorPrefs.GetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", false);
-            if (Application.isPlaying) return;
-            SerializedProperty initProperty = serializedObject.FindProperty("_initializedInEditor");
-            ComplexSurfaceGenerator gen = (ComplexSurfaceGenerator)target;
+		protected override void Awake()
+		{
+			base.Awake();
+			m_positionHandle = EditorPrefs.GetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", false);
+			if (Application.isPlaying)
+			{
+				return;
+			}
 
-            if (!initProperty.boolValue)
-            {
-                AddSpline(gen);
-                initProperty.boolValue = true;
-                serializedObject.ApplyModifiedProperties();
-            }
+			SerializedProperty initProperty = serializedObject.FindProperty("_initializedInEditor");
+			var gen = (ComplexSurfaceGenerator)target;
 
-            SerializedProperty computersProperty = serializedObject.FindProperty("_otherComputers");
-            ValidateSplines(gen, computersProperty);
-        }
+			if (!initProperty.boolValue)
+			{
+				AddSpline(gen);
+				initProperty.boolValue = true;
+				serializedObject.ApplyModifiedProperties();
+			}
 
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-            EditorPrefs.SetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", m_positionHandle);
-        }
+			SerializedProperty computersProperty = serializedObject.FindProperty("_otherComputers");
+			ValidateSplines(gen, computersProperty);
+		}
 
-        protected override void BodyGui()
-        {
-            base.BodyGui();
-            ComplexSurfaceGenerator gen = (ComplexSurfaceGenerator)target;
-            EditorGUI.BeginChangeCheck();
-            gen.separateMaterialIDs = EditorGUILayout.Toggle("Separate Material IDs", gen.separateMaterialIDs);
+		protected override void OnDestroy()
+		{
+			base.OnDestroy();
+			EditorPrefs.SetBool(nameof(ComplexSurfaceGeneratorEditor) + ".positionHandles", m_positionHandle);
+		}
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Paths", EditorStyles.boldLabel);
+		protected override void BodyGui()
+		{
+			base.BodyGui();
+			var gen = (ComplexSurfaceGenerator)target;
+			EditorGUI.BeginChangeCheck();
+			gen.separateMaterialIDs = EditorGUILayout.Toggle("Separate Material IDs", gen.separateMaterialIDs);
 
-            SerializedProperty computersProperty = serializedObject.FindProperty("_otherComputers");
-            SerializedProperty subdivisionsProperty = serializedObject.FindProperty("_subdivisions");
-            SerializedProperty subdivisionModeProperty = serializedObject.FindProperty("_subdivisionMode");
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Paths", EditorStyles.boldLabel);
 
-            EditorGUI.BeginChangeCheck();
-            bool hasNullSpline = false;
-            for (int i = 0; i < gen.otherComputers.Length; i++)
-            {
-                if (gen.otherComputers[i] == null)
-                {
-                    hasNullSpline = true;
-                    break;
-                }
-            }
-            if(hasNullSpline)
-            {
-                EditorGUILayout.HelpBox("Missing or not enough splines. Please, link at least one splines and remove any missing references.", MessageType.Error);
-            }
+			SerializedProperty computersProperty = serializedObject.FindProperty("_otherComputers");
+			SerializedProperty subdivisionsProperty = serializedObject.FindProperty("_subdivisions");
+			SerializedProperty subdivisionModeProperty = serializedObject.FindProperty("_subdivisionMode");
+			if (EditorGUI.EndChangeCheck())
+			{
+				serializedObject.ApplyModifiedProperties();
+			}
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Splines", EditorStyles.boldLabel);
-            m_positionHandle = EditorGUILayout.Toggle("Toggle Move Handles", m_positionHandle);
-            EditorGUILayout.Space();
-            EditorGUI.indentLevel++;
+			EditorGUI.BeginChangeCheck();
+			var hasNullSpline = false;
+			for (var i = 0; i < gen.otherComputers.Length; i++)
+			{
+				if (gen.otherComputers[i] == null)
+				{
+					hasNullSpline = true;
+					break;
+				}
+			}
 
-            m_scroll = EditorGUILayout.BeginScrollView(m_scroll, GUILayout.Height(Mathf.Min(computersProperty.arraySize * 22, 300)));
-            for (int i = 0; i < computersProperty.arraySize; i++)
-            {
-                SerializedProperty compProperty = computersProperty.GetArrayElementAtIndex(i);
-                SplineComputer spline = (SplineComputer)compProperty.objectReferenceValue;
-                EditorGUILayout.BeginHorizontal();
-                EditorGUILayout.LabelField(spline.name);
-                if (GUILayout.Button("Edit", GUILayout.MaxWidth(75)))
-                {
-                    Selection.activeGameObject = spline.gameObject;
-                }
+			if (hasNullSpline)
+			{
+				EditorGUILayout.HelpBox(
+					"Missing or not enough splines. Please, link at least one splines and remove any missing references.",
+					MessageType.Error);
+			}
 
-                if (GUILayout.Button("Highlight", GUILayout.MaxWidth(75)))
-                {
-                    if(m_highlightedComputer == spline)
-                    {
-                        m_highlightedComputer = null;
-                    } else
-                    {
-                        m_highlightedComputer = spline;
-                    }
-                }
-                if (GUILayout.Button("Remove", GUILayout.MaxWidth(75)))
-                {
-                    if(EditorUtility.DisplayDialog("Delete Spline", "Also remove spline object?", "Yes", "No"))
-                    {
-                        DestroyImmediate(spline.gameObject);
-                    }
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Splines", EditorStyles.boldLabel);
+			m_positionHandle = EditorGUILayout.Toggle("Toggle Move Handles", m_positionHandle);
+			EditorGUILayout.Space();
+			EditorGUI.indentLevel++;
 
-                    computersProperty.DeleteArrayElementAtIndex(i);
-                    i--;
-                    serializedObject.ApplyModifiedProperties();
-                    gen.RebuildImmediate();
-                }
-                EditorGUILayout.EndHorizontal();
-            }
+			m_scroll = EditorGUILayout.BeginScrollView(m_scroll,
+				GUILayout.Height(Mathf.Min(computersProperty.arraySize * 22, 300)));
+			for (var i = 0; i < computersProperty.arraySize; i++)
+			{
+				SerializedProperty compProperty = computersProperty.GetArrayElementAtIndex(i);
+				var spline = (SplineComputer)compProperty.objectReferenceValue;
+				EditorGUILayout.BeginHorizontal();
+				EditorGUILayout.LabelField(spline.name);
+				if (GUILayout.Button("Edit", GUILayout.MaxWidth(75)))
+				{
+					Selection.activeGameObject = spline.gameObject;
+				}
 
-            //sEditorGUILayout.PropertyField(computersProperty, new GUIContent("Other Splines"));
+				if (GUILayout.Button("Highlight", GUILayout.MaxWidth(75)))
+				{
+					if (m_highlightedComputer == spline)
+					{
+						m_highlightedComputer = null;
+					}
+					else
+					{
+						m_highlightedComputer = spline;
+					}
+				}
 
-            if (EditorGUI.EndChangeCheck())
-            {
-                ValidateSplines(gen, computersProperty);
-                serializedObject.ApplyModifiedProperties();
-                gen.RebuildImmediate();
-            }
-            EditorGUILayout.EndScrollView();
+				if (GUILayout.Button("Remove", GUILayout.MaxWidth(75)))
+				{
+					if (EditorUtility.DisplayDialog("Delete Spline", "Also remove spline object?", "Yes", "No"))
+					{
+						DestroyImmediate(spline.gameObject);
+					}
 
-            if (GUILayout.Button("Add Spline"))
-            {
-                AddSpline(gen);
-            }
+					computersProperty.DeleteArrayElementAtIndex(i);
+					i--;
+					serializedObject.ApplyModifiedProperties();
+					gen.RebuildImmediate();
+				}
 
-            EditorGUI.indentLevel--;
-            EditorGUILayout.Space();
+				EditorGUILayout.EndHorizontal();
+			}
 
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Normals", EditorStyles.boldLabel);
-            gen.automaticNormals = EditorGUILayout.Toggle("Automatic Normals", gen.automaticNormals);
+			//sEditorGUILayout.PropertyField(computersProperty, new GUIContent("Other Splines"));
 
-            var normalMethods = new string[]
-            {
-                MeshGenerator.NormalMethod.Recalculate.ToString(),
-                MeshGenerator.NormalMethod.SplineNormals.ToString(),
-            };
+			if (EditorGUI.EndChangeCheck())
+			{
+				ValidateSplines(gen, computersProperty);
+				serializedObject.ApplyModifiedProperties();
+				gen.RebuildImmediate();
+			}
 
-            if (!gen.automaticNormals) gen.normalMethod = (MeshGenerator.NormalMethod)EditorGUILayout.Popup("Normal Method", (int)gen.normalMethod, normalMethods);
+			EditorGUILayout.EndScrollView();
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Geometry", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(subdivisionModeProperty);
-            EditorGUILayout.PropertyField(subdivisionsProperty);
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
+			if (GUILayout.Button("Add Spline"))
+			{
+				AddSpline(gen);
+			}
 
-            Uvcontrols(gen);
-        }
+			EditorGUI.indentLevel--;
+			EditorGUILayout.Space();
 
-        private void ValidateSplines(ComplexSurfaceGenerator gen, SerializedProperty computersProperty)
-        {
-            for (int i = 0; i < computersProperty.arraySize; i++)
-            {
-                SerializedProperty compProperty = computersProperty.GetArrayElementAtIndex(i);
-                SplineComputer spline = (SplineComputer)compProperty.objectReferenceValue;
+			EditorGUI.BeginChangeCheck();
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Normals", EditorStyles.boldLabel);
+			gen.automaticNormals = EditorGUILayout.Toggle("Automatic Normals", gen.automaticNormals);
 
-                bool isValid = spline != null;
+			var normalMethods = new[]
+			{
+				MeshGenerator.NormalMethod.Recalculate.ToString(),
+				MeshGenerator.NormalMethod.SplineNormals.ToString()
+			};
 
-                if (isValid)
-                {
-                    for (int j = 0; j < i; j++)
-                    {
-                        SerializedProperty compPropertyPrevious = computersProperty.GetArrayElementAtIndex(j);
-                        SplineComputer previousSpline = (SplineComputer)compPropertyPrevious.objectReferenceValue;
-                        if (spline == previousSpline)
-                        {
-                            isValid = false;
-                            break;
-                        }
-                    }
-                }
+			if (!gen.automaticNormals)
+			{
+				gen.normalMethod =
+					(MeshGenerator.NormalMethod)EditorGUILayout.Popup("Normal Method", (int)gen.normalMethod,
+						normalMethods);
+			}
+
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Geometry", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(subdivisionModeProperty);
+			EditorGUILayout.PropertyField(subdivisionsProperty);
+			if (EditorGUI.EndChangeCheck())
+			{
+				serializedObject.ApplyModifiedProperties();
+			}
+
+			Uvcontrols(gen);
+		}
+
+		private void ValidateSplines(ComplexSurfaceGenerator gen, SerializedProperty computersProperty)
+		{
+			for (var i = 0; i < computersProperty.arraySize; i++)
+			{
+				SerializedProperty compProperty = computersProperty.GetArrayElementAtIndex(i);
+				var spline = (SplineComputer)compProperty.objectReferenceValue;
+
+				bool isValid = spline != null;
+
+				if (isValid)
+				{
+					for (var j = 0; j < i; j++)
+					{
+						SerializedProperty compPropertyPrevious = computersProperty.GetArrayElementAtIndex(j);
+						var previousSpline = (SplineComputer)compPropertyPrevious.objectReferenceValue;
+						if (spline == previousSpline)
+						{
+							isValid = false;
+							break;
+						}
+					}
+				}
 
 
+				if (!isValid)
+				{
+					computersProperty.DeleteArrayElementAtIndex(i);
+					serializedObject.ApplyModifiedProperties();
+					gen.RebuildImmediate();
+					i--;
+					continue;
+				}
 
-                if (!isValid)
-                {
-                    computersProperty.DeleteArrayElementAtIndex(i);
-                    serializedObject.ApplyModifiedProperties();
-                    gen.RebuildImmediate();
-                    i--;
-                    continue;
-                }
+				spline.Unsubscribe(gen);
+				spline.Subscribe(gen);
+			}
+		}
 
-                spline.Unsubscribe(gen);
-                spline.Subscribe(gen);
-            }
-        }
+		private void AddSpline(ComplexSurfaceGenerator gen)
+		{
+			SplineComputer reference = gen.spline;
+			if (gen.otherComputers.Length > 0)
+			{
+				for (int i = gen.otherComputers.Length - 1; i >= 0; i--)
+				{
+					if (gen.otherComputers[i] != null)
+					{
+						reference = gen.otherComputers[i];
+						break;
+					}
+				}
+			}
 
-        private void AddSpline(ComplexSurfaceGenerator gen)
-        {
-            SplineComputer reference = gen.spline;
-            if (gen.otherComputers.Length > 0)
-            {
-                for (int i = gen.otherComputers.Length - 1; i >= 0; i--)
-                {
-                    if (gen.otherComputers[i] != null)
-                    {
-                        reference = gen.otherComputers[i];
-                        break;
-                    }
-                }
-            }
+			SplineComputer spline = Instantiate(reference, gen.transform);
+			Component[] components = spline.GetComponents<Component>();
+			for (int i = components.Length - 1; i >= 0; i--)
+			{
+				if (!(components[i] is SplineComputer || components[i] is Transform))
+				{
+					DestroyImmediate(components[i]);
+				}
+			}
 
-            SplineComputer spline = Instantiate(reference, gen.transform);
-            Component[] components = spline.GetComponents<Component>();
-            for (int i = components.Length-1; i >= 0; i--)
-            {
-                if (!(components[i] is SplineComputer || components[i] is Transform))
-                {
-                    DestroyImmediate(components[i]);
-                }
-            }
+			while (spline.transform.childCount > 0)
+			{
+				DestroyImmediate(spline.transform.GetChild(0).gameObject);
+			}
 
-            while(spline.transform.childCount > 0)
-            {
-                DestroyImmediate(spline.transform.GetChild(0).gameObject);
-            }
+			Undo.RegisterCreatedObjectUndo(spline.gameObject, "Surface Add Spline");
 
-            Undo.RegisterCreatedObjectUndo(spline.gameObject, "Surface Add Spline");
+			Vector3 direction = Vector3.Slerp(reference.Evaluate(0.0).right, reference.Evaluate(1.0).right, 0.5f);
+			spline.Subscribe(gen);
+			spline.transform.position +=
+				direction * reference.CalculateLength() / Mathf.Max(reference.pointCount - 1, 1);
+			SerializedProperty computersProperty = serializedObject.FindProperty("_otherComputers");
+			computersProperty.arraySize += 1;
+			computersProperty.GetArrayElementAtIndex(computersProperty.arraySize - 1).objectReferenceValue = spline;
+			serializedObject.ApplyModifiedProperties();
+			spline.RebuildImmediate();
+			gen.RebuildImmediate();
+		}
 
-            Vector3 direction = Vector3.Slerp(reference.Evaluate(0.0).right, reference.Evaluate(1.0).right, 0.5f);
-            spline.Subscribe(gen);
-            spline.transform.position += direction * reference.CalculateLength() / Mathf.Max((reference.pointCount - 1), 1);
-            SerializedProperty computersProperty = serializedObject.FindProperty("_otherComputers");
-            computersProperty.arraySize += 1;
-            computersProperty.GetArrayElementAtIndex(computersProperty.arraySize - 1).objectReferenceValue = spline;
-            serializedObject.ApplyModifiedProperties();
-            spline.RebuildImmediate();
-            gen.RebuildImmediate();
-        }
+		public override void OnInspectorGUI()
+		{
+			m_showSize = false;
+			m_showRotation = false;
+			m_showNormalMethod = false;
+			m_showOffset = false;
+			base.OnInspectorGUI();
+		}
 
-        public override void OnInspectorGUI()
-        {
-            m_showSize = false;
-            m_showRotation = false;
-            m_showNormalMethod = false;
-            m_showOffset = false;
-            base.OnInspectorGUI();
-        }
+		protected override void DuringSceneGui(SceneView currentSceneView)
+		{
+			var gen = (ComplexSurfaceGenerator)target;
+			base.DuringSceneGui(currentSceneView);
+			for (var i = 0; i < gen.otherComputers.Length; i++)
+			{
+				//SplineDrawer.DrawSplineComputer(gen.otherComputers[i]);
+			}
 
-        protected override void DuringSceneGui(SceneView currentSceneView)
-        {
-            ComplexSurfaceGenerator gen = (ComplexSurfaceGenerator)target;
-            base.DuringSceneGui(currentSceneView);
-            for (int i = 0; i < gen.otherComputers.Length; i++)
-            {
-                //SplineDrawer.DrawSplineComputer(gen.otherComputers[i]);
-            }
+			SplineComputer[] otherSplines = gen.otherComputers;
 
-            SplineComputer[] otherSplines = gen.otherComputers;
+			var rebuild = false;
+			for (var i = 0; i < otherSplines.Length; i++)
+			{
+				var markDirty = false;
+				if (otherSplines[i] == null)
+				{
+					continue;
+				}
 
-            bool rebuild = false;
-            for (int i = 0; i < otherSplines.Length; i++)
-            {
-                bool markDirty = false;
-                if (otherSplines[i] == null) continue;
-                for (int j = 0; j < otherSplines[i].pointCount; j++)
-                {
-                    if (otherSplines[i].subscriberCount == 1)
-                    {
-                        otherSplines[i].name = "Surface Spline " + (i + 1);
-                    }
-                    Vector3 point = otherSplines[i].GetPointPosition(j);
+				for (var j = 0; j < otherSplines[i].pointCount; j++)
+				{
+					if (otherSplines[i].subscriberCount == 1)
+					{
+						otherSplines[i].name = "Surface Spline " + (i + 1);
+					}
 
-                    Vector3 newPos = point;
+					Vector3 point = otherSplines[i].GetPointPosition(j);
 
-                    if (m_positionHandle)
-                    {
-                        newPos = Handles.PositionHandle(newPos, Quaternion.identity);
-                    } else
-                    {
-                        Handles.color = Color.clear;
-                        newPos = SplineEditorHandles.FreeMoveRectangle(point, HandleUtility.GetHandleSize(point) * 0.16f);
-                    }
-                        
+					Vector3 newPos = point;
 
-                    if (Vector3.Distance(point, newPos) > 0.01f)
-                    {
-                        m_lastEditedComputer = otherSplines[i];
-                        m_lastEditedPointIndex = j;
-                        m_highlightedComputer = null;
-                        MainPointModule.HoldInteraction();
-                        markDirty = true;
-                        otherSplines[i].SetPointPosition(j, newPos);
-                    }
+					if (m_positionHandle)
+					{
+						newPos = Handles.PositionHandle(newPos, Quaternion.identity);
+					}
+					else
+					{
+						Handles.color = Color.clear;
+						newPos = SplineEditorHandles.FreeMoveRectangle(point,
+							HandleUtility.GetHandleSize(point) * 0.16f);
+					}
 
-                    bool isSelected = (m_lastEditedComputer == otherSplines[i] && m_lastEditedPointIndex == j) || (m_highlightedComputer == otherSplines[i]);
- 
 
-                    if (Event.current.type == EventType.Repaint)
-                    {    
-                        SplineEditorHandles.DrawPoint(point, isSelected, MainPointModule.isSelecting ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : Color.white);
-                    }
-                }
+					if (Vector3.Distance(point, newPos) > 0.01f)
+					{
+						m_lastEditedComputer = otherSplines[i];
+						m_lastEditedPointIndex = j;
+						m_highlightedComputer = null;
+						MainPointModule.HoldInteraction();
+						markDirty = true;
+						otherSplines[i].SetPointPosition(j, newPos);
+					}
 
-                if(Event.current.type == EventType.MouseUp && Event.current.button == 0)
-                {
-                    m_lastEditedPointIndex = -1;
-                    m_lastEditedComputer = null;
-                }
+					bool isSelected = (m_lastEditedComputer == otherSplines[i] && m_lastEditedPointIndex == j) ||
+					                  m_highlightedComputer == otherSplines[i];
 
-                if (markDirty)
-                {
-                    EditorUtility.SetDirty(otherSplines[i]);
-                    rebuild = true;
-                }
-            }
-            if (rebuild)
-            {
-                for (int i = 0; i < m_users.Length; i++)
-                {
-                    m_users[i].RebuildImmediate();
-                }
-            }
-        }
-    }
+
+					if (Event.current.type == EventType.Repaint)
+					{
+						SplineEditorHandles.DrawPoint(point, isSelected,
+							MainPointModule.isSelecting ? new Color(0.5f, 0.5f, 0.5f, 0.5f) : Color.white);
+					}
+				}
+
+				if (Event.current.type == EventType.MouseUp && Event.current.button == 0)
+				{
+					m_lastEditedPointIndex = -1;
+					m_lastEditedComputer = null;
+				}
+
+				if (markDirty)
+				{
+					EditorUtility.SetDirty(otherSplines[i]);
+					rebuild = true;
+				}
+			}
+
+			if (rebuild)
+			{
+				for (var i = 0; i < m_users.Length; i++)
+				{
+					m_users[i].RebuildImmediate();
+				}
+			}
+		}
+	}
 }
 #endif

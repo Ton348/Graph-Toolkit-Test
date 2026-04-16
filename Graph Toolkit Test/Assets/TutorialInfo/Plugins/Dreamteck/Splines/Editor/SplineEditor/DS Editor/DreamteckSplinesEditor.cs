@@ -1,474 +1,508 @@
+using System.Collections.Generic;
+using Dreamteck.Editor;
+using UnityEditor;
+using UnityEngine;
+
 namespace Dreamteck.Splines.Editor
 {
-    using System.Collections.Generic;
-    using UnityEngine;
-    using UnityEditor;
+	public class DreamteckSplinesEditor : SplineEditor
+	{
+		private readonly Toolbar m_nodesToolbar;
 
-    public class DreamteckSplinesEditor : SplineEditor
-    {
-        public SplineComputer spline = null;
+		private readonly Transform m_transform;
 
-        public bool splineChanged
-        {
-            get { return m_splineChanged; }
-        }
+		private readonly List<Vector3> m_triggerWorldPositions = new();
+		private DscreatePointModule m_createPointModule;
+		public SplineComputer spline;
 
-        private Transform m_transform;
-        private DscreatePointModule m_createPointModule = null;
-        private Dreamteck.Editor.Toolbar m_nodesToolbar;
-        private bool m_splineChanged = false;
+		public DreamteckSplinesEditor(SplineComputer splineComputer, SerializedObject splineHolder) : base(
+			splineComputer.transform.localToWorldMatrix, splineHolder, "_spline")
+		{
+			spline = splineComputer;
+			m_transform = spline.transform;
+			evaluate = spline.Evaluate;
+			evaluateAtPoint = spline.Evaluate;
+			evaluatePosition = spline.EvaluatePosition;
+			calculateLength = spline.CalculateLength;
+			travel = spline.Travel;
+			undoHandler = HandleUndo;
+			mainModule.onBeforeDeleteSelectedPoints += OnBeforeDeleteSelectedPoints;
+			mainModule.onDuplicatePoint += OnDuplicatePoint;
+			if (spline.isNewlyCreated)
+			{
+				if (SplinePrefs.startInCreationMode)
+				{
+					open = true;
+					editMode = true;
+					ToggleModule(0);
+				}
 
-        private List<Vector3> m_triggerWorldPositions = new List<Vector3>();
+				spline.isNewlyCreated = false;
+			}
+
+			var nodeToolbarContents = new GUIContent[3];
+			nodeToolbarContents[0] = new GUIContent("Select");
+			nodeToolbarContents[1] = new GUIContent("Delete");
+			nodeToolbarContents[2] = new GUIContent("Disconnect");
+			m_nodesToolbar = new Toolbar(nodeToolbarContents);
+		}
+
+		public bool splineChanged { get; private set; }
 
 
-        protected override string editorName { get { return "DreamteckSplines"; } }
+		protected override string editorName => "DreamteckSplines";
 
-        public DreamteckSplinesEditor(SplineComputer splineComputer, SerializedObject splineHolder) : base (splineComputer.transform.localToWorldMatrix, splineHolder, "_spline")
-        {
-            spline = splineComputer;
-            m_transform = spline.transform;
-            evaluate = spline.Evaluate;
-            evaluateAtPoint = spline.Evaluate;
-            evaluatePosition = spline.EvaluatePosition;
-            calculateLength = spline.CalculateLength;
-            travel = spline.Travel;
-            undoHandler = HandleUndo;
-            mainModule.onBeforeDeleteSelectedPoints += OnBeforeDeleteSelectedPoints;
-            mainModule.onDuplicatePoint += OnDuplicatePoint;
-            if (spline.isNewlyCreated)
-            {
-                if (SplinePrefs.startInCreationMode)
-                {
-                    open = true;
-                    editMode = true;
-                    ToggleModule(0);
-                }
-                spline.isNewlyCreated = false;
-            }
-            GUIContent[] nodeToolbarContents = new GUIContent[3];
-            nodeToolbarContents[0] = new GUIContent("Select");
-            nodeToolbarContents[1] = new GUIContent("Delete");
-            nodeToolbarContents[2] = new GUIContent("Disconnect");
-            m_nodesToolbar = new Dreamteck.Editor.Toolbar(nodeToolbarContents);
-        }
+		protected override void Load()
+		{
+			m_pointOperations.Add(new PointOperation
+				{ name = "Center To Transform", action = delegate { CenterSelection(); } });
+			m_pointOperations.Add(new PointOperation
+				{ name = "Move Transform To", action = delegate { MoveTransformToSelection(); } });
+			base.Load();
+		}
 
-        protected override void Load()
-        {
-            m_pointOperations.Add(new PointOperation { name = "Center To Transform", action = delegate { CenterSelection(); } });
-            m_pointOperations.Add(new PointOperation { name = "Move Transform To", action = delegate { MoveTransformToSelection(); } });
-            base.Load();
-        }
+		private void OnDuplicatePoint(int[] points)
+		{
+			for (var i = 0; i < points.Length; i++)
+			{
+				spline.ShiftNodes(points[i], spline.pointCount - 1, 1);
+			}
+		}
 
-        private void OnDuplicatePoint(int[] points)
-        {
-            for (int i = 0; i < points.Length; i++)
-            {
-                spline.ShiftNodes(points[i], spline.pointCount - 1, 1);
-            }
-        }
+		public override void DrawInspector()
+		{
+			drawColor = spline.editorPathColor;
+			is2D = spline.is2D;
+			base.DrawInspector();
+		}
 
-        public override void DrawInspector()
-        {
-            drawColor = spline.editorPathColor;
-            is2D = spline.is2D;
-            base.DrawInspector();
-        }
+		public override void DrawScene(SceneView current)
+		{
+			if (spline == null)
+			{
+				return;
+			}
 
-        public override void DrawScene(SceneView current)
-        {
-            if (spline == null) return;
+			drawColor = spline.editorPathColor;
+			is2D = spline.is2D;
+			base.DrawScene(current);
+		}
 
-            drawColor = spline.editorPathColor;
-            is2D = spline.is2D;
-            base.DrawScene(current);
-        }
+		public void CacheTriggerPositions()
+		{
+			m_triggerWorldPositions.Clear();
+			LoopTriggerProperties(trigger =>
+			{
+				SerializedProperty positionProperty = trigger.FindPropertyRelative("position");
+				m_triggerWorldPositions.Add(spline.EvaluatePosition(positionProperty.floatValue));
+			});
+		}
 
-        public void CacheTriggerPositions()
-        {
-            m_triggerWorldPositions.Clear();
-            LoopTriggerProperties((trigger) =>
-            {
-                SerializedProperty positionProperty = trigger.FindPropertyRelative("position");
-                m_triggerWorldPositions.Add(spline.EvaluatePosition(positionProperty.floatValue));
-            });
-        }
+		public void WriteTriggerPositions()
+		{
+			var projectSample = new SplineSample();
+			var index = 0;
+			LoopTriggerProperties(trigger =>
+			{
+				spline.Project(m_triggerWorldPositions[index], ref projectSample);
+				SerializedProperty positionProperty = trigger.FindPropertyRelative("position");
+				positionProperty.floatValue = (float)projectSample.percent;
+				index++;
+			});
+			m_serializedObject.ApplyModifiedProperties();
+		}
 
-        public void WriteTriggerPositions()
-        {
-            SplineSample projectSample = new SplineSample();
-            int index = 0;
-            LoopTriggerProperties((trigger) =>
-            {
-                spline.Project(m_triggerWorldPositions[index], ref projectSample);
-                SerializedProperty positionProperty = trigger.FindPropertyRelative("position");
-                positionProperty.floatValue = (float)projectSample.percent;
-                index++;
-            });
-            m_serializedObject.ApplyModifiedProperties();
-        }
+		private void OnBeforeDeleteSelectedPoints()
+		{
+			CacheTriggerPositions();
+			var nodeString = "";
+			var deleteNodes = new List<Node>();
+			for (var i = 0; i < selectedPoints.Count; i++)
+			{
+				Node node = spline.GetNode(selectedPoints[i]);
+				if (node)
+				{
+					spline.DisconnectNode(selectedPoints[i]);
+					if (node.GetConnections().Length == 0)
+					{
+						deleteNodes.Add(node);
+						if (nodeString != "")
+						{
+							nodeString += ", ";
+						}
 
-        private void OnBeforeDeleteSelectedPoints()
-        {
-            CacheTriggerPositions();
-            string nodeString = "";
-            List <Node> deleteNodes = new List<Node>();
-            for (int i = 0; i < selectedPoints.Count; i++)
-            {
-                Node node = spline.GetNode(selectedPoints[i]);
-                if (node)
-                {
-                    spline.DisconnectNode(selectedPoints[i]);
-                    if (node.GetConnections().Length == 0)
-                    {
-                        deleteNodes.Add(node);
-                        if (nodeString != "") nodeString += ", ";
-                        string trimmed = node.name.Trim();
-                        if (nodeString.Length + trimmed.Length > 80) nodeString += "...";
-                        else nodeString += node.name.Trim();
-                    }
-                }
-            }
+						string trimmed = node.name.Trim();
+						if (nodeString.Length + trimmed.Length > 80)
+						{
+							nodeString += "...";
+						}
+						else
+						{
+							nodeString += node.name.Trim();
+						}
+					}
+				}
+			}
 
-            if (deleteNodes.Count > 0)
-            {
-                string message = "The following nodes:\r\n" + nodeString + "\r\n were only connected to the currently selected points. Would you like to remove them from the scene?";
-                if (EditorUtility.DisplayDialog("Remove nodes?", message, "Yes", "No"))
-                {
-                    for (int i = 0; i < deleteNodes.Count; i++)
-                    {
-                        Undo.DestroyObjectImmediate(deleteNodes[i].gameObject);
-                    }
-                }
-            }
+			if (deleteNodes.Count > 0)
+			{
+				string message = "The following nodes:\r\n" + nodeString +
+				                 "\r\n were only connected to the currently selected points. Would you like to remove them from the scene?";
+				if (EditorUtility.DisplayDialog("Remove nodes?", message, "Yes", "No"))
+				{
+					for (var i = 0; i < deleteNodes.Count; i++)
+					{
+						Undo.DestroyObjectImmediate(deleteNodes[i].gameObject);
+					}
+				}
+			}
 
-            int min = spline.pointCount - 1;
-            for (int i = 0; i < selectedPoints.Count; i++)
-            {
-                if (selectedPoints[i] < min)
-                {
-                    min = selectedPoints[i];
-                }
-            }
-        }
+			int min = spline.pointCount - 1;
+			for (var i = 0; i < selectedPoints.Count; i++)
+			{
+				if (selectedPoints[i] < min)
+				{
+					min = selectedPoints[i];
+				}
+			}
+		}
 
-        protected override void PointMenu()
-        {
-            base.PointMenu();
-            EditorGUILayout.Space();
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.LabelField("Nodes", GUILayout.MaxWidth(200f));
-            int nodesCount = 0;
-            for (int i = 0; i < selectedPoints.Count; i++)
-            {
-                if(spline.GetNode(selectedPoints[i]) != null)
-                {
-                    nodesCount ++;
-                }
-            }
+		protected override void PointMenu()
+		{
+			base.PointMenu();
+			EditorGUILayout.Space();
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.LabelField("Nodes", GUILayout.MaxWidth(200f));
+			var nodesCount = 0;
+			for (var i = 0; i < selectedPoints.Count; i++)
+			{
+				if (spline.GetNode(selectedPoints[i]) != null)
+				{
+					nodesCount++;
+				}
+			}
 
-            if (nodesCount > 0)
-            {
-                int option = -1;
-                m_nodesToolbar.center = false;
-                m_nodesToolbar.Draw(ref option);
-                if(option == 0)
-                {
-                    List<Node> nodeList = new List<Node>();
-                    for (int i = 0; i < selectedPoints.Count; i++)
-                    {
-                        Node node = spline.GetNode(selectedPoints[i]);
-                        if(node != null)
-                        {
-                            nodeList.Add(node);
-                        }
-                    }
-                    Selection.objects = nodeList.ToArray();
-                }
+			if (nodesCount > 0)
+			{
+				int option = -1;
+				m_nodesToolbar.center = false;
+				m_nodesToolbar.Draw(ref option);
+				if (option == 0)
+				{
+					var nodeList = new List<Node>();
+					for (var i = 0; i < selectedPoints.Count; i++)
+					{
+						Node node = spline.GetNode(selectedPoints[i]);
+						if (node != null)
+						{
+							nodeList.Add(node);
+						}
+					}
 
-                if(option == 1)
-                {
-                    for (int i = 0; i < selectedPoints.Count; i++)
-                    {
-                        bool delete = true;
-                        Node node = spline.GetNode(selectedPoints[i]);
-                        if(node.GetConnections().Length > 1)
-                        {
-                            if(!EditorUtility.DisplayDialog("Delete Node",
-                                "Node " + node.name + " has multiple connections. Are you sure you want to completely remove it?", "Yes", "No"))
-                            {
-                                delete = false;
-                            }
-                        }
-                        if (delete)
-                        {
-                            Undo.RegisterCompleteObjectUndo(spline, "Delete Node");
-                            Undo.DestroyObjectImmediate(node.gameObject);
-                            spline.DisconnectNode(selectedPoints[i]);
-                            EditorUtility.SetDirty(spline);
-                        }
-                    }
-                }
-                if (option == 2)
-                {
-                    for (int i = 0; i < selectedPoints.Count; i++)
-                    {
-                        Undo.RegisterCompleteObjectUndo(spline, "Disconnect Node");
-                        spline.DisconnectNode(selectedPoints[i]);
-                        EditorUtility.SetDirty(spline);
-                    }
-                }
-            } else
-            {
-                if(GUILayout.Button(selectedPoints.Count == 1 ? "Add Node to Point" : "Add Nodes to Points"))
-                {
-                    for (int i = 0; i < selectedPoints.Count; i++)
-                    {
-                        SplineSample sample = spline.Evaluate(selectedPoints[i]);
-                        GameObject go = new GameObject(spline.name + "_Node_" + (spline.GetNodes().Count+1));
-                        go.transform.parent = spline.transform;
-                        go.transform.position = sample.position;
-                        if (spline.is2D)
-                        {
-                            go.transform.rotation = sample.rotation * Quaternion.Euler(90, -90, 0);
-                        }
-                        else
-                        {
-                            go.transform.rotation = sample.rotation;
-                        }
-                        Node node = go.AddComponent<Node>();
-                        Undo.RegisterCreatedObjectUndo(go, "Create Node");
-                        Undo.RegisterCompleteObjectUndo(spline, "Create Node");
-                        spline.ConnectNode(node, selectedPoints[i]);
-                    }
-                }
-            }
-            EditorGUILayout.Space();
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.Space();
-        }
-        protected override void OnModuleList(List<PointModule> list)
-        {
-            m_createPointModule = new DscreatePointModule(this);
-            list.Add(m_createPointModule);
-            list.Add(new DeletePointModule(this));
-            list.Add(new PointMoveModule(this));
-            list.Add(new PointRotateModule(this));
-            list.Add(new PointScaleModule(this));
-            list.Add(new PointNormalModule(this));
-            list.Add(new PointMirrorModule(this));
-            list.Add(new PrimitivesModule(this));
-        }
+					Selection.objects = nodeList.ToArray();
+				}
 
-        public override void Destroy()
-        {
-            base.Destroy();
-            if(spline != null)
-            {
-                spline.RebuildImmediate();
-            }
-        }
+				if (option == 1)
+				{
+					for (var i = 0; i < selectedPoints.Count; i++)
+					{
+						var delete = true;
+						Node node = spline.GetNode(selectedPoints[i]);
+						if (node.GetConnections().Length > 1)
+						{
+							if (!EditorUtility.DisplayDialog("Delete Node",
+								    "Node " + node.name +
+								    " has multiple connections. Are you sure you want to completely remove it?", "Yes",
+								    "No"))
+							{
+								delete = false;
+							}
+						}
 
-        public override void BeforeSceneGui(SceneView current)
-        {
-            for (int i = 0; i < moduleCount; i++)
-            {
-                SetupModule(GetModule(i));
-            }
-            SetupModule(mainModule);
-            m_createPointModule.createPointColor = SplinePrefs.createPointColor;
-            m_createPointModule.createPointSize = SplinePrefs.createPointSize;
-            base.BeforeSceneGui(current);
-        }
+						if (delete)
+						{
+							Undo.RegisterCompleteObjectUndo(spline, "Delete Node");
+							Undo.DestroyObjectImmediate(node.gameObject);
+							spline.DisconnectNode(selectedPoints[i]);
+							EditorUtility.SetDirty(spline);
+						}
+					}
+				}
 
-        public override void DeletePoint(int index)
-        {
-            CacheTriggerPositions();
-            Dictionary<int, Node> nodes = new Dictionary<int, Node>();
-            foreach(var node in spline.GetNodes())
-            {
-                if(node.Key > index)
-                {
-                    spline.DisconnectNode(node.Key);
-                    nodes.Add(node.Key - 1, node.Value);
-                }
-            }
-            var nodesProperty = m_serializedObject.FindProperty("_nodes");
-            for (int i = 0; i < nodesProperty.arraySize; i++)
-            {
-                var indexProperty = nodesProperty.GetArrayElementAtIndex(i).FindPropertyRelative("pointIndex");
-                if(indexProperty.intValue > index)
-                {
-                    nodesProperty.DeleteArrayElementAtIndex(i);
-                    i--;
-                }
-            }
-            InverseTransformPoints();
-            pointsProperty.DeleteArrayElementAtIndex(index);
+				if (option == 2)
+				{
+					for (var i = 0; i < selectedPoints.Count; i++)
+					{
+						Undo.RegisterCompleteObjectUndo(spline, "Disconnect Node");
+						spline.DisconnectNode(selectedPoints[i]);
+						EditorUtility.SetDirty(spline);
+					}
+				}
+			}
+			else
+			{
+				if (GUILayout.Button(selectedPoints.Count == 1 ? "Add Node to Point" : "Add Nodes to Points"))
+				{
+					for (var i = 0; i < selectedPoints.Count; i++)
+					{
+						SplineSample sample = spline.Evaluate(selectedPoints[i]);
+						var go = new GameObject(spline.name + "_Node_" + (spline.GetNodes().Count + 1));
+						go.transform.parent = spline.transform;
+						go.transform.position = sample.position;
+						if (spline.is2D)
+						{
+							go.transform.rotation = sample.rotation * Quaternion.Euler(90, -90, 0);
+						}
+						else
+						{
+							go.transform.rotation = sample.rotation;
+						}
 
-            foreach (var node in nodes)
-            {
-                spline.ConnectNode(node.Value, node.Key);
-                nodesProperty.arraySize = nodesProperty.arraySize + 1;
-                var lastProperty = nodesProperty.GetArrayElementAtIndex(nodesProperty.arraySize - 1);
-                var lastnodeProperty = lastProperty.FindPropertyRelative("node");
-                var lastIndexProperty = lastProperty.FindPropertyRelative("pointIndex");
-                lastnodeProperty.objectReferenceValue = node.Value;
-                lastIndexProperty.intValue = node.Key;
-            }
+						var node = go.AddComponent<Node>();
+						Undo.RegisterCreatedObjectUndo(go, "Create Node");
+						Undo.RegisterCompleteObjectUndo(spline, "Create Node");
+						spline.ConnectNode(node, selectedPoints[i]);
+					}
+				}
+			}
 
-            m_serializedObject.ApplyModifiedProperties();
-            GetPointsFromSpline();
-            spline.Rebuild(true);
-            WriteTriggerPositions();
-        }
+			EditorGUILayout.Space();
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.Space();
+		}
 
-        public override void GetPointsFromSpline()
-        {
-            base.GetPointsFromSpline();
+		protected override void OnModuleList(List<PointModule> list)
+		{
+			m_createPointModule = new DscreatePointModule(this);
+			list.Add(m_createPointModule);
+			list.Add(new DeletePointModule(this));
+			list.Add(new PointMoveModule(this));
+			list.Add(new PointRotateModule(this));
+			list.Add(new PointScaleModule(this));
+			list.Add(new PointNormalModule(this));
+			list.Add(new PointMirrorModule(this));
+			list.Add(new PrimitivesModule(this));
+		}
 
-            if (m_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
-            {
-                TransformPoints();
-            }
-        }
+		public override void Destroy()
+		{
+			base.Destroy();
+			if (spline != null)
+			{
+				spline.RebuildImmediate();
+			}
+		}
 
-        public override void ApplyModifiedProperties(bool forceAllUpdate = false)
-        {
-            if (m_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
-            {
-                InverseTransformPoints();
-            }
+		public override void BeforeSceneGui(SceneView current)
+		{
+			for (var i = 0; i < moduleCount; i++)
+			{
+				SetupModule(GetModule(i));
+			}
 
-            for (int i = 0; i < points.Length; i++)
-            {
-                if (points[i].changed || forceAllUpdate)
-                {
-                    spline.EditorSetPointDirty(i);
-                }
-            }
+			SetupModule(mainModule);
+			m_createPointModule.createPointColor = SplinePrefs.createPointColor;
+			m_createPointModule.createPointSize = SplinePrefs.createPointSize;
+			base.BeforeSceneGui(current);
+		}
 
-            m_splineChanged = true;
+		public override void DeletePoint(int index)
+		{
+			CacheTriggerPositions();
+			var nodes = new Dictionary<int, Node>();
+			foreach (KeyValuePair<int, Node> node in spline.GetNodes())
+			{
+				if (node.Key > index)
+				{
+					spline.DisconnectNode(node.Key);
+					nodes.Add(node.Key - 1, node.Value);
+				}
+			}
 
-            if (spline.isClosed && points.Length < 3)
-            {
-                SetSplineClosed(false);
-            }
+			SerializedProperty nodesProperty = m_serializedObject.FindProperty("_nodes");
+			for (var i = 0; i < nodesProperty.arraySize; i++)
+			{
+				SerializedProperty indexProperty =
+					nodesProperty.GetArrayElementAtIndex(i).FindPropertyRelative("pointIndex");
+				if (indexProperty.intValue > index)
+				{
+					nodesProperty.DeleteArrayElementAtIndex(i);
+					i--;
+				}
+			}
 
-            m_serializedObject.FindProperty("_is2D").boolValue = is2D;
+			InverseTransformPoints();
+			pointsProperty.DeleteArrayElementAtIndex(index);
 
-            base.ApplyModifiedProperties(forceAllUpdate);
+			foreach (KeyValuePair<int, Node> node in nodes)
+			{
+				spline.ConnectNode(node.Value, node.Key);
+				nodesProperty.arraySize = nodesProperty.arraySize + 1;
+				SerializedProperty lastProperty = nodesProperty.GetArrayElementAtIndex(nodesProperty.arraySize - 1);
+				SerializedProperty lastnodeProperty = lastProperty.FindPropertyRelative("node");
+				SerializedProperty lastIndexProperty = lastProperty.FindPropertyRelative("pointIndex");
+				lastnodeProperty.objectReferenceValue = node.Value;
+				lastIndexProperty.intValue = node.Key;
+			}
 
-            spline.EditorUpdateConnectedNodes();
+			m_serializedObject.ApplyModifiedProperties();
+			GetPointsFromSpline();
+			spline.Rebuild(true);
+			WriteTriggerPositions();
+		}
 
-            if (m_serializedObject.FindProperty("editorUpdateMode").enumValueIndex == (int)SplineComputer.EditorUpdateMode.Default)
-            {
-                spline.RebuildImmediate(true, forceAllUpdate);
-            }
-            GetPointsFromSpline();
-        }
+		public override void GetPointsFromSpline()
+		{
+			base.GetPointsFromSpline();
 
-        public override void SetSplineClosed(bool closed)
-        {
-            base.SetSplineClosed(closed);
-            if (closed)
-            {
-                spline.Close();
-            }
-            else
-            {
-                if (selectedPoints.Count > 0)
-                {
-                    spline.Break(selectedPoints[selectedPoints.Count - 1]);
-                }
-                else
-                {
-                    spline.Break();
-                }
-            }
-        }
+			if (m_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
+			{
+				TransformPoints();
+			}
+		}
 
-        public override void UndoRedoPerformed()
-        {
-            base.UndoRedoPerformed();
-            spline.RebuildImmediate(true, true);
-        }
+		public override void ApplyModifiedProperties(bool forceAllUpdate = false)
+		{
+			if (m_serializedObject.FindProperty("_space").enumValueIndex == (int)SplineComputer.Space.Local)
+			{
+				InverseTransformPoints();
+			}
 
-        private void TransformPoints()
-        {
-            m_matrix = spline.transform.localToWorldMatrix;
-            for (int i = 0; i < points.Length; i++)
-            {
-                bool changed = points[i].changed;
-                points[i].position = m_matrix.MultiplyPoint3x4(points[i].position);
-                points[i].tangent = m_matrix.MultiplyPoint3x4(points[i].tangent);
-                points[i].tangent2 = m_matrix.MultiplyPoint3x4(points[i].tangent2);
-                points[i].normal = m_matrix.MultiplyVector(points[i].normal);
-                points[i].changed = changed;
-            }
-        }
+			for (var i = 0; i < points.Length; i++)
+			{
+				if (points[i].changed || forceAllUpdate)
+				{
+					spline.EditorSetPointDirty(i);
+				}
+			}
 
-        private void InverseTransformPoints()
-        {
-            m_matrix = spline.transform.localToWorldMatrix;
-            Matrix4x4 invMatrix = m_matrix.inverse;
-            for (int i = 0; i < points.Length; i++)
-            {
-                bool changed = points[i].changed;
-                points[i].position = invMatrix.MultiplyPoint3x4(points[i].position);
-                points[i].tangent = invMatrix.MultiplyPoint3x4(points[i].tangent);
-                points[i].tangent2 = invMatrix.MultiplyPoint3x4(points[i].tangent2);
-                points[i].normal = invMatrix.MultiplyVector(points[i].normal);
-                points[i].changed = changed;
-            }
-        }
+			splineChanged = true;
 
-        public override void SetPreviewPoints(SplinePoint[] points)
-        {
-            spline.SetPoints(points);
-        }
+			if (spline.isClosed && points.Length < 3)
+			{
+				SetSplineClosed(false);
+			}
 
-        private void HandleUndo(string title)
-        {
-            Undo.RecordObject(spline, title);
-        }
+			m_serializedObject.FindProperty("_is2D").boolValue = is2D;
 
-        public void MoveTransformToSelection()
-        {
-            Undo.RecordObject(m_transform, "Move Transform To");
-            Vector3 avg = Vector3.zero;
-            for (int i = 0; i < selectedPoints.Count; i++)
-            {
-                avg += points[selectedPoints[i]].position;
-            }
-            avg /= selectedPoints.Count;
-            m_transform.position = avg;
-            ApplyModifiedProperties(true);
-            ResetCurrentModule();
-        }
+			base.ApplyModifiedProperties(forceAllUpdate);
 
-        public void CenterSelection()
-        {
-            RecordUndo("Center Selection");
-            Vector3 avg = Vector3.zero;
-            for (int i = 0; i < selectedPoints.Count; i++)
-            {
-                avg += points[selectedPoints[i]].position;
-            }
-            avg /= selectedPoints.Count;
-            Vector3 delta = m_transform.position - avg;
-            for (int i = 0; i < selectedPoints.Count; i++)
-            {
-                points[selectedPoints[i]].SetPosition(points[selectedPoints[i]].position + delta);
-            }
-            ApplyModifiedProperties(true);
-            ResetCurrentModule();
-        }
+			spline.EditorUpdateConnectedNodes();
 
-        private void SetupModule(PointModule module)
-        {
-            module.duplicationDirection = SplinePrefs.duplicationDirection;
-            module.highlightColor = SplinePrefs.highlightColor;
-            module.showPointNumbers = SplinePrefs.showPointNumbers;
-        }
-    }
+			if (m_serializedObject.FindProperty("editorUpdateMode").enumValueIndex ==
+			    (int)SplineComputer.EditorUpdateMode.Default)
+			{
+				spline.RebuildImmediate(true, forceAllUpdate);
+			}
+
+			GetPointsFromSpline();
+		}
+
+		public override void SetSplineClosed(bool closed)
+		{
+			base.SetSplineClosed(closed);
+			if (closed)
+			{
+				spline.Close();
+			}
+			else
+			{
+				if (selectedPoints.Count > 0)
+				{
+					spline.Break(selectedPoints[selectedPoints.Count - 1]);
+				}
+				else
+				{
+					spline.Break();
+				}
+			}
+		}
+
+		public override void UndoRedoPerformed()
+		{
+			base.UndoRedoPerformed();
+			spline.RebuildImmediate(true, true);
+		}
+
+		private void TransformPoints()
+		{
+			m_matrix = spline.transform.localToWorldMatrix;
+			for (var i = 0; i < points.Length; i++)
+			{
+				bool changed = points[i].changed;
+				points[i].position = m_matrix.MultiplyPoint3x4(points[i].position);
+				points[i].tangent = m_matrix.MultiplyPoint3x4(points[i].tangent);
+				points[i].tangent2 = m_matrix.MultiplyPoint3x4(points[i].tangent2);
+				points[i].normal = m_matrix.MultiplyVector(points[i].normal);
+				points[i].changed = changed;
+			}
+		}
+
+		private void InverseTransformPoints()
+		{
+			m_matrix = spline.transform.localToWorldMatrix;
+			Matrix4x4 invMatrix = m_matrix.inverse;
+			for (var i = 0; i < points.Length; i++)
+			{
+				bool changed = points[i].changed;
+				points[i].position = invMatrix.MultiplyPoint3x4(points[i].position);
+				points[i].tangent = invMatrix.MultiplyPoint3x4(points[i].tangent);
+				points[i].tangent2 = invMatrix.MultiplyPoint3x4(points[i].tangent2);
+				points[i].normal = invMatrix.MultiplyVector(points[i].normal);
+				points[i].changed = changed;
+			}
+		}
+
+		public override void SetPreviewPoints(SplinePoint[] points)
+		{
+			spline.SetPoints(points);
+		}
+
+		private void HandleUndo(string title)
+		{
+			Undo.RecordObject(spline, title);
+		}
+
+		public void MoveTransformToSelection()
+		{
+			Undo.RecordObject(m_transform, "Move Transform To");
+			Vector3 avg = Vector3.zero;
+			for (var i = 0; i < selectedPoints.Count; i++)
+			{
+				avg += points[selectedPoints[i]].position;
+			}
+
+			avg /= selectedPoints.Count;
+			m_transform.position = avg;
+			ApplyModifiedProperties(true);
+			ResetCurrentModule();
+		}
+
+		public void CenterSelection()
+		{
+			RecordUndo("Center Selection");
+			Vector3 avg = Vector3.zero;
+			for (var i = 0; i < selectedPoints.Count; i++)
+			{
+				avg += points[selectedPoints[i]].position;
+			}
+
+			avg /= selectedPoints.Count;
+			Vector3 delta = m_transform.position - avg;
+			for (var i = 0; i < selectedPoints.Count; i++)
+			{
+				points[selectedPoints[i]].SetPosition(points[selectedPoints[i]].position + delta);
+			}
+
+			ApplyModifiedProperties(true);
+			ResetCurrentModule();
+		}
+
+		private void SetupModule(PointModule module)
+		{
+			module.duplicationDirection = SplinePrefs.duplicationDirection;
+			module.highlightColor = SplinePrefs.highlightColor;
+			module.showPointNumbers = SplinePrefs.showPointNumbers;
+		}
+	}
 }

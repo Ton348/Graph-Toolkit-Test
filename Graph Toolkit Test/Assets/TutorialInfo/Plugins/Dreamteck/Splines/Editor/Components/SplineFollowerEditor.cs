@@ -1,209 +1,233 @@
+using UnityEditor;
+using UnityEngine;
+
 namespace Dreamteck.Splines.Editor
 {
-    using UnityEngine;
-    using System.Collections;
-    using UnityEditor;
+	[CustomEditor(typeof(SplineFollower), true)]
+	[CanEditMultipleObjects]
+	public class SplineFollowerEditor : SplineTracerEditor
+	{
+		protected SplineFollower[] m_followers = new SplineFollower[0];
+		private SplineSample m_result;
+		protected FollowerSpeedModifierEditor m_speedModifierEditor;
 
-    [CustomEditor(typeof(SplineFollower), true)]
-    [CanEditMultipleObjects]
-    public class SplineFollowerEditor : SplineTracerEditor
-    {
-        SplineSample m_result = new SplineSample();
-        protected SplineFollower[] m_followers = new SplineFollower[0];
-        protected FollowerSpeedModifierEditor m_speedModifierEditor;
+		protected override void OnEnable()
+		{
+			base.OnEnable();
+			m_followers = new SplineFollower[m_users.Length];
+			for (var i = 0; i < m_followers.Length; i++)
+			{
+				m_followers[i] = (SplineFollower)m_users[i];
+			}
 
-        void OnSetDistance(float distance)
-        {
-            for (int i = 0; i < targets.Length; i++)
-            {
-                SplineFollower follower = (SplineFollower)targets[i];
-                double travel = follower.Travel(0.0, distance, Spline.Direction.Forward);
-                var startPosition = serializedObject.FindProperty("_startPosition");
-                startPosition.floatValue = (float)travel;
-                follower.SetPercent(travel);
-                EditorUtility.SetDirty(follower);
-            }
-        }
+			if (m_followers.Length == 1)
+			{
+				m_speedModifierEditor = new FollowerSpeedModifierEditor(m_followers[0], this);
+			}
+		}
 
-        protected override void OnEnable()
-        {
-            base.OnEnable();
-            m_followers = new SplineFollower[m_users.Length];
-            for (int i = 0; i < m_followers.Length; i++)
-            {
-                m_followers[i] = (SplineFollower)m_users[i];
-            }
+		private void OnSetDistance(float distance)
+		{
+			for (var i = 0; i < targets.Length; i++)
+			{
+				var follower = (SplineFollower)targets[i];
+				double travel = follower.Travel(0.0, distance);
+				SerializedProperty startPosition = serializedObject.FindProperty("_startPosition");
+				startPosition.floatValue = (float)travel;
+				follower.SetPercent(travel);
+				EditorUtility.SetDirty(follower);
+			}
+		}
 
-            if (m_followers.Length == 1)
-            {
-                m_speedModifierEditor = new FollowerSpeedModifierEditor(m_followers[0], this);
-            }
-        }
+		protected override void BodyGui()
+		{
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Following", EditorStyles.boldLabel);
+			var follower = (SplineFollower)target;
 
-        protected override void BodyGui()
-        {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Following", EditorStyles.boldLabel);
-            SplineFollower follower = (SplineFollower)target;
+			SerializedProperty followMode = serializedObject.FindProperty("followMode");
+			SerializedProperty preserveUniformSpeedWithOffset =
+				serializedObject.FindProperty("preserveUniformSpeedWithOffset");
+			SerializedProperty wrapMode = serializedObject.FindProperty("wrapMode");
+			SerializedProperty startPosition = serializedObject.FindProperty("_startPosition");
+			SerializedProperty autoStartPosition = serializedObject.FindProperty("autoStartPosition");
+			SerializedProperty follow = serializedObject.FindProperty("_follow");
+			SerializedProperty direction = serializedObject.FindProperty("_direction");
+			SerializedProperty unityOnEndReached = serializedObject.FindProperty("_unityOnEndReached");
+			SerializedProperty unityOnBeginningReached = serializedObject.FindProperty("_unityOnBeginningReached");
 
-            SerializedProperty followMode = serializedObject.FindProperty("followMode");
-            SerializedProperty preserveUniformSpeedWithOffset = serializedObject.FindProperty("preserveUniformSpeedWithOffset");
-            SerializedProperty wrapMode = serializedObject.FindProperty("wrapMode");
-            SerializedProperty startPosition = serializedObject.FindProperty("_startPosition");
-            SerializedProperty autoStartPosition = serializedObject.FindProperty("autoStartPosition");
-            SerializedProperty follow = serializedObject.FindProperty("_follow");
-            SerializedProperty direction = serializedObject.FindProperty("_direction");
-            SerializedProperty unityOnEndReached = serializedObject.FindProperty("_unityOnEndReached");
-            SerializedProperty unityOnBeginningReached = serializedObject.FindProperty("_unityOnBeginningReached");
+			EditorGUI.BeginChangeCheck();
 
-            EditorGUI.BeginChangeCheck();
+			bool lastFollow = follow.boolValue;
+			EditorGUILayout.PropertyField(follow);
+			if (lastFollow != follow.boolValue)
+			{
+				if (follow.boolValue)
+				{
+					if (autoStartPosition.boolValue)
+					{
+						var sample = new SplineSample();
+						m_followers[0].Project(m_followers[0].transform.position, ref sample);
+						if (Application.isPlaying)
+						{
+							for (var i = 0; i < m_followers.Length; i++)
+							{
+								m_followers[i].SetPercent(sample.percent);
+							}
+						}
+					}
+				}
+			}
 
-            bool lastFollow = follow.boolValue;
-            EditorGUILayout.PropertyField(follow);
-            if(lastFollow != follow.boolValue)
-            {
-                if (follow.boolValue)
-                {
-                    if (autoStartPosition.boolValue)
-                    {
-                        SplineSample sample = new SplineSample();
-                        m_followers[0].Project(m_followers[0].transform.position, ref sample);
-                        if (Application.isPlaying)
-                        {
-                            for (int i = 0; i < m_followers.Length; i++)
-                            {
-                                m_followers[i].SetPercent(sample.percent);
-                            }
-                        }
-                    }
-                }
-            }
-            EditorGUILayout.PropertyField(followMode);
-            if (followMode.intValue == (int)SplineFollower.FollowMode.Uniform)
-            {
-                SerializedProperty followSpeed = serializedObject.FindProperty("_followSpeed");
+			EditorGUILayout.PropertyField(followMode);
+			if (followMode.intValue == (int)SplineFollower.FollowMode.Uniform)
+			{
+				SerializedProperty followSpeed = serializedObject.FindProperty("_followSpeed");
 
-                if(followSpeed.floatValue < 0f)
-                {
-                    direction.intValue = (int)Spline.Direction.Backward;
-                } else if (followSpeed.floatValue > 0f)
-                {
-                    direction.intValue = (int)Spline.Direction.Forward;
-                }
+				if (followSpeed.floatValue < 0f)
+				{
+					direction.intValue = (int)Spline.Direction.Backward;
+				}
+				else if (followSpeed.floatValue > 0f)
+				{
+					direction.intValue = (int)Spline.Direction.Forward;
+				}
 
-                SerializedProperty motion = serializedObject.FindProperty("_motion");
-                SerializedProperty motionHasOffset = motion.FindPropertyRelative("_hasOffset");
+				SerializedProperty motion = serializedObject.FindProperty("_motion");
+				SerializedProperty motionHasOffset = motion.FindPropertyRelative("_hasOffset");
 
-                EditorGUILayout.PropertyField(followSpeed, new GUIContent("Follow Speed"));
-
+				EditorGUILayout.PropertyField(followSpeed, new GUIContent("Follow Speed"));
 
 
-                if (motionHasOffset.boolValue)
-                {
-                    EditorGUILayout.PropertyField(preserveUniformSpeedWithOffset, new GUIContent("Preserve Uniform Speed With Offset"));
-                }
-                if (m_followers.Length == 1)
-                {
-                    m_speedModifierEditor.DrawInspector();
-                }
-            }
-            else
-            {
-                follower.followDuration = EditorGUILayout.FloatField("Follow duration", follower.followDuration);
-            }
-            
+				if (motionHasOffset.boolValue)
+				{
+					EditorGUILayout.PropertyField(preserveUniformSpeedWithOffset,
+						new GUIContent("Preserve Uniform Speed With Offset"));
+				}
+
+				if (m_followers.Length == 1)
+				{
+					m_speedModifierEditor.DrawInspector();
+				}
+			}
+			else
+			{
+				follower.followDuration = EditorGUILayout.FloatField("Follow duration", follower.followDuration);
+			}
 
 
-            EditorGUILayout.PropertyField(wrapMode);
+			EditorGUILayout.PropertyField(wrapMode);
 
 
-            if (follower.motion.applyRotation)
-            {
-                follower.applyDirectionRotation = EditorGUILayout.Toggle("Face Direction", follower.applyDirectionRotation);
-            }
+			if (follower.motion.applyRotation)
+			{
+				follower.applyDirectionRotation =
+					EditorGUILayout.Toggle("Face Direction", follower.applyDirectionRotation);
+			}
 
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Start Position", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(autoStartPosition, new GUIContent("Automatic Start Position"));
-            EditorGUILayout.BeginHorizontal();
-            EditorGUIUtility.labelWidth = 100f;
-            if (!follower.autoStartPosition && !Application.isPlaying)
-            {
-                float lastStartpos = startPosition.floatValue;
-                EditorGUILayout.PropertyField(startPosition, new GUIContent("Start Position"));
-                if (GUILayout.Button("Set Distance", GUILayout.Width(85)))
-                {
-                    DistanceWindow w = EditorWindow.GetWindow<DistanceWindow>(true);
-                    w.Init(OnSetDistance, follower.CalculateLength());
-                }
-            }
-            else
-            {
-                EditorGUILayout.LabelField("Start position", GUILayout.Width(EditorGUIUtility.labelWidth));
-            }
-            EditorGUILayout.EndHorizontal();
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Start Position", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(autoStartPosition, new GUIContent("Automatic Start Position"));
+			EditorGUILayout.BeginHorizontal();
+			EditorGUIUtility.labelWidth = 100f;
+			if (!follower.autoStartPosition && !Application.isPlaying)
+			{
+				float lastStartpos = startPosition.floatValue;
+				EditorGUILayout.PropertyField(startPosition, new GUIContent("Start Position"));
+				if (GUILayout.Button("Set Distance", GUILayout.Width(85)))
+				{
+					var w = EditorWindow.GetWindow<DistanceWindow>(true);
+					w.Init(OnSetDistance, follower.CalculateLength());
+				}
+			}
+			else
+			{
+				EditorGUILayout.LabelField("Start position", GUILayout.Width(EditorGUIUtility.labelWidth));
+			}
 
-            EditorGUILayout.PropertyField(unityOnBeginningReached);
-            EditorGUILayout.PropertyField(unityOnEndReached);
+			EditorGUILayout.EndHorizontal();
 
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-                if (!Application.isPlaying)
-                {
-                    for (int i = 0; i < m_followers.Length; i++)
-                    {
-                        if(m_followers[i].spline.sampleCount > 0)
-                        {
-                            if (!m_followers[i].autoStartPosition)
-                            {
-                                m_followers[i].SetPercent(startPosition.floatValue);
-                                if (!m_followers[i].follow) SceneView.RepaintAll();
-                            }
-                        }
-                    }
-                }
-            }
+			EditorGUILayout.PropertyField(unityOnBeginningReached);
+			EditorGUILayout.PropertyField(unityOnEndReached);
 
-            int lastDirection = direction.intValue;
-            base.BodyGui();
+			if (EditorGUI.EndChangeCheck())
+			{
+				serializedObject.ApplyModifiedProperties();
+				if (!Application.isPlaying)
+				{
+					for (var i = 0; i < m_followers.Length; i++)
+					{
+						if (m_followers[i].spline.sampleCount > 0)
+						{
+							if (!m_followers[i].autoStartPosition)
+							{
+								m_followers[i].SetPercent(startPosition.floatValue);
+								if (!m_followers[i].follow)
+								{
+									SceneView.RepaintAll();
+								}
+							}
+						}
+					}
+				}
+			}
 
-            if(lastDirection != direction.intValue)
-            {
-                SerializedProperty followSpeed = serializedObject.FindProperty("_followSpeed");
-                if(direction.intValue == (int)Spline.Direction.Forward)
-                {
-                    followSpeed.floatValue = Mathf.Abs(followSpeed.floatValue);
-                } else
-                {
-                    followSpeed.floatValue = -Mathf.Abs(followSpeed.floatValue);
-                }
-            }
-        }
+			int lastDirection = direction.intValue;
+			base.BodyGui();
+
+			if (lastDirection != direction.intValue)
+			{
+				SerializedProperty followSpeed = serializedObject.FindProperty("_followSpeed");
+				if (direction.intValue == (int)Spline.Direction.Forward)
+				{
+					followSpeed.floatValue = Mathf.Abs(followSpeed.floatValue);
+				}
+				else
+				{
+					followSpeed.floatValue = -Mathf.Abs(followSpeed.floatValue);
+				}
+			}
+		}
 
 
-        protected override void DuringSceneGui(SceneView currentSceneView)
-        {
-            base.DuringSceneGui(currentSceneView);
-            SplineFollower user = (SplineFollower)target;
-            if (user == null) return;
-            if (Application.isPlaying)
-            {
-                if (!user.follow) DrawResult(user.result);
-                return;
-            }
-            if (user.spline == null) return;
-            if (user.autoStartPosition)
-            {
-                user.spline.Project(user.transform.position, ref m_result, user.clipFrom, user.clipTo);
-                DrawResult(m_result);
-            } else if(!user.follow) DrawResult(user.result);
+		protected override void DuringSceneGui(SceneView currentSceneView)
+		{
+			base.DuringSceneGui(currentSceneView);
+			var user = (SplineFollower)target;
+			if (user == null)
+			{
+				return;
+			}
 
-            if (m_followers.Length == 1)
-            {
-                m_speedModifierEditor.DrawScene();
-            }
+			if (Application.isPlaying)
+			{
+				if (!user.follow)
+				{
+					DrawResult(user.result);
+				}
 
-        }
-    }
+				return;
+			}
+
+			if (user.spline == null)
+			{
+				return;
+			}
+
+			if (user.autoStartPosition)
+			{
+				user.spline.Project(user.transform.position, ref m_result, user.clipFrom, user.clipTo);
+				DrawResult(m_result);
+			}
+			else if (!user.follow)
+			{
+				DrawResult(user.result);
+			}
+
+			if (m_followers.Length == 1)
+			{
+				m_speedModifierEditor.DrawScene();
+			}
+		}
+	}
 }

@@ -2,23 +2,28 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+using GameGraph.Runtime.Common;
 using Graph.Core.Runtime;
+using Sample.Runtime.Services;
 
-[GameGraphNodeExecutorAttribute]
-public sealed class GoToPointNodeExecutor : GameGraphNextNodeExecutor<GoToPointNode>
+namespace Prototype.Business.Runtime.GraphExecutors.Common
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
-		GoToPointNode node,
-		GraphExecutionContext context,
-		CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class GoToPointNodeExecutor : GameGraphNextNodeExecutor<GoToPointNode>
 	{
-		if (context != null &&
-		    context.TryGet(GraphContextKeys.runtimeMapMarkerService, out MapMarkerService markerService) &&
-		    markerService != null)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
+			GoToPointNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
-			markerService.ShowMarker(node.markerId, node.targetTransform, node.markerId);
-		}
+			if (context != null &&
+			    context.TryGet(GraphContextKeys.runtimeMapMarkerService, out MapMarkerService markerService) &&
+			    markerService != null)
+			{
+				markerService.ShowMarker(node.markerId, node.targetTransform, node.markerId);
+			}
 
-		return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+		}
 	}
 }

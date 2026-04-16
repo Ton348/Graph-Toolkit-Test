@@ -1,30 +1,33 @@
 using UnityEngine;
 
-public class BusinessSimulationClock
+namespace Prototype.Business.Simulation
 {
-	private float m_accumulator;
-	public float tickIntervalSeconds = 1f;
-
-	public void Update(float deltaTime)
+	public class BusinessSimulationClock
 	{
-		if (tickIntervalSeconds <= 0f)
+		private float m_accumulator;
+		public float tickIntervalSeconds = 1f;
+
+		public void Update(float deltaTime)
 		{
-			return;
+			if (tickIntervalSeconds <= 0f)
+			{
+				return;
+			}
+
+			m_accumulator += Mathf.Max(0f, deltaTime);
 		}
 
-		m_accumulator += Mathf.Max(0f, deltaTime);
-	}
-
-	public bool TryConsumeTick(out float delta)
-	{
-		delta = 0f;
-		if (tickIntervalSeconds <= 0f || m_accumulator < tickIntervalSeconds)
+		public bool TryConsumeTick(out float delta)
 		{
-			return false;
-		}
+			delta = 0f;
+			if (tickIntervalSeconds <= 0f || m_accumulator < tickIntervalSeconds)
+			{
+				return false;
+			}
 
-		m_accumulator -= tickIntervalSeconds;
-		delta = tickIntervalSeconds;
-		return true;
+			m_accumulator -= tickIntervalSeconds;
+			delta = tickIntervalSeconds;
+			return true;
+		}
 	}
 }

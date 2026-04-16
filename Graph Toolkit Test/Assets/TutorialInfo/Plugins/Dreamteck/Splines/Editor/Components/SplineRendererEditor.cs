@@ -1,45 +1,52 @@
+using UnityEditor;
+
 namespace Dreamteck.Splines.Editor
 {
-    using UnityEngine;
-    using System.Collections;
-    using UnityEditor;
+	[CustomEditor(typeof(SplineRenderer), true)]
+	[CanEditMultipleObjects]
+	public class SplineRendererEditor : MeshGenEditor
+	{
+		protected override void BodyGui()
+		{
+			m_showDoubleSided = false;
+			m_showFlipFaces = false;
+			m_showRotation = false;
+			m_showNormalMethod = false;
 
-    [CustomEditor(typeof(SplineRenderer), true)]
-    [CanEditMultipleObjects]
-    public class SplineRendererEditor : MeshGenEditor
-    {
-        protected override void BodyGui()
-        {
-            m_showDoubleSided = false;
-            m_showFlipFaces = false;
-            m_showRotation = false;
-            m_showNormalMethod = false;
+			serializedObject.Update();
+			SerializedProperty slices = serializedObject.FindProperty("_slices");
+			SerializedProperty autoOrient = serializedObject.FindProperty("autoOrient");
+			SerializedProperty updateFrameInterval = serializedObject.FindProperty("updateFrameInterval");
 
-            serializedObject.Update();
-            SerializedProperty slices = serializedObject.FindProperty("_slices");
-            SerializedProperty autoOrient = serializedObject.FindProperty("autoOrient");
-            SerializedProperty updateFrameInterval = serializedObject.FindProperty("updateFrameInterval");
+			base.BodyGui();
+			EditorGUI.BeginChangeCheck();
+			var user = (SplineRenderer)target;
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Geometry", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(slices);
+			if (slices.intValue < 1)
+			{
+				slices.intValue = 1;
+			}
 
-            base.BodyGui();
-            EditorGUI.BeginChangeCheck();
-            SplineRenderer user = (SplineRenderer)target;
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Geometry", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(slices);
-            if (slices.intValue < 1) slices.intValue = 1;
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Render", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(autoOrient);
-            if (user.autoOrient)
-            {
-                EditorGUILayout.PropertyField(updateFrameInterval);
-                if (updateFrameInterval.intValue < 0) updateFrameInterval.intValue = 0; 
-            }
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Render", EditorStyles.boldLabel);
+			EditorGUILayout.PropertyField(autoOrient);
+			if (user.autoOrient)
+			{
+				EditorGUILayout.PropertyField(updateFrameInterval);
+				if (updateFrameInterval.intValue < 0)
+				{
+					updateFrameInterval.intValue = 0;
+				}
+			}
 
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
+			if (EditorGUI.EndChangeCheck())
+			{
+				serializedObject.ApplyModifiedProperties();
+			}
 
-            Uvcontrols(user);
-        }
-
-    }
+			Uvcontrols(user);
+		}
+	}
 }

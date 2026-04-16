@@ -1,32 +1,35 @@
 using UnityEngine;
 
-public class CompassMarkerView : MonoBehaviour
+namespace Sample.Runtime.Compass
 {
-	[SerializeField]
-	private RectTransform m_rectTransform;
-
-	private void Awake()
+	public class CompassMarkerView : MonoBehaviour
 	{
-		if (m_rectTransform == null)
-		{
-			m_rectTransform = GetComponent<RectTransform>();
-		}
-	}
+		[SerializeField]
+		private RectTransform m_rectTransform;
 
-	public void SetPositionX(float x)
-	{
-		if (m_rectTransform == null)
+		private void Awake()
 		{
-			return;
+			if (m_rectTransform == null)
+			{
+				m_rectTransform = GetComponent<RectTransform>();
+			}
 		}
 
-		Vector2 pos = m_rectTransform.anchoredPosition;
-		pos.x = x;
-		m_rectTransform.anchoredPosition = pos;
-	}
+		public void SetPositionX(float x)
+		{
+			if (m_rectTransform == null)
+			{
+				return;
+			}
 
-	public void SetVisible(bool visible)
-	{
-		gameObject.SetActive(visible);
+			Vector2 pos = m_rectTransform.anchoredPosition;
+			pos.x = x;
+			m_rectTransform.anchoredPosition = pos;
+		}
+
+		public void SetVisible(bool visible)
+		{
+			gameObject.SetActive(visible);
+		}
 	}
 }

@@ -1,200 +1,205 @@
 using System;
 using System.Collections.Generic;
+using Prototype.Business.Data;
+using Prototype.Business.Runtime;
 using UnityEngine;
 
-public class BusinessSimulationService
+namespace Prototype.Business.Simulation
 {
-	private const float s_secondsPerDay = 86400f;
-	private readonly Dictionary<string, BusinessRuntimeSimulationState> m_statesByLotId = new();
-
-	private readonly BusinessStateSyncService m_stateSync;
-
-	public BusinessSimulationService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
+	public class BusinessSimulationService
 	{
-		m_stateSync = stateSync;
-		if (m_stateSync != null)
+		private const float s_secondsPerDay = 86400f;
+		private readonly Dictionary<string, BusinessRuntimeSimulationState> m_statesByLotId = new();
+
+		private readonly BusinessStateSyncService m_stateSync;
+
+		public BusinessSimulationService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
 		{
-			m_stateSync.stateChanged += SyncFromState;
-		}
-
-		SyncFromState();
-	}
-
-	public float TimeScale { get; set; } = 1f;
-	public bool DebugLogTicks { get; set; }
-
-	public event Action simulationUpdated;
-
-	public void SimulateSeconds(float seconds)
-	{
-		RunTick(seconds);
-	}
-
-	public void Tick(float deltaSeconds)
-	{
-		RunTick(deltaSeconds);
-	}
-
-	public void RunTick(float deltaSeconds)
-	{
-		if (deltaSeconds <= 0f)
-		{
-			return;
-		}
-
-		SyncFromState();
-
-		float scaledDelta = deltaSeconds * (TimeScale < 0f ? 0f : TimeScale);
-		if (scaledDelta <= 0f)
-		{
-			return;
-		}
-
-		foreach (BusinessRuntimeSimulationState state in m_statesByLotId.Values)
-		{
-			if (state == null || string.IsNullOrWhiteSpace(state.lotId) ||
-			    string.IsNullOrWhiteSpace(state.businessTypeId))
+			m_stateSync = stateSync;
+			if (m_stateSync != null)
 			{
-				continue;
+				m_stateSync.stateChanged += SyncFromState;
 			}
 
-			var tickIncome = 0f;
-			float tickExpenses = state.rentPerDay > 0 ? state.rentPerDay / s_secondsPerDay * scaledDelta : 0f;
-
-			state.accumulatedIncome += tickIncome;
-			state.accumulatedExpenses += tickExpenses;
-			state.profit = state.accumulatedIncome - state.accumulatedExpenses;
+			SyncFromState();
 		}
 
-		simulationUpdated?.Invoke();
-	}
+		public float TimeScale { get; set; } = 1f;
+		public bool DebugLogTicks { get; set; }
 
-	public BusinessRuntimeSimulationState GetStateByLotId(string lotId)
-	{
-		if (string.IsNullOrWhiteSpace(lotId))
+		public event Action simulationUpdated;
+
+		public void SimulateSeconds(float seconds)
 		{
-			return null;
+			RunTick(seconds);
 		}
 
-		m_statesByLotId.TryGetValue(lotId, out BusinessRuntimeSimulationState state);
-		return state;
-	}
-
-	public IEnumerable<BusinessRuntimeSimulationState> GetAllStates()
-	{
-		return m_statesByLotId.Values;
-	}
-
-	public bool TryTakeFromStorage(string lotId, float requestedAmount, out float takenAmount)
-	{
-		takenAmount = 0f;
-		if (requestedAmount <= 0f)
+		public void Tick(float deltaSeconds)
 		{
-			return false;
+			RunTick(deltaSeconds);
 		}
 
-		BusinessRuntimeSimulationState state = GetStateByLotId(lotId);
-		if (state == null)
+		public void RunTick(float deltaSeconds)
 		{
-			return false;
-		}
-
-		float amount = Mathf.Min(requestedAmount, Mathf.Max(0f, state.storageStock));
-		if (amount <= 0f)
-		{
-			return false;
-		}
-
-		state.storageStock -= amount;
-		state.storageStock = Mathf.Max(0f, state.storageStock);
-		takenAmount = amount;
-		simulationUpdated?.Invoke();
-		return true;
-	}
-
-	public bool TryAddToShelves(string lotId, float requestedAmount, out float addedAmount)
-	{
-		addedAmount = 0f;
-		if (requestedAmount <= 0f)
-		{
-			return false;
-		}
-
-		BusinessRuntimeSimulationState state = GetStateByLotId(lotId);
-		if (state == null)
-		{
-			return false;
-		}
-
-		float shelfSpace = state.shelfCapacity > 0 ? Mathf.Max(0f, state.shelfCapacity - state.shelfStock) : 0f;
-		float amount = Mathf.Min(requestedAmount, shelfSpace);
-		if (amount <= 0f)
-		{
-			return false;
-		}
-
-		state.shelfStock += amount;
-		if (state.shelfCapacity > 0)
-		{
-			state.shelfStock = Mathf.Min(state.shelfStock, state.shelfCapacity);
-		}
-
-		addedAmount = amount;
-		simulationUpdated?.Invoke();
-		return true;
-	}
-
-	public void SetCashierMultiplier(string lotId, float multiplier)
-	{
-	}
-
-	private void SyncFromState()
-	{
-		if (m_stateSync == null)
-		{
-			return;
-		}
-
-		var activeLotIds = new HashSet<string>();
-		foreach (BusinessInstanceSnapshot business in m_stateSync.GetAllBusinesses())
-		{
-			if (business == null || string.IsNullOrWhiteSpace(business.lotId))
+			if (deltaSeconds <= 0f)
 			{
-				continue;
+				return;
 			}
 
-			activeLotIds.Add(business.lotId);
+			SyncFromState();
 
-			if (!m_statesByLotId.TryGetValue(business.lotId, out BusinessRuntimeSimulationState state))
+			float scaledDelta = deltaSeconds * (TimeScale < 0f ? 0f : TimeScale);
+			if (scaledDelta <= 0f)
 			{
-				state = new BusinessRuntimeSimulationState
+				return;
+			}
+
+			foreach (BusinessRuntimeSimulationState state in m_statesByLotId.Values)
+			{
+				if (state == null || string.IsNullOrWhiteSpace(state.lotId) ||
+				    string.IsNullOrWhiteSpace(state.businessTypeId))
 				{
-					lotId = business.lotId
-				};
-				m_statesByLotId[business.lotId] = state;
+					continue;
+				}
+
+				var tickIncome = 0f;
+				float tickExpenses = state.rentPerDay > 0 ? state.rentPerDay / s_secondsPerDay * scaledDelta : 0f;
+
+				state.accumulatedIncome += tickIncome;
+				state.accumulatedExpenses += tickExpenses;
+				state.profit = state.accumulatedIncome - state.accumulatedExpenses;
 			}
 
-			state.businessTypeId = business.businessTypeId;
-			state.rentPerDay = business.rentPerDay;
-			state.storageCapacity = business.storageCapacity;
-			state.shelfCapacity = business.shelfCapacity;
-			state.storageStock = business.storageStock;
-			state.shelfStock = business.shelfStock;
-			state.profit = state.accumulatedIncome - state.accumulatedExpenses;
+			simulationUpdated?.Invoke();
 		}
 
-		var toRemove = new List<string>();
-		foreach (KeyValuePair<string, BusinessRuntimeSimulationState> pair in m_statesByLotId)
+		public BusinessRuntimeSimulationState GetStateByLotId(string lotId)
 		{
-			if (!activeLotIds.Contains(pair.Key))
+			if (string.IsNullOrWhiteSpace(lotId))
 			{
-				toRemove.Add(pair.Key);
+				return null;
 			}
+
+			m_statesByLotId.TryGetValue(lotId, out BusinessRuntimeSimulationState state);
+			return state;
 		}
 
-		foreach (string lotId in toRemove)
+		public IEnumerable<BusinessRuntimeSimulationState> GetAllStates()
 		{
-			m_statesByLotId.Remove(lotId);
+			return m_statesByLotId.Values;
+		}
+
+		public bool TryTakeFromStorage(string lotId, float requestedAmount, out float takenAmount)
+		{
+			takenAmount = 0f;
+			if (requestedAmount <= 0f)
+			{
+				return false;
+			}
+
+			BusinessRuntimeSimulationState state = GetStateByLotId(lotId);
+			if (state == null)
+			{
+				return false;
+			}
+
+			float amount = Mathf.Min(requestedAmount, Mathf.Max(0f, state.storageStock));
+			if (amount <= 0f)
+			{
+				return false;
+			}
+
+			state.storageStock -= amount;
+			state.storageStock = Mathf.Max(0f, state.storageStock);
+			takenAmount = amount;
+			simulationUpdated?.Invoke();
+			return true;
+		}
+
+		public bool TryAddToShelves(string lotId, float requestedAmount, out float addedAmount)
+		{
+			addedAmount = 0f;
+			if (requestedAmount <= 0f)
+			{
+				return false;
+			}
+
+			BusinessRuntimeSimulationState state = GetStateByLotId(lotId);
+			if (state == null)
+			{
+				return false;
+			}
+
+			float shelfSpace = state.shelfCapacity > 0 ? Mathf.Max(0f, state.shelfCapacity - state.shelfStock) : 0f;
+			float amount = Mathf.Min(requestedAmount, shelfSpace);
+			if (amount <= 0f)
+			{
+				return false;
+			}
+
+			state.shelfStock += amount;
+			if (state.shelfCapacity > 0)
+			{
+				state.shelfStock = Mathf.Min(state.shelfStock, state.shelfCapacity);
+			}
+
+			addedAmount = amount;
+			simulationUpdated?.Invoke();
+			return true;
+		}
+
+		public void SetCashierMultiplier(string lotId, float multiplier)
+		{
+		}
+
+		private void SyncFromState()
+		{
+			if (m_stateSync == null)
+			{
+				return;
+			}
+
+			var activeLotIds = new HashSet<string>();
+			foreach (BusinessInstanceSnapshot business in m_stateSync.GetAllBusinesses())
+			{
+				if (business == null || string.IsNullOrWhiteSpace(business.lotId))
+				{
+					continue;
+				}
+
+				activeLotIds.Add(business.lotId);
+
+				if (!m_statesByLotId.TryGetValue(business.lotId, out BusinessRuntimeSimulationState state))
+				{
+					state = new BusinessRuntimeSimulationState
+					{
+						lotId = business.lotId
+					};
+					m_statesByLotId[business.lotId] = state;
+				}
+
+				state.businessTypeId = business.businessTypeId;
+				state.rentPerDay = business.rentPerDay;
+				state.storageCapacity = business.storageCapacity;
+				state.shelfCapacity = business.shelfCapacity;
+				state.storageStock = business.storageStock;
+				state.shelfStock = business.shelfStock;
+				state.profit = state.accumulatedIncome - state.accumulatedExpenses;
+			}
+
+			var toRemove = new List<string>();
+			foreach (KeyValuePair<string, BusinessRuntimeSimulationState> pair in m_statesByLotId)
+			{
+				if (!activeLotIds.Contains(pair.Key))
+				{
+					toRemove.Add(pair.Key);
+				}
+			}
+
+			foreach (string lotId in toRemove)
+			{
+				m_statesByLotId.Remove(lotId);
+			}
 		}
 	}
 }

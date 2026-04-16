@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 
-public class GameRuntimeState
+namespace Sample.Runtime.Runtime
 {
-	public List<BuildingState> buildings;
-	public PlayerProfileState player;
-	public List<QuestState> quests;
+	public class GameRuntimeState
+	{
+		public List<BuildingState> buildings;
+		public PlayerProfileState player;
+		public List<QuestState> quests;
+	}
 }

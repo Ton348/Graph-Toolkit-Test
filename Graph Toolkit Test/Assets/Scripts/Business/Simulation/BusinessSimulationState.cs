@@ -1,36 +1,39 @@
 using System.Collections.Generic;
 
-public class BusinessSimulationState : BusinessRuntimeSimulationState
+namespace Prototype.Business.Simulation
 {
-	public int autoDeliveryPerDay;
-	public float cashierMultiplier = 1f;
-	public string hiredCashierContactId;
-	public string hiredMerchContactId;
-	public List<string> installedModules = new();
-	public string instanceId;
-	public bool isOpen;
-	public bool isRented;
-	public float lastDelivered;
-	public float lastDemand;
-	public float lastExpenses;
-	public float lastIncome;
-	public float lastShelved;
-	public float lastSold;
-	public int markupPercent;
-	public string selectedSupplierId;
-
-	public bool HasModule(string moduleId)
+	public class BusinessSimulationState : BusinessRuntimeSimulationState
 	{
-		return !string.IsNullOrWhiteSpace(moduleId) && installedModules != null && installedModules.Contains(moduleId);
-	}
+		public int autoDeliveryPerDay;
+		public float cashierMultiplier = 1f;
+		public string hiredCashierContactId;
+		public string hiredMerchContactId;
+		public List<string> installedModules = new();
+		public string instanceId;
+		public bool isOpen;
+		public bool isRented;
+		public float lastDelivered;
+		public float lastDemand;
+		public float lastExpenses;
+		public float lastIncome;
+		public float lastShelved;
+		public float lastSold;
+		public int markupPercent;
+		public string selectedSupplierId;
 
-	public void ResetTick()
-	{
-		lastDelivered = 0f;
-		lastShelved = 0f;
-		lastDemand = 0f;
-		lastSold = 0f;
-		lastIncome = 0f;
-		lastExpenses = 0f;
+		public bool HasModule(string moduleId)
+		{
+			return !string.IsNullOrWhiteSpace(moduleId) && installedModules != null && installedModules.Contains(moduleId);
+		}
+
+		public void ResetTick()
+		{
+			lastDelivered = 0f;
+			lastShelved = 0f;
+			lastDemand = 0f;
+			lastSold = 0f;
+			lastIncome = 0f;
+			lastExpenses = 0f;
+		}
 	}
 }

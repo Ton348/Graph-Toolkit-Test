@@ -1,29 +1,27 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using Dreamteck.Splines.Editor;
 using UnityEditor;
-using Dreamteck.Splines.Editor;
 
 namespace Dreamteck.Splines.Primitives
 {
-    public class CapsuleEditor : PrimitiveEditor
-    {
-        public override string GetName()
-        {
-            return "Capsule";
-        }
+	public class CapsuleEditor : PrimitiveEditor
+	{
+		public override string GetName()
+		{
+			return "Capsule";
+		}
 
-        public override void Open(DreamteckSplinesEditor editor)
-        {
-            base.Open(editor);
-            m_primitive = new Capsule();
-        }
+		public override void Open(DreamteckSplinesEditor editor)
+		{
+			base.Open(editor);
+			m_primitive = new Capsule();
+		}
 
-        protected override void OnGui()
-        {
-            base.OnGui();
-            Capsule capsule = (Capsule)m_primitive;
-            capsule.radius = EditorGUILayout.FloatField("Radius", capsule.radius);
-            capsule.height = EditorGUILayout.FloatField("Height", capsule.height);
-        }
-    }
+		protected override void OnGui()
+		{
+			base.OnGui();
+			var capsule = (Capsule)m_primitive;
+			capsule.radius = EditorGUILayout.FloatField("Radius", capsule.radius);
+			capsule.height = EditorGUILayout.FloatField("Height", capsule.height);
+		}
+	}
 }

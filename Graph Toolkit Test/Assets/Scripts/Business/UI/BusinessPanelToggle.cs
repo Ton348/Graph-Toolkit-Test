@@ -1,49 +1,52 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BusinessPanelToggle : MonoBehaviour
+namespace Prototype.Business.UI
 {
-	public GameObject panelRoot;
-	public Button openButton;
-	public Button closeButton;
-	public bool startHidden = true;
-
-	private void Awake()
+	public class BusinessPanelToggle : MonoBehaviour
 	{
-		if (panelRoot != null && startHidden)
+		public GameObject panelRoot;
+		public Button openButton;
+		public Button closeButton;
+		public bool startHidden = true;
+
+		private void Awake()
 		{
-			panelRoot.SetActive(false);
+			if (panelRoot != null && startHidden)
+			{
+				panelRoot.SetActive(false);
+			}
+
+			if (openButton == null)
+			{
+				openButton = GetComponent<Button>();
+			}
+
+			if (openButton != null)
+			{
+				openButton.onClick.AddListener(Show);
+			}
+
+			if (closeButton != null)
+			{
+				closeButton.onClick.AddListener(Hide);
+			}
 		}
 
-		if (openButton == null)
+		public void Show()
 		{
-			openButton = GetComponent<Button>();
+			if (panelRoot != null)
+			{
+				panelRoot.SetActive(true);
+			}
 		}
 
-		if (openButton != null)
+		public void Hide()
 		{
-			openButton.onClick.AddListener(Show);
-		}
-
-		if (closeButton != null)
-		{
-			closeButton.onClick.AddListener(Hide);
-		}
-	}
-
-	public void Show()
-	{
-		if (panelRoot != null)
-		{
-			panelRoot.SetActive(true);
-		}
-	}
-
-	public void Hide()
-	{
-		if (panelRoot != null)
-		{
-			panelRoot.SetActive(false);
+			if (panelRoot != null)
+			{
+				panelRoot.SetActive(false);
+			}
 		}
 	}
 }

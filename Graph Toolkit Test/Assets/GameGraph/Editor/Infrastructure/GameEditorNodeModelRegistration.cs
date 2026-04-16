@@ -1,6 +1,9 @@
-public static class GameEditorNodeModelRegistration
+namespace GameGraph.Editor.Infrastructure
 {
-	public static void EnsureRegistered()
+	public static class GameEditorNodeModelRegistration
 	{
+		public static void EnsureRegistered()
+		{
+		}
 	}
 }

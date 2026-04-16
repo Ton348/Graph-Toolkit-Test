@@ -1,25 +1,33 @@
 using System;
 using Game1.Graph.Runtime;
-
+using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Infrastructure.Validation;
 using Game1.Graph.Runtime.Validation;
-using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeValidator]
-public sealed class CheckBusinessExistsNodeValidator : IGameGraphNodeValidator
+using GameGraph.Editor.Validation.Infrastructure;
+using GameGraph.Runtime.Business;
+
+namespace GameGraph.Editor.Validation.Business
 {
-	public Type NodeType => typeof(CheckBusinessExistsNode);
-
-	public bool Validate(GameGraphNode node, GameGraphValidationResult result)
+	[GameGraphNodeValidator]
+	public sealed class CheckBusinessExistsNodeValidator : IGameGraphNodeValidator
 	{
-		if (!GameGraphBusinessValidatorHelpers.ValidateType(node, result, out CheckBusinessExistsNode typedNode))
-		{
-			return false;
-		}
+		public Type NodeType => typeof(CheckBusinessExistsNode);
 
-		bool valid = true;
-		valid &= GameGraphValidationHelpers.ValidateNodeId(typedNode.trueNodeId, typedNode, nameof(typedNode.trueNodeId), result);
-		valid &= GameGraphValidationHelpers.ValidateNodeId(typedNode.falseNodeId, typedNode, nameof(typedNode.falseNodeId), result);
-		valid &= GameGraphValidationHelpers.ValidateRequiredString(typedNode.lotId, typedNode, nameof(typedNode.lotId), result);
-		return valid;
+		public bool Validate(GameGraphNode node, GameGraphValidationResult result)
+		{
+			if (!GameGraphBusinessValidatorHelpers.ValidateType(node, result, out CheckBusinessExistsNode typedNode))
+			{
+				return false;
+			}
+
+			var valid = true;
+			valid &= GameGraphValidationHelpers.ValidateNodeId(typedNode.trueNodeId, typedNode,
+				nameof(typedNode.trueNodeId), result);
+			valid &= GameGraphValidationHelpers.ValidateNodeId(typedNode.falseNodeId, typedNode,
+				nameof(typedNode.falseNodeId), result);
+			valid &= GameGraphValidationHelpers.ValidateRequiredString(typedNode.lotId, typedNode, nameof(typedNode.lotId),
+				result);
+			return valid;
+		}
 	}
 }

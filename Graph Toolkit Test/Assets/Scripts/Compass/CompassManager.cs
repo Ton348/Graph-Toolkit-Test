@@ -2,132 +2,135 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CompassManager : MonoBehaviour
+namespace Sample.Runtime.Compass
 {
-	[SerializeField]
-	private Transform m_player;
-
-	private readonly Dictionary<string, CompassTarget> m_activeTargets = new();
-	private readonly HashSet<string> m_pendingShow = new();
-	public static CompassManager Instance { get; private set; }
-
-	public Transform Player => m_player;
-
-	public IReadOnlyCollection<CompassTarget> ActiveTargets => m_activeTargets.Values;
-
-	private void Awake()
+	public class CompassManager : MonoBehaviour
 	{
-		if (Instance != null && Instance != this)
+		[SerializeField]
+		private Transform m_player;
+
+		private readonly Dictionary<string, CompassTarget> m_activeTargets = new();
+		private readonly HashSet<string> m_pendingShow = new();
+		public static CompassManager Instance { get; private set; }
+
+		public Transform Player => m_player;
+
+		public IReadOnlyCollection<CompassTarget> ActiveTargets => m_activeTargets.Values;
+
+		private void Awake()
 		{
-			Destroy(gameObject);
-			return;
+			if (Instance != null && Instance != this)
+			{
+				Destroy(gameObject);
+				return;
+			}
+
+			Instance = this;
 		}
 
-		Instance = this;
-	}
-
-	private void OnEnable()
-	{
-		var registry = CompassTargetRegistry.Instance;
-		if (registry != null)
+		private void OnEnable()
 		{
-			registry.targetRegistered += OnTargetRegistered;
-			registry.targetUnregistered += OnTargetUnregistered;
-		}
-	}
-
-	private void OnDisable()
-	{
-		var registry = CompassTargetRegistry.Instance;
-		if (registry != null)
-		{
-			registry.targetRegistered -= OnTargetRegistered;
-			registry.targetUnregistered -= OnTargetUnregistered;
-		}
-	}
-
-	public event Action activeTargetsChanged;
-
-	public void ShowTarget(string id)
-	{
-		if (string.IsNullOrWhiteSpace(id))
-		{
-			return;
+			var registry = CompassTargetRegistry.Instance;
+			if (registry != null)
+			{
+				registry.targetRegistered += OnTargetRegistered;
+				registry.targetUnregistered += OnTargetUnregistered;
+			}
 		}
 
-		if (m_activeTargets.ContainsKey(id))
+		private void OnDisable()
 		{
-			return;
+			var registry = CompassTargetRegistry.Instance;
+			if (registry != null)
+			{
+				registry.targetRegistered -= OnTargetRegistered;
+				registry.targetUnregistered -= OnTargetUnregistered;
+			}
 		}
 
-		var registry = CompassTargetRegistry.Instance;
-		CompassTarget target = registry != null ? registry.GetTarget(id) : null;
+		public event Action activeTargetsChanged;
 
-		if (target != null)
+		public void ShowTarget(string id)
 		{
-			m_activeTargets[id] = target;
-			activeTargetsChanged?.Invoke();
-		}
-		else
-		{
-			m_pendingShow.Add(id);
-		}
-	}
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return;
+			}
 
-	public void HideTarget(string id)
-	{
-		if (string.IsNullOrWhiteSpace(id))
-		{
-			return;
-		}
+			if (m_activeTargets.ContainsKey(id))
+			{
+				return;
+			}
 
-		bool removed = m_activeTargets.Remove(id);
-		m_pendingShow.Remove(id);
+			var registry = CompassTargetRegistry.Instance;
+			CompassTarget target = registry != null ? registry.GetTarget(id) : null;
 
-		if (removed)
-		{
-			activeTargetsChanged?.Invoke();
-		}
-	}
-
-	private void OnTargetRegistered(CompassTarget target)
-	{
-		if (target == null)
-		{
-			return;
+			if (target != null)
+			{
+				m_activeTargets[id] = target;
+				activeTargetsChanged?.Invoke();
+			}
+			else
+			{
+				m_pendingShow.Add(id);
+			}
 		}
 
-		string id = target.TargetId;
-		if (string.IsNullOrWhiteSpace(id))
+		public void HideTarget(string id)
 		{
-			return;
-		}
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return;
+			}
 
-		if (m_pendingShow.Contains(id) || m_activeTargets.ContainsKey(id))
-		{
+			bool removed = m_activeTargets.Remove(id);
 			m_pendingShow.Remove(id);
-			m_activeTargets[id] = target;
-			activeTargetsChanged?.Invoke();
-		}
-	}
 
-	private void OnTargetUnregistered(CompassTarget target)
-	{
-		if (target == null)
-		{
-			return;
+			if (removed)
+			{
+				activeTargetsChanged?.Invoke();
+			}
 		}
 
-		string id = target.TargetId;
-		if (string.IsNullOrWhiteSpace(id))
+		private void OnTargetRegistered(CompassTarget target)
 		{
-			return;
+			if (target == null)
+			{
+				return;
+			}
+
+			string id = target.TargetId;
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return;
+			}
+
+			if (m_pendingShow.Contains(id) || m_activeTargets.ContainsKey(id))
+			{
+				m_pendingShow.Remove(id);
+				m_activeTargets[id] = target;
+				activeTargetsChanged?.Invoke();
+			}
 		}
 
-		if (m_activeTargets.TryGetValue(id, out CompassTarget existing) && existing == target)
+		private void OnTargetUnregistered(CompassTarget target)
 		{
-			m_activeTargets.Remove(id);
-			activeTargetsChanged?.Invoke();
+			if (target == null)
+			{
+				return;
+			}
+
+			string id = target.TargetId;
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				return;
+			}
+
+			if (m_activeTargets.TryGetValue(id, out CompassTarget existing) && existing == target)
+			{
+				m_activeTargets.Remove(id);
+				activeTargetsChanged?.Invoke();
+			}
 		}
 	}
 }

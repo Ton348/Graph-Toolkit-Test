@@ -1,40 +1,43 @@
 using UnityEngine;
 
-public class BuildingStatusWindow : MonoBehaviour
+namespace Sample.Runtime.UI
 {
-	public GameObject windowRoot;
-
-	private void Awake()
+	public class BuildingStatusWindow : MonoBehaviour
 	{
-		if (windowRoot != null)
-		{
-			windowRoot.SetActive(false);
-		}
-	}
+		public GameObject windowRoot;
 
-	public void ToggleWindow()
-	{
-		if (windowRoot == null)
+		private void Awake()
 		{
-			return;
+			if (windowRoot != null)
+			{
+				windowRoot.SetActive(false);
+			}
 		}
 
-		windowRoot.SetActive(!windowRoot.activeSelf);
-	}
-
-	public void Open()
-	{
-		if (windowRoot != null)
+		public void ToggleWindow()
 		{
-			windowRoot.SetActive(true);
+			if (windowRoot == null)
+			{
+				return;
+			}
+
+			windowRoot.SetActive(!windowRoot.activeSelf);
 		}
-	}
 
-	public void Close()
-	{
-		if (windowRoot != null)
+		public void Open()
 		{
-			windowRoot.SetActive(false);
+			if (windowRoot != null)
+			{
+				windowRoot.SetActive(true);
+			}
+		}
+
+		public void Close()
+		{
+			if (windowRoot != null)
+			{
+				windowRoot.SetActive(false);
+			}
 		}
 	}
 }

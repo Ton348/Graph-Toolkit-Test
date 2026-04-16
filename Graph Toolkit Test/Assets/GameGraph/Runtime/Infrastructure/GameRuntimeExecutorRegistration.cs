@@ -1,12 +1,14 @@
-using Game1.Graph.Runtime;
 using Game1.Graph.Runtime.Infrastructure;
-public static class GameRuntimeExecutorRegistration
+
+namespace GameGraph.Runtime.Infrastructure
 {
-	public static void Register(GameGraphExecutorRegistry registry)
+	public static class GameRuntimeExecutorRegistration
 	{
-		if (registry == null)
+		public static void Register(GameGraphExecutorRegistry registry)
 		{
-			return;
+			if (registry == null)
+			{
+			}
 		}
 	}
 }

@@ -2,380 +2,393 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Prototype.Business.Compass;
+using Prototype.Business.Data;
+using Prototype.Business.GameData;
+using Prototype.Business.Runtime;
+using Prototype.Business.Services;
+using Prototype.Business.Simulation;
+using Prototype.Business.World;
+using Sample.Runtime.GameData;
+using Sample.Runtime.Runtime;
+using Sample.Runtime.Services;
 using UnityEngine;
 
-public class GameBootstrap : MonoBehaviour
+namespace Prototype.Business.Bootstrap
 {
-	[Header("Game Data (JSON)")]
-	public string gameDataFolder = "GameData";
-
-	[Header("Server")]
-	public bool useRemoteServer;
-
-	public string remoteBaseUrl = "http://127.0.0.1:3000";
-	public string remotePlayerId = "player";
-	public float remoteTimeoutSeconds = 8f;
-	public bool remoteDebugLog = true;
-	public bool refreshProfileOnGameStart = true;
-
-	[Header("Local Server (Fake Network)")]
-	public int localMinDelayMs = 100;
-
-	public int localMaxDelayMs = 500;
-
-	[Range(0f, 1f)]
-	public float localNetworkErrorChance = 0.05f;
-
-	[Range(0f, 1f)]
-	public float localTimeoutChance = 0.03f;
-
-	public GameRuntimeState RuntimeState { get; private set; }
-	public GraphProgressService GraphProgressService { get; private set; }
-	public IGameServer GameServer { get; private set; }
-	public ProfileSyncService ProfileSyncService { get; private set; }
-	public RequestManager RequestManager { get; private set; }
-	public GameDataRepository GameDataRepository { get; private set; }
-	public BusinessDefinitionsRepository BusinessDefinitionsRepository { get; private set; }
-	public PlayerStateSync PlayerStateSync { get; private set; }
-	public QuestCompassSync QuestCompassSync { get; private set; }
-	public BusinessStateSyncService BusinessStateSyncService { get; private set; }
-	public BusinessRuntimeService BusinessRuntimeService { get; private set; }
-	public BusinessActionFacade BusinessActionFacade { get; private set; }
-	public BusinessSimulationService BusinessSimulationService { get; private set; }
-	public BusinessLiveSimulationService BusinessLiveSimulationService { get; private set; }
-	public BusinessVisualRegistry BusinessVisualRegistry { get; private set; }
-	public BusinessVisualSpawner BusinessVisualSpawner { get; private set; }
-
-
-	private void Awake()
+	public class GameBootstrap : MonoBehaviour
 	{
-		InitializeRuntime();
-	}
+		[Header("Game Data (JSON)")]
+		public string gameDataFolder = "GameData";
 
-	private async void StartAsync()
-	{
-		if (useRemoteServer && refreshProfileOnGameStart)
+		[Header("Server")]
+		public bool useRemoteServer;
+
+		public string remoteBaseUrl = "http://127.0.0.1:3000";
+		public string remotePlayerId = "player";
+		public float remoteTimeoutSeconds = 8f;
+		public bool remoteDebugLog = true;
+		public bool refreshProfileOnGameStart = true;
+
+		[Header("Local Server (Fake Network)")]
+		public int localMinDelayMs = 100;
+
+		public int localMaxDelayMs = 500;
+
+		[Range(0f, 1f)]
+		public float localNetworkErrorChance = 0.05f;
+
+		[Range(0f, 1f)]
+		public float localTimeoutChance = 0.03f;
+
+		public GameRuntimeState RuntimeState { get; private set; }
+		public GraphProgressService GraphProgressService { get; private set; }
+		public IGameServer GameServer { get; private set; }
+		public ProfileSyncService ProfileSyncService { get; private set; }
+		public RequestManager RequestManager { get; private set; }
+		public GameDataRepository GameDataRepository { get; private set; }
+		public BusinessDefinitionsRepository BusinessDefinitionsRepository { get; private set; }
+		public PlayerStateSync PlayerStateSync { get; private set; }
+		public QuestCompassSync QuestCompassSync { get; private set; }
+		public BusinessStateSyncService BusinessStateSyncService { get; private set; }
+		public BusinessRuntimeService BusinessRuntimeService { get; private set; }
+		public BusinessActionFacade BusinessActionFacade { get; private set; }
+		public BusinessSimulationService BusinessSimulationService { get; private set; }
+		public BusinessLiveSimulationService BusinessLiveSimulationService { get; private set; }
+		public BusinessVisualRegistry BusinessVisualRegistry { get; private set; }
+		public BusinessVisualSpawner BusinessVisualSpawner { get; private set; }
+
+
+		private void Awake()
 		{
-			await FetchRemoteProfileAsync();
-		}
-	}
-
-	private void InitializeRuntime()
-	{
-		RuntimeState = new GameRuntimeState();
-
-		QuestDatabaseData questDb = null;
-		BuildingDatabaseData buildingDb = null;
-		EconomyConfigData economy = null;
-		LotDatabaseData lotDb = null;
-
-		string rootPath = Path.Combine(Application.streamingAssetsPath, gameDataFolder);
-		Debug.Log($"[GameBootstrap] Loading JSON definitions from: {rootPath}");
-		var loader = new JsonGameDataLoader(rootPath);
-		questDb = loader.LoadQuests();
-		buildingDb = loader.LoadBuildings();
-		economy = loader.LoadEconomy();
-		lotDb = loader.LoadLots();
-
-		if (questDb == null)
-		{
-			Debug.LogError("[GameBootstrap] quests.json missing or invalid. Using empty quest database.");
-			questDb = new QuestDatabaseData();
-		}
-
-		if (buildingDb == null)
-		{
-			Debug.LogError("[GameBootstrap] buildings.json missing or invalid. Using empty building database.");
-			buildingDb = new BuildingDatabaseData();
-		}
-
-		if (economy == null)
-		{
-			Debug.LogError("[GameBootstrap] economy.json missing or invalid. Using empty economy config.");
-			economy = new EconomyConfigData();
-		}
-
-		if (lotDb == null)
-		{
-			Debug.LogError("[GameBootstrap] lots.json missing or invalid. Using empty lot database.");
-			lotDb = new LotDatabaseData();
+			InitializeRuntime();
 		}
 
-		GameDataRepository = new GameDataRepository(questDb, buildingDb, economy, lotDb);
-		Debug.Log(
-			$"[GameBootstrap] GameDataRepository ready. Quests: {questDb.quests.Count}, Buildings: {buildingDb.buildings.Count}, Lots: {lotDb.lots.Count}");
-
-		BusinessTypeDatabaseData businessTypes = null;
-		BusinessModuleDatabaseData businessModules = null;
-		SupplierDatabaseData suppliers = null;
-		StaffRoleDatabaseData staffRoles = null;
-		StaffContactDatabaseData staffContacts = null;
-		CustomerBehaviorDatabaseData customerBehaviors = null;
-
-		string businessRootPath = Path.Combine(rootPath, "Business");
-		var businessLoader = new JsonBusinessDataLoader(businessRootPath);
-		businessTypes = businessLoader.LoadBusinessTypes();
-		businessModules = businessLoader.LoadBusinessModules();
-		suppliers = businessLoader.LoadSuppliers();
-		staffRoles = businessLoader.LoadStaffRoles();
-		staffContacts = businessLoader.LoadStaffContacts();
-		customerBehaviors = businessLoader.LoadCustomerBehaviors();
-
-		if (businessTypes == null)
+		private async void StartAsync()
 		{
-			businessTypes = new BusinessTypeDatabaseData();
-		}
-
-		if (businessModules == null)
-		{
-			businessModules = new BusinessModuleDatabaseData();
-		}
-
-		if (suppliers == null)
-		{
-			suppliers = new SupplierDatabaseData();
-		}
-
-		if (staffRoles == null)
-		{
-			staffRoles = new StaffRoleDatabaseData();
-		}
-
-		if (staffContacts == null)
-		{
-			staffContacts = new StaffContactDatabaseData();
-		}
-
-		if (customerBehaviors == null)
-		{
-			customerBehaviors = new CustomerBehaviorDatabaseData();
-		}
-
-		BusinessDefinitionsValidator.Validate(businessTypes, businessModules, suppliers, staffRoles, staffContacts,
-			customerBehaviors);
-		BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, businessModules, suppliers,
-			staffRoles, staffContacts, customerBehaviors);
-		Debug.Log(
-			$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}, Modules: {businessModules.modules.Count}");
-
-		LotDefinitionsValidator.Validate(lotDb, BusinessDefinitionsRepository);
-
-		RuntimeState.player = new PlayerProfileState(GameDataRepository.GetEconomy());
-		RuntimeState.buildings = new List<BuildingState>();
-		foreach (BuildingDefinitionData definition in GameDataRepository.GetAllBuildings())
-		{
-			RuntimeState.buildings.Add(new BuildingState(definition));
-		}
-
-		RuntimeState.quests = new List<QuestState>();
-
-		GraphProgressService = new GraphProgressService();
-		GameServer = useRemoteServer
-			? new RemoteGameServer(remoteBaseUrl, remotePlayerId, remoteTimeoutSeconds, remoteDebugLog)
-			: new LocalGameServer(RuntimeState, GameDataRepository, BusinessDefinitionsRepository, localMinDelayMs,
-				localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
-		PlayerStateSync = new PlayerStateSync();
-		QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
-		BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);
-		ProfileSyncService =
-			new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
-		PlayerStateSync.refreshRequested += HandlePlayerStateRefreshRequested;
-		RequestManager = new RequestManager();
-		BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
-		BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
-		BusinessSimulationService =
-			new BusinessSimulationService(BusinessDefinitionsRepository, BusinessStateSyncService);
-		BusinessVisualRegistry = GetComponent<BusinessVisualRegistry>();
-		if (BusinessVisualRegistry == null)
-		{
-			BusinessVisualRegistry = FindAnyObjectByType<BusinessVisualRegistry>(FindObjectsInactive.Include);
-		}
-
-		if (BusinessVisualRegistry == null)
-		{
-			BusinessVisualRegistry = gameObject.AddComponent<BusinessVisualRegistry>();
-		}
-
-		BusinessVisualSpawner = GetComponent<BusinessVisualSpawner>();
-		if (BusinessVisualSpawner == null)
-		{
-			BusinessVisualSpawner = FindAnyObjectByType<BusinessVisualSpawner>(FindObjectsInactive.Include);
-		}
-
-		if (BusinessVisualSpawner == null)
-		{
-			BusinessVisualSpawner = gameObject.AddComponent<BusinessVisualSpawner>();
-		}
-
-		BusinessVisualSpawner.Initialize(this, BusinessVisualRegistry);
-
-		var simulationRunner = GetComponent<BusinessSimulationTickRunner>();
-		if (simulationRunner == null)
-		{
-			simulationRunner = gameObject.AddComponent<BusinessSimulationTickRunner>();
-		}
-
-		simulationRunner.bootstrap = this;
-
-		BusinessLiveSimulationService = GetComponent<BusinessLiveSimulationService>();
-		if (BusinessLiveSimulationService == null)
-		{
-			BusinessLiveSimulationService = gameObject.AddComponent<BusinessLiveSimulationService>();
-		}
-
-		BusinessLiveSimulationService.Initialize(this);
-
-		SeedInitialSnapshot();
-	}
-
-	private void HandlePlayerStateRefreshRequested()
-	{
-		_ = RefreshProfileFromServerAsync();
-	}
-
-	private async Task RefreshProfileFromServerAsync()
-	{
-		if (GameServer == null || ProfileSyncService == null)
-		{
-			return;
-		}
-
-		ServerActionResult result = null;
-		try
-		{
-			result = await GameServer.TryGetProfileAsync();
-		}
-		catch (Exception ex)
-		{
-			Debug.LogWarning($"[GameBootstrap] Profile refresh failed: {ex.Message}");
-			return;
-		}
-
-		if (result == null)
-		{
-			Debug.LogWarning("[GameBootstrap] Profile refresh returned null.");
-			return;
-		}
-
-		if (!result.Success)
-		{
-			Debug.LogWarning($"[GameBootstrap] Profile refresh failed: {result.Type} - {result.ErrorCode}");
-			return;
-		}
-
-		if (result.ProfileSnapshot != null)
-		{
-			ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
-		}
-	}
-
-	private void SeedInitialSnapshot()
-	{
-		if (PlayerStateSync == null || RuntimeState == null)
-		{
-			return;
-		}
-
-		var snapshot = new ProfileSnapshot
-		{
-			money = RuntimeState.player != null ? RuntimeState.player.money : 0,
-			bargaining = RuntimeState.player != null ? RuntimeState.player.bargaining : 0,
-			speech = RuntimeState.player != null ? RuntimeState.player.speech : 0,
-			trading = RuntimeState.player != null ? RuntimeState.player.trading : 0,
-			speed = RuntimeState.player != null ? RuntimeState.player.speed : 0,
-			damage = RuntimeState.player != null ? RuntimeState.player.damage : 0,
-			health = RuntimeState.player != null ? RuntimeState.player.health : 0
-		};
-
-		if (RuntimeState.quests != null)
-		{
-			foreach (QuestState quest in RuntimeState.quests)
+			if (useRemoteServer && refreshProfileOnGameStart)
 			{
-				if (quest == null || quest.definition == null)
-				{
-					continue;
-				}
-
-				if (quest.status == QuestStatus.Active)
-				{
-					snapshot.activeQuestIds.Add(quest.definition.id);
-				}
-				else if (quest.status == QuestStatus.Completed)
-				{
-					snapshot.completedQuestIds.Add(quest.definition.id);
-				}
+				await FetchRemoteProfileAsync();
 			}
 		}
 
-		if (RuntimeState.buildings != null)
+		private void InitializeRuntime()
 		{
-			foreach (BuildingState building in RuntimeState.buildings)
-			{
-				if (building == null || building.definition == null)
-				{
-					continue;
-				}
+			RuntimeState = new GameRuntimeState();
 
-				if (building.isOwned)
+			QuestDatabaseData questDb = null;
+			BuildingDatabaseData buildingDb = null;
+			EconomyConfigData economy = null;
+			LotDatabaseData lotDb = null;
+
+			string rootPath = Path.Combine(Application.streamingAssetsPath, gameDataFolder);
+			Debug.Log($"[GameBootstrap] Loading JSON definitions from: {rootPath}");
+			var loader = new JsonGameDataLoader(rootPath);
+			questDb = loader.LoadQuests();
+			buildingDb = loader.LoadBuildings();
+			economy = loader.LoadEconomy();
+			lotDb = loader.LoadLots();
+
+			if (questDb == null)
+			{
+				Debug.LogError("[GameBootstrap] quests.json missing or invalid. Using empty quest database.");
+				questDb = new QuestDatabaseData();
+			}
+
+			if (buildingDb == null)
+			{
+				Debug.LogError("[GameBootstrap] buildings.json missing or invalid. Using empty building database.");
+				buildingDb = new BuildingDatabaseData();
+			}
+
+			if (economy == null)
+			{
+				Debug.LogError("[GameBootstrap] economy.json missing or invalid. Using empty economy config.");
+				economy = new EconomyConfigData();
+			}
+
+			if (lotDb == null)
+			{
+				Debug.LogError("[GameBootstrap] lots.json missing or invalid. Using empty lot database.");
+				lotDb = new LotDatabaseData();
+			}
+
+			GameDataRepository = new GameDataRepository(questDb, buildingDb, economy, lotDb);
+			Debug.Log(
+				$"[GameBootstrap] GameDataRepository ready. Quests: {questDb.quests.Count}, Buildings: {buildingDb.buildings.Count}, Lots: {lotDb.lots.Count}");
+
+			BusinessTypeDatabaseData businessTypes = null;
+			BusinessModuleDatabaseData businessModules = null;
+			SupplierDatabaseData suppliers = null;
+			StaffRoleDatabaseData staffRoles = null;
+			StaffContactDatabaseData staffContacts = null;
+			CustomerBehaviorDatabaseData customerBehaviors = null;
+
+			string businessRootPath = Path.Combine(rootPath, "Business");
+			var businessLoader = new JsonBusinessDataLoader(businessRootPath);
+			businessTypes = businessLoader.LoadBusinessTypes();
+			businessModules = businessLoader.LoadBusinessModules();
+			suppliers = businessLoader.LoadSuppliers();
+			staffRoles = businessLoader.LoadStaffRoles();
+			staffContacts = businessLoader.LoadStaffContacts();
+			customerBehaviors = businessLoader.LoadCustomerBehaviors();
+
+			if (businessTypes == null)
+			{
+				businessTypes = new BusinessTypeDatabaseData();
+			}
+
+			if (businessModules == null)
+			{
+				businessModules = new BusinessModuleDatabaseData();
+			}
+
+			if (suppliers == null)
+			{
+				suppliers = new SupplierDatabaseData();
+			}
+
+			if (staffRoles == null)
+			{
+				staffRoles = new StaffRoleDatabaseData();
+			}
+
+			if (staffContacts == null)
+			{
+				staffContacts = new StaffContactDatabaseData();
+			}
+
+			if (customerBehaviors == null)
+			{
+				customerBehaviors = new CustomerBehaviorDatabaseData();
+			}
+
+			BusinessDefinitionsValidator.Validate(businessTypes, businessModules, suppliers, staffRoles, staffContacts,
+				customerBehaviors);
+			BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, businessModules, suppliers,
+				staffRoles, staffContacts, customerBehaviors);
+			Debug.Log(
+				$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}, Modules: {businessModules.modules.Count}");
+
+			LotDefinitionsValidator.Validate(lotDb, BusinessDefinitionsRepository);
+
+			RuntimeState.player = new PlayerProfileState(GameDataRepository.GetEconomy());
+			RuntimeState.buildings = new List<BuildingState>();
+			foreach (BuildingDefinitionData definition in GameDataRepository.GetAllBuildings())
+			{
+				RuntimeState.buildings.Add(new BuildingState(definition));
+			}
+
+			RuntimeState.quests = new List<QuestState>();
+
+			GraphProgressService = new GraphProgressService();
+			GameServer = useRemoteServer
+				? new RemoteGameServer(remoteBaseUrl, remotePlayerId, remoteTimeoutSeconds, remoteDebugLog)
+				: new LocalGameServer(RuntimeState, GameDataRepository, BusinessDefinitionsRepository, localMinDelayMs,
+					localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
+			PlayerStateSync = new PlayerStateSync();
+			QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
+			BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);
+			ProfileSyncService =
+				new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
+			PlayerStateSync.refreshRequested += HandlePlayerStateRefreshRequested;
+			RequestManager = new RequestManager();
+			BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
+			BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
+			BusinessSimulationService =
+				new BusinessSimulationService(BusinessDefinitionsRepository, BusinessStateSyncService);
+			BusinessVisualRegistry = GetComponent<BusinessVisualRegistry>();
+			if (BusinessVisualRegistry == null)
+			{
+				BusinessVisualRegistry = FindAnyObjectByType<BusinessVisualRegistry>(FindObjectsInactive.Include);
+			}
+
+			if (BusinessVisualRegistry == null)
+			{
+				BusinessVisualRegistry = gameObject.AddComponent<BusinessVisualRegistry>();
+			}
+
+			BusinessVisualSpawner = GetComponent<BusinessVisualSpawner>();
+			if (BusinessVisualSpawner == null)
+			{
+				BusinessVisualSpawner = FindAnyObjectByType<BusinessVisualSpawner>(FindObjectsInactive.Include);
+			}
+
+			if (BusinessVisualSpawner == null)
+			{
+				BusinessVisualSpawner = gameObject.AddComponent<BusinessVisualSpawner>();
+			}
+
+			BusinessVisualSpawner.Initialize(this, BusinessVisualRegistry);
+
+			var simulationRunner = GetComponent<BusinessSimulationTickRunner>();
+			if (simulationRunner == null)
+			{
+				simulationRunner = gameObject.AddComponent<BusinessSimulationTickRunner>();
+			}
+
+			simulationRunner.bootstrap = this;
+
+			BusinessLiveSimulationService = GetComponent<BusinessLiveSimulationService>();
+			if (BusinessLiveSimulationService == null)
+			{
+				BusinessLiveSimulationService = gameObject.AddComponent<BusinessLiveSimulationService>();
+			}
+
+			BusinessLiveSimulationService.Initialize(this);
+
+			SeedInitialSnapshot();
+		}
+
+		private void HandlePlayerStateRefreshRequested()
+		{
+			_ = RefreshProfileFromServerAsync();
+		}
+
+		private async Task RefreshProfileFromServerAsync()
+		{
+			if (GameServer == null || ProfileSyncService == null)
+			{
+				return;
+			}
+
+			ServerActionResult result = null;
+			try
+			{
+				result = await GameServer.TryGetProfileAsync();
+			}
+			catch (Exception ex)
+			{
+				Debug.LogWarning($"[GameBootstrap] Profile refresh failed: {ex.Message}");
+				return;
+			}
+
+			if (result == null)
+			{
+				Debug.LogWarning("[GameBootstrap] Profile refresh returned null.");
+				return;
+			}
+
+			if (!result.Success)
+			{
+				Debug.LogWarning($"[GameBootstrap] Profile refresh failed: {result.Type} - {result.ErrorCode}");
+				return;
+			}
+
+			if (result.ProfileSnapshot != null)
+			{
+				ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+			}
+		}
+
+		private void SeedInitialSnapshot()
+		{
+			if (PlayerStateSync == null || RuntimeState == null)
+			{
+				return;
+			}
+
+			var snapshot = new ProfileSnapshot
+			{
+				money = RuntimeState.player != null ? RuntimeState.player.money : 0,
+				bargaining = RuntimeState.player != null ? RuntimeState.player.bargaining : 0,
+				speech = RuntimeState.player != null ? RuntimeState.player.speech : 0,
+				trading = RuntimeState.player != null ? RuntimeState.player.trading : 0,
+				speed = RuntimeState.player != null ? RuntimeState.player.speed : 0,
+				damage = RuntimeState.player != null ? RuntimeState.player.damage : 0,
+				health = RuntimeState.player != null ? RuntimeState.player.health : 0
+			};
+
+			if (RuntimeState.quests != null)
+			{
+				foreach (QuestState quest in RuntimeState.quests)
 				{
-					snapshot.ownedBuildingIds.Add(building.definition.id);
-					snapshot.buildingStates.Add(new BuildingStateSnapshot
+					if (quest == null || quest.definition == null)
 					{
-						id = building.definition.id,
-						owned = true,
-						level = building.level,
-						currentIncome = building.currentIncome,
-						currentExpenses = building.currentExpenses
-					});
+						continue;
+					}
+
+					if (quest.status == QuestStatus.Active)
+					{
+						snapshot.activeQuestIds.Add(quest.definition.id);
+					}
+					else if (quest.status == QuestStatus.Completed)
+					{
+						snapshot.completedQuestIds.Add(quest.definition.id);
+					}
 				}
+			}
+
+			if (RuntimeState.buildings != null)
+			{
+				foreach (BuildingState building in RuntimeState.buildings)
+				{
+					if (building == null || building.definition == null)
+					{
+						continue;
+					}
+
+					if (building.isOwned)
+					{
+						snapshot.ownedBuildingIds.Add(building.definition.id);
+						snapshot.buildingStates.Add(new BuildingStateSnapshot
+						{
+							id = building.definition.id,
+							owned = true,
+							level = building.level,
+							currentIncome = building.currentIncome,
+							currentExpenses = building.currentExpenses
+						});
+					}
+				}
+			}
+
+			if (ProfileSyncService != null)
+			{
+				ProfileSyncService.ApplySnapshot(snapshot);
+			}
+			else
+			{
+				PlayerStateSync.ApplySnapshot(snapshot);
 			}
 		}
 
-		if (ProfileSyncService != null)
+		private async Task FetchRemoteProfileAsync()
 		{
-			ProfileSyncService.ApplySnapshot(snapshot);
-		}
-		else
-		{
-			PlayerStateSync.ApplySnapshot(snapshot);
-		}
-	}
+			if (GameServer == null || ProfileSyncService == null)
+			{
+				return;
+			}
 
-	private async Task FetchRemoteProfileAsync()
-	{
-		if (GameServer == null || ProfileSyncService == null)
-		{
-			return;
-		}
+			Debug.Log("[GameBootstrap] Fetching remote profile...");
+			ServerActionResult result = null;
+			try
+			{
+				result = await GameServer.TryGetProfileAsync();
+			}
+			catch (Exception ex)
+			{
+				Debug.LogWarning($"[GameBootstrap] Remote profile fetch failed: {ex.Message}");
+				return;
+			}
 
-		Debug.Log("[GameBootstrap] Fetching remote profile...");
-		ServerActionResult result = null;
-		try
-		{
-			result = await GameServer.TryGetProfileAsync();
-		}
-		catch (Exception ex)
-		{
-			Debug.LogWarning($"[GameBootstrap] Remote profile fetch failed: {ex.Message}");
-			return;
-		}
+			if (result == null)
+			{
+				Debug.LogWarning("[GameBootstrap] Remote profile fetch returned null.");
+				return;
+			}
 
-		if (result == null)
-		{
-			Debug.LogWarning("[GameBootstrap] Remote profile fetch returned null.");
-			return;
-		}
+			if (!result.Success)
+			{
+				Debug.LogWarning($"[GameBootstrap] Remote profile fetch failed: {result.Type} - {result.ErrorCode}");
+				return;
+			}
 
-		if (!result.Success)
-		{
-			Debug.LogWarning($"[GameBootstrap] Remote profile fetch failed: {result.Type} - {result.ErrorCode}");
-			return;
-		}
-
-		if (result.ProfileSnapshot != null)
-		{
-			ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
-			Debug.Log("[GameBootstrap] Remote profile applied.");
+			if (result.ProfileSnapshot != null)
+			{
+				ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
+				Debug.Log("[GameBootstrap] Remote profile applied.");
+			}
 		}
 	}
 }

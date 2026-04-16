@@ -1,46 +1,51 @@
+using Prototype.Business.Runtime;
+using Prototype.Business.UI;
 using UnityEngine;
 
-public class BusinessInteractable : MonoBehaviour
+namespace Prototype.Business.World
 {
-	public BusinessWorldRuntime worldRuntime;
-	public BusinessPanelController panelController;
-	public KeyCode interactKey = KeyCode.E;
-	public string playerTag = "Player";
-
-	private void OnTriggerStay(Collider other)
+	public class BusinessInteractable : MonoBehaviour
 	{
-		if (!other.CompareTag(playerTag))
+		public BusinessWorldRuntime worldRuntime;
+		public BusinessPanelController panelController;
+		public KeyCode interactKey = KeyCode.E;
+		public string playerTag = "Player";
+
+		private void OnTriggerStay(Collider other)
 		{
-			return;
+			if (!other.CompareTag(playerTag))
+			{
+				return;
+			}
+
+			if (!Input.GetKeyDown(interactKey))
+			{
+				return;
+			}
+
+			OpenPanel();
 		}
 
-		if (!Input.GetKeyDown(interactKey))
+		private void OpenPanel()
 		{
-			return;
+			if (worldRuntime == null)
+			{
+				worldRuntime = GetComponentInParent<BusinessWorldRuntime>();
+			}
+
+			if (panelController == null)
+			{
+				panelController = FindObjectOfType<BusinessPanelController>();
+			}
+
+			if (panelController == null || worldRuntime == null)
+			{
+				return;
+			}
+
+			panelController.gameObject.SetActive(true);
+			panelController.OpenForLot(worldRuntime.lotId);
+			BusinessDebugLog.Log($"[BusinessWorld] Open UI lotId='{worldRuntime.lotId}'");
 		}
-
-		OpenPanel();
-	}
-
-	private void OpenPanel()
-	{
-		if (worldRuntime == null)
-		{
-			worldRuntime = GetComponentInParent<BusinessWorldRuntime>();
-		}
-
-		if (panelController == null)
-		{
-			panelController = FindObjectOfType<BusinessPanelController>();
-		}
-
-		if (panelController == null || worldRuntime == null)
-		{
-			return;
-		}
-
-		panelController.gameObject.SetActive(true);
-		panelController.OpenForLot(worldRuntime.lotId);
-		BusinessDebugLog.Log($"[BusinessWorld] Open UI lotId='{worldRuntime.lotId}'");
 	}
 }

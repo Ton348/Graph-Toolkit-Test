@@ -1,30 +1,31 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using Dreamteck.Splines.Editor;
 using UnityEditor;
-using Dreamteck.Splines.Editor;
 
 namespace Dreamteck.Splines.Primitives
 {
-    public class NgonEditor : PrimitiveEditor
-    {
-        public override string GetName()
-        {
-            return "Ngon";
-        }
+	public class NgonEditor : PrimitiveEditor
+	{
+		public override string GetName()
+		{
+			return "Ngon";
+		}
 
-        public override void Open(DreamteckSplinesEditor editor)
-        {
-            base.Open(editor);
-            m_primitive = new Ngon();
-        }
+		public override void Open(DreamteckSplinesEditor editor)
+		{
+			base.Open(editor);
+			m_primitive = new Ngon();
+		}
 
-        protected override void OnGui()
-        {
-            base.OnGui();
-            Ngon ngon = (Ngon)m_primitive;
-            ngon.radius = EditorGUILayout.FloatField("Radius", ngon.radius);
-            ngon.sides = EditorGUILayout.IntField("Sides", ngon.sides);
-            if (ngon.sides < 3) ngon.sides = 3;
-        }
-    }
+		protected override void OnGui()
+		{
+			base.OnGui();
+			var ngon = (Ngon)m_primitive;
+			ngon.radius = EditorGUILayout.FloatField("Radius", ngon.radius);
+			ngon.sides = EditorGUILayout.IntField("Sides", ngon.sides);
+			if (ngon.sides < 3)
+			{
+				ngon.sides = 3;
+			}
+		}
+	}
 }

@@ -1,78 +1,81 @@
 using UnityEngine;
 
-public class CompassTarget : MonoBehaviour
+namespace Sample.Runtime.Compass
 {
-	[SerializeField]
-	private string m_targetId;
-
-	[SerializeField]
-	private Transform m_markerPoint;
-
-	private bool m_registered;
-
-	public string TargetId => m_targetId;
-
-	private void Start()
+	public class CompassTarget : MonoBehaviour
 	{
-		TryRegister();
-	}
+		[SerializeField]
+		private string m_targetId;
 
-	private void OnEnable()
-	{
-		TryRegister();
-	}
+		[SerializeField]
+		private Transform m_markerPoint;
 
-	private void OnDisable()
-	{
-		TryUnregister();
-	}
+		private bool m_registered;
 
-	public Vector3 GetMarkerWorldPosition()
-	{
-		return m_markerPoint != null ? m_markerPoint.position : transform.position;
-	}
+		public string TargetId => m_targetId;
 
-	private void TryRegister()
-	{
-		if (m_registered)
+		private void Start()
 		{
-			return;
+			TryRegister();
 		}
 
-		var registry = CompassTargetRegistry.Instance;
-		if (registry == null)
+		private void OnEnable()
 		{
-			registry = FindObjectOfType<CompassTargetRegistry>();
+			TryRegister();
 		}
 
-		if (registry == null)
+		private void OnDisable()
 		{
-			return;
+			TryUnregister();
 		}
 
-		registry.Register(this);
-		m_registered = true;
-	}
-
-	private void TryUnregister()
-	{
-		if (!m_registered)
+		public Vector3 GetMarkerWorldPosition()
 		{
-			return;
+			return m_markerPoint != null ? m_markerPoint.position : transform.position;
 		}
 
-		var registry = CompassTargetRegistry.Instance;
-		if (registry == null)
+		private void TryRegister()
 		{
-			registry = FindObjectOfType<CompassTargetRegistry>();
+			if (m_registered)
+			{
+				return;
+			}
+
+			var registry = CompassTargetRegistry.Instance;
+			if (registry == null)
+			{
+				registry = FindObjectOfType<CompassTargetRegistry>();
+			}
+
+			if (registry == null)
+			{
+				return;
+			}
+
+			registry.Register(this);
+			m_registered = true;
 		}
 
-		if (registry == null)
+		private void TryUnregister()
 		{
-			return;
-		}
+			if (!m_registered)
+			{
+				return;
+			}
 
-		registry.Unregister(this);
-		m_registered = false;
+			var registry = CompassTargetRegistry.Instance;
+			if (registry == null)
+			{
+				registry = FindObjectOfType<CompassTargetRegistry>();
+			}
+
+			if (registry == null)
+			{
+				return;
+			}
+
+			registry.Unregister(this);
+			m_registered = false;
+		}
 	}
 }

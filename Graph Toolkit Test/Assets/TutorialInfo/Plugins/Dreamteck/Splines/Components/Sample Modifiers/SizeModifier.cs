@@ -1,58 +1,63 @@
-﻿namespace Dreamteck.Splines
+﻿using System;
+using System.Collections.Generic;
+
+namespace Dreamteck.Splines
 {
-    using System.Collections;
-    using System.Collections.Generic;
-    using UnityEngine;
+	[Serializable]
+	public class SizeModifier : SplineSampleModifier
+	{
+		public SizeKey[] keys = new SizeKey[0];
 
-    [System.Serializable]
-    public class SizeModifier : SplineSampleModifier
-    {
-        [System.Serializable]
-        public class SizeKey : Key
-        {
-            public float size = 0f;
+		public SizeModifier()
+		{
+			keys = new SizeKey[0];
+		}
 
-            public SizeKey(double f, double t) : base(f, t)
-            {
-            }
-        }
+		public override bool hasKeys => keys.Length > 0;
 
-        public override bool hasKeys => keys.Length > 0;
-        public SizeKey[] keys = new SizeKey[0];
+		public override List<Key> GetKeys()
+		{
+			return new List<Key>(keys);
+		}
 
-        public SizeModifier()
-        {
-            keys = new SizeKey[0];
-        }
+		public override void SetKeys(List<Key> input)
+		{
+			keys = new SizeKey[input.Count];
+			for (var i = 0; i < input.Count; i++)
+			{
+				keys[i] = (SizeKey)input[i];
+			}
 
-        public override List<Key> GetKeys()
-        {
-            return new List<Key>(keys);
-        }
+			base.SetKeys(input);
+		}
 
-        public override void SetKeys(List<Key> input)
-        {
-            keys = new SizeKey[input.Count];
-            for (int i = 0; i < input.Count; i++)
-            {
-                keys[i] = (SizeKey)input[i];
-            }
-            base.SetKeys(input);
-        }
+		public void AddKey(double f, double t)
+		{
+			ArrayUtility.Add(ref keys, new SizeKey(f, t));
+		}
 
-        public void AddKey(double f, double t)
-        {
-            ArrayUtility.Add(ref keys, new SizeKey(f, t));
-        }
+		public override void Apply(ref SplineSample result)
+		{
+			if (keys.Length == 0)
+			{
+				return;
+			}
 
-        public override void Apply(ref SplineSample result)
-        {
-            if (keys.Length == 0) return;
-            base.Apply(ref result);
-            for (int i = 0; i < keys.Length; i++)
-            {
-                result.size += keys[i].Evaluate(result.percent) * keys[i].size * blend;
-            }
-        }
-    }
+			base.Apply(ref result);
+			for (var i = 0; i < keys.Length; i++)
+			{
+				result.size += keys[i].Evaluate(result.percent) * keys[i].size * blend;
+			}
+		}
+
+		[Serializable]
+		public class SizeKey : Key
+		{
+			public float size;
+
+			public SizeKey(double f, double t) : base(f, t)
+			{
+			}
+		}
+	}
 }

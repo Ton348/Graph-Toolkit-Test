@@ -1,208 +1,228 @@
-using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 
 namespace Dreamteck.Splines
 {
-    public class SplineTool
-    {
-        protected List<SplineComputer> m_splines = new List<SplineComputer>();
-        protected bool m_promptSave = false;
-        protected EditorWindow m_windowInstance = null;
+	public class SplineTool
+	{
+		protected bool m_promptSave;
+		protected List<SplineComputer> m_splines = new();
+		protected EditorWindow m_windowInstance;
 
-        public virtual string GetName()
-        {
-            return "Tool";
-        }
+		public virtual string GetName()
+		{
+			return "Tool";
+		}
 
-        public virtual void Open(EditorWindow window)
-        {
-            m_windowInstance = window;
-            GetSplines();
-        }
+		public virtual void Open(EditorWindow window)
+		{
+			m_windowInstance = window;
+			GetSplines();
+		}
 
-        public virtual void Close()
-        {
-            if(m_promptSave) ClosingDialog();
-        }
+		public virtual void Close()
+		{
+			if (m_promptSave)
+			{
+				ClosingDialog();
+			}
+		}
 
-        private void ClosingDialog()
-        {
-            if (EditorUtility.DisplayDialog("Unsaved Changes", ClosingDialogText(), "Yes", "No")) Save();
-            else Cancel();
-        }
+		private void ClosingDialog()
+		{
+			if (EditorUtility.DisplayDialog("Unsaved Changes", ClosingDialogText(), "Yes", "No"))
+			{
+				Save();
+			}
+			else
+			{
+				Cancel();
+			}
+		}
 
-        protected virtual string ClosingDialogText()
-        {
-            return "There are unsaved changes. Do you wish to save them?";
-        }
+		protected virtual string ClosingDialogText()
+		{
+			return "There are unsaved changes. Do you wish to save them?";
+		}
 
-        protected virtual void Save()
-        {
-            m_promptSave = false;
-        }
+		protected virtual void Save()
+		{
+			m_promptSave = false;
+		}
 
-        protected virtual void Cancel()
-        {
-            m_promptSave = false;
-        }
+		protected virtual void Cancel()
+		{
+			m_promptSave = false;
+		}
 
-        protected virtual string GetPrefix()
-        {
-            return "SplineTool";
-        }
+		protected virtual string GetPrefix()
+		{
+			return "SplineTool";
+		}
 
-        public virtual void Draw(Rect rect)
-        {
-            //EditorGUILayout.LabelField("Spline User", EditorStyles.boldLabel);
+		public virtual void Draw(Rect rect)
+		{
+			//EditorGUILayout.LabelField("Spline User", EditorStyles.boldLabel);
 
-            EditorGUILayout.LabelField("Selected Splines", EditorStyles.boldLabel);
-            for (int i = 0; i < m_splines.Count; i++)
-            {
-                SplineComputer lastComputer = m_splines[i];
-                m_splines[i] = (SplineComputer)EditorGUILayout.ObjectField(m_splines[i], typeof(SplineComputer), true);
-                if (m_splines[i] == null)
-                {
-                    m_splines.RemoveAt(i);
-                    i--;
-                    OnSplineRemoved(lastComputer);
-                    continue;
-                }
-                if (lastComputer != m_splines[i])
-                {
-                    for (int j = 0; j < m_splines.Count; j++)
-                    {
-                        if (j == i) continue;
-                        if (m_splines[j] == m_splines[i])
-                        {
-                            m_splines[i] = lastComputer;
-                            break;
-                        }
-                    }
-                }
-            }
-            SplineComputer newComp = null;
-            newComp = (SplineComputer)EditorGUILayout.ObjectField(newComp, typeof(SplineComputer), true);
-            if(newComp != null)
-            {
-                for (int i = 0; i < m_splines.Count; i++)
-                {
-                    if (m_splines[i] == newComp)
-                    {
-                        newComp = null;
-                        break;
-                    }
-                }
-                if (newComp != null)
-                {
-                    m_splines.Add(newComp);
-                    OnSplineAdded(newComp);
-                }
-            }
-            EditorGUILayout.Space();
-        }
+			EditorGUILayout.LabelField("Selected Splines", EditorStyles.boldLabel);
+			for (var i = 0; i < m_splines.Count; i++)
+			{
+				SplineComputer lastComputer = m_splines[i];
+				m_splines[i] = (SplineComputer)EditorGUILayout.ObjectField(m_splines[i], typeof(SplineComputer), true);
+				if (m_splines[i] == null)
+				{
+					m_splines.RemoveAt(i);
+					i--;
+					OnSplineRemoved(lastComputer);
+					continue;
+				}
 
-        protected virtual void OnSplineAdded(SplineComputer spline)
-        {
+				if (lastComputer != m_splines[i])
+				{
+					for (var j = 0; j < m_splines.Count; j++)
+					{
+						if (j == i)
+						{
+							continue;
+						}
 
-        }
+						if (m_splines[j] == m_splines[i])
+						{
+							m_splines[i] = lastComputer;
+							break;
+						}
+					}
+				}
+			}
 
-        protected virtual void OnSplineRemoved(SplineComputer spline)
-        {
+			SplineComputer newComp = null;
+			newComp = (SplineComputer)EditorGUILayout.ObjectField(newComp, typeof(SplineComputer), true);
+			if (newComp != null)
+			{
+				for (var i = 0; i < m_splines.Count; i++)
+				{
+					if (m_splines[i] == newComp)
+					{
+						newComp = null;
+						break;
+					}
+				}
 
-        }
+				if (newComp != null)
+				{
+					m_splines.Add(newComp);
+					OnSplineAdded(newComp);
+				}
+			}
 
-        protected void ClipUi(SplineUser user)
-        {
-            float fclipFrom = (float)user.clipFrom, fclipTo = (float)user.clipTo;
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.MinMaxSlider(new GUIContent("Clip range:"), ref fclipFrom, ref fclipTo, 0f, 1f);
-            EditorGUILayout.BeginHorizontal(GUILayout.MaxWidth(30));
-            user.clipFrom = EditorGUILayout.FloatField(fclipFrom);
-            user.clipTo = EditorGUILayout.FloatField(fclipTo);
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndHorizontal();
-        }
+			EditorGUILayout.Space();
+		}
 
-        protected void ClipUI(ref double from, ref double to)
-        {
-            float fclipFrom = (float)from, fclipTo = (float)to;
-            EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.MinMaxSlider(new GUIContent("Clip range:"), ref fclipFrom, ref fclipTo, 0f, 1f);
-            EditorGUILayout.BeginHorizontal(GUILayout.MaxWidth(30));
-            from = EditorGUILayout.FloatField(fclipFrom);
-            to = EditorGUILayout.FloatField(fclipTo);
-            EditorGUILayout.EndHorizontal();
-            EditorGUILayout.EndHorizontal();
-        }
+		protected virtual void OnSplineAdded(SplineComputer spline)
+		{
+		}
 
-        protected void SaveCancelUi()
-        {
-            EditorGUILayout.BeginHorizontal();
-            if (GUILayout.Button("Save")) Save();
-            if (GUILayout.Button("Cancel")) Cancel();
-            EditorGUILayout.EndHorizontal();
-        }
+		protected virtual void OnSplineRemoved(SplineComputer spline)
+		{
+		}
 
-        protected virtual void Rebuild()
-        {
-            
-        }
+		protected void ClipUi(SplineUser user)
+		{
+			float fclipFrom = (float)user.clipFrom, fclipTo = (float)user.clipTo;
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.MinMaxSlider(new GUIContent("Clip range:"), ref fclipFrom, ref fclipTo, 0f, 1f);
+			EditorGUILayout.BeginHorizontal(GUILayout.MaxWidth(30));
+			user.clipFrom = EditorGUILayout.FloatField(fclipFrom);
+			user.clipTo = EditorGUILayout.FloatField(fclipTo);
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.EndHorizontal();
+		}
 
-        protected void Repaint()
-        {
-            m_windowInstance.Repaint();
-        }
+		protected void ClipUI(ref double from, ref double to)
+		{
+			float fclipFrom = (float)from, fclipTo = (float)to;
+			EditorGUILayout.BeginHorizontal();
+			EditorGUILayout.MinMaxSlider(new GUIContent("Clip range:"), ref fclipFrom, ref fclipTo, 0f, 1f);
+			EditorGUILayout.BeginHorizontal(GUILayout.MaxWidth(30));
+			from = EditorGUILayout.FloatField(fclipFrom);
+			to = EditorGUILayout.FloatField(fclipTo);
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.EndHorizontal();
+		}
 
-        protected void GetSplines()
-        {
-            m_splines.Clear();
-            for (int i = 0; i < Selection.gameObjects.Length; i++)
-            {
-                m_splines.Add(Selection.gameObjects[i].GetComponent<SplineComputer>());
-            }
-        }
+		protected void SaveCancelUi()
+		{
+			EditorGUILayout.BeginHorizontal();
+			if (GUILayout.Button("Save"))
+			{
+				Save();
+			}
 
-        protected float LoadFloat(string name, float d)
-        {
-            return EditorPrefs.GetFloat(GetPrefix() + "_" + name, d);
-        }
+			if (GUILayout.Button("Cancel"))
+			{
+				Cancel();
+			}
 
-        protected string LoadString(string name, string d)
-        {
-            return EditorPrefs.GetString(GetPrefix() + "_" + name, d);
-        }
+			EditorGUILayout.EndHorizontal();
+		}
 
-        protected bool LoadBool(string name, bool d)
-        {
-            return EditorPrefs.GetBool(GetPrefix() + "_" + name, d);
-        }
+		protected virtual void Rebuild()
+		{
+		}
 
-        protected int LoadInt(string name, int d)
-        {
-            return EditorPrefs.GetInt(GetPrefix() + "_" + name, d);
-        }
+		protected void Repaint()
+		{
+			m_windowInstance.Repaint();
+		}
 
-        protected void SaveFloat(string name, float value)
-        {
-             EditorPrefs.SetFloat(GetPrefix() + "_" + name, value);
-        }
+		protected void GetSplines()
+		{
+			m_splines.Clear();
+			for (var i = 0; i < Selection.gameObjects.Length; i++)
+			{
+				m_splines.Add(Selection.gameObjects[i].GetComponent<SplineComputer>());
+			}
+		}
 
-        protected void SaveString(string name, string value)
-        {
-             EditorPrefs.SetString(GetPrefix() + "_" + name, value);
-        }
+		protected float LoadFloat(string name, float d)
+		{
+			return EditorPrefs.GetFloat(GetPrefix() + "_" + name, d);
+		}
 
-        protected void SaveBool(string name, bool value)
-        {
-             EditorPrefs.SetBool(GetPrefix() + "_" + name, value);
-        }
+		protected string LoadString(string name, string d)
+		{
+			return EditorPrefs.GetString(GetPrefix() + "_" + name, d);
+		}
 
-        protected void SaveInt(string name, int value)
-        {
-             EditorPrefs.SetInt(GetPrefix() + "_" + name, value);
-        }
-    }
+		protected bool LoadBool(string name, bool d)
+		{
+			return EditorPrefs.GetBool(GetPrefix() + "_" + name, d);
+		}
 
+		protected int LoadInt(string name, int d)
+		{
+			return EditorPrefs.GetInt(GetPrefix() + "_" + name, d);
+		}
+
+		protected void SaveFloat(string name, float value)
+		{
+			EditorPrefs.SetFloat(GetPrefix() + "_" + name, value);
+		}
+
+		protected void SaveString(string name, string value)
+		{
+			EditorPrefs.SetString(GetPrefix() + "_" + name, value);
+		}
+
+		protected void SaveBool(string name, bool value)
+		{
+			EditorPrefs.SetBool(GetPrefix() + "_" + name, value);
+		}
+
+		protected void SaveInt(string name, int value)
+		{
+			EditorPrefs.SetInt(GetPrefix() + "_" + name, value);
+		}
+	}
 }

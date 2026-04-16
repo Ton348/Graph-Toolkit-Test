@@ -1,64 +1,70 @@
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Services;
+using Sample.Runtime;
 using UnityEngine;
 
-public class BuildingInteractable : Interactable
+namespace Prototype.Business.World
 {
-	public string buildingId;
-	public GameBootstrap bootstrap;
-
-	private void Start()
+	public class BuildingInteractable : Interactable
 	{
-		if (bootstrap == null)
-		{
-			bootstrap = FindObjectOfType<GameBootstrap>();
-		}
-	}
+		public string buildingId;
+		public GameBootstrap bootstrap;
 
-	public override void Interact(Transform player)
-	{
-		if (bootstrap == null)
+		private void Start()
 		{
-			return;
+			if (bootstrap == null)
+			{
+				bootstrap = FindObjectOfType<GameBootstrap>();
+			}
 		}
 
-		if (string.IsNullOrEmpty(buildingId))
+		public override void Interact(Transform player)
 		{
-			return;
+			if (bootstrap == null)
+			{
+				return;
+			}
+
+			if (string.IsNullOrEmpty(buildingId))
+			{
+				return;
+			}
+
+			if (bootstrap.PlayerStateSync != null && bootstrap.PlayerStateSync.IsBuildingOwned(buildingId))
+			{
+				Debug.LogWarning(
+					$"[BuildingInteractable] Upgrade is not supported by server yet. BuildingId='{buildingId}'");
+				return;
+			}
+
+			TryBuyBuildingAsync(buildingId);
 		}
 
-		if (bootstrap.PlayerStateSync != null && bootstrap.PlayerStateSync.IsBuildingOwned(buildingId))
+		public override void Interact()
 		{
-			Debug.LogWarning(
-				$"[BuildingInteractable] Upgrade is not supported by server yet. BuildingId='{buildingId}'");
-			return;
+			Interact(null);
 		}
 
-		TryBuyBuildingAsync(buildingId);
-	}
-
-	public override void Interact()
-	{
-		Interact(null);
-	}
-
-	private async void TryBuyBuildingAsync(string buildingId)
-	{
-		if (bootstrap == null || bootstrap.GameServer == null)
+		private async void TryBuyBuildingAsync(string buildingId)
 		{
-			return;
-		}
+			if (bootstrap == null || bootstrap.GameServer == null)
+			{
+				return;
+			}
 
-		if (bootstrap.RequestManager != null &&
-		    !bootstrap.RequestManager.TryStartRequest("BuyBuildingInteractable"))
-		{
-			return;
-		}
+			if (bootstrap.RequestManager != null &&
+			    !bootstrap.RequestManager.TryStartRequest("BuyBuildingInteractable"))
+			{
+				return;
+			}
 
-		ServerActionResult result = await bootstrap.GameServer.TryBuyBuildingAsync(buildingId);
-		if (result != null && result.ProfileSnapshot != null)
-		{
-			bootstrap.ProfileSyncService?.ApplySnapshot(result.ProfileSnapshot);
-		}
+			ServerActionResult result = await bootstrap.GameServer.TryBuyBuildingAsync(buildingId);
+			if (result != null && result.ProfileSnapshot != null)
+			{
+				bootstrap.ProfileSyncService?.ApplySnapshot(result.ProfileSnapshot);
+			}
 
-		bootstrap.RequestManager?.FinishRequest();
+			bootstrap.RequestManager?.FinishRequest();
+		}
 	}
 }

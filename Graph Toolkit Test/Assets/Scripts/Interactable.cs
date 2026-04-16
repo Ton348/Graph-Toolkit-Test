@@ -1,26 +1,29 @@
 using UnityEngine;
 
-public class Interactable : MonoBehaviour
+namespace Sample.Runtime
 {
-	public float interactionDistance = 2f;
-
-	public virtual void Interact(Transform player)
+	public class Interactable : MonoBehaviour
 	{
-		Interact();
-	}
+		public float interactionDistance = 2f;
 
-	public virtual void Interact()
-	{
-	}
-
-	public bool IsPlayerInRange(Transform player)
-	{
-		if (player == null)
+		public virtual void Interact(Transform player)
 		{
-			return false;
+			Interact();
 		}
 
-		float distance = Vector3.Distance(player.position, transform.position);
-		return distance <= interactionDistance;
+		public virtual void Interact()
+		{
+		}
+
+		public bool IsPlayerInRange(Transform player)
+		{
+			if (player == null)
+			{
+				return false;
+			}
+
+			float distance = Vector3.Distance(player.position, transform.position);
+			return distance <= interactionDistance;
+		}
 	}
 }

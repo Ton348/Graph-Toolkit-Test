@@ -1,226 +1,230 @@
 using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
+using Prototype.Business.Runtime;
 
-public class PlayerStateSync
+namespace Prototype.Business.Services
 {
-	private readonly HashSet<string> m_activeQuests = new();
-	private readonly Dictionary<string, BuildingStateSnapshot> m_buildingStates = new();
-	private readonly HashSet<string> m_completedQuests = new();
-	private readonly Dictionary<string, ConstructedSiteSnapshot> m_constructedSites = new();
-	private readonly Dictionary<string, string> m_graphCheckpoints = new();
-	private readonly HashSet<string> m_ownedBuildings = new();
-
-	public int Money { get; private set; }
-	public int Bargaining { get; private set; }
-	public int Speech { get; private set; }
-	public int Trading { get; private set; }
-	public int Speed { get; private set; }
-	public int Damage { get; private set; }
-	public int Health { get; private set; }
-	public IReadOnlyCollection<string> ActiveQuests => m_activeQuests;
-	public IReadOnlyCollection<string> CompletedQuests => m_completedQuests;
-	public IReadOnlyCollection<string> OwnedBuildings => m_ownedBuildings;
-	public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => m_buildingStates;
-	public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
-	public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => m_constructedSites;
-
-	public event Action<ProfileSnapshot> snapshotApplied;
-	public event Action refreshRequested;
-
-	public void ApplySnapshot(ProfileSnapshot snapshot)
+	public class PlayerStateSync
 	{
-		if (snapshot == null)
-		{
-			return;
-		}
+		private readonly HashSet<string> m_activeQuests = new();
+		private readonly Dictionary<string, BuildingStateSnapshot> m_buildingStates = new();
+		private readonly HashSet<string> m_completedQuests = new();
+		private readonly Dictionary<string, ConstructedSiteSnapshot> m_constructedSites = new();
+		private readonly Dictionary<string, string> m_graphCheckpoints = new();
+		private readonly HashSet<string> m_ownedBuildings = new();
 
-		Money = snapshot.money;
-		Bargaining = snapshot.bargaining;
-		Speech = snapshot.speech;
-		Trading = snapshot.trading;
-		Speed = snapshot.speed;
-		Damage = snapshot.damage;
-		Health = snapshot.health;
+		public int Money { get; private set; }
+		public int Bargaining { get; private set; }
+		public int Speech { get; private set; }
+		public int Trading { get; private set; }
+		public int Speed { get; private set; }
+		public int Damage { get; private set; }
+		public int Health { get; private set; }
+		public IReadOnlyCollection<string> ActiveQuests => m_activeQuests;
+		public IReadOnlyCollection<string> CompletedQuests => m_completedQuests;
+		public IReadOnlyCollection<string> OwnedBuildings => m_ownedBuildings;
+		public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => m_buildingStates;
+		public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
+		public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => m_constructedSites;
 
-		m_activeQuests.Clear();
-		if (snapshot.activeQuestIds != null)
+		public event Action<ProfileSnapshot> snapshotApplied;
+		public event Action refreshRequested;
+
+		public void ApplySnapshot(ProfileSnapshot snapshot)
 		{
-			foreach (string id in snapshot.activeQuestIds)
+			if (snapshot == null)
 			{
-				if (!string.IsNullOrEmpty(id))
+				return;
+			}
+
+			Money = snapshot.money;
+			Bargaining = snapshot.bargaining;
+			Speech = snapshot.speech;
+			Trading = snapshot.trading;
+			Speed = snapshot.speed;
+			Damage = snapshot.damage;
+			Health = snapshot.health;
+
+			m_activeQuests.Clear();
+			if (snapshot.activeQuestIds != null)
+			{
+				foreach (string id in snapshot.activeQuestIds)
 				{
-					m_activeQuests.Add(id);
+					if (!string.IsNullOrEmpty(id))
+					{
+						m_activeQuests.Add(id);
+					}
 				}
 			}
-		}
 
-		m_completedQuests.Clear();
-		if (snapshot.completedQuestIds != null)
-		{
-			foreach (string id in snapshot.completedQuestIds)
+			m_completedQuests.Clear();
+			if (snapshot.completedQuestIds != null)
 			{
-				if (!string.IsNullOrEmpty(id))
+				foreach (string id in snapshot.completedQuestIds)
 				{
-					m_completedQuests.Add(id);
+					if (!string.IsNullOrEmpty(id))
+					{
+						m_completedQuests.Add(id);
+					}
 				}
 			}
-		}
 
-		m_ownedBuildings.Clear();
-		if (snapshot.ownedBuildingIds != null)
-		{
-			foreach (string id in snapshot.ownedBuildingIds)
+			m_ownedBuildings.Clear();
+			if (snapshot.ownedBuildingIds != null)
 			{
-				if (!string.IsNullOrEmpty(id))
+				foreach (string id in snapshot.ownedBuildingIds)
 				{
-					m_ownedBuildings.Add(id);
+					if (!string.IsNullOrEmpty(id))
+					{
+						m_ownedBuildings.Add(id);
+					}
 				}
 			}
-		}
 
-		m_buildingStates.Clear();
-		if (snapshot.buildingStates != null && snapshot.buildingStates.Count > 0)
-		{
-			foreach (BuildingStateSnapshot state in snapshot.buildingStates)
+			m_buildingStates.Clear();
+			if (snapshot.buildingStates != null && snapshot.buildingStates.Count > 0)
 			{
-				if (state == null || string.IsNullOrEmpty(state.id))
+				foreach (BuildingStateSnapshot state in snapshot.buildingStates)
 				{
-					continue;
-				}
+					if (state == null || string.IsNullOrEmpty(state.id))
+					{
+						continue;
+					}
 
-				m_buildingStates[state.id] = state;
-				if (state.owned)
-				{
-					m_ownedBuildings.Add(state.id);
+					m_buildingStates[state.id] = state;
+					if (state.owned)
+					{
+						m_ownedBuildings.Add(state.id);
+					}
 				}
 			}
-		}
 
-		m_graphCheckpoints.Clear();
-		if (snapshot.graphCheckpoints != null && snapshot.graphCheckpoints.Count > 0)
-		{
-			foreach (GraphCheckpointSnapshot checkpoint in snapshot.graphCheckpoints)
+			m_graphCheckpoints.Clear();
+			if (snapshot.graphCheckpoints != null && snapshot.graphCheckpoints.Count > 0)
 			{
-				if (checkpoint == null || string.IsNullOrEmpty(checkpoint.graphId))
+				foreach (GraphCheckpointSnapshot checkpoint in snapshot.graphCheckpoints)
 				{
-					continue;
+					if (checkpoint == null || string.IsNullOrEmpty(checkpoint.graphId))
+					{
+						continue;
+					}
+
+					m_graphCheckpoints[checkpoint.graphId] = checkpoint.checkpointId;
 				}
-
-				m_graphCheckpoints[checkpoint.graphId] = checkpoint.checkpointId;
 			}
-		}
 
-		m_constructedSites.Clear();
-		if (snapshot.constructedSites != null && snapshot.constructedSites.Count > 0)
-		{
-			foreach (ConstructedSiteSnapshot site in snapshot.constructedSites)
+			m_constructedSites.Clear();
+			if (snapshot.constructedSites != null && snapshot.constructedSites.Count > 0)
 			{
-				if (site == null || string.IsNullOrWhiteSpace(site.siteId))
+				foreach (ConstructedSiteSnapshot site in snapshot.constructedSites)
 				{
-					continue;
+					if (site == null || string.IsNullOrWhiteSpace(site.siteId))
+					{
+						continue;
+					}
+
+					string siteId = site.siteId.Trim();
+					string visualId = string.IsNullOrWhiteSpace(site.visualId) ? null : site.visualId.Trim();
+					bool isConstructed = site.isConstructed && !string.IsNullOrEmpty(visualId);
+					m_constructedSites[siteId] = new ConstructedSiteSnapshot
+					{
+						siteId = siteId,
+						visualId = isConstructed ? visualId : null,
+						isConstructed = isConstructed
+					};
 				}
-
-				string siteId = site.siteId.Trim();
-				string visualId = string.IsNullOrWhiteSpace(site.visualId) ? null : site.visualId.Trim();
-				bool isConstructed = site.isConstructed && !string.IsNullOrEmpty(visualId);
-				m_constructedSites[siteId] = new ConstructedSiteSnapshot
-				{
-					siteId = siteId,
-					visualId = isConstructed ? visualId : null,
-					isConstructed = isConstructed
-				};
 			}
+
+			snapshotApplied?.Invoke(snapshot);
 		}
 
-		snapshotApplied?.Invoke(snapshot);
-	}
-
-	public void Reset()
-	{
-		Money = 0;
-		Bargaining = 0;
-		Speech = 0;
-		Trading = 0;
-		Speed = 0;
-		Damage = 0;
-		Health = 0;
-		m_activeQuests.Clear();
-		m_completedQuests.Clear();
-		m_ownedBuildings.Clear();
-		m_buildingStates.Clear();
-		m_graphCheckpoints.Clear();
-		m_constructedSites.Clear();
-		snapshotApplied?.Invoke(null);
-	}
-
-	public bool IsQuestActive(string questId)
-	{
-		return !string.IsNullOrEmpty(questId) && m_activeQuests.Contains(questId);
-	}
-
-	public bool IsQuestCompleted(string questId)
-	{
-		return !string.IsNullOrEmpty(questId) && m_completedQuests.Contains(questId);
-	}
-
-	public bool IsBuildingOwned(string buildingId)
-	{
-		return !string.IsNullOrEmpty(buildingId) && m_ownedBuildings.Contains(buildingId);
-	}
-
-	public bool TryGetBuildingState(string buildingId, out BuildingStateSnapshot state)
-	{
-		if (string.IsNullOrEmpty(buildingId))
+		public void Reset()
 		{
-			state = null;
-			return false;
+			Money = 0;
+			Bargaining = 0;
+			Speech = 0;
+			Trading = 0;
+			Speed = 0;
+			Damage = 0;
+			Health = 0;
+			m_activeQuests.Clear();
+			m_completedQuests.Clear();
+			m_ownedBuildings.Clear();
+			m_buildingStates.Clear();
+			m_graphCheckpoints.Clear();
+			m_constructedSites.Clear();
+			snapshotApplied?.Invoke(null);
 		}
 
-		return m_buildingStates.TryGetValue(buildingId, out state);
-	}
-
-	public bool TryGetGraphCheckpoint(string graphId, out string checkpointId)
-	{
-		checkpointId = null;
-		if (string.IsNullOrEmpty(graphId))
+		public bool IsQuestActive(string questId)
 		{
-			return false;
+			return !string.IsNullOrEmpty(questId) && m_activeQuests.Contains(questId);
 		}
 
-		return m_graphCheckpoints.TryGetValue(graphId, out checkpointId);
-	}
-
-	public bool TryGetConstructedSite(string siteId, out ConstructedSiteSnapshot site)
-	{
-		site = null;
-		if (string.IsNullOrWhiteSpace(siteId))
+		public bool IsQuestCompleted(string questId)
 		{
-			return false;
+			return !string.IsNullOrEmpty(questId) && m_completedQuests.Contains(questId);
 		}
 
-		return m_constructedSites.TryGetValue(siteId.Trim(), out site);
-	}
+		public bool IsBuildingOwned(string buildingId)
+		{
+			return !string.IsNullOrEmpty(buildingId) && m_ownedBuildings.Contains(buildingId);
+		}
 
-	public bool IsSiteConstructed(string siteId)
-	{
-		return TryGetConstructedSite(siteId, out ConstructedSiteSnapshot site) && site != null && site.isConstructed;
-	}
+		public bool TryGetBuildingState(string buildingId, out BuildingStateSnapshot state)
+		{
+			if (string.IsNullOrEmpty(buildingId))
+			{
+				state = null;
+				return false;
+			}
 
-	public UniTask RefreshAsync()
-	{
-		refreshRequested?.Invoke();
-		return UniTask.CompletedTask;
-	}
+			return m_buildingStates.TryGetValue(buildingId, out state);
+		}
 
-	public void Refresh()
-	{
-		refreshRequested?.Invoke();
-	}
+		public bool TryGetGraphCheckpoint(string graphId, out string checkpointId)
+		{
+			checkpointId = null;
+			if (string.IsNullOrEmpty(graphId))
+			{
+				return false;
+			}
 
-	public UniTask SyncAsync()
-	{
-		refreshRequested?.Invoke();
-		return UniTask.CompletedTask;
+			return m_graphCheckpoints.TryGetValue(graphId, out checkpointId);
+		}
+
+		public bool TryGetConstructedSite(string siteId, out ConstructedSiteSnapshot site)
+		{
+			site = null;
+			if (string.IsNullOrWhiteSpace(siteId))
+			{
+				return false;
+			}
+
+			return m_constructedSites.TryGetValue(siteId.Trim(), out site);
+		}
+
+		public bool IsSiteConstructed(string siteId)
+		{
+			return TryGetConstructedSite(siteId, out ConstructedSiteSnapshot site) && site != null && site.isConstructed;
+		}
+
+		public UniTask RefreshAsync()
+		{
+			refreshRequested?.Invoke();
+			return UniTask.CompletedTask;
+		}
+
+		public void Refresh()
+		{
+			refreshRequested?.Invoke();
+		}
+
+		public UniTask SyncAsync()
+		{
+			refreshRequested?.Invoke();
+			return UniTask.CompletedTask;
+		}
 	}
 }

@@ -1,11 +1,16 @@
-public enum InteractionContextType
-{
-	Normal,
-	Steal
-}
+using Prototype.Business.NPC;
 
-public class InteractionContext
+namespace Prototype.Business.Runtime
 {
-	public InteractionContextType contextType;
-	public Npcmanager sourceNpc;
+	public enum InteractionContextType
+	{
+		Normal,
+		Steal
+	}
+
+	public class InteractionContext
+	{
+		public InteractionContextType contextType;
+		public Npcmanager sourceNpc;
+	}
 }

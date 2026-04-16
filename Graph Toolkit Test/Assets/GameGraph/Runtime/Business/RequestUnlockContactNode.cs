@@ -1,9 +1,11 @@
 using System;
-using Game1.Graph.Runtime;
-
 using Game1.Graph.Runtime.Templates;
-[Serializable]
-public sealed class RequestUnlockContactNode : GameGraphSuccessFailNode
+
+namespace GameGraph.Runtime.Business
 {
-    public string contactId;
+	[Serializable]
+	public sealed class RequestUnlockContactNode : GameGraphSuccessFailNode
+	{
+		public string contactId;
+	}
 }

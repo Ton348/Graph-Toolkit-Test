@@ -1,51 +1,54 @@
 using TMPro;
 using UnityEngine;
 
-public class CompassTickView : MonoBehaviour
+namespace Sample.Runtime.Compass
 {
-	[SerializeField]
-	private RectTransform m_rectTransform;
-
-	[SerializeField]
-	private TMP_Text m_label;
-
-	private void Awake()
+	public class CompassTickView : MonoBehaviour
 	{
-		if (m_rectTransform == null)
+		[SerializeField]
+		private RectTransform m_rectTransform;
+
+		[SerializeField]
+		private TMP_Text m_label;
+
+		private void Awake()
 		{
-			m_rectTransform = GetComponent<RectTransform>();
+			if (m_rectTransform == null)
+			{
+				m_rectTransform = GetComponent<RectTransform>();
+			}
+
+			if (m_label == null)
+			{
+				m_label = GetComponentInChildren<TMP_Text>(true);
+			}
 		}
 
-		if (m_label == null)
+		public void SetPositionX(float x)
 		{
-			m_label = GetComponentInChildren<TMP_Text>(true);
-		}
-	}
+			if (m_rectTransform == null)
+			{
+				return;
+			}
 
-	public void SetPositionX(float x)
-	{
-		if (m_rectTransform == null)
-		{
-			return;
-		}
-
-		Vector2 pos = m_rectTransform.anchoredPosition;
-		pos.x = x;
-		m_rectTransform.anchoredPosition = pos;
-	}
-
-	public void SetVisible(bool visible)
-	{
-		gameObject.SetActive(visible);
-	}
-
-	public void SetLabel(string text)
-	{
-		if (m_label == null)
-		{
-			return;
+			Vector2 pos = m_rectTransform.anchoredPosition;
+			pos.x = x;
+			m_rectTransform.anchoredPosition = pos;
 		}
 
-		m_label.text = text;
+		public void SetVisible(bool visible)
+		{
+			gameObject.SetActive(visible);
+		}
+
+		public void SetLabel(string text)
+		{
+			if (m_label == null)
+			{
+				return;
+			}
+
+			m_label.text = text;
+		}
 	}
 }

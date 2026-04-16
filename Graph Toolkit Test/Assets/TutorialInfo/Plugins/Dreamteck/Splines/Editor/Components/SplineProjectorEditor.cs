@@ -1,72 +1,88 @@
+using UnityEditor;
+using UnityEngine;
+
 namespace Dreamteck.Splines.Editor
 {
-    using UnityEngine;
-    using System.Collections;
-    using UnityEditor;
+	[CustomEditor(typeof(SplineProjector), true)]
+	[CanEditMultipleObjects]
+	public class SplineProjectorEditor : SplineTracerEditor
+	{
+		private bool m_info;
 
-    [CustomEditor(typeof(SplineProjector), true)]
-    [CanEditMultipleObjects]
-    public class SplineProjectorEditor : SplineTracerEditor
-    {
-        private bool m_info = false;
+		public override void OnInspectorGUI()
+		{
+			var user = (SplineProjector)target;
+			if (user.mode == SplineProjector.Mode.Accurate)
+			{
+				m_showAveraging = false;
+			}
+			else
+			{
+				m_showAveraging = true;
+			}
 
-        public override void OnInspectorGUI()
-        {
-            SplineProjector user = (SplineProjector)target;
-            if (user.mode == SplineProjector.Mode.Accurate)
-            {
-                m_showAveraging = false;
-            }
-            else
-            {
-                m_showAveraging = true;
-            }
-            base.OnInspectorGUI();
-        }
+			base.OnInspectorGUI();
+		}
 
-        protected override void BodyGui()
-        {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Projector", EditorStyles.boldLabel);
+		protected override void BodyGui()
+		{
+			EditorGUILayout.Space();
+			EditorGUILayout.LabelField("Projector", EditorStyles.boldLabel);
 
-            serializedObject.Update();
-            SerializedProperty mode = serializedObject.FindProperty("_mode");
-            SerializedProperty projectTarget = serializedObject.FindProperty("_projectTarget");
-            SerializedProperty targetObject = serializedObject.FindProperty("_targetObject");
-            SerializedProperty autoProject = serializedObject.FindProperty("_autoProject");
+			serializedObject.Update();
+			SerializedProperty mode = serializedObject.FindProperty("_mode");
+			SerializedProperty projectTarget = serializedObject.FindProperty("_projectTarget");
+			SerializedProperty targetObject = serializedObject.FindProperty("_targetObject");
+			SerializedProperty autoProject = serializedObject.FindProperty("_autoProject");
 
 
-            EditorGUI.BeginChangeCheck();
-            EditorGUILayout.PropertyField(mode, new GUIContent("Mode"));
-            if (mode.intValue == (int)SplineProjector.Mode.Accurate)
-            {
-                SerializedProperty subdivide = serializedObject.FindProperty("_subdivide");
-                EditorGUILayout.PropertyField(subdivide, new GUIContent("Subdivide"));
-            }
-            EditorGUILayout.PropertyField(projectTarget, new GUIContent("Project Target"));
-            EditorGUILayout.PropertyField(targetObject, new GUIContent("Apply Target"));
+			EditorGUI.BeginChangeCheck();
+			EditorGUILayout.PropertyField(mode, new GUIContent("Mode"));
+			if (mode.intValue == (int)SplineProjector.Mode.Accurate)
+			{
+				SerializedProperty subdivide = serializedObject.FindProperty("_subdivide");
+				EditorGUILayout.PropertyField(subdivide, new GUIContent("Subdivide"));
+			}
 
-            GUI.color = Color.white;
-            EditorGUILayout.PropertyField(autoProject, new GUIContent("Auto Project"));
+			EditorGUILayout.PropertyField(projectTarget, new GUIContent("Project Target"));
+			EditorGUILayout.PropertyField(targetObject, new GUIContent("Apply Target"));
 
-            m_info = EditorGUILayout.Foldout(m_info, "Info");
-            SerializedProperty percent = serializedObject.FindProperty("_result").FindPropertyRelative("percent");
-            if (m_info) EditorGUILayout.HelpBox("Projection percent: " + percent.floatValue, MessageType.Info);
+			GUI.color = Color.white;
+			EditorGUILayout.PropertyField(autoProject, new GUIContent("Auto Project"));
 
-            if (EditorGUI.EndChangeCheck()) serializedObject.ApplyModifiedProperties();
-            base.BodyGui();
-        }
+			m_info = EditorGUILayout.Foldout(m_info, "Info");
+			SerializedProperty percent = serializedObject.FindProperty("_result").FindPropertyRelative("percent");
+			if (m_info)
+			{
+				EditorGUILayout.HelpBox("Projection percent: " + percent.floatValue, MessageType.Info);
+			}
 
-        protected override void DuringSceneGui(SceneView currentSceneView)
-        {
-            base.DuringSceneGui(currentSceneView);
-            for (int i = 0; i < m_users.Length; i++)
-            {
-                SplineProjector user = (SplineProjector)m_users[i];
-                if (user.spline == null) return;
-                if (!user.autoProject) return;
-                DrawResult(user.result);
-            }
-        }
-    }
+			if (EditorGUI.EndChangeCheck())
+			{
+				serializedObject.ApplyModifiedProperties();
+			}
+
+			base.BodyGui();
+		}
+
+		protected override void DuringSceneGui(SceneView currentSceneView)
+		{
+			base.DuringSceneGui(currentSceneView);
+			for (var i = 0; i < m_users.Length; i++)
+			{
+				var user = (SplineProjector)m_users[i];
+				if (user.spline == null)
+				{
+					return;
+				}
+
+				if (!user.autoProject)
+				{
+					return;
+				}
+
+				DrawResult(user.result);
+			}
+		}
+	}
 }

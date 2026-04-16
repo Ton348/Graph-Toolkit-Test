@@ -1,23 +1,22 @@
 using System;
-using Unity.GraphToolkit.Editor;
-using Game1.Graph.Runtime;
-using Game1.Graph.Editor;
-
-using Game1.Graph.Editor.Templates;
 using Graph.Core.Editor;
+using Unity.GraphToolkit.Editor;
 
-[Serializable]
-[UseWithGraph(typeof(CommonGraphEditorGraph))]
-public sealed class RequestRentBusinessNodeModel : GameGraphSuccessFailNodeModel
+namespace GameGraph.Editor.Business
 {
-	public const string LotIdOption = "LotId";
-
-	protected override string defaultTitle => "Арендовать бизнес";
-	protected override string defaultDescription => "Запрашивает аренду бизнеса.";
-
-	protected override void OnDefineOptions(IOptionDefinitionContext context)
+	[Serializable]
+	[UseWithGraph(typeof(CommonGraphEditorGraph))]
+	public sealed class RequestRentBusinessNodeModel : GameGraphSuccessFailNodeModel
 	{
-		base.OnDefineOptions(context);
-		context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		public const string LotIdOption = "LotId";
+
+		protected override string defaultTitle => "Арендовать бизнес";
+		protected override string defaultDescription => "Запрашивает аренду бизнеса.";
+
+		protected override void OnDefineOptions(IOptionDefinitionContext context)
+		{
+			base.OnDefineOptions(context);
+			context.AddOption<string>(LotIdOption).WithDisplayName("LotId");
+		}
 	}
 }

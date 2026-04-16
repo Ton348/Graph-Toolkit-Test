@@ -2,24 +2,31 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+using GameGraph.Runtime.Common;
 using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Runtime.GraphExecutors.Infrastructure;
+using Prototype.Business.Services;
 
-[GameGraphNodeExecutorAttribute]
-public sealed class ConditionNodeExecutor : GameGraphTrueFalseNodeExecutor<ConditionNode>
+namespace Prototype.Business.Runtime.GraphExecutors.Common
 {
-	protected override UniTask<bool> EvaluateConditionAsync(
-		ConditionNode node,
-		GraphExecutionContext context,
-		CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class ConditionNodeExecutor : GameGraphTrueFalseNodeExecutor<ConditionNode>
 	{
-		PlayerStateSync playerStateSync = null;
-		if (GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap))
+		protected override UniTask<bool> EvaluateConditionAsync(
+			ConditionNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
-			playerStateSync = bootstrap.PlayerStateSync;
-		}
+			PlayerStateSync playerStateSync = null;
+			if (GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap))
+			{
+				playerStateSync = bootstrap.PlayerStateSync;
+			}
 
-		bool result = ConditionEvaluator.EvaluateCondition(node, playerStateSync);
-		context?.Set(GraphContextKeys.conditionLastResult, result);
-		return UniTask.FromResult(result);
+			bool result = ConditionEvaluator.EvaluateCondition(node, playerStateSync);
+			context?.Set(GraphContextKeys.conditionLastResult, result);
+			return UniTask.FromResult(result);
+		}
 	}
 }

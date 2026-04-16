@@ -1,17 +1,22 @@
-public class BuildingState
-{
-	public int currentExpenses;
-	public int currentIncome;
-	public BuildingDefinitionData definition;
-	public bool isOwned;
-	public int level;
+using Sample.Runtime.GameData;
 
-	public BuildingState(BuildingDefinitionData definition)
+namespace Sample.Runtime.Runtime
+{
+	public class BuildingState
 	{
-		this.definition = definition;
-		isOwned = false;
-		level = 0;
-		currentIncome = 0;
-		currentExpenses = 0;
+		public int currentExpenses;
+		public int currentIncome;
+		public BuildingDefinitionData definition;
+		public bool isOwned;
+		public int level;
+
+		public BuildingState(BuildingDefinitionData definition)
+		{
+			this.definition = definition;
+			isOwned = false;
+			level = 0;
+			currentIncome = 0;
+			currentExpenses = 0;
+		}
 	}
 }

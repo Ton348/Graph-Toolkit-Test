@@ -1,9 +1,11 @@
-using Game1.Graph.Runtime;
-public enum SkillType
+namespace GameGraph.Runtime.Common
 {
-	Bargaining,
-	Speech,
-	Speed,
-	Damage,
-	Health
+	public enum SkillType
+	{
+		Bargaining,
+		Speech,
+		Speed,
+		Damage,
+		Health
+	}
 }

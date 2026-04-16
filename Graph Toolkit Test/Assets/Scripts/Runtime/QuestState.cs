@@ -1,11 +1,16 @@
-public class QuestState
-{
-	public QuestDefinitionData definition;
-	public QuestStatus status;
+using Sample.Runtime.GameData;
 
-	public QuestState(QuestDefinitionData definition)
+namespace Sample.Runtime.Runtime
+{
+	public class QuestState
 	{
-		this.definition = definition;
-		status = QuestStatus.Inactive;
+		public QuestDefinitionData definition;
+		public QuestStatus status;
+
+		public QuestState(QuestDefinitionData definition)
+		{
+			this.definition = definition;
+			status = QuestStatus.Inactive;
+		}
 	}
 }

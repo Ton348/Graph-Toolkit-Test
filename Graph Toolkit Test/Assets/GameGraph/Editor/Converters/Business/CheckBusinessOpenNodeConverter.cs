@@ -1,18 +1,23 @@
-using Game1.Graph.Runtime;
-using Game1.Graph.Editor;
-
 using Game1.Graph.Editor.Infrastructure.Converters;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeConverter]
-public sealed class CheckBusinessOpenNodeConverter : GameGraphNodeConverterBase<CheckBusinessOpenNodeModel, CheckBusinessOpenNode>
+using GameGraph.Editor.Business;
+using GameGraph.Runtime.Business;
+
+namespace GameGraph.Editor.Converters.Business
 {
-	protected override bool TryConvert(CheckBusinessOpenNodeModel editorNodeModel, out CheckBusinessOpenNode runtimeNode)
+	[GameGraphNodeConverter]
+	public sealed class
+		CheckBusinessOpenNodeConverter : GameGraphNodeConverterBase<CheckBusinessOpenNodeModel, CheckBusinessOpenNode>
 	{
-		runtimeNode = new CheckBusinessOpenNode
+		protected override bool TryConvert(
+			CheckBusinessOpenNodeModel editorNodeModel,
+			out CheckBusinessOpenNode runtimeNode)
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessOpenNodeModel.LotIdOption)
-		};
-		return true;
+			runtimeNode = new CheckBusinessOpenNode
+			{
+				lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessOpenNodeModel.LotIdOption)
+			};
+			return true;
+		}
 	}
 }
-

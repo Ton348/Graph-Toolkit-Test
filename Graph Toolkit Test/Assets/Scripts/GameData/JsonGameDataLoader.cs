@@ -1,83 +1,86 @@
 using System.IO;
 using UnityEngine;
 
-public class JsonGameDataLoader
+namespace Sample.Runtime.GameData
 {
-	private readonly string m_rootPath;
-
-	public JsonGameDataLoader(string rootPath)
+	public class JsonGameDataLoader
 	{
-		m_rootPath = rootPath;
-	}
+		private readonly string m_rootPath;
 
-	public QuestDatabaseData LoadQuests()
-	{
-		var data = Load<QuestDatabaseData>("quests.json");
-		if (data != null)
+		public JsonGameDataLoader(string rootPath)
 		{
-			Debug.Log($"[JsonGameDataLoader] Loaded quests: {data.quests?.Count ?? 0}");
+			m_rootPath = rootPath;
 		}
 
-		return data;
-	}
-
-	public BuildingDatabaseData LoadBuildings()
-	{
-		var data = Load<BuildingDatabaseData>("buildings.json");
-		if (data != null)
+		public QuestDatabaseData LoadQuests()
 		{
-			Debug.Log($"[JsonGameDataLoader] Loaded buildings: {data.buildings?.Count ?? 0}");
+			var data = Load<QuestDatabaseData>("quests.json");
+			if (data != null)
+			{
+				Debug.Log($"[JsonGameDataLoader] Loaded quests: {data.quests?.Count ?? 0}");
+			}
+
+			return data;
 		}
 
-		return data;
-	}
-
-	public EconomyConfigData LoadEconomy()
-	{
-		var data = Load<EconomyConfigData>("economy.json");
-		if (data != null)
+		public BuildingDatabaseData LoadBuildings()
 		{
-			Debug.Log("[JsonGameDataLoader] Loaded economy config");
+			var data = Load<BuildingDatabaseData>("buildings.json");
+			if (data != null)
+			{
+				Debug.Log($"[JsonGameDataLoader] Loaded buildings: {data.buildings?.Count ?? 0}");
+			}
+
+			return data;
 		}
 
-		return data;
-	}
-
-	public LotDatabaseData LoadLots()
-	{
-		var data = Load<LotDatabaseData>("lots.json");
-		if (data != null)
+		public EconomyConfigData LoadEconomy()
 		{
-			Debug.Log($"[JsonGameDataLoader] Loaded lots: {data.lots?.Count ?? 0}");
+			var data = Load<EconomyConfigData>("economy.json");
+			if (data != null)
+			{
+				Debug.Log("[JsonGameDataLoader] Loaded economy config");
+			}
+
+			return data;
 		}
 
-		return data;
-	}
-
-	private T Load<T>(string fileName) where T : class
-	{
-		string path = Path.Combine(m_rootPath, fileName);
-		if (!File.Exists(path))
+		public LotDatabaseData LoadLots()
 		{
-			Debug.LogError($"[JsonGameDataLoader] File not found: {path}");
-			return null;
+			var data = Load<LotDatabaseData>("lots.json");
+			if (data != null)
+			{
+				Debug.Log($"[JsonGameDataLoader] Loaded lots: {data.lots?.Count ?? 0}");
+			}
+
+			return data;
 		}
 
-		string json = File.ReadAllText(path);
-		if (string.IsNullOrWhiteSpace(json))
+		private T Load<T>(string fileName) where T : class
 		{
-			Debug.LogError($"[JsonGameDataLoader] File is empty: {path}");
-			return null;
-		}
+			string path = Path.Combine(m_rootPath, fileName);
+			if (!File.Exists(path))
+			{
+				Debug.LogError($"[JsonGameDataLoader] File not found: {path}");
+				return null;
+			}
 
-		try
-		{
-			return JsonUtility.FromJson<T>(json);
-		}
-		catch
-		{
-			Debug.LogError($"[JsonGameDataLoader] Invalid JSON in: {path}");
-			return null;
+			string json = File.ReadAllText(path);
+			if (string.IsNullOrWhiteSpace(json))
+			{
+				Debug.LogError($"[JsonGameDataLoader] File is empty: {path}");
+				return null;
+			}
+
+			try
+			{
+				return JsonUtility.FromJson<T>(json);
+			}
+			catch
+			{
+				Debug.LogError($"[JsonGameDataLoader] Invalid JSON in: {path}");
+				return null;
+			}
 		}
 	}
 }

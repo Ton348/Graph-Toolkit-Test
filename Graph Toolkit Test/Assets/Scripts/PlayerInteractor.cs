@@ -1,36 +1,39 @@
 using UnityEngine;
 
-public class PlayerInteractor : MonoBehaviour
+namespace Sample.Runtime
 {
-	private void Update()
+	public class PlayerInteractor : MonoBehaviour
 	{
-		if (!Input.GetKeyDown(KeyCode.E))
+		private void Update()
 		{
-			return;
-		}
-
-		Interactable[] interactables = FindObjectsOfType<Interactable>();
-		Interactable nearest = null;
-		var nearestDistance = float.MaxValue;
-
-		foreach (Interactable interactable in interactables)
-		{
-			if (!interactable.IsPlayerInRange(transform))
+			if (!Input.GetKeyDown(KeyCode.E))
 			{
-				continue;
+				return;
 			}
 
-			float distance = Vector3.Distance(transform.position, interactable.transform.position);
-			if (distance < nearestDistance)
-			{
-				nearestDistance = distance;
-				nearest = interactable;
-			}
-		}
+			Interactable[] interactables = FindObjectsOfType<Interactable>();
+			Interactable nearest = null;
+			var nearestDistance = float.MaxValue;
 
-		if (nearest != null)
-		{
-			nearest.Interact(transform);
+			foreach (Interactable interactable in interactables)
+			{
+				if (!interactable.IsPlayerInRange(transform))
+				{
+					continue;
+				}
+
+				float distance = Vector3.Distance(transform.position, interactable.transform.position);
+				if (distance < nearestDistance)
+				{
+					nearestDistance = distance;
+					nearest = interactable;
+				}
+			}
+
+			if (nearest != null)
+			{
+				nearest.Interact(transform);
+			}
 		}
 	}
 }

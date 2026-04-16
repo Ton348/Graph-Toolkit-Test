@@ -1,5 +1,6 @@
 {
-  "name": "Scripts.Runtime",
+  "name": "Sample.Runtime",
+  "rootNamespace": "Sample.Runtime",
   "references": [
     "Graph.Core.Runtime",
     "Game1.Graph.Runtime",
@@ -14,6 +15,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "Scripts.Runtime"
+  "noEngineReferences": false
 }

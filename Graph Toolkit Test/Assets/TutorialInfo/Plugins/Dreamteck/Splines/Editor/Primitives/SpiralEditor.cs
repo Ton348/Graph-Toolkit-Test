@@ -1,35 +1,31 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using Dreamteck.Splines.Editor;
 using UnityEditor;
-using Dreamteck.Splines.Editor;
 
 namespace Dreamteck.Splines.Primitives
 {
-    public class SpiralEditor : PrimitiveEditor
-    {
+	public class SpiralEditor : PrimitiveEditor
+	{
+		public override string GetName()
+		{
+			return "Spiral";
+		}
 
-        public override string GetName()
-        {
-            return "Spiral";
-        }
+		public override void Open(DreamteckSplinesEditor editor)
+		{
+			base.Open(editor);
+			m_primitive = new Spiral();
+		}
 
-        public override void Open(DreamteckSplinesEditor editor)
-        {
-            base.Open(editor);
-            m_primitive = new Spiral();
-        }
-
-        protected override void OnGui()
-        {
-            base.OnGui();
-            Spiral spiral = (Spiral)m_primitive;
-            spiral.clockwise = EditorGUILayout.Toggle("Clockwise", spiral.clockwise);
-            spiral.curve = EditorGUILayout.CurveField("Radius Interpolation", spiral.curve);
-            spiral.startRadius = EditorGUILayout.FloatField("Start Radius", spiral.startRadius);
-            spiral.endRadius = EditorGUILayout.FloatField("End Radius", spiral.endRadius);
-            spiral.stretch = EditorGUILayout.FloatField("Stretch", spiral.stretch);
-            spiral.iterations = EditorGUILayout.IntField("Iterations", spiral.iterations);
-        }
-
-    }
+		protected override void OnGui()
+		{
+			base.OnGui();
+			var spiral = (Spiral)m_primitive;
+			spiral.clockwise = EditorGUILayout.Toggle("Clockwise", spiral.clockwise);
+			spiral.curve = EditorGUILayout.CurveField("Radius Interpolation", spiral.curve);
+			spiral.startRadius = EditorGUILayout.FloatField("Start Radius", spiral.startRadius);
+			spiral.endRadius = EditorGUILayout.FloatField("End Radius", spiral.endRadius);
+			spiral.stretch = EditorGUILayout.FloatField("Stretch", spiral.stretch);
+			spiral.iterations = EditorGUILayout.IntField("Iterations", spiral.iterations);
+		}
+	}
 }
