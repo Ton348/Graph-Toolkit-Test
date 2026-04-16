@@ -38,14 +38,26 @@ namespace GraphCore.Runtime
 			return $"[{prefix}] {message}{location}{type}{field}{index}";
 		}
 
-		public static GraphValidationIssue Error(string message, string nodeId = null, string nodeType = null, string fieldName = null, int nodeIndex = -1)
+		public static GraphValidationIssue Error(
+			string message,
+			string nodeId = null,
+			string nodeType = null,
+			string fieldName = null,
+			int nodeIndex = -1)
 		{
-			return new GraphValidationIssue(GraphValidationSeverity.Error, message, nodeId, nodeType, fieldName, nodeIndex);
+			return new GraphValidationIssue(GraphValidationSeverity.Error, message, nodeId, nodeType, fieldName,
+				nodeIndex);
 		}
 
-		public static GraphValidationIssue Warning(string message, string nodeId = null, string nodeType = null, string fieldName = null, int nodeIndex = -1)
+		public static GraphValidationIssue Warning(
+			string message,
+			string nodeId = null,
+			string nodeType = null,
+			string fieldName = null,
+			int nodeIndex = -1)
 		{
-			return new GraphValidationIssue(GraphValidationSeverity.Warning, message, nodeId, nodeType, fieldName, nodeIndex);
+			return new GraphValidationIssue(GraphValidationSeverity.Warning, message, nodeId, nodeType, fieldName,
+				nodeIndex);
 		}
 	}
 }

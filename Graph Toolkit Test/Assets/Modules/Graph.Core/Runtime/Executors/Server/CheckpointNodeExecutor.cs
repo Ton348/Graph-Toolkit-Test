@@ -1,13 +1,16 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime.Executors.Templates;
 using GraphCore.Runtime.Nodes.Server;
-using System.Threading;
 
 namespace GraphCore.Runtime.Executors.Server
 {
 	public sealed class CheckpointNodeExecutor : CoreGraphSuccessFailNodeExecutor<CheckpointNode>
 	{
-		protected override UniTask<bool> EvaluateSuccessAsync(CheckpointNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override UniTask<bool> EvaluateSuccessAsync(
+			CheckpointNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (context.CheckpointService == null)
 			{
@@ -17,7 +20,10 @@ namespace GraphCore.Runtime.Executors.Server
 			return ExecuteWithServiceAsync(node, context.CheckpointService, cancellationToken);
 		}
 
-		private static async UniTask<bool> ExecuteWithServiceAsync(CheckpointNode node, IGraphCheckpointService checkpointService, CancellationToken cancellationToken)
+		private static async UniTask<bool> ExecuteWithServiceAsync(
+			CheckpointNode node,
+			IGraphCheckpointService checkpointService,
+			CancellationToken cancellationToken)
 		{
 			return node.action == CheckpointAction.Clear
 				? await checkpointService.ClearAsync(node.checkpointId, cancellationToken)

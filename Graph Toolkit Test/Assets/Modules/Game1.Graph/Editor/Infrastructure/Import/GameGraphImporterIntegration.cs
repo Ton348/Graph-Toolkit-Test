@@ -1,19 +1,18 @@
-using Game1.Graph.Runtime;
-using System.Collections.Generic;
 using System;
-
-using Game1.Graph.Editor.Infrastructure;
+using System.Collections.Generic;
 using Game1.Graph.Editor.Infrastructure.AutoRegistration;
+using Game1.Graph.Runtime;
+
 namespace Game1.Graph.Editor.Infrastructure.Import
 {
 	public sealed class GameGraphImporterIntegration
 	{
-	public GameGraphEditorComposition EditorComposition { get; }
+		public GameGraphImporterIntegration(GameGraphEditorComposition editorComposition)
+		{
+			EditorComposition = editorComposition ?? throw new ArgumentNullException(nameof(editorComposition));
+		}
 
-	public GameGraphImporterIntegration(GameGraphEditorComposition editorComposition)
-	{
-		EditorComposition = editorComposition ?? throw new ArgumentNullException(nameof(editorComposition));
-	}
+		public GameGraphEditorComposition EditorComposition { get; }
 
 		public bool HasConverterFor(object editorNodeModel)
 		{
@@ -27,7 +26,8 @@ namespace Game1.Graph.Editor.Infrastructure.Import
 
 		public IReadOnlyList<Type> GetMissingConverters(IEnumerable<object> editorNodeModels)
 		{
-			return GameGraphAutoRegistration.FindUnsupportedModels(editorNodeModels, EditorComposition.ConverterRegistry);
+			return GameGraphAutoRegistration.FindUnsupportedModels(editorNodeModels,
+				EditorComposition.ConverterRegistry);
 		}
 
 		public IReadOnlyList<Type> GetUnsupportedModels(IEnumerable<object> editorNodeModels)

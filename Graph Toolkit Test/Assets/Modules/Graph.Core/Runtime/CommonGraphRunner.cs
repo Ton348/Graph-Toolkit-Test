@@ -1,6 +1,6 @@
-using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace GraphCore.Runtime
@@ -11,11 +11,11 @@ namespace GraphCore.Runtime
 		private const int s_defaultMaxSteps = 10000;
 
 		private readonly GraphNodeExecutorRegistry m_executorRegistry;
+		private GraphExecutionContext m_context;
+		private BaseGraphNode m_currentNode;
 
 		private CommonGraph m_graph;
-		private GraphExecutionContext m_context;
 		private CancellationTokenSource m_runCancellationTokenSource;
-		private BaseGraphNode m_currentNode;
 
 		public CommonGraphRunner(GraphNodeExecutorRegistry executorRegistry)
 		{
@@ -24,7 +24,11 @@ namespace GraphCore.Runtime
 
 		public bool IsRunning { get; private set; }
 
-		public UniTask RunAsync(CommonGraph graph, GraphExecutionContext context, CancellationToken cancellationToken = default, int maxSteps = s_defaultMaxSteps)
+		public UniTask RunAsync(
+			CommonGraph graph,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken = default,
+			int maxSteps = s_defaultMaxSteps)
 		{
 			return RunInternalAsync(graph, context, cancellationToken, maxSteps);
 		}
@@ -38,7 +42,11 @@ namespace GraphCore.Runtime
 			}
 		}
 
-		private async UniTask RunInternalAsync(CommonGraph graph, GraphExecutionContext context, CancellationToken cancellationToken, int maxSteps)
+		private async UniTask RunInternalAsync(
+			CommonGraph graph,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken,
+			int maxSteps)
 		{
 			if (IsRunning)
 			{
@@ -81,7 +89,7 @@ namespace GraphCore.Runtime
 			m_currentNode = startNode;
 			IsRunning = true;
 
-			int step = 0;
+			var step = 0;
 			try
 			{
 				while (IsRunning && m_currentNode != null)
@@ -91,17 +99,22 @@ namespace GraphCore.Runtime
 					step++;
 					if (step > maxSteps)
 					{
-						Debug.LogError($"{s_logPrefix} Max step limit exceeded ({maxSteps}). Potential runaway execution near node '{m_currentNode.Id}'.", m_graph);
+						Debug.LogError(
+							$"{s_logPrefix} Max step limit exceeded ({maxSteps}). Potential runaway execution near node '{m_currentNode.Id}'.",
+							m_graph);
 						return;
 					}
 
 					if (!m_executorRegistry.TryGetExecutor(m_currentNode, out IGraphNodeExecutor executor))
 					{
-						Debug.LogError($"{s_logPrefix} No executor registered for node type '{m_currentNode.GetType().Name}' (id: '{m_currentNode.Id}').", m_graph);
+						Debug.LogError(
+							$"{s_logPrefix} No executor registered for node type '{m_currentNode.GetType().Name}' (id: '{m_currentNode.Id}').",
+							m_graph);
 						return;
 					}
 
-					GraphNodeExecutionResult executionResult = await executor.ExecuteAsync(m_currentNode, m_context, runCancellationToken);
+					GraphNodeExecutionResult executionResult =
+						await executor.ExecuteAsync(m_currentNode, m_context, runCancellationToken);
 					if (!HandleExecutionResult(executionResult))
 					{
 						return;
@@ -128,7 +141,9 @@ namespace GraphCore.Runtime
 
 				case GraphNodeExecutionSignal.Fault:
 				{
-					Debug.LogError($"{s_logPrefix} Fault ({executionResult.errorType}): {executionResult.diagnosticMessage}", m_graph);
+					Debug.LogError(
+						$"{s_logPrefix} Fault ({executionResult.errorType}): {executionResult.diagnosticMessage}",
+						m_graph);
 					return false;
 				}
 
@@ -165,7 +180,7 @@ namespace GraphCore.Runtime
 
 		private void LogValidationIssues(GraphValidationResult validationResult)
 		{
-			for (int i = 0; i < validationResult.Issues.Count; i++)
+			for (var i = 0; i < validationResult.Issues.Count; i++)
 			{
 				GraphValidationIssue issue = validationResult.Issues[i];
 				if (issue.severity == GraphValidationSeverity.Error)

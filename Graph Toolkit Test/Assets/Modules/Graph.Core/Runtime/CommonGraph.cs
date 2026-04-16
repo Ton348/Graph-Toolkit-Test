@@ -8,13 +8,15 @@ namespace GraphCore.Runtime
 	{
 		private const string s_logPrefix = "[CommonGraph]";
 		public string startNodeId;
+
 		[SerializeReference]
-		public List<BaseGraphNode> nodes = new List<BaseGraphNode>();
+		public List<BaseGraphNode> nodes = new();
+
+		private int m_lastLookupNodeCount = -1;
+		private GraphValidationResult m_lastValidationResult;
+		private bool m_lookupInitialized;
 
 		private Dictionary<string, BaseGraphNode> m_nodeLookup;
-		private bool m_lookupInitialized;
-		private GraphValidationResult m_lastValidationResult;
-		private int m_lastLookupNodeCount = -1;
 
 		public GraphValidationResult ValidateGraph()
 		{
@@ -66,7 +68,7 @@ namespace GraphCore.Runtime
 
 		internal Dictionary<string, BaseGraphNode> BuildNodeLookup(GraphValidationResult validationResult)
 		{
-			Dictionary<string, BaseGraphNode> lookup = new Dictionary<string, BaseGraphNode>(nodes != null ? nodes.Count : 0, StringComparer.Ordinal);
+			var lookup = new Dictionary<string, BaseGraphNode>(nodes != null ? nodes.Count : 0, StringComparer.Ordinal);
 
 			if (nodes == null)
 			{
@@ -74,7 +76,7 @@ namespace GraphCore.Runtime
 				return lookup;
 			}
 
-			for (int i = 0; i < nodes.Count; i++)
+			for (var i = 0; i < nodes.Count; i++)
 			{
 				BaseGraphNode node = nodes[i];
 				if (node == null)
@@ -91,7 +93,8 @@ namespace GraphCore.Runtime
 
 				if (!lookup.TryAdd(node.Id, node))
 				{
-					validationResult?.AddError($"Duplicate node id detected: '{node.Id}'.", node.Id, node.GetType().Name, nameof(node.nodeId), i);
+					validationResult?.AddError($"Duplicate node id detected: '{node.Id}'.", node.Id,
+						node.GetType().Name, nameof(node.nodeId), i);
 				}
 			}
 
@@ -101,13 +104,14 @@ namespace GraphCore.Runtime
 		private void EnsureLookup()
 		{
 			int currentNodeCount = nodes != null ? nodes.Count : 0;
-			bool shouldRebuildLookup = !m_lookupInitialized || m_nodeLookup == null || m_lastLookupNodeCount != currentNodeCount;
+			bool shouldRebuildLookup = !m_lookupInitialized || m_nodeLookup == null ||
+			                           m_lastLookupNodeCount != currentNodeCount;
 			if (!shouldRebuildLookup)
 			{
 				return;
 			}
 
-			GraphValidationResult validation = new GraphValidationResult();
+			var validation = new GraphValidationResult();
 			m_nodeLookup = BuildNodeLookup(validation);
 			m_lastValidationResult = validation;
 			m_lookupInitialized = true;
@@ -123,7 +127,7 @@ namespace GraphCore.Runtime
 				return;
 			}
 
-			for (int i = 0; i < validationResult.Errors.Count; i++)
+			for (var i = 0; i < validationResult.Errors.Count; i++)
 			{
 				Debug.LogError($"{s_logPrefix} {validationResult.Errors[i]}", this);
 			}

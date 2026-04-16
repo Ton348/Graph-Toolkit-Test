@@ -5,18 +5,23 @@ using GraphCore.Runtime;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace GraphCore.Editor
 {
 	public static class CommonGraphRuntimeExporter
 	{
+		public delegate CommonGraph GraphCompiler(CommonGraphEditorGraph editorGraph);
+
+		public delegate bool GraphValidationHook(
+			CommonGraphEditorGraph editorGraph,
+			CommonGraph runtimeGraph,
+			string editorGraphPath);
+
 		private const string BuildMenuPath = "Assets/GraphCore/Build Runtime Graph";
 		private const string BuildAllMenuPath = "Assets/GraphCore/Build All Runtime Graphs";
 		private const string RuntimeAssetSuffix = ".runtime.asset";
 		private static GraphValidationHook s_graphValidationHook;
-
-		public delegate CommonGraph GraphCompiler(CommonGraphEditorGraph editorGraph);
-		public delegate bool GraphValidationHook(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath);
 
 		public static void SetGraphValidationHook(GraphValidationHook validationHook)
 		{
@@ -44,20 +49,21 @@ namespace GraphCore.Editor
 				return;
 			}
 
-			BuildRuntimeGraphAssets(selectedPaths, saveAndRefresh: true);
+			BuildRuntimeGraphAssets(selectedPaths, true);
 		}
 
 		[MenuItem(BuildAllMenuPath)]
 		private static void BuildAllRuntimeGraphs()
 		{
-			string[] allBaseGraphGuids = AssetDatabase.FindAssets($"t:DefaultAsset *.{CommonGraphEditorGraph.AssetExtension}");
+			string[] allBaseGraphGuids =
+				AssetDatabase.FindAssets($"t:DefaultAsset *.{CommonGraphEditorGraph.AssetExtension}");
 			if (allBaseGraphGuids == null || allBaseGraphGuids.Length == 0)
 			{
 				return;
 			}
 
-			List<string> paths = new List<string>(allBaseGraphGuids.Length);
-			for (int i = 0; i < allBaseGraphGuids.Length; i++)
+			var paths = new List<string>(allBaseGraphGuids.Length);
+			for (var i = 0; i < allBaseGraphGuids.Length; i++)
 			{
 				string path = AssetDatabase.GUIDToAssetPath(allBaseGraphGuids[i]);
 				if (IsBaseGraphAssetPath(path))
@@ -66,7 +72,7 @@ namespace GraphCore.Editor
 				}
 			}
 
-			BuildRuntimeGraphAssets(paths, saveAndRefresh: true);
+			BuildRuntimeGraphAssets(paths, true);
 		}
 
 		public static bool BuildRuntimeGraphAsset(string editorGraphPath)
@@ -87,7 +93,8 @@ namespace GraphCore.Editor
 				CommonGraphEditorGraph editorGraph = LoadBaseGraphEditorGraph(editorGraphPath);
 				if (editorGraph == null)
 				{
-					Debug.LogError($"[CommonGraphRuntimeExporter] Could not load CommonGraphEditorGraph at '{editorGraphPath}'.");
+					Debug.LogError(
+						$"[CommonGraphRuntimeExporter] Could not load CommonGraphEditorGraph at '{editorGraphPath}'.");
 					return false;
 				}
 
@@ -95,19 +102,20 @@ namespace GraphCore.Editor
 
 				CommonGraph compiledGraph = effectiveCompiler(editorGraph);
 				if (compiledGraph == null)
-				{
 					// Fresh graph assets can be empty right after creation. Skip auto-build quietly until authoring is valid.
+				{
 					return false;
 				}
 
-				if (s_graphValidationHook != null && !s_graphValidationHook(editorGraph, compiledGraph, editorGraphPath))
+				if (s_graphValidationHook != null &&
+				    !s_graphValidationHook(editorGraph, compiledGraph, editorGraphPath))
 				{
-					UnityEngine.Object.DestroyImmediate(compiledGraph);
+					Object.DestroyImmediate(compiledGraph);
 					return false;
 				}
 
 				string runtimeGraphPath = GetRuntimeAssetPath(editorGraphPath);
-				CommonGraph existingRuntimeGraph = AssetDatabase.LoadAssetAtPath<CommonGraph>(runtimeGraphPath);
+				var existingRuntimeGraph = AssetDatabase.LoadAssetAtPath<CommonGraph>(runtimeGraphPath);
 
 				if (existingRuntimeGraph == null)
 				{
@@ -118,10 +126,11 @@ namespace GraphCore.Editor
 				else
 				{
 					existingRuntimeGraph.startNodeId = compiledGraph.startNodeId;
-					existingRuntimeGraph.nodes = new List<BaseGraphNode>(compiledGraph.nodes ?? new List<BaseGraphNode>());
+					existingRuntimeGraph.nodes =
+						new List<BaseGraphNode>(compiledGraph.nodes ?? new List<BaseGraphNode>());
 					existingRuntimeGraph.InvalidateLookup();
 					EditorUtility.SetDirty(existingRuntimeGraph);
-					UnityEngine.Object.DestroyImmediate(compiledGraph);
+					Object.DestroyImmediate(compiledGraph);
 				}
 
 				return true;
@@ -138,14 +147,17 @@ namespace GraphCore.Editor
 			return BuildRuntimeGraphAssets(editorGraphPaths, saveAndRefresh, null);
 		}
 
-		public static int BuildRuntimeGraphAssets(IEnumerable<string> editorGraphPaths, bool saveAndRefresh, GraphCompiler compiler)
+		public static int BuildRuntimeGraphAssets(
+			IEnumerable<string> editorGraphPaths,
+			bool saveAndRefresh,
+			GraphCompiler compiler)
 		{
 			if (editorGraphPaths == null)
 			{
 				return 0;
 			}
 
-			int builtCount = 0;
+			var builtCount = 0;
 			foreach (string path in editorGraphPaths)
 			{
 				if (!IsBaseGraphAssetPath(path))
@@ -171,7 +183,8 @@ namespace GraphCore.Editor
 		public static bool IsBaseGraphAssetPath(string assetPath)
 		{
 			return !string.IsNullOrWhiteSpace(assetPath)
-				   && assetPath.EndsWith($".{CommonGraphEditorGraph.AssetExtension}", StringComparison.OrdinalIgnoreCase);
+			       && assetPath.EndsWith($".{CommonGraphEditorGraph.AssetExtension}",
+				       StringComparison.OrdinalIgnoreCase);
 		}
 
 		public static bool IsValidBaseGraphEditorAsset(string assetPath)
@@ -210,9 +223,9 @@ namespace GraphCore.Editor
 		private static string[] GetSelectedBaseGraphPaths()
 		{
 			string[] assetGuids = Selection.assetGUIDs;
-			List<string> paths = new List<string>(assetGuids.Length);
+			var paths = new List<string>(assetGuids.Length);
 
-			for (int i = 0; i < assetGuids.Length; i++)
+			for (var i = 0; i < assetGuids.Length; i++)
 			{
 				string path = AssetDatabase.GUIDToAssetPath(assetGuids[i]);
 				if (string.IsNullOrWhiteSpace(path))

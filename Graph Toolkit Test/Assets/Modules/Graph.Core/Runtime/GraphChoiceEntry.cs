@@ -1,5 +1,3 @@
-using System;
-
 namespace GraphCore.Runtime
 {
 	public readonly struct GraphChoiceEntry

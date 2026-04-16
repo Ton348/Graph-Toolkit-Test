@@ -1,22 +1,26 @@
-using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Nodes.Flow;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using GraphCore.Runtime.Nodes.Flow;
 using UnityEngine;
 
 namespace GraphCore.Runtime.Executors.Flow
 {
 	public sealed class RandomNodeExecutor : BaseGraphNodeExecutor<RandomNode>
 	{
-		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(RandomNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(
+			RandomNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (node.options == null || node.options.Count == 0)
 			{
-				return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no options.", GraphNodeExecutionErrorType.InvalidNode));
+				return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no options.",
+					GraphNodeExecutionErrorType.InvalidNode));
 			}
 
-			List<RandomOption> validOptions = new List<RandomOption>();
-			for (int i = 0; i < node.options.Count; i++)
+			var validOptions = new List<RandomOption>();
+			for (var i = 0; i < node.options.Count; i++)
 			{
 				RandomOption option = node.options[i];
 				if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId))
@@ -27,21 +31,24 @@ namespace GraphCore.Runtime.Executors.Flow
 
 			if (validOptions.Count == 0)
 			{
-				return UniTask.FromResult(GraphNodeExecutionResult.Fault($"RandomNode '{node.Id}' has no valid options with nextNodeId.", GraphNodeExecutionErrorType.InvalidTransition));
+				return UniTask.FromResult(GraphNodeExecutionResult.Fault(
+					$"RandomNode '{node.Id}' has no valid options with nextNodeId.",
+					GraphNodeExecutionErrorType.InvalidTransition));
 			}
 
-			float totalWeight = 0f;
-			for (int i = 0; i < validOptions.Count; i++)
+			var totalWeight = 0f;
+			for (var i = 0; i < validOptions.Count; i++)
 			{
 				totalWeight += Mathf.Max(0f, validOptions[i].weight);
 			}
+
 			if (totalWeight <= 0f)
 			{
 				return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId));
 			}
 
-			float roll = UnityEngine.Random.Range(0f, totalWeight);
-			float cumulative = 0f;
+			float roll = Random.Range(0f, totalWeight);
+			var cumulative = 0f;
 			foreach (RandomOption option in validOptions)
 			{
 				cumulative += Mathf.Max(0f, option.weight);
@@ -51,7 +58,8 @@ namespace GraphCore.Runtime.Executors.Flow
 				}
 			}
 
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(validOptions[validOptions.Count - 1].nextNodeId));
+			return UniTask.FromResult(
+				GraphNodeExecutionResult.ContinueTo(validOptions[validOptions.Count - 1].nextNodeId));
 		}
 	}
 }

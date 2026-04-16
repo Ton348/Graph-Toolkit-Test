@@ -1,9 +1,8 @@
-using Game1.Graph.Runtime;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Game1.Graph.Runtime;
 using Unity.GraphToolkit.Editor;
 
-using Game1.Graph.Editor.Infrastructure;
 namespace Game1.Graph.Editor.Infrastructure.Converters
 {
 	public abstract class GameGraphNodeConverterBase<TModel, TNode> : IGameGraphNodeConverter
@@ -78,7 +77,11 @@ namespace Game1.Graph.Editor.Infrastructure.Converters
 			return GetOptionValue(node, optionName, defaultValue);
 		}
 
-		protected static bool TryGetConnectedNodeId(INode node, int outputIndex, IReadOnlyDictionary<INode, string> idMap, out string nodeId)
+		protected static bool TryGetConnectedNodeId(
+			INode node,
+			int outputIndex,
+			IReadOnlyDictionary<INode, string> idMap,
+			out string nodeId)
 		{
 			nodeId = null;
 			if (node == null || idMap == null || outputIndex < 0 || outputIndex >= node.outputPortCount)
@@ -102,12 +105,19 @@ namespace Game1.Graph.Editor.Infrastructure.Converters
 			return idMap.TryGetValue(nextNode, out nodeId) && !string.IsNullOrWhiteSpace(nodeId);
 		}
 
-		protected static string GetConnectedNodeId(INode node, int outputIndex, IReadOnlyDictionary<INode, string> idMap)
+		protected static string GetConnectedNodeId(
+			INode node,
+			int outputIndex,
+			IReadOnlyDictionary<INode, string> idMap)
 		{
 			return TryGetConnectedNodeId(node, outputIndex, idMap, out string nodeId) ? nodeId : null;
 		}
 
-		protected static bool TryGetConnectedNodeId(INode node, string outputName, IReadOnlyDictionary<INode, string> idMap, out string nodeId)
+		protected static bool TryGetConnectedNodeId(
+			INode node,
+			string outputName,
+			IReadOnlyDictionary<INode, string> idMap,
+			out string nodeId)
 		{
 			nodeId = null;
 			if (node == null || idMap == null || string.IsNullOrWhiteSpace(outputName))
@@ -115,7 +125,7 @@ namespace Game1.Graph.Editor.Infrastructure.Converters
 				return false;
 			}
 
-			for (int i = 0; i < node.outputPortCount; i++)
+			for (var i = 0; i < node.outputPortCount; i++)
 			{
 				IPort outputPort = node.GetOutputPort(i);
 				if (outputPort == null)
@@ -134,7 +144,10 @@ namespace Game1.Graph.Editor.Infrastructure.Converters
 			return false;
 		}
 
-		protected static string GetConnectedNodeId(INode node, string outputName, IReadOnlyDictionary<INode, string> idMap)
+		protected static string GetConnectedNodeId(
+			INode node,
+			string outputName,
+			IReadOnlyDictionary<INode, string> idMap)
 		{
 			return TryGetConnectedNodeId(node, outputName, idMap, out string nodeId) ? nodeId : null;
 		}

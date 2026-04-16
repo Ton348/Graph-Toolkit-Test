@@ -1,33 +1,34 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using UnityEngine;
-using GraphCore.Runtime;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+using GraphCore.Runtime;
+using UnityEngine;
 
 namespace Game1.Graph.Runtime.Infrastructure
 {
 	public static class GameGraphRuntimeRegistryFactory
 	{
-		private static readonly object s_cacheLock = new object();
+		private static readonly object s_cacheLock = new();
 		private static Type[] s_cachedExecutorTypes;
 
 		public static GraphNodeExecutorRegistry Create()
 		{
-			GameGraphComposition composition = GameGraphComposition.CreateDefault();
+			var composition = GameGraphComposition.CreateDefault();
 			Type[] executorTypes = GetCachedExecutorTypes();
 
-			for (int i = 0; i < executorTypes.Length; i++)
+			for (var i = 0; i < executorTypes.Length; i++)
 			{
 				Type type = executorTypes[i];
 				try
 				{
-					IGraphNodeExecutor executor = (IGraphNodeExecutor)Activator.CreateInstance(type);
+					var executor = (IGraphNodeExecutor)Activator.CreateInstance(type);
 					composition.ExecutorRegistry.Register(executor);
 				}
 				catch (Exception exception)
 				{
-					Debug.LogError($"[GameGraphRuntimeRegistryFactory] Failed to register executor '{type.FullName}': {exception.Message}");
+					Debug.LogError(
+						$"[GameGraphRuntimeRegistryFactory] Failed to register executor '{type.FullName}': {exception.Message}");
 				}
 			}
 
@@ -43,10 +44,10 @@ namespace Game1.Graph.Runtime.Infrastructure
 					return s_cachedExecutorTypes;
 				}
 
-				List<Type> executorTypes = new List<Type>();
-				HashSet<Assembly> assemblies = new HashSet<Assembly>();
+				var executorTypes = new List<Type>();
+				var assemblies = new HashSet<Assembly>();
 				Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-				for (int i = 0; i < loadedAssemblies.Length; i++)
+				for (var i = 0; i < loadedAssemblies.Length; i++)
 				{
 					Assembly assembly = loadedAssemblies[i];
 					if (assembly == null || assembly.IsDynamic)
@@ -74,7 +75,7 @@ namespace Game1.Graph.Runtime.Infrastructure
 						continue;
 					}
 
-					for (int i = 0; i < types.Length; i++)
+					for (var i = 0; i < types.Length; i++)
 					{
 						Type type = types[i];
 						if (type == null || type.IsAbstract || type.IsGenericTypeDefinition)

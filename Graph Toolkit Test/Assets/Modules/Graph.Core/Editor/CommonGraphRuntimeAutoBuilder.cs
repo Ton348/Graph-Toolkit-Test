@@ -9,8 +9,8 @@ namespace GraphCore.Editor
 		private const string s_autoBuildPreferenceKey = "GraphCore.AutoBuildRuntimeGraphs";
 		private const string s_autoBuildMenuPath = "Assets/GraphCore/Auto Build Runtime Graphs";
 
-		private static readonly HashSet<string> s_pendingBaseGraphPaths = new HashSet<string>();
-		private static readonly HashSet<string> s_pendingFirstSavePaths = new HashSet<string>();
+		private static readonly HashSet<string> s_pendingBaseGraphPaths = new();
+		private static readonly HashSet<string> s_pendingFirstSavePaths = new();
 		private static bool s_rebuildScheduled;
 		private static bool s_isProcessing;
 		private static CommonGraphRuntimeExporter.GraphCompiler s_graphCompiler;
@@ -75,7 +75,7 @@ namespace GraphCore.Editor
 				return;
 			}
 
-			for (int i = 0; i < assetPaths.Length; i++)
+			for (var i = 0; i < assetPaths.Length; i++)
 			{
 				string path = assetPaths[i];
 				// Do not load GraphToolkit graph here: importer callback may run while asset is still being created.
@@ -101,13 +101,13 @@ namespace GraphCore.Editor
 			s_isProcessing = true;
 			try
 			{
-				string[] paths = new string[s_pendingBaseGraphPaths.Count];
+				var paths = new string[s_pendingBaseGraphPaths.Count];
 				s_pendingBaseGraphPaths.CopyTo(paths);
 				s_pendingBaseGraphPaths.Clear();
 				FilterPathsForSafeBuild(paths, out string[] safePaths);
 
 				// Avoid forcing Refresh during graph asset creation flow. It can race with GraphToolkit graph registration.
-				CommonGraphRuntimeExporter.BuildRuntimeGraphAssets(safePaths, saveAndRefresh: false, s_graphCompiler);
+				CommonGraphRuntimeExporter.BuildRuntimeGraphAssets(safePaths, false, s_graphCompiler);
 				AssetDatabase.SaveAssets();
 			}
 			finally
@@ -118,8 +118,8 @@ namespace GraphCore.Editor
 
 		private static void FilterPathsForSafeBuild(string[] sourcePaths, out string[] safePaths)
 		{
-			List<string> result = new List<string>(sourcePaths.Length);
-			for (int i = 0; i < sourcePaths.Length; i++)
+			var result = new List<string>(sourcePaths.Length);
+			for (var i = 0; i < sourcePaths.Length; i++)
 			{
 				string editorGraphPath = sourcePaths[i];
 				if (string.IsNullOrWhiteSpace(editorGraphPath))

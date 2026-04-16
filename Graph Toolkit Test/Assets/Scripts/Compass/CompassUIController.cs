@@ -1,267 +1,325 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class CompassUicontroller : MonoBehaviour
 {
-    [Header("References")]
-    [SerializeField] private CompassManager m_compassManager;
-    [SerializeField] private RectTransform m_compassBar;
-    [SerializeField] private Transform m_markersContainer;
-    [SerializeField] private CompassMarkerView m_markerPrefab;
-    [SerializeField] private Transform m_ticksContainer;
-    [SerializeField] private CompassTickView m_tickPrefab;
+	[Header("References")]
+	[SerializeField]
+	private CompassManager m_compassManager;
 
-    [Header("Settings")]
-    [SerializeField] private float m_maxVisibleAngle = 90f;
-    [SerializeField] private List<TickDefinition> m_tickDefinitions = new List<TickDefinition>();
+	[SerializeField]
+	private RectTransform m_compassBar;
 
-    private readonly Dictionary<string, CompassMarkerView> m_markers = new Dictionary<string, CompassMarkerView>();
-    private readonly HashSet<string> m_activeIds = new HashSet<string>();
-    private readonly List<string> m_toRemove = new List<string>();
-    private readonly List<TickRuntime> m_ticks = new List<TickRuntime>();
+	[SerializeField]
+	private Transform m_markersContainer;
 
-    private float m_halfWidth;
+	[SerializeField]
+	private CompassMarkerView m_markerPrefab;
 
-    [System.Serializable]
-    public struct TickDefinition
-    {
-        public string label;
-        [Range(-180f, 180f)] public float worldYaw;
-    }
+	[SerializeField]
+	private Transform m_ticksContainer;
 
-    private class TickRuntime
-    {
-        public TickDefinition def;
-        public CompassTickView view;
-    }
+	[SerializeField]
+	private CompassTickView m_tickPrefab;
 
-    private void Awake()
-    {
-        if (m_compassManager == null)
-        {
-            m_compassManager = CompassManager.Instance;
-        }
+	[Header("Settings")]
+	[SerializeField]
+	private float m_maxVisibleAngle = 90f;
 
-        if (m_compassBar == null)
-        {
-            m_compassBar = GetComponent<RectTransform>();
-        }
+	[SerializeField]
+	private List<TickDefinition> m_tickDefinitions = new();
 
-        if (m_markersContainer == null && m_compassBar != null)
-        {
-            m_markersContainer = m_compassBar;
-        }
+	private readonly HashSet<string> m_activeIds = new();
 
-        if (m_ticksContainer == null && m_compassBar != null)
-        {
-            m_ticksContainer = m_compassBar;
-        }
+	private readonly Dictionary<string, CompassMarkerView> m_markers = new();
+	private readonly List<TickRuntime> m_ticks = new();
+	private readonly List<string> m_toRemove = new();
 
-        if (!IsSceneTransform(m_ticksContainer))
-        {
-            m_ticksContainer = IsSceneTransform(m_compassBar) ? m_compassBar : transform;
-        }
+	private float m_halfWidth;
 
-        EnsureDefaultTicks();
-        CacheHalfWidth();
-    }
+	private void Awake()
+	{
+		if (m_compassManager == null)
+		{
+			m_compassManager = CompassManager.Instance;
+		}
 
-    private void OnEnable()
-    {
-        if (m_compassManager != null)
-        {
-            m_compassManager.activeTargetsChanged += SyncMarkers;
-        }
+		if (m_compassBar == null)
+		{
+			m_compassBar = GetComponent<RectTransform>();
+		}
 
-        EnsureTicks();
-        SyncMarkers();
-    }
+		if (m_markersContainer == null && m_compassBar != null)
+		{
+			m_markersContainer = m_compassBar;
+		}
 
-    private void OnDisable()
-    {
-        if (m_compassManager != null)
-        {
-            m_compassManager.activeTargetsChanged -= SyncMarkers;
-        }
-    }
+		if (m_ticksContainer == null && m_compassBar != null)
+		{
+			m_ticksContainer = m_compassBar;
+		}
 
-    private void LateUpdate()
-    {
-        UpdateMarkers();
-        UpdateTicks();
-    }
+		if (!IsSceneTransform(m_ticksContainer))
+		{
+			m_ticksContainer = IsSceneTransform(m_compassBar) ? m_compassBar : transform;
+		}
 
-    private void OnRectTransformDimensionsChange()
-    {
-        CacheHalfWidth();
-    }
+		EnsureDefaultTicks();
+		CacheHalfWidth();
+	}
 
-    private void CacheHalfWidth()
-    {
-        if (m_compassBar != null)
-        {
-            m_halfWidth = m_compassBar.rect.width * 0.5f;
-        }
-    }
+	private void LateUpdate()
+	{
+		UpdateMarkers();
+		UpdateTicks();
+	}
 
-    private void SyncMarkers()
-    {
-        if (m_compassManager == null || m_markerPrefab == null) return;
+	private void OnEnable()
+	{
+		if (m_compassManager != null)
+		{
+			m_compassManager.activeTargetsChanged += SyncMarkers;
+		}
 
-        m_activeIds.Clear();
+		EnsureTicks();
+		SyncMarkers();
+	}
 
-        foreach (var target in m_compassManager.ActiveTargets)
-        {
-            if (target == null) continue;
+	private void OnDisable()
+	{
+		if (m_compassManager != null)
+		{
+			m_compassManager.activeTargetsChanged -= SyncMarkers;
+		}
+	}
 
-            string id = target.TargetId;
-            if (string.IsNullOrWhiteSpace(id)) continue;
+	private void OnRectTransformDimensionsChange()
+	{
+		CacheHalfWidth();
+	}
 
-            m_activeIds.Add(id);
+	private void CacheHalfWidth()
+	{
+		if (m_compassBar != null)
+		{
+			m_halfWidth = m_compassBar.rect.width * 0.5f;
+		}
+	}
 
-            if (!m_markers.TryGetValue(id, out var view) || view == null)
-            {
-                var instance = Instantiate(m_markerPrefab, m_markersContainer);
-                m_markers[id] = instance;
-            }
-        }
+	private void SyncMarkers()
+	{
+		if (m_compassManager == null || m_markerPrefab == null)
+		{
+			return;
+		}
 
-        m_toRemove.Clear();
-        foreach (var kvp in m_markers)
-        {
-            if (!m_activeIds.Contains(kvp.Key))
-            {
-                m_toRemove.Add(kvp.Key);
-            }
-        }
+		m_activeIds.Clear();
 
-        for (int i = 0; i < m_toRemove.Count; i++)
-        {
-            string id = m_toRemove[i];
-            if (m_markers.TryGetValue(id, out var view) && view != null)
-            {
-                Destroy(view.gameObject);
-            }
-            m_markers.Remove(id);
-        }
-    }
+		foreach (CompassTarget target in m_compassManager.ActiveTargets)
+		{
+			if (target == null)
+			{
+				continue;
+			}
 
-    private void EnsureDefaultTicks()
-    {
-        if (m_tickDefinitions != null && m_tickDefinitions.Count > 0) return;
+			string id = target.TargetId;
+			if (string.IsNullOrWhiteSpace(id))
+			{
+				continue;
+			}
 
-        m_tickDefinitions = new List<TickDefinition>
-        {
-            new TickDefinition { label = "N", worldYaw = 0f },
-            new TickDefinition { label = "E", worldYaw = 90f },
-            new TickDefinition { label = "S", worldYaw = 180f },
-            new TickDefinition { label = "W", worldYaw = -90f }
-        };
-    }
+			m_activeIds.Add(id);
 
-    private void EnsureTicks()
-    {
-        if (m_tickPrefab == null || m_ticksContainer == null) return;
-        if (m_ticks.Count > 0) return;
+			if (!m_markers.TryGetValue(id, out CompassMarkerView view) || view == null)
+			{
+				CompassMarkerView instance = Instantiate(m_markerPrefab, m_markersContainer);
+				m_markers[id] = instance;
+			}
+		}
 
-        if (!IsSceneTransform(m_ticksContainer))
-        {
-            m_ticksContainer = IsSceneTransform(m_compassBar) ? m_compassBar : transform;
-        }
+		m_toRemove.Clear();
+		foreach (KeyValuePair<string, CompassMarkerView> kvp in m_markers)
+		{
+			if (!m_activeIds.Contains(kvp.Key))
+			{
+				m_toRemove.Add(kvp.Key);
+			}
+		}
 
-        EnsureDefaultTicks();
+		for (var i = 0; i < m_toRemove.Count; i++)
+		{
+			string id = m_toRemove[i];
+			if (m_markers.TryGetValue(id, out CompassMarkerView view) && view != null)
+			{
+				Destroy(view.gameObject);
+			}
 
-        for (int i = 0; i < m_tickDefinitions.Count; i++)
-        {
-            var instance = Instantiate(m_tickPrefab, m_ticksContainer);
-            instance.SetLabel(m_tickDefinitions[i].label);
-            m_ticks.Add(new TickRuntime { def = m_tickDefinitions[i], view = instance });
-        }
-    }
+			m_markers.Remove(id);
+		}
+	}
 
-    private static bool IsSceneTransform(Transform t)
-    {
-        return t != null && t.gameObject.scene.IsValid();
-    }
+	private void EnsureDefaultTicks()
+	{
+		if (m_tickDefinitions != null && m_tickDefinitions.Count > 0)
+		{
+			return;
+		}
 
-    private void UpdateMarkers()
-    {
-        if (m_compassManager == null || m_compassManager.Player == null) return;
+		m_tickDefinitions = new List<TickDefinition>
+		{
+			new() { label = "N", worldYaw = 0f },
+			new() { label = "E", worldYaw = 90f },
+			new() { label = "S", worldYaw = 180f },
+			new() { label = "W", worldYaw = -90f }
+		};
+	}
 
-        Vector3 playerPos = m_compassManager.Player.position;
-        Vector3 playerForward = m_compassManager.Player.forward;
-        playerForward.y = 0f;
-        if (playerForward.sqrMagnitude < 0.0001f)
-        {
-            playerForward = Vector3.forward;
-        }
+	private void EnsureTicks()
+	{
+		if (m_tickPrefab == null || m_ticksContainer == null)
+		{
+			return;
+		}
 
-        foreach (var target in m_compassManager.ActiveTargets)
-        {
-            if (target == null) continue;
+		if (m_ticks.Count > 0)
+		{
+			return;
+		}
 
-            string id = target.TargetId;
-            if (!m_markers.TryGetValue(id, out var view) || view == null) continue;
+		if (!IsSceneTransform(m_ticksContainer))
+		{
+			m_ticksContainer = IsSceneTransform(m_compassBar) ? m_compassBar : transform;
+		}
 
-            Vector3 direction = target.GetMarkerWorldPosition() - playerPos;
-            direction.y = 0f;
+		EnsureDefaultTicks();
 
-            if (direction.sqrMagnitude < 0.0001f)
-            {
-                view.SetVisible(true);
-                view.SetPositionX(0f);
-                continue;
-            }
+		for (var i = 0; i < m_tickDefinitions.Count; i++)
+		{
+			CompassTickView instance = Instantiate(m_tickPrefab, m_ticksContainer);
+			instance.SetLabel(m_tickDefinitions[i].label);
+			m_ticks.Add(new TickRuntime { def = m_tickDefinitions[i], view = instance });
+		}
+	}
 
-            float angle = Vector3.SignedAngle(playerForward, direction, Vector3.up);
+	private static bool IsSceneTransform(Transform t)
+	{
+		return t != null && t.gameObject.scene.IsValid();
+	}
 
-            float normalized;
-            if (Mathf.Abs(angle) > m_maxVisibleAngle)
-            {
-                normalized = Mathf.Sign(angle);
-            }
-            else
-            {
-                normalized = Mathf.Clamp(angle / m_maxVisibleAngle, -1f, 1f);
-            }
-            float x = normalized * m_halfWidth;
+	private void UpdateMarkers()
+	{
+		if (m_compassManager == null || m_compassManager.Player == null)
+		{
+			return;
+		}
 
-            view.SetVisible(true);
-            view.SetPositionX(x);
-        }
-    }
+		Vector3 playerPos = m_compassManager.Player.position;
+		Vector3 playerForward = m_compassManager.Player.forward;
+		playerForward.y = 0f;
+		if (playerForward.sqrMagnitude < 0.0001f)
+		{
+			playerForward = Vector3.forward;
+		}
 
-    private void UpdateTicks()
-    {
-        if (m_compassManager == null || m_compassManager.Player == null) return;
-        if (m_ticks.Count == 0) return;
+		foreach (CompassTarget target in m_compassManager.ActiveTargets)
+		{
+			if (target == null)
+			{
+				continue;
+			}
 
-        Vector3 forward = m_compassManager.Player.forward;
-        forward.y = 0f;
-        if (forward.sqrMagnitude < 0.0001f)
-        {
-            forward = Vector3.forward;
-        }
+			string id = target.TargetId;
+			if (!m_markers.TryGetValue(id, out CompassMarkerView view) || view == null)
+			{
+				continue;
+			}
 
-        float playerYaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
+			Vector3 direction = target.GetMarkerWorldPosition() - playerPos;
+			direction.y = 0f;
 
-        for (int i = 0; i < m_ticks.Count; i++)
-        {
-            var tick = m_ticks[i];
-            if (tick.view == null) continue;
+			if (direction.sqrMagnitude < 0.0001f)
+			{
+				view.SetVisible(true);
+				view.SetPositionX(0f);
+				continue;
+			}
 
-            float angle = Mathf.DeltaAngle(playerYaw, tick.def.worldYaw);
-            if (Mathf.Abs(angle) > m_maxVisibleAngle)
-            {
-                tick.view.SetVisible(false);
-                continue;
-            }
+			float angle = Vector3.SignedAngle(playerForward, direction, Vector3.up);
 
-            float normalized = Mathf.Clamp(angle / m_maxVisibleAngle, -1f, 1f);
-            float x = normalized * m_halfWidth;
+			float normalized;
+			if (Mathf.Abs(angle) > m_maxVisibleAngle)
+			{
+				normalized = Mathf.Sign(angle);
+			}
+			else
+			{
+				normalized = Mathf.Clamp(angle / m_maxVisibleAngle, -1f, 1f);
+			}
 
-            tick.view.SetVisible(true);
-            tick.view.SetPositionX(x);
-        }
-    }
+			float x = normalized * m_halfWidth;
+
+			view.SetVisible(true);
+			view.SetPositionX(x);
+		}
+	}
+
+	private void UpdateTicks()
+	{
+		if (m_compassManager == null || m_compassManager.Player == null)
+		{
+			return;
+		}
+
+		if (m_ticks.Count == 0)
+		{
+			return;
+		}
+
+		Vector3 forward = m_compassManager.Player.forward;
+		forward.y = 0f;
+		if (forward.sqrMagnitude < 0.0001f)
+		{
+			forward = Vector3.forward;
+		}
+
+		float playerYaw = Mathf.Atan2(forward.x, forward.z) * Mathf.Rad2Deg;
+
+		for (var i = 0; i < m_ticks.Count; i++)
+		{
+			TickRuntime tick = m_ticks[i];
+			if (tick.view == null)
+			{
+				continue;
+			}
+
+			float angle = Mathf.DeltaAngle(playerYaw, tick.def.worldYaw);
+			if (Mathf.Abs(angle) > m_maxVisibleAngle)
+			{
+				tick.view.SetVisible(false);
+				continue;
+			}
+
+			float normalized = Mathf.Clamp(angle / m_maxVisibleAngle, -1f, 1f);
+			float x = normalized * m_halfWidth;
+
+			tick.view.SetVisible(true);
+			tick.view.SetPositionX(x);
+		}
+	}
+
+	[Serializable]
+	public struct TickDefinition
+	{
+		public string label;
+
+		[Range(-180f, 180f)]
+		public float worldYaw;
+	}
+
+	private class TickRuntime
+	{
+		public TickDefinition def;
+		public CompassTickView view;
+	}
 }

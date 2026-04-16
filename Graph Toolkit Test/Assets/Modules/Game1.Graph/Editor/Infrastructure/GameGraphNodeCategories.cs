@@ -1,5 +1,3 @@
-using Game1.Graph.Runtime;
-
 namespace Game1.Graph.Editor.Infrastructure
 {
 	public static class GameGraphNodeCategories

@@ -1,19 +1,19 @@
-using Game1.Graph.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System;
-
 using Game1.Graph.Editor.Infrastructure.AutoRegistration;
+using Game1.Graph.Runtime;
+
 namespace Game1.Graph.Editor.Infrastructure
 {
 	public sealed class GameGraphEditorComposition
 	{
-		public GameGraphNodeConverterRegistry ConverterRegistry { get; }
-
 		public GameGraphEditorComposition(GameGraphNodeConverterRegistry converterRegistry)
 		{
 			ConverterRegistry = converterRegistry ?? throw new ArgumentNullException(nameof(converterRegistry));
 		}
+
+		public GameGraphNodeConverterRegistry ConverterRegistry { get; }
 
 		public void RegisterConverter(IGameGraphNodeConverter converter)
 		{

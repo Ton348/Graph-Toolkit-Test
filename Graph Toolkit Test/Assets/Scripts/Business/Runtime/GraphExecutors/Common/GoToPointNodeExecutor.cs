@@ -1,17 +1,20 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime;
-using Game1.Graph.Runtime;
-
-using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+using GraphCore.Runtime;
+
 [GameGraphNodeExecutorAttribute]
 public sealed class GoToPointNodeExecutor : GameGraphNextNodeExecutor<GoToPointNode>
 {
-	protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(GoToPointNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
+		GoToPointNode node,
+		GraphExecutionContext context,
+		CancellationToken cancellationToken)
 	{
-		if (context != null && context.TryGet(GraphContextKeys.runtimeMapMarkerService, out MapMarkerService markerService) && markerService != null)
+		if (context != null &&
+		    context.TryGet(GraphContextKeys.runtimeMapMarkerService, out MapMarkerService markerService) &&
+		    markerService != null)
 		{
 			markerService.ShowMarker(node.markerId, node.targetTransform, node.markerId);
 		}

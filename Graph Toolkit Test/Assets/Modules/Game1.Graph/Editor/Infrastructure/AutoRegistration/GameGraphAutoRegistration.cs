@@ -1,15 +1,13 @@
-using Game1.Graph.Runtime;
-using GraphCore.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System;
-
-using Game1.Graph.Editor.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Infrastructure.Validation;
 using Game1.Graph.Runtime.Validation;
+using GraphCore.Runtime;
+
 namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 {
 	public static class GameGraphAutoRegistration
@@ -21,8 +19,8 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 				return Array.Empty<Assembly>();
 			}
 
-			HashSet<Assembly> assemblies = new HashSet<Assembly>();
-			for (int i = 0; i < markerTypes.Length; i++)
+			var assemblies = new HashSet<Assembly>();
+			for (var i = 0; i < markerTypes.Length; i++)
 			{
 				Type markerType = markerTypes[i];
 				if (markerType?.Assembly == null)
@@ -36,7 +34,9 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 			return assemblies.ToList();
 		}
 
-		public static void RegisterConverters(GameGraphNodeConverterRegistry converterRegistry, IEnumerable<Assembly> assemblies)
+		public static void RegisterConverters(
+			GameGraphNodeConverterRegistry converterRegistry,
+			IEnumerable<Assembly> assemblies)
 		{
 			if (converterRegistry == null)
 			{
@@ -45,7 +45,8 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 
 			foreach (Type type in EnumerateTypesWithAttribute<GameGraphNodeConverterAttribute>(assemblies))
 			{
-				if (!typeof(IGameGraphNodeConverter).IsAssignableFrom(type) || type.IsAbstract || type.IsGenericTypeDefinition)
+				if (!typeof(IGameGraphNodeConverter).IsAssignableFrom(type) || type.IsAbstract ||
+				    type.IsGenericTypeDefinition)
 				{
 					continue;
 				}
@@ -57,7 +58,9 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 			}
 		}
 
-		public static void RegisterExecutors(GameGraphExecutorRegistry executorRegistry, IEnumerable<Assembly> assemblies)
+		public static void RegisterExecutors(
+			GameGraphExecutorRegistry executorRegistry,
+			IEnumerable<Assembly> assemblies)
 		{
 			if (executorRegistry == null)
 			{
@@ -66,7 +69,8 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 
 			foreach (Type type in EnumerateTypesWithAttribute<GameGraphNodeExecutorAttribute>(assemblies))
 			{
-				if (!typeof(IGraphNodeExecutor).IsAssignableFrom(type) || type.IsAbstract || type.IsGenericTypeDefinition)
+				if (!typeof(IGraphNodeExecutor).IsAssignableFrom(type) || type.IsAbstract ||
+				    type.IsGenericTypeDefinition)
 				{
 					continue;
 				}
@@ -78,7 +82,9 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 			}
 		}
 
-		public static void RegisterValidators(GameGraphNodeValidatorRegistry validatorRegistry, IEnumerable<Assembly> assemblies)
+		public static void RegisterValidators(
+			GameGraphNodeValidatorRegistry validatorRegistry,
+			IEnumerable<Assembly> assemblies)
 		{
 			if (validatorRegistry == null)
 			{
@@ -87,7 +93,8 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 
 			foreach (Type type in EnumerateTypesWithAttribute<GameGraphNodeValidatorAttribute>(assemblies))
 			{
-				if (!typeof(IGameGraphNodeValidator).IsAssignableFrom(type) || type.IsAbstract || type.IsGenericTypeDefinition)
+				if (!typeof(IGameGraphNodeValidator).IsAssignableFrom(type) || type.IsAbstract ||
+				    type.IsGenericTypeDefinition)
 				{
 					continue;
 				}
@@ -99,14 +106,16 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 			}
 		}
 
-		public static IReadOnlyList<Type> FindUnsupportedModels(IEnumerable<object> editorNodeModels, GameGraphNodeConverterRegistry converterRegistry)
+		public static IReadOnlyList<Type> FindUnsupportedModels(
+			IEnumerable<object> editorNodeModels,
+			GameGraphNodeConverterRegistry converterRegistry)
 		{
 			if (editorNodeModels == null || converterRegistry == null)
 			{
 				return Array.Empty<Type>();
 			}
 
-			HashSet<Type> unsupported = new HashSet<Type>();
+			var unsupported = new HashSet<Type>();
 			foreach (object model in editorNodeModels)
 			{
 				if (model == null)
@@ -125,14 +134,15 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 			return unsupported.ToList();
 		}
 
-		private static IEnumerable<Type> EnumerateTypesWithAttribute<TAttribute>(IEnumerable<Assembly> assemblies) where TAttribute : Attribute
+		private static IEnumerable<Type> EnumerateTypesWithAttribute<TAttribute>(IEnumerable<Assembly> assemblies)
+			where TAttribute : Attribute
 		{
 			if (assemblies == null)
 			{
 				yield break;
 			}
 
-			HashSet<Type> unique = new HashSet<Type>();
+			var unique = new HashSet<Type>();
 
 			foreach (Assembly assembly in assemblies)
 			{
@@ -156,7 +166,7 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 					continue;
 				}
 
-				for (int i = 0; i < types.Length; i++)
+				for (var i = 0; i < types.Length; i++)
 				{
 					Type type = types[i];
 					if (type == null || unique.Contains(type))
@@ -173,7 +183,7 @@ namespace Game1.Graph.Editor.Infrastructure.AutoRegistration
 
 			// deterministic order
 			List<Type> ordered = unique.OrderBy(t => t.FullName).ToList();
-			for (int i = 0; i < ordered.Count; i++)
+			for (var i = 0; i < ordered.Count; i++)
 			{
 				yield return ordered[i];
 			}

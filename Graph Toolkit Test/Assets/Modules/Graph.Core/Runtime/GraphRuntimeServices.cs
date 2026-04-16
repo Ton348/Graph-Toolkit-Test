@@ -1,16 +1,7 @@
-using System;
-
 namespace GraphCore.Runtime
 {
 	public sealed class GraphRuntimeServices : IGraphRuntimeServices
 	{
-		public IGraphDialogueService DialogueService { get; }
-		public IGraphChoiceService ChoiceService { get; }
-		public IGraphMapMarkerService MapMarkerService { get; }
-		public IGraphCutsceneService CutsceneService { get; }
-		public IGraphCheckpointService CheckpointService { get; }
-		public IGraphQuestService QuestService { get; }
-
 		public GraphRuntimeServices(
 			IGraphDialogueService dialogueService,
 			IGraphChoiceService choiceService,
@@ -26,5 +17,12 @@ namespace GraphCore.Runtime
 			CheckpointService = checkpointService;
 			QuestService = questService;
 		}
+
+		public IGraphDialogueService DialogueService { get; }
+		public IGraphChoiceService ChoiceService { get; }
+		public IGraphMapMarkerService MapMarkerService { get; }
+		public IGraphCutsceneService CutsceneService { get; }
+		public IGraphCheckpointService CheckpointService { get; }
+		public IGraphQuestService QuestService { get; }
 	}
 }

@@ -1,5 +1,5 @@
-using GraphCore.Editor;
 using System;
+using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
 namespace GraphCore.BaseNodes.Editor.Flow
@@ -33,10 +33,14 @@ namespace GraphCore.BaseNodes.Editor.Flow
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(Option1Port).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option2Port).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option3Port).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option4Port).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(Option1Port).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+			context.AddOutputPort(Option2Port).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+			context.AddOutputPort(Option3Port).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+			context.AddOutputPort(Option4Port).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
 		}
 	}
 }

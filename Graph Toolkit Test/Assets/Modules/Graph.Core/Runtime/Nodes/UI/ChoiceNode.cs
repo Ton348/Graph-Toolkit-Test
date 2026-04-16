@@ -6,7 +6,7 @@ namespace GraphCore.Runtime.Nodes.UI
 	[Serializable]
 	public sealed class ChoiceNode : BaseGraphNode
 	{
-		public List<ChoiceOption> options = new List<ChoiceOption>(4)
+		public List<ChoiceOption> options = new(4)
 		{
 			new ChoiceOption(),
 			new ChoiceOption(),

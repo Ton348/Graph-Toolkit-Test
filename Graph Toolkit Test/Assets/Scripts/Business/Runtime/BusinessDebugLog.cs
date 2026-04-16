@@ -2,21 +2,25 @@ using UnityEngine;
 
 public static class BusinessDebugLog
 {
-    public static bool enabled;
+	public static bool enabled;
 
-    public static void Log(string message)
-    {
-        if (!enabled) return;
-        Debug.Log(message);
-    }
+	public static void Log(string message)
+	{
+		if (!enabled)
+		{
+			return;
+		}
 
-    public static void Warn(string message)
-    {
-        Debug.LogWarning(message);
-    }
+		Debug.Log(message);
+	}
 
-    public static void Error(string message)
-    {
-        Debug.LogError(message);
-    }
+	public static void Warn(string message)
+	{
+		Debug.LogWarning(message);
+	}
+
+	public static void Error(string message)
+	{
+		Debug.LogError(message);
+	}
 }

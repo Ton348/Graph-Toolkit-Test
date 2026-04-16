@@ -1,5 +1,6 @@
 using System;
 using GraphCore.Editor;
+using GraphCore.Runtime.Nodes.Server;
 using Unity.GraphToolkit.Editor;
 
 namespace GraphCore.BaseNodes.Editor.Server
@@ -20,9 +21,9 @@ namespace GraphCore.BaseNodes.Editor.Server
 		{
 			base.OnDefineOptions(context);
 			context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
-			context.AddOption<GraphCore.Runtime.Nodes.Server.QuestState>(StateOption)
+			context.AddOption<QuestState>(StateOption)
 				.WithDisplayName("State")
-				.WithDefaultValue(GraphCore.Runtime.Nodes.Server.QuestState.None);
+				.WithDefaultValue(QuestState.None);
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

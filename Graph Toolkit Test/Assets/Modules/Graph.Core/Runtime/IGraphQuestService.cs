@@ -1,6 +1,6 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime.Nodes.Server;
-using System.Threading;
 
 namespace GraphCore.Runtime
 {

@@ -1,7 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 using GraphCore.BaseNodes.Editor.Cinematics;
 using GraphCore.BaseNodes.Editor.Flow;
 using GraphCore.BaseNodes.Editor.Server;
 using GraphCore.BaseNodes.Editor.UI;
+using GraphCore.BaseNodes.Editor.Utility;
+using GraphCore.Editor.BaseNodes.Flow;
+using GraphCore.Editor.BaseNodes.Server;
+using GraphCore.Editor.BaseNodes.UI;
+using GraphCore.Editor.BaseNodes.World;
 using GraphCore.Runtime;
 using GraphCore.Runtime.Nodes.Cinematics;
 using GraphCore.Runtime.Nodes.Flow;
@@ -10,14 +18,6 @@ using GraphCore.Runtime.Nodes.UI;
 using GraphCore.Runtime.Nodes.Utility;
 using GraphCore.Runtime.Nodes.World;
 using GraphCore.Runtime.Templates;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using GraphCore.BaseNodes.Editor.Utility;
-using GraphCore.Editor.BaseNodes.Flow;
-using GraphCore.Editor.BaseNodes.Server;
-using GraphCore.Editor.BaseNodes.UI;
-using GraphCore.Editor.BaseNodes.World;
 using Unity.GraphToolkit.Editor;
 using UnityEngine;
 
@@ -25,11 +25,15 @@ namespace GraphCore.Editor
 {
 	public static class CommonGraphImporter
 	{
-		private const int s_primaryOutputIndex = 0;
-		private const int s_secondaryOutputIndex = 1;
+		public delegate void ConnectionApplier(
+			INode editorNode,
+			BaseGraphNode runtimeNode,
+			IReadOnlyDictionary<INode, string> idMap);
 
 		public delegate BaseGraphNode NodeConverter(INode editorNode);
-		public delegate void ConnectionApplier(INode editorNode, BaseGraphNode runtimeNode, IReadOnlyDictionary<INode, string> idMap);
+
+		private const int s_primaryOutputIndex = 0;
+		private const int s_secondaryOutputIndex = 1;
 
 		private static Func<INode, BaseGraphNode> s_externalConverter;
 
@@ -43,14 +47,17 @@ namespace GraphCore.Editor
 			return BuildBaseGraph(graph, null, null);
 		}
 
-		public static CommonGraph BuildBaseGraph(CommonGraphEditorGraph graph, NodeConverter converter, ConnectionApplier connectionApplier)
+		public static CommonGraph BuildBaseGraph(
+			CommonGraphEditorGraph graph,
+			NodeConverter converter,
+			ConnectionApplier connectionApplier)
 		{
 			if (graph == null)
 			{
 				return null;
 			}
 
-			List<INode> editorNodes = new List<INode>(graph.GetNodes());
+			var editorNodes = new List<INode>(graph.GetNodes());
 			StartNodeModel startNode = FindStartNode(editorNodes);
 			if (startNode == null)
 			{
@@ -60,12 +67,12 @@ namespace GraphCore.Editor
 			NodeConverter effectiveConverter = converter ?? ConvertNode;
 			ConnectionApplier effectiveConnectionApplier = connectionApplier ?? ApplyConnections;
 
-			CommonGraph runtimeGraph = ScriptableObject.CreateInstance<CommonGraph>();
-			List<BaseGraphNode> runtimeNodes = new List<BaseGraphNode>(editorNodes.Count);
-			Dictionary<INode, BaseGraphNode> nodeMap = new Dictionary<INode, BaseGraphNode>(editorNodes.Count);
-			Dictionary<INode, string> idMap = new Dictionary<INode, string>(editorNodes.Count);
+			var runtimeGraph = ScriptableObject.CreateInstance<CommonGraph>();
+			var runtimeNodes = new List<BaseGraphNode>(editorNodes.Count);
+			var nodeMap = new Dictionary<INode, BaseGraphNode>(editorNodes.Count);
+			var idMap = new Dictionary<INode, string>(editorNodes.Count);
 
-			for (int i = 0; i < editorNodes.Count; i++)
+			for (var i = 0; i < editorNodes.Count; i++)
 			{
 				INode editorNode = editorNodes[i];
 				BaseGraphNode runtimeNode = effectiveConverter(editorNode);
@@ -74,7 +81,7 @@ namespace GraphCore.Editor
 					continue;
 				}
 
-				string nodeId = Guid.NewGuid().ToString();
+				var nodeId = Guid.NewGuid().ToString();
 				runtimeNode.nodeId = nodeId;
 				runtimeNodes.Add(runtimeNode);
 				nodeMap[editorNode] = runtimeNode;
@@ -93,7 +100,7 @@ namespace GraphCore.Editor
 
 		private static StartNodeModel FindStartNode(IReadOnlyList<INode> editorNodes)
 		{
-			for (int i = 0; i < editorNodes.Count; i++)
+			for (var i = 0; i < editorNodes.Count; i++)
 			{
 				if (editorNodes[i] is StartNodeModel startNode)
 				{
@@ -121,6 +128,7 @@ namespace GraphCore.Editor
 					{
 						ApplyNodeMetadata(extTyped, externalNode);
 					}
+
 					return externalNode;
 				}
 			}
@@ -165,8 +173,10 @@ namespace GraphCore.Editor
 				},
 				QuestStateConditionNodeModel questStateConditionModel => new QuestStateConditionNode
 				{
-					questId = GetOptionValue<string>(questStateConditionModel, QuestStateConditionNodeModel.QuestIdOption),
-					state = GetOptionValue<QuestState>(questStateConditionModel, QuestStateConditionNodeModel.StateOption)
+					questId = GetOptionValue<string>(questStateConditionModel,
+						QuestStateConditionNodeModel.QuestIdOption),
+					state = GetOptionValue<QuestState>(questStateConditionModel,
+						QuestStateConditionNodeModel.StateOption)
 				},
 				MapMarkerNodeModel mapMarkerModel => new MapMarkerNode
 				{
@@ -175,7 +185,8 @@ namespace GraphCore.Editor
 				},
 				PlayCutsceneNodeModel playCutsceneModel => new PlayCutsceneNode
 				{
-					cutsceneReference = GetOptionValue<string>(playCutsceneModel, PlayCutsceneNodeModel.CutsceneReferenceOption)
+					cutsceneReference =
+						GetOptionValue<string>(playCutsceneModel, PlayCutsceneNodeModel.CutsceneReferenceOption)
 				},
 				_ => null
 			};
@@ -186,7 +197,7 @@ namespace GraphCore.Editor
 
 		private static ChoiceNode BuildChoiceNode(ChoiceNodeModel model)
 		{
-			ChoiceNode node = new ChoiceNode();
+			var node = new ChoiceNode();
 			node.options[0].label = GetOptionValue<string>(model, ChoiceNodeModel.Option1Label);
 			node.options[1].label = GetOptionValue<string>(model, ChoiceNodeModel.Option2Label);
 			node.options[2].label = GetOptionValue<string>(model, ChoiceNodeModel.Option3Label);
@@ -196,7 +207,7 @@ namespace GraphCore.Editor
 
 		private static RandomNode BuildRandomNode(RandomNodeModel model)
 		{
-			RandomNode node = new RandomNode();
+			var node = new RandomNode();
 			node.options[0].weight = GetOptionValue<float>(model, RandomNodeModel.Weight1Option);
 			node.options[1].weight = GetOptionValue<float>(model, RandomNodeModel.Weight2Option);
 			node.options[2].weight = GetOptionValue<float>(model, RandomNodeModel.Weight3Option);
@@ -204,7 +215,10 @@ namespace GraphCore.Editor
 			return node;
 		}
 
-		public static void ApplyConnections(INode editorNode, BaseGraphNode runtimeNode, IReadOnlyDictionary<INode, string> idMap)
+		public static void ApplyConnections(
+			INode editorNode,
+			BaseGraphNode runtimeNode,
+			IReadOnlyDictionary<INode, string> idMap)
 		{
 			if (editorNode == null || runtimeNode == null)
 			{
@@ -213,47 +227,64 @@ namespace GraphCore.Editor
 
 			if (editorNode is ChoiceNodeModel && runtimeNode is ChoiceNode choiceNode)
 			{
-				choiceNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option1Port, idMap);
-				choiceNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option2Port, idMap);
-				choiceNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option3Port, idMap);
-				choiceNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option4Port, idMap);
+				choiceNode.options[0].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option1Port, idMap);
+				choiceNode.options[1].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option2Port, idMap);
+				choiceNode.options[2].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option3Port, idMap);
+				choiceNode.options[3].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, ChoiceNodeModel.Option4Port, idMap);
 				return;
 			}
 
 			if (editorNode is RandomNodeModel && runtimeNode is RandomNode randomNode)
 			{
-				randomNode.options[0].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option1Port, idMap);
-				randomNode.options[1].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option2Port, idMap);
-				randomNode.options[2].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option3Port, idMap);
-				randomNode.options[3].nextNodeId = GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option4Port, idMap);
+				randomNode.options[0].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option1Port, idMap);
+				randomNode.options[1].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option2Port, idMap);
+				randomNode.options[2].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option3Port, idMap);
+				randomNode.options[3].nextNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option4Port, idMap);
 				return;
 			}
 
 			if (editorNode is CheckpointNodeModel && runtimeNode is CheckpointNode checkpointNode)
 			{
-				checkpointNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.SuccessPort, idMap);
-				checkpointNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.FailPort, idMap);
+				checkpointNode.successNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.SuccessPort, idMap);
+				checkpointNode.failNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CheckpointNodeModel.FailPort, idMap);
 				return;
 			}
 
 			if (editorNode is StartQuestNodeModel && runtimeNode is StartQuestNode startQuestNode)
 			{
-				startQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.SuccessPort, idMap);
-				startQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.FailPort, idMap);
+				startQuestNode.successNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.SuccessPort, idMap);
+				startQuestNode.failNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, StartQuestNodeModel.FailPort, idMap);
 				return;
 			}
 
 			if (editorNode is CompleteQuestNodeModel && runtimeNode is CompleteQuestNode completeQuestNode)
 			{
-				completeQuestNode.successNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.SuccessPort, idMap);
-				completeQuestNode.failNodeId = GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.FailPort, idMap);
+				completeQuestNode.successNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.SuccessPort, idMap);
+				completeQuestNode.failNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CompleteQuestNodeModel.FailPort, idMap);
 				return;
 			}
 
-			if (editorNode is QuestStateConditionNodeModel && runtimeNode is QuestStateConditionNode questStateConditionNode)
+			if (editorNode is QuestStateConditionNodeModel &&
+			    runtimeNode is QuestStateConditionNode questStateConditionNode)
 			{
-				questStateConditionNode.trueNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.TruePort, idMap);
-				questStateConditionNode.falseNodeId = GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.FalsePort, idMap);
+				questStateConditionNode.trueNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.TruePort, idMap);
+				questStateConditionNode.falseNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, QuestStateConditionNodeModel.FalsePort, idMap);
 				return;
 			}
 
@@ -280,7 +311,10 @@ namespace GraphCore.Editor
 			}
 		}
 
-		public static string GetConnectedNodeIdByOutputIndex(INode node, int outputIndex, IReadOnlyDictionary<INode, string> idMap)
+		public static string GetConnectedNodeIdByOutputIndex(
+			INode node,
+			int outputIndex,
+			IReadOnlyDictionary<INode, string> idMap)
 		{
 			if (node == null || outputIndex < 0 || outputIndex >= node.outputPortCount)
 			{
@@ -303,7 +337,10 @@ namespace GraphCore.Editor
 			return idMap.TryGetValue(nextNode, out string id) ? id : null;
 		}
 
-		public static string GetConnectedNodeIdByOutputName(INode node, string outputPortName, IReadOnlyDictionary<INode, string> idMap)
+		public static string GetConnectedNodeIdByOutputName(
+			INode node,
+			string outputPortName,
+			IReadOnlyDictionary<INode, string> idMap)
 		{
 			if (node == null || string.IsNullOrWhiteSpace(outputPortName))
 			{

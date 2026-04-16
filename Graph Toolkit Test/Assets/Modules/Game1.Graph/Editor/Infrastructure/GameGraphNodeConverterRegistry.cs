@@ -1,13 +1,13 @@
-using Game1.Graph.Runtime;
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using Game1.Graph.Runtime;
 
 namespace Game1.Graph.Editor.Infrastructure
 {
 	public sealed class GameGraphNodeConverterRegistry
 	{
-		private readonly List<IGameGraphNodeConverter> m_converters = new List<IGameGraphNodeConverter>();
-		private readonly HashSet<Type> m_registeredConverterTypes = new HashSet<Type>();
+		private readonly List<IGameGraphNodeConverter> m_converters = new();
+		private readonly HashSet<Type> m_registeredConverterTypes = new();
 
 		public void Register(IGameGraphNodeConverter converter)
 		{
@@ -19,9 +19,9 @@ namespace Game1.Graph.Editor.Infrastructure
 			Type converterType = converter.GetType();
 
 			if (m_registeredConverterTypes.Contains(converterType))
-			{
 				// replace existing
-				for (int i = 0; i < m_converters.Count; i++)
+			{
+				for (var i = 0; i < m_converters.Count; i++)
 				{
 					if (m_converters[i].GetType() == converterType)
 					{
@@ -48,7 +48,7 @@ namespace Game1.Graph.Editor.Infrastructure
 				return false;
 			}
 
-			for (int i = 0; i < m_converters.Count; i++)
+			for (var i = 0; i < m_converters.Count; i++)
 			{
 				IGameGraphNodeConverter converter = m_converters[i];
 				if (!converter.CanConvert(editorNodeModel))
@@ -73,7 +73,7 @@ namespace Game1.Graph.Editor.Infrastructure
 				return false;
 			}
 
-			for (int i = 0; i < m_converters.Count; i++)
+			for (var i = 0; i < m_converters.Count; i++)
 			{
 				if (m_converters[i].CanConvert(editorNodeModel))
 				{

@@ -1,14 +1,17 @@
+using System.Threading;
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime.Executors.Templates;
 using GraphCore.Runtime.Nodes.Flow;
-using System.Threading;
 using UnityEngine;
 
 namespace GraphCore.Runtime.Executors.Flow
 {
 	public sealed class DelayNodeExecutor : CoreGraphNextNodeExecutor<DelayNode>
 	{
-		protected override async UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(DelayNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override async UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
+			DelayNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (node.delaySeconds <= 0f)
 			{

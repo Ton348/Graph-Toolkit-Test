@@ -1,9 +1,6 @@
 using System.Collections.Generic;
-using System;
-using GraphCore.Runtime;
-
-using Game1.Graph.Runtime;
 using Game1.Graph.Runtime.Infrastructure.Validation;
+
 namespace Game1.Graph.Runtime.Validation
 {
 	public static class GameGraphValidationHelpers
@@ -19,7 +16,9 @@ namespace Game1.Graph.Runtime.Validation
 			return false;
 		}
 
-		public static bool ValidateAnyNodeId(ICollection<string> errors, params (string fieldName, string nodeId)[] fields)
+		public static bool ValidateAnyNodeId(
+			ICollection<string> errors,
+			params (string fieldName, string nodeId)[] fields)
 		{
 			if (fields == null || fields.Length == 0)
 			{
@@ -27,7 +26,7 @@ namespace Game1.Graph.Runtime.Validation
 				return false;
 			}
 
-			for (int i = 0; i < fields.Length; i++)
+			for (var i = 0; i < fields.Length; i++)
 			{
 				if (!string.IsNullOrWhiteSpace(fields[i].nodeId))
 				{
@@ -50,7 +49,11 @@ namespace Game1.Graph.Runtime.Validation
 			return false;
 		}
 
-		public static bool ValidateNodeId(string nodeId, GameGraphNode node, string fieldName, GameGraphValidationResult result)
+		public static bool ValidateNodeId(
+			string nodeId,
+			GameGraphNode node,
+			string fieldName,
+			GameGraphValidationResult result)
 		{
 			if (!string.IsNullOrWhiteSpace(nodeId))
 			{
@@ -61,7 +64,11 @@ namespace Game1.Graph.Runtime.Validation
 			return false;
 		}
 
-		public static bool ValidateRequiredString(string value, GameGraphNode node, string fieldName, GameGraphValidationResult result)
+		public static bool ValidateRequiredString(
+			string value,
+			GameGraphNode node,
+			string fieldName,
+			GameGraphValidationResult result)
 		{
 			if (!string.IsNullOrWhiteSpace(value))
 			{

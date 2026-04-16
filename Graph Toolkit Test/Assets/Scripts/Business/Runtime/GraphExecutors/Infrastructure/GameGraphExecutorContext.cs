@@ -1,8 +1,6 @@
-using System.Threading;
+using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using GraphCore.Runtime;
-using UnityEngine;
-using Game1.Graph.Runtime;
 
 internal static class GameGraphExecutorContext
 {
@@ -12,12 +10,15 @@ internal static class GameGraphExecutorContext
 		return context != null && context.TryGet(GraphContextKeys.runtimeBootstrap, out bootstrap) && bootstrap != null;
 	}
 
-	public static async UniTask<ServerActionResult> ExecuteServerAsync(GraphExecutionContext context, UniTask<ServerActionResult> action)
+	public static async UniTask<ServerActionResult> ExecuteServerAsync(
+		GraphExecutionContext context,
+		UniTask<ServerActionResult> action)
 	{
 		ServerActionResult result = await action;
 		context?.Set(GraphContextKeys.serverLastResult, result);
 
-		if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) && bootstrap.ProfileSyncService != null)
+		if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) &&
+		    bootstrap.ProfileSyncService != null)
 		{
 			bootstrap.ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
 		}
@@ -25,12 +26,15 @@ internal static class GameGraphExecutorContext
 		return result;
 	}
 
-	public static async UniTask<ServerActionResult> ExecuteServerAsync(GraphExecutionContext context, System.Threading.Tasks.Task<ServerActionResult> action)
+	public static async UniTask<ServerActionResult> ExecuteServerAsync(
+		GraphExecutionContext context,
+		Task<ServerActionResult> action)
 	{
 		ServerActionResult result = await action;
 		context?.Set(GraphContextKeys.serverLastResult, result);
 
-		if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) && bootstrap.ProfileSyncService != null)
+		if (result?.ProfileSnapshot != null && TryGetBootstrap(context, out GameBootstrap bootstrap) &&
+		    bootstrap.ProfileSyncService != null)
 		{
 			bootstrap.ProfileSyncService.ApplySnapshot(result.ProfileSnapshot);
 		}

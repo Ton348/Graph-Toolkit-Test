@@ -1,11 +1,11 @@
 public enum InteractionContextType
 {
-    Normal,
-    Steal
+	Normal,
+	Steal
 }
 
 public class InteractionContext
 {
-    public InteractionContextType contextType;
-    public Npcmanager sourceNpc;
+	public InteractionContextType contextType;
+	public Npcmanager sourceNpc;
 }

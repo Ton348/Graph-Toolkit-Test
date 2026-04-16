@@ -1,5 +1,5 @@
-using GraphCore.Editor;
 using System;
+using GraphCore.Runtime.Nodes.Server;
 using Unity.GraphToolkit.Editor;
 
 namespace GraphCore.Editor.BaseNodes.Server
@@ -14,21 +14,24 @@ namespace GraphCore.Editor.BaseNodes.Server
 		public const string FailPort = "Fail";
 
 		protected override string defaultTitle => "Управление чекпоинтом";
-		protected override string defaultDescription => "Сохраняет или удаляет checkpoint с которого начнется старт графа в профиле игрока";
+
+		protected override string defaultDescription =>
+			"Сохраняет или удаляет checkpoint с которого начнется старт графа в профиле игрока";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
 			context.AddOption<string>(CheckpointIdOption).WithDisplayName("CheckpointId");
-			context.AddOption<GraphCore.Runtime.Nodes.Server.CheckpointAction>(ActionOption)
+			context.AddOption<CheckpointAction>(ActionOption)
 				.WithDisplayName("Action")
-				.WithDefaultValue(GraphCore.Runtime.Nodes.Server.CheckpointAction.Save);
+				.WithDefaultValue(CheckpointAction.Save);
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(SuccessPort).WithDisplayName("Success").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(SuccessPort).WithDisplayName("Success").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
 			context.AddOutputPort(FailPort).WithDisplayName("Fail").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
 		}
 	}

@@ -1,17 +1,19 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime;
-using Game1.Graph.Runtime;
-
-using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Templates.Executors;
+using GraphCore.Runtime;
+
 [GameGraphNodeExecutorAttribute]
 public sealed class SetGameObjectActiveNodeExecutor : GameGraphNextNodeExecutor<SetGameObjectActiveNode>
 {
-	protected override async UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(SetGameObjectActiveNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+	protected override async UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
+		SetGameObjectActiveNode node,
+		GraphExecutionContext context,
+		CancellationToken cancellationToken)
 	{
-		if (!GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap) || bootstrap.GameServer == null)
+		if (!GameGraphExecutorContext.TryGetBootstrap(context, out GameBootstrap bootstrap) ||
+		    bootstrap.GameServer == null)
 		{
 			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
 		}
@@ -26,18 +28,22 @@ public sealed class SetGameObjectActiveNodeExecutor : GameGraphNextNodeExecutor<
 		{
 			string visualId = !string.IsNullOrWhiteSpace(node.visualId)
 				? node.visualId.Trim()
-				: node.targetObject != null ? node.targetObject.name : null;
+				: node.targetObject != null
+					? node.targetObject.name
+					: null;
 
 			if (string.IsNullOrWhiteSpace(visualId))
 			{
 				return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
 			}
 
-			await GameGraphExecutorContext.ExecuteServerAsync(context, bootstrap.GameServer.TryConstructSiteVisualAsync(siteId, visualId));
+			await GameGraphExecutorContext.ExecuteServerAsync(context,
+				bootstrap.GameServer.TryConstructSiteVisualAsync(siteId, visualId));
 		}
 		else
 		{
-			await GameGraphExecutorContext.ExecuteServerAsync(context, bootstrap.GameServer.TryRemoveSiteVisualAsync(siteId));
+			await GameGraphExecutorContext.ExecuteServerAsync(context,
+				bootstrap.GameServer.TryRemoveSiteVisualAsync(siteId));
 		}
 
 		return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);

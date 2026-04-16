@@ -6,7 +6,7 @@ namespace GraphCore.Runtime.Nodes.Flow
 	[Serializable]
 	public sealed class RandomNode : BaseGraphNode
 	{
-		public readonly List<RandomOption> options = new List<RandomOption>(4)
+		public readonly List<RandomOption> options = new(4)
 		{
 			new RandomOption(),
 			new RandomOption(),

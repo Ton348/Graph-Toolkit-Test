@@ -5,7 +5,7 @@ namespace GraphCore.Runtime
 {
 	public sealed class GraphValidationResult
 	{
-		private readonly List<GraphValidationIssue> m_issues = new List<GraphValidationIssue>();
+		private readonly List<GraphValidationIssue> m_issues = new();
 		private List<GraphValidationIssue> m_errors;
 		private List<GraphValidationIssue> m_warnings;
 
@@ -53,20 +53,30 @@ namespace GraphCore.Runtime
 			InvalidateCaches();
 		}
 
-		public void AddError(string message, string nodeId = null, string nodeType = null, string fieldName = null, int nodeIndex = -1)
+		public void AddError(
+			string message,
+			string nodeId = null,
+			string nodeType = null,
+			string fieldName = null,
+			int nodeIndex = -1)
 		{
 			AddIssue(GraphValidationIssue.Error(message, nodeId, nodeType, fieldName, nodeIndex));
 		}
 
-		public void AddWarning(string message, string nodeId = null, string nodeType = null, string fieldName = null, int nodeIndex = -1)
+		public void AddWarning(
+			string message,
+			string nodeId = null,
+			string nodeType = null,
+			string fieldName = null,
+			int nodeIndex = -1)
 		{
 			AddIssue(GraphValidationIssue.Warning(message, nodeId, nodeType, fieldName, nodeIndex));
 		}
 
 		private List<GraphValidationIssue> FilterIssues(GraphValidationSeverity severity)
 		{
-			List<GraphValidationIssue> issues = new List<GraphValidationIssue>();
-			for (int i = 0; i < m_issues.Count; i++)
+			var issues = new List<GraphValidationIssue>();
+			for (var i = 0; i < m_issues.Count; i++)
 			{
 				GraphValidationIssue issue = m_issues[i];
 				if (issue.severity == severity)

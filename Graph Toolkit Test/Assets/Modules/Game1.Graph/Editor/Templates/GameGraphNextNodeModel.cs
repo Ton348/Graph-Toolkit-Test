@@ -1,9 +1,7 @@
-using Game1.Graph.Runtime;
-using GraphCore.Editor;
 using System;
+using GraphCore.Editor;
 using Unity.GraphToolkit.Editor;
 
-using Game1.Graph.Editor;
 namespace Game1.Graph.Editor.Templates
 {
 	[Serializable]

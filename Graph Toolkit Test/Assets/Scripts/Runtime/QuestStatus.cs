@@ -1,7 +1,7 @@
 public enum QuestStatus
 {
-    Inactive,
-    Active,
-    Completed,
-    Failed
+	Inactive,
+	Active,
+	Completed,
+	Failed
 }

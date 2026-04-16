@@ -1,16 +1,20 @@
-using Game1.Graph.Runtime;
-using GraphCore.Editor;
-using GraphCore.Runtime;
 using System.Collections.Generic;
 using System.Text;
+using Game1.Graph.Runtime;
+using Game1.Graph.Runtime.Infrastructure.Validation;
+using GraphCore.Editor;
+using GraphCore.Runtime;
 using UnityEngine;
 
-using Game1.Graph.Runtime.Infrastructure.Validation;
 namespace Game1.Graph.Editor.Infrastructure.Validation
 {
 	public static class GameGraphBuildValidationBridge
 	{
-		public static bool ValidateBeforeBuild(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath, GameGraphValidationComposition validationComposition)
+		public static bool ValidateBeforeBuild(
+			CommonGraphEditorGraph editorGraph,
+			CommonGraph runtimeGraph,
+			string editorGraphPath,
+			GameGraphValidationComposition validationComposition)
 		{
 			if (runtimeGraph == null)
 			{
@@ -42,18 +46,19 @@ namespace Game1.Graph.Editor.Infrastructure.Validation
 				Debug.LogError(report);
 				return false;
 			}
+
 			return true;
 		}
 
 		private static List<GameGraphNode> CollectGameNodes(List<BaseGraphNode> nodes)
 		{
-			List<GameGraphNode> result = new List<GameGraphNode>();
+			var result = new List<GameGraphNode>();
 			if (nodes == null)
 			{
 				return result;
 			}
 
-			for (int i = 0; i < nodes.Count; i++)
+			for (var i = 0; i < nodes.Count; i++)
 			{
 				if (nodes[i] is GameGraphNode gameNode)
 				{
@@ -66,7 +71,7 @@ namespace Game1.Graph.Editor.Infrastructure.Validation
 
 		private static string BuildReport(string graphName, GameGraphValidationResult result)
 		{
-			StringBuilder builder = new StringBuilder();
+			var builder = new StringBuilder();
 			builder.Append("[GameGraphValidation] Graph '")
 				.Append(graphName)
 				.Append("': errors=")
@@ -75,7 +80,7 @@ namespace Game1.Graph.Editor.Infrastructure.Validation
 				.Append(result.WarningCount);
 
 			IReadOnlyList<GameGraphValidationIssue> issues = result.Issues;
-			for (int i = 0; i < issues.Count; i++)
+			for (var i = 0; i < issues.Count; i++)
 			{
 				GameGraphValidationIssue issue = issues[i];
 				builder.Append("\n - [")

@@ -1,6 +1,6 @@
 public enum UpgradeResult
 {
-    Success,
-    NotOwned,
-    NotEnoughMoney
+	Success,
+	NotOwned,
+	NotEnoughMoney
 }

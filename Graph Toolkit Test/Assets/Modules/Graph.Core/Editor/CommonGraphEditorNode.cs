@@ -12,7 +12,10 @@ namespace GraphCore.Editor
 		public const string ExecutionPortName = "Next";
 		public const string TitleOption = "NodeTitle";
 		public const string DescriptionOption = "NodeDescription";
-		private static readonly BindingFlags s_instancePublicAndNonPublic = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+		private static readonly BindingFlags s_instancePublicAndNonPublic =
+			BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
 		private static readonly BindingFlags s_instancePublic = BindingFlags.Instance | BindingFlags.Public;
 
 		protected virtual string defaultTitle => GetType().Name;
@@ -68,8 +71,8 @@ namespace GraphCore.Editor
 				attributes = new List<Attribute>();
 			}
 
-			bool hasMultilineAttribute = false;
-			for (int i = 0; i < attributes.Count; i++)
+			var hasMultilineAttribute = false;
+			for (var i = 0; i < attributes.Count; i++)
 			{
 				if (attributes[i] is MultilineAttribute)
 				{
@@ -100,13 +103,14 @@ namespace GraphCore.Editor
 				return null;
 			}
 
-			IReadOnlyList<Attribute> attributes = attributesProperty.GetValue(portModel) as IReadOnlyList<Attribute>;
+			var attributes = attributesProperty.GetValue(portModel) as IReadOnlyList<Attribute>;
 			return attributes == null ? null : new List<Attribute>(attributes);
 		}
 
 		private static void SetAttributes(object portModel, List<Attribute> attributes)
 		{
-			MethodInfo setAttributesMethod = portModel.GetType().GetMethod("SetAttributes", s_instancePublicAndNonPublic);
+			MethodInfo setAttributesMethod =
+				portModel.GetType().GetMethod("SetAttributes", s_instancePublicAndNonPublic);
 			setAttributesMethod?.Invoke(portModel, new object[] { attributes });
 		}
 	}
