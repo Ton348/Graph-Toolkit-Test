@@ -107,39 +107,6 @@ function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRol
     });
   }
 
-  if (!staffRoles || !Array.isArray(staffRoles.roles)) {
-    console.error('[server][business] staff_roles missing "roles" array');
-    errors++;
-  } else {
-    const ids = new Set();
-    staffRoles.roles.forEach((r, i) => {
-      if (!r || !r.id || !String(r.id).trim()) {
-        console.error(`[server][business] staff role at index ${i} missing id`);
-        errors++;
-        return;
-      }
-      if (ids.has(r.id)) {
-        console.error(`[server][business] duplicate staff role id: ${r.id}`);
-        errors++;
-      }
-      ids.add(r.id);
-      if ((Number.isFinite(r.salaryPerDay) && r.salaryPerDay < 0) ||
-          (Number.isFinite(r.throughputPerHour) && r.throughputPerHour < 0)) {
-        console.warn(`[server][business] staff role ${r.id} has negative values`);
-        warnings++;
-      }
-    });
-  }
-
-  const roleIds = new Set();
-  if (staffRoles && Array.isArray(staffRoles.roles)) {
-    staffRoles.roles.forEach(r => {
-      if (r && r.id && String(r.id).trim()) {
-        roleIds.add(String(r.id).trim());
-      }
-    });
-  }
-
   if (!staffContacts || !Array.isArray(staffContacts.contacts)) {
     console.error('[server][business] staff_contacts missing "contacts" array');
     errors++;
@@ -157,14 +124,6 @@ function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRol
         errors++;
       }
       ids.add(c.id);
-
-      if (!c.roleId || !String(c.roleId).trim()) {
-        console.error(`[server][business] staff contact ${c.id} missing roleId`);
-        errors++;
-      } else if (!roleIds.has(c.roleId)) {
-        console.error(`[server][business] staff contact ${c.id} references unknown roleId: ${c.roleId}`);
-        errors++;
-      }
 
       if ((Number.isFinite(c.salaryPerDay) && c.salaryPerDay < 0) ||
           (Number.isFinite(c.throughputPerHour) && c.throughputPerHour < 0)) {
@@ -207,14 +166,46 @@ function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRol
   console.log(`[server][business] validated with ${warnings} warning(s)`);
 }
 
+function buildFromPeople(peopleData) {
+  const suppliers = { suppliers: [] };
+  const staffRoles = { roles: [] };
+  const staffContacts = { contacts: [] };
+
+  const people = peopleData && Array.isArray(peopleData.people) ? peopleData.people : [];
+  people.forEach(person => {
+    if (!person || !person.contactId) {
+      return;
+    }
+
+    staffContacts.contacts.push({
+      id: String(person.contactId).trim(),
+      displayName: person.displayName || String(person.contactId).trim(),
+      salaryPerDay: Number.isFinite(person.salaryPerDay) ? person.salaryPerDay : 0,
+      throughputPerHour: Number.isFinite(person.throughputPerHour) ? person.throughputPerHour : 0
+    });
+
+    if (person.supplierConfig) {
+      suppliers.suppliers.push({
+        id: String(person.contactId).trim(),
+        displayName: person.displayName || String(person.contactId).trim(),
+        productType: person.supplierConfig.productType || '',
+        unitBuyPrice: Number.isFinite(person.supplierConfig.unitBuyPrice) ? person.supplierConfig.unitBuyPrice : 0,
+        minDeliveryAmount: Number.isFinite(person.supplierConfig.minDeliveryAmount) ? person.supplierConfig.minDeliveryAmount : 0,
+        maxDeliveryAmount: Number.isFinite(person.supplierConfig.maxDeliveryAmount) ? person.supplierConfig.maxDeliveryAmount : 0
+      });
+    }
+  });
+
+  return { suppliers, staffRoles, staffContacts };
+}
+
 function loadBusinessDefinitions() {
   fs.mkdirSync(BUSINESS_DIR, { recursive: true });
 
   const businessTypes = readJson(path.join(BUSINESS_DIR, 'business_types.json'));
   const modules = readJson(path.join(BUSINESS_DIR, 'business_modules.json'));
-  const suppliers = readJson(path.join(BUSINESS_DIR, 'suppliers.json'));
-  const staffRoles = readJson(path.join(BUSINESS_DIR, 'staff_roles.json'));
-  const staffContacts = readJson(path.join(BUSINESS_DIR, 'staff_contacts.json'));
+  const peopleData = readJson(path.join(BUSINESS_DIR, 'people.json'));
+  const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
   const behaviors = readJson(path.join(BUSINESS_DIR, 'customer_behavior.json'));
 
   validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors);

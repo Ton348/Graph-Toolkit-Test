@@ -10,8 +10,6 @@ namespace Prototype.Business.Simulation
 		private const string s_moduleStorage = "storage";
 		private const string s_moduleShelves = "shelves";
 		private const string s_moduleCashRegister = "cash_register";
-		private const string s_roleCashier = "cashier";
-		private const string s_roleMerchandiser = "merchandiser";
 
 		public static void SimulateTick(
 			BusinessSimulationState state,
@@ -25,8 +23,8 @@ namespace Prototype.Business.Simulation
 
 			state.ResetTick();
 
-			StaffRoleDefinitionData cashierRole = definitions.GetStaffRole(s_roleCashier);
-			StaffRoleDefinitionData merchRole = definitions.GetStaffRole(s_roleMerchandiser);
+			StaffContactDefinitionData cashierContact = definitions.GetStaffContact(state.hiredCashierContactId);
+			StaffContactDefinitionData merchContact = definitions.GetStaffContact(state.hiredMerchContactId);
 			SupplierDefinitionData supplier = definitions.GetSupplier(state.selectedSupplierId);
 
 			var tickIncome = 0f;
@@ -37,14 +35,14 @@ namespace Prototype.Business.Simulation
 				tickExpenses += state.rentPerDay / s_secondsPerDay * deltaSeconds;
 			}
 
-			if (!string.IsNullOrWhiteSpace(state.hiredCashierContactId) && cashierRole != null)
+			if (!string.IsNullOrWhiteSpace(state.hiredCashierContactId) && cashierContact != null)
 			{
-				tickExpenses += cashierRole.salaryPerDay / s_secondsPerDay * deltaSeconds;
+				tickExpenses += cashierContact.salaryPerDay / s_secondsPerDay * deltaSeconds;
 			}
 
-			if (!string.IsNullOrWhiteSpace(state.hiredMerchContactId) && merchRole != null)
+			if (!string.IsNullOrWhiteSpace(state.hiredMerchContactId) && merchContact != null)
 			{
-				tickExpenses += merchRole.salaryPerDay / s_secondsPerDay * deltaSeconds;
+				tickExpenses += merchContact.salaryPerDay / s_secondsPerDay * deltaSeconds;
 			}
 
 			if (supplier != null && state.autoDeliveryPerDay > 0 && state.storageCapacity > 0)
@@ -64,9 +62,9 @@ namespace Prototype.Business.Simulation
 			if (state.HasModule(s_moduleStorage)
 			    && state.HasModule(s_moduleShelves)
 			    && !string.IsNullOrWhiteSpace(state.hiredMerchContactId)
-			    && merchRole != null)
+			    && merchContact != null)
 			{
-				float merchRatePerSecond = merchRole.throughputPerHour / s_secondsPerHour;
+				float merchRatePerSecond = merchContact.throughputPerHour / s_secondsPerHour;
 				float desired = merchRatePerSecond * deltaSeconds;
 				float shelfSpace = Mathf.Max(0f, state.shelfCapacity - state.shelfStock);
 				float moved = Mathf.Min(desired, Mathf.Min(state.storageStock, shelfSpace));
@@ -82,13 +80,13 @@ namespace Prototype.Business.Simulation
 			    && state.HasModule(s_moduleCashRegister)
 			    && state.HasModule(s_moduleShelves)
 			    && !string.IsNullOrWhiteSpace(state.hiredCashierContactId)
-			    && cashierRole != null
+			    && cashierContact != null
 			    && state.shelfStock > 0f)
 			{
 				float demand = CalculateDemand(state, definitions, deltaSeconds);
 				state.lastDemand = demand;
 
-				float cashierRatePerSecond = cashierRole.throughputPerHour / s_secondsPerHour;
+				float cashierRatePerSecond = cashierContact.throughputPerHour / s_secondsPerHour;
 				if (state.cashierMultiplier > 0f)
 				{
 					cashierRatePerSecond *= state.cashierMultiplier;

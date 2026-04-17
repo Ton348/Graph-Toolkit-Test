@@ -146,8 +146,6 @@ function hireBusinessWorker(profile, data, businessDefs) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
-  const roleDef = businessDefs && businessDefs.staffRoleById && businessDefs.staffRoleById.get(roleId);
-  if (!roleDef) return fail('InvalidWorkerRole', 'Worker role not found.');
   if (!contactId) {
     if (roleId === 'cashier') {
       business.hiredCashierContactId = null;
@@ -160,6 +158,7 @@ function hireBusinessWorker(profile, data, businessDefs) {
     }
     if (roleId === 'logist') {
       business.hiredLogistContactId = null;
+      business.selectedSupplierId = null;
       return ok('Clear logist success.');
     }
 
@@ -170,17 +169,13 @@ function hireBusinessWorker(profile, data, businessDefs) {
     return fail('ContactNotKnown', 'Contact not unlocked.');
   }
 
-  const contactDef = businessDefs && businessDefs.staffContactById && businessDefs.staffContactById.get(contactId);
-  if (contactDef && contactDef.roleId && contactDef.roleId !== roleId) {
-    return fail('ContactRoleMismatch', 'Contact does not match selected role.');
-  }
-
   if (roleId === 'cashier') {
     business.hiredCashierContactId = contactId;
   } else if (roleId === 'merchandiser') {
     business.hiredMerchContactId = contactId;
   } else if (roleId === 'logist') {
     business.hiredLogistContactId = contactId;
+    business.selectedSupplierId = contactId;
   } else {
     return fail('InvalidWorkerRole', 'Unsupported worker role.');
   }

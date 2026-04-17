@@ -242,17 +242,17 @@ namespace Prototype.Business.UI
 				? m_stateSync.GetKnownContacts().Where(id => !string.IsNullOrWhiteSpace(id)).ToList()
 				: new List<string>();
 
-			List<string> cashierOptions = BuildWorkerContactOptions("cashier")
+			List<string> cashierOptions = BuildWorkerContactOptions()
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
 
-			List<string> merchOptions = BuildWorkerContactOptions("merchandiser")
+			List<string> merchOptions = BuildWorkerContactOptions()
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
 
-			List<string> logistOptions = BuildWorkerContactOptions("logist")
+			List<string> logistOptions = BuildWorkerContactOptions()
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
@@ -369,9 +369,10 @@ namespace Prototype.Business.UI
 			detailsView.SetCashDeskOptions(moduleOptions, detailsView.GetPendingCashDeskId());
 			detailsView.SetShelfOptions(moduleOptions, detailsView.GetPendingShelfId());
 
-			detailsView.SetSupplierOptions(BuildWorkerContactOptions("logist"), detailsView.GetPendingSupplierId());
-			detailsView.SetCashierOptions(BuildWorkerContactOptions("cashier"), detailsView.GetPendingCashierId());
-			detailsView.SetMerchandiserOptions(BuildWorkerContactOptions("merchandiser"), detailsView.GetPendingMerchandiserId());
+			IEnumerable<BusinessDetailsView.IdOption> contacts = BuildWorkerContactOptions();
+			detailsView.SetSupplierOptions(contacts, detailsView.GetPendingSupplierId());
+			detailsView.SetCashierOptions(contacts, detailsView.GetPendingCashierId());
+			detailsView.SetMerchandiserOptions(contacts, detailsView.GetPendingMerchandiserId());
 		}
 
 		private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessOptions()
@@ -465,16 +466,16 @@ namespace Prototype.Business.UI
 			return options;
 		}
 
-		private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptions(string roleId)
+		private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptions()
 		{
 			var options = new List<BusinessDetailsView.IdOption>();
-			if (string.IsNullOrWhiteSpace(roleId) || m_definitions == null || m_stateSync == null)
+			if (m_definitions == null || m_stateSync == null)
 			{
 				return options;
 			}
 
 			HashSet<string> known = new HashSet<string>(m_stateSync.GetKnownContacts());
-			foreach (StaffContactDefinitionData contact in m_definitions.GetStaffContactsByRole(roleId))
+			foreach (StaffContactDefinitionData contact in m_definitions.GetAllStaffContacts())
 			{
 				if (contact == null || string.IsNullOrWhiteSpace(contact.id) || !known.Contains(contact.id))
 				{

@@ -59,16 +59,16 @@ namespace Prototype.Business.Runtime
 			return suppliers;
 		}
 
-		public IEnumerable<string> GetAvailableWorkers(string roleId)
+		public IEnumerable<string> GetAvailableWorkers(string _)
 		{
-			if (m_stateSync == null || m_definitions == null || string.IsNullOrWhiteSpace(roleId))
+			if (m_stateSync == null || m_definitions == null)
 			{
 				return Enumerable.Empty<string>();
 			}
 
 			var known = new HashSet<string>(m_stateSync.GetKnownContacts());
 			var result = new List<string>();
-			foreach (StaffContactDefinitionData contact in m_definitions.GetStaffContactsByRole(roleId))
+			foreach (StaffContactDefinitionData contact in m_definitions.GetAllStaffContacts())
 			{
 				if (contact != null && !string.IsNullOrWhiteSpace(contact.id) && known.Contains(contact.id))
 				{

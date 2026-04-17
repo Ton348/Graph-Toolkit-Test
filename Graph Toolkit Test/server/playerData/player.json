@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 200,
+  "money": 1000,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -8,39 +8,9 @@
   "damage": 1,
   "health": 100,
   "activeQuests": [],
-  "completedQuests": [
-    "buy_building"
-  ],
+  "completedQuests": [],
   "graphCheckpoints": {},
-  "constructedSites": [
-    {
-      "siteId": "site_market_01",
-      "visualId": "Building_Pizza",
-      "isConstructed": true
-    }
-  ],
-  "businesses": [
-    {
-      "instanceId": "biz_1776432229138_7815",
-      "lotId": "lot_market_01",
-      "businessTypeId": "grocery_store",
-      "isOpen": false,
-      "rentPerDay": 1000,
-      "installedModules": [],
-      "storageCapacity": 1000,
-      "shelfCapacity": 200,
-      "storageStock": 0,
-      "shelfStock": 0,
-      "selectedSupplierId": null,
-      "autoDeliveryPerDay": 0,
-      "markupPercent": 0,
-      "hiredCashierContactId": "cashier_1",
-      "hiredMerchContactId": "merch_1",
-      "hiredLogistContactId": null
-    }
-  ],
-  "knownContacts": [
-    "merch_1",
-    "cashier_1"
-  ]
+  "constructedSites": [],
+  "businesses": [],
+  "knownContacts": []
 }

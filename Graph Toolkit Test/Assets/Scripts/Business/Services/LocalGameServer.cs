@@ -799,12 +799,6 @@ namespace Prototype.Business.Services
 					"roleId is required.");
 			}
 
-			if (string.IsNullOrWhiteSpace(contactId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ContactIdEmpty",
-					"contactId is required.");
-			}
-
 			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
 			if (business == null)
 			{
@@ -812,11 +806,29 @@ namespace Prototype.Business.Services
 					"Business not found.");
 			}
 
-			StaffRoleDefinitionData role = m_businessRepository?.GetStaffRole(roleId);
-			if (role == null)
+			if (string.IsNullOrWhiteSpace(contactId))
 			{
+				if (roleId == "cashier")
+				{
+					business.hiredCashierContactId = null;
+					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear cashier success.");
+				}
+
+				if (roleId == "merchandiser")
+				{
+					business.hiredMerchContactId = null;
+					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear merchandiser success.");
+				}
+
+				if (roleId == "logist")
+				{
+					business.hiredLogistContactId = null;
+					business.selectedSupplierId = null;
+					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear logist success.");
+				}
+
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidWorkerRole",
-					"Worker role not found.");
+					"Unsupported worker role.");
 			}
 
 			if (!m_knownContacts.Contains(contactId))
@@ -836,6 +848,7 @@ namespace Prototype.Business.Services
 			else if (roleId == "logist")
 			{
 				business.hiredLogistContactId = contactId;
+				business.selectedSupplierId = contactId;
 			}
 			else
 			{

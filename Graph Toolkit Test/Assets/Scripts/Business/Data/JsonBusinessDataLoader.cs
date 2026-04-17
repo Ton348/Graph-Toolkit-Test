@@ -7,6 +7,7 @@ namespace Prototype.Business.Data
 	public sealed class JsonBusinessDataLoader
 	{
 		private readonly string m_rootPath;
+		private BusinessPeopleDatabaseData m_peopleCache;
 
 		public JsonBusinessDataLoader(string rootPath)
 		{
@@ -25,17 +26,65 @@ namespace Prototype.Business.Data
 
 		public SupplierDatabaseData LoadSuppliers()
 		{
-			return Load<SupplierDatabaseData>("suppliers.json", "suppliers");
+			BusinessPeopleDatabaseData peopleData = LoadPeople();
+			var db = new SupplierDatabaseData();
+			if (peopleData?.people == null)
+			{
+				return db;
+			}
+
+			foreach (BusinessPersonDefinitionData person in peopleData.people)
+			{
+				if (person == null || string.IsNullOrWhiteSpace(person.contactId) || person.supplierConfig == null)
+				{
+					continue;
+				}
+
+				db.suppliers.Add(new SupplierDefinitionData
+				{
+					id = person.contactId,
+					displayName = string.IsNullOrWhiteSpace(person.displayName) ? person.contactId : person.displayName,
+					productType = person.supplierConfig.productType,
+					unitBuyPrice = person.supplierConfig.unitBuyPrice,
+					minDeliveryAmount = person.supplierConfig.minDeliveryAmount,
+					maxDeliveryAmount = person.supplierConfig.maxDeliveryAmount
+				});
+			}
+
+			return db;
 		}
 
 		public StaffRoleDatabaseData LoadStaffRoles()
 		{
-			return Load<StaffRoleDatabaseData>("staff_roles.json", "staff roles");
+			return new StaffRoleDatabaseData();
 		}
 
 		public StaffContactDatabaseData LoadStaffContacts()
 		{
-			return Load<StaffContactDatabaseData>("staff_contacts.json", "staff contacts");
+			BusinessPeopleDatabaseData peopleData = LoadPeople();
+			var db = new StaffContactDatabaseData();
+			if (peopleData?.people == null)
+			{
+				return db;
+			}
+
+			foreach (BusinessPersonDefinitionData person in peopleData.people)
+			{
+				if (person == null || string.IsNullOrWhiteSpace(person.contactId))
+				{
+					continue;
+				}
+
+				db.contacts.Add(new StaffContactDefinitionData
+				{
+					id = person.contactId,
+					displayName = string.IsNullOrWhiteSpace(person.displayName) ? person.contactId : person.displayName,
+					salaryPerDay = person.salaryPerDay,
+					throughputPerHour = person.throughputPerHour
+				});
+			}
+
+			return db;
 		}
 
 		public CustomerBehaviorDatabaseData LoadCustomerBehaviors()
@@ -77,5 +126,17 @@ namespace Prototype.Business.Data
 				return null;
 			}
 		}
+
+		private BusinessPeopleDatabaseData LoadPeople()
+		{
+			if (m_peopleCache != null)
+			{
+				return m_peopleCache;
+			}
+
+			m_peopleCache = Load<BusinessPeopleDatabaseData>("people.json", "business people") ?? new BusinessPeopleDatabaseData();
+			return m_peopleCache;
+		}
+
 	}
 }

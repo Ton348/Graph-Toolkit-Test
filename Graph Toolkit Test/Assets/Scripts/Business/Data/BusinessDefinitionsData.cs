@@ -34,6 +34,15 @@ namespace Prototype.Business.Data
 	}
 
 	[Serializable]
+	public class SupplierConfigData
+	{
+		public string productType;
+		public int unitBuyPrice;
+		public int minDeliveryAmount;
+		public int maxDeliveryAmount;
+	}
+
+	[Serializable]
 	public class StaffRoleDefinitionData
 	{
 		public string id;
@@ -49,7 +58,16 @@ namespace Prototype.Business.Data
 		public string displayName;
 		public int salaryPerDay;
 		public int throughputPerHour;
-		public string roleId;
+	}
+
+	[Serializable]
+	public class BusinessPersonDefinitionData
+	{
+		public string contactId;
+		public string displayName;
+		public int salaryPerDay;
+		public int throughputPerHour;
+		public SupplierConfigData supplierConfig;
 	}
 
 	[Serializable]
@@ -104,5 +122,11 @@ namespace Prototype.Business.Data
 	public class CustomerBehaviorDatabaseData
 	{
 		public List<CustomerBehaviorDefinitionData> behaviors = new();
+	}
+
+	[Serializable]
+	public class BusinessPeopleDatabaseData
+	{
+		public List<BusinessPersonDefinitionData> people = new();
 	}
 }

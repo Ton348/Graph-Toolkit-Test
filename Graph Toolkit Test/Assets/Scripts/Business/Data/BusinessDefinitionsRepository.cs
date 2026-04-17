@@ -177,14 +177,9 @@ namespace Prototype.Business.Data
 
 		public IEnumerable<StaffContactDefinitionData> GetStaffContactsByRole(string roleId)
 		{
-			if (string.IsNullOrWhiteSpace(roleId))
-			{
-				yield break;
-			}
-
 			foreach (StaffContactDefinitionData contact in m_staffContacts.Values)
 			{
-				if (contact != null && contact.roleId == roleId)
+				if (contact != null)
 				{
 					yield return contact;
 				}

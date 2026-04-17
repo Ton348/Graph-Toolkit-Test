@@ -141,37 +141,6 @@ namespace Prototype.Business.Data
 				}
 			}
 
-			if (staffRoles?.roles == null)
-			{
-				Debug.LogError("[BusinessDefinitions] staff roles list is missing.");
-				ok = false;
-			}
-			else
-			{
-				var ids = new HashSet<string>();
-				foreach (StaffRoleDefinitionData role in staffRoles.roles)
-				{
-					if (role == null || string.IsNullOrWhiteSpace(role.id))
-					{
-						Debug.LogError("[BusinessDefinitions] staff role has empty id.");
-						ok = false;
-						continue;
-					}
-
-					if (!ids.Add(role.id))
-					{
-						Debug.LogError($"[BusinessDefinitions] duplicate staff role id: {role.id}");
-						ok = false;
-					}
-
-					if (role.salaryPerDay < 0 || role.throughputPerHour < 0)
-					{
-						Debug.LogError($"[BusinessDefinitions] staff role {role.id} has negative values.");
-						ok = false;
-					}
-				}
-			}
-
 			if (staffContacts?.contacts == null)
 			{
 				Debug.LogError("[BusinessDefinitions] staff contacts list is missing.");
@@ -180,17 +149,6 @@ namespace Prototype.Business.Data
 			else
 			{
 				var ids = new HashSet<string>();
-				var roleIds = new HashSet<string>();
-				if (staffRoles?.roles != null)
-				{
-					foreach (StaffRoleDefinitionData role in staffRoles.roles)
-					{
-						if (role != null && !string.IsNullOrWhiteSpace(role.id))
-						{
-							roleIds.Add(role.id);
-						}
-					}
-				}
 
 				foreach (StaffContactDefinitionData contact in staffContacts.contacts)
 				{
@@ -210,20 +168,6 @@ namespace Prototype.Business.Data
 					if (contact.salaryPerDay < 0 || contact.throughputPerHour < 0)
 					{
 						Debug.LogError($"[BusinessDefinitions] staff contact {contact.id} has negative values.");
-						ok = false;
-					}
-
-					if (string.IsNullOrWhiteSpace(contact.roleId))
-					{
-						Debug.LogError($"[BusinessDefinitions] staff contact {contact.id} has empty roleId.");
-						ok = false;
-						continue;
-					}
-
-					if (!roleIds.Contains(contact.roleId))
-					{
-						Debug.LogError(
-							$"[BusinessDefinitions] staff contact {contact.id} references unknown roleId: {contact.roleId}");
 						ok = false;
 					}
 				}

@@ -1,0 +1,28 @@
+{
+  "people": [
+    {
+      "contactId": "logist_1",
+      "displayName": "Логист Павел",
+      "salaryPerDay": 100,
+      "throughputPerHour": 70,
+      "supplierConfig": {
+        "productType": "grocery",
+        "unitBuyPrice": 4,
+        "minDeliveryAmount": 50,
+        "maxDeliveryAmount": 500
+      }
+    },
+    {
+      "contactId": "cashier_1",
+      "displayName": "Кассир Анна",
+      "salaryPerDay": 120,
+      "throughputPerHour": 60
+    },
+    {
+      "contactId": "merch_1",
+      "displayName": "Мерчендайзер Игорь",
+      "salaryPerDay": 90,
+      "throughputPerHour": 80
+    }
+  ]
+}
