@@ -1,20 +1,25 @@
-using GraphCore.Editor;
-using Game1.Graph.Runtime;
-using Game1.Graph.Editor;
-
 using Game1.Graph.Editor.Infrastructure.Converters;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeConverter]
-public sealed class RequestAssignSupplierNodeConverter : GameGraphNodeConverterBase<RequestAssignSupplierNodeModel, RequestAssignSupplierNode>
+using GameGraph.Editor.Business;
+using GameGraph.Runtime.Business;
+
+namespace GameGraph.Editor.Converters.Business
 {
-	protected override bool TryConvert(RequestAssignSupplierNodeModel editorNodeModel, out RequestAssignSupplierNode runtimeNode)
+	[GameGraphNodeConverter]
+	public sealed class
+		RequestAssignSupplierNodeConverter : GameGraphNodeConverterBase<RequestAssignSupplierNodeModel,
+		RequestAssignSupplierNode>
 	{
-		runtimeNode = new RequestAssignSupplierNode
+		protected override bool TryConvert(
+			RequestAssignSupplierNodeModel editorNodeModel,
+			out RequestAssignSupplierNode runtimeNode)
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.LotIdOption),
-			supplierId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.SupplierIdOption)
-		};
-		return true;
+			runtimeNode = new RequestAssignSupplierNode
+			{
+				lotId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.LotIdOption),
+				supplierId = GetOptionValue<string>(editorNodeModel, RequestAssignSupplierNodeModel.SupplierIdOption)
+			};
+			return true;
+		}
 	}
 }
-

@@ -1,7 +1,7 @@
 using System;
 using UnityEngine.Serialization;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	[Serializable]
 	public abstract class BaseGraphNode

@@ -12,31 +12,31 @@ namespace DavidJalbert.LowPolyPeople
         public Material[] palettes;
         public Camera[] cameras;
 
-        private int currentCamera = 0;
+        private int m_currentCamera = 0;
 
         void Start()
         {
-            setAnimation("idle");
-            setCamera(0);
+            SetAnimation("idle");
+            SetCamera(0);
         }
 
         void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Alpha1)) setAnimation("idle");
-            if (Input.GetKeyDown(KeyCode.Alpha2)) setAnimation("walk");
-            if (Input.GetKeyDown(KeyCode.Alpha3)) setAnimation("run");
-            if (Input.GetKeyDown(KeyCode.Alpha4)) setAnimation("wave");
-            if (Input.GetKeyDown(KeyCode.R)) randomizePalette();
-            if (Input.GetKeyDown(KeyCode.C)) changeCamera();
+            if (Input.GetKeyDown(KeyCode.Alpha1)) SetAnimation("idle");
+            if (Input.GetKeyDown(KeyCode.Alpha2)) SetAnimation("walk");
+            if (Input.GetKeyDown(KeyCode.Alpha3)) SetAnimation("run");
+            if (Input.GetKeyDown(KeyCode.Alpha4)) SetAnimation("wave");
+            if (Input.GetKeyDown(KeyCode.R)) RandomizePalette();
+            if (Input.GetKeyDown(KeyCode.C)) ChangeCamera();
         }
 
-        public void setAnimation(string tag)
+        public void SetAnimation(string tag)
         {
             label.text = "Current animation: " + tag;
             foreach (Animator animator in characters) animator.SetTrigger(tag);
         }
 
-        public void randomizePalette()
+        public void RandomizePalette()
         {
             foreach (Animator animator in characters)
             {
@@ -48,18 +48,18 @@ namespace DavidJalbert.LowPolyPeople
             }
         }
 
-        public void setCamera(int c)
+        public void SetCamera(int c)
         {
-            currentCamera = c % cameras.Length;
+            m_currentCamera = c % cameras.Length;
             for (int i = 0; i < cameras.Length; i++)
             {
-                cameras[i].gameObject.SetActive(currentCamera == i);
+                cameras[i].gameObject.SetActive(m_currentCamera == i);
             }
         }
 
-        public void changeCamera()
+        public void ChangeCamera()
         {
-            setCamera(currentCamera + 1);
+            SetCamera(m_currentCamera + 1);
         }
     }
 }

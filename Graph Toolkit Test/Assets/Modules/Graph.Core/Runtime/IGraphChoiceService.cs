@@ -1,8 +1,8 @@
-using Cysharp.Threading.Tasks;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public interface IGraphChoiceService
 	{

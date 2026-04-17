@@ -1,6 +1,6 @@
 using System;
 
-namespace GraphCore.Runtime.Templates
+namespace Graph.Core.Runtime.Templates
 {
 	[Serializable]
 	public abstract class CoreGraphSuccessFailNode : CoreGraphNode

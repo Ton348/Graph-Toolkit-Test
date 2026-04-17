@@ -1,6 +1,4 @@
-using System;
-
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public readonly struct GraphChoiceEntry
 	{

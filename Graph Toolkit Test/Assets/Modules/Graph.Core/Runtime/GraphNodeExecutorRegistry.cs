@@ -1,13 +1,13 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public sealed class GraphNodeExecutorRegistry
 	{
-		private readonly Dictionary<Type, IGraphNodeExecutor> m_registeredExecutors = new Dictionary<Type, IGraphNodeExecutor>();
-		private readonly Dictionary<Type, IGraphNodeExecutor> m_resolvedExecutorCache = new Dictionary<Type, IGraphNodeExecutor>();
-		private readonly HashSet<Type> m_missingExecutorCache = new HashSet<Type>();
+		private readonly HashSet<Type> m_missingExecutorCache = new();
+		private readonly Dictionary<Type, IGraphNodeExecutor> m_registeredExecutors = new();
+		private readonly Dictionary<Type, IGraphNodeExecutor> m_resolvedExecutorCache = new();
 
 		public GraphNodeExecutorRegistry(IEnumerable<IGraphNodeExecutor> executors)
 		{
@@ -31,7 +31,8 @@ namespace GraphCore.Runtime
 
 			if (m_registeredExecutors.TryGetValue(executor.NodeType, out IGraphNodeExecutor existing))
 			{
-				throw new InvalidOperationException($"Executor for node type '{executor.NodeType.Name}' is already registered by '{existing.GetType().Name}'.");
+				throw new InvalidOperationException(
+					$"Executor for node type '{executor.NodeType.Name}' is already registered by '{existing.GetType().Name}'.");
 			}
 
 			m_registeredExecutors.Add(executor.NodeType, executor);

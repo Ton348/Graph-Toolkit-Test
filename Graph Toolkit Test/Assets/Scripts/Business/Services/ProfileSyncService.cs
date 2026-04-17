@@ -1,159 +1,173 @@
 using System;
 using System.Collections.Generic;
+using Prototype.Business.Runtime;
+using Sample.Runtime.GameData;
+using Sample.Runtime.Runtime;
 using UnityEngine;
 
-public class ProfileSyncService
+namespace Prototype.Business.Services
 {
-    private readonly GameRuntimeState runtime;
-    private readonly GameDataRepository dataRepository;
-    private readonly PlayerStateSync playerStateSync;
-    private readonly BusinessStateSyncService businessStateSync;
+	public class ProfileSyncService
+	{
+		private readonly BusinessStateSyncService m_businessStateSync;
+		private readonly GameDataRepository m_dataRepository;
+		private readonly PlayerStateSync m_playerStateSync;
+		private readonly GameRuntimeState m_runtime;
 
-    public event Action<ProfileSnapshot> Synced;
+		public ProfileSyncService(
+			GameRuntimeState runtime,
+			GameDataRepository dataRepository,
+			PlayerStateSync playerStateSync,
+			BusinessStateSyncService businessStateSync)
+		{
+			m_runtime = runtime;
+			m_dataRepository = dataRepository;
+			m_playerStateSync = playerStateSync;
+			m_businessStateSync = businessStateSync;
+		}
 
-    public ProfileSyncService(GameRuntimeState runtime, GameDataRepository dataRepository, PlayerStateSync playerStateSync, BusinessStateSyncService businessStateSync)
-    {
-        this.runtime = runtime;
-        this.dataRepository = dataRepository;
-        this.playerStateSync = playerStateSync;
-        this.businessStateSync = businessStateSync;
-    }
+		public event Action<ProfileSnapshot> synced;
 
-    public void ApplySnapshot(ProfileSnapshot snapshot)
-    {
-        if (snapshot == null)
-        {
-            return;
-        }
+		public void ApplySnapshot(ProfileSnapshot snapshot)
+		{
+			if (snapshot == null)
+			{
+				return;
+			}
 
-        playerStateSync?.ApplySnapshot(snapshot);
-        businessStateSync?.ApplySnapshot(snapshot);
+			m_playerStateSync?.ApplySnapshot(snapshot);
+			m_businessStateSync?.ApplySnapshot(snapshot);
 
-        Debug.Log($"[ProfileSync] Applied snapshot: money={snapshot.Money}, active={snapshot.ActiveQuestIds?.Count ?? 0}, completed={snapshot.CompletedQuestIds?.Count ?? 0}, owned={snapshot.OwnedBuildingIds?.Count ?? 0}");
+			Debug.Log(
+				$"[ProfileSync] Applied snapshot: money={snapshot.money}, active={snapshot.activeQuestIds?.Count ?? 0}, completed={snapshot.completedQuestIds?.Count ?? 0}, owned={snapshot.ownedBuildingIds?.Count ?? 0}");
 
-        Synced?.Invoke(snapshot);
-    }
+			synced?.Invoke(snapshot);
+		}
 
-    private void ApplyQuests(ProfileSnapshot snapshot)
-    {
-        if (runtime.Quests == null || dataRepository == null)
-        {
-            return;
-        }
+		private void ApplyQuests(ProfileSnapshot snapshot)
+		{
+			if (m_runtime.quests == null || m_dataRepository == null)
+			{
+				return;
+			}
 
-        var activeSet = new HashSet<string>(snapshot.ActiveQuestIds ?? new List<string>());
-        var completedSet = new HashSet<string>(snapshot.CompletedQuestIds ?? new List<string>());
+			var activeSet = new HashSet<string>(snapshot.activeQuestIds ?? new List<string>());
+			var completedSet = new HashSet<string>(snapshot.completedQuestIds ?? new List<string>());
 
-        foreach (QuestState quest in runtime.Quests)
-        {
-            if (quest == null || quest.Definition == null)
-            {
-                continue;
-            }
+			foreach (QuestState quest in m_runtime.quests)
+			{
+				if (quest == null || quest.definition == null)
+				{
+					continue;
+				}
 
-            string id = quest.Definition.id;
-            if (completedSet.Contains(id))
-            {
-                quest.Status = QuestStatus.Completed;
-            }
-            else if (activeSet.Contains(id))
-            {
-                quest.Status = QuestStatus.Active;
-            }
-            else
-            {
-                if (quest.Status != QuestStatus.Failed)
-                {
-                    quest.Status = QuestStatus.Inactive;
-                }
-            }
-        }
+				string id = quest.definition.id;
+				if (completedSet.Contains(id))
+				{
+					quest.status = QuestStatus.Completed;
+				}
+				else if (activeSet.Contains(id))
+				{
+					quest.status = QuestStatus.Active;
+				}
+				else
+				{
+					if (quest.status != QuestStatus.Failed)
+					{
+						quest.status = QuestStatus.Inactive;
+					}
+				}
+			}
 
-        EnsureQuestStates(activeSet, QuestStatus.Active);
-        EnsureQuestStates(completedSet, QuestStatus.Completed);
-    }
+			EnsureQuestStates(activeSet, QuestStatus.Active);
+			EnsureQuestStates(completedSet, QuestStatus.Completed);
+		}
 
-    private void EnsureQuestStates(HashSet<string> ids, QuestStatus status)
-    {
-        if (ids == null || dataRepository == null || runtime.Quests == null)
-        {
-            return;
-        }
+		private void EnsureQuestStates(HashSet<string> ids, QuestStatus status)
+		{
+			if (ids == null || m_dataRepository == null || m_runtime.quests == null)
+			{
+				return;
+			}
 
-        foreach (string id in ids)
-        {
-            if (string.IsNullOrEmpty(id))
-            {
-                continue;
-            }
+			foreach (string id in ids)
+			{
+				if (string.IsNullOrEmpty(id))
+				{
+					continue;
+				}
 
-            QuestState existing = FindQuestState(id, runtime.Quests);
-            if (existing != null)
-            {
-                existing.Status = status;
-                continue;
-            }
+				QuestState existing = FindQuestState(id, m_runtime.quests);
+				if (existing != null)
+				{
+					existing.status = status;
+					continue;
+				}
 
-            QuestDefinitionData def = dataRepository.GetQuestById(id);
-            if (def == null)
-            {
-                continue;
-            }
+				QuestDefinitionData def = m_dataRepository.GetQuestById(id);
+				if (def == null)
+				{
+					continue;
+				}
 
-            QuestState state = new QuestState(def)
-            {
-                Status = status
-            };
-            runtime.Quests.Add(state);
-        }
-    }
+				var state = new QuestState(def)
+				{
+					status = status
+				};
+				m_runtime.quests.Add(state);
+			}
+		}
 
-    private void ApplyBuildings(ProfileSnapshot snapshot)
-    {
-        if (runtime.Buildings == null)
-        {
-            return;
-        }
+		private void ApplyBuildings(ProfileSnapshot snapshot)
+		{
+			if (m_runtime.buildings == null)
+			{
+				return;
+			}
 
-        var ownedSet = new HashSet<string>(snapshot.OwnedBuildingIds ?? new List<string>());
+			var ownedSet = new HashSet<string>(snapshot.ownedBuildingIds ?? new List<string>());
 
-        foreach (BuildingState building in runtime.Buildings)
-        {
-            if (building == null || building.Definition == null)
-            {
-                continue;
-            }
+			foreach (BuildingState building in m_runtime.buildings)
+			{
+				if (building == null || building.definition == null)
+				{
+					continue;
+				}
 
-            string id = building.Definition.id;
-            if (snapshot.BuildingStates != null && snapshot.BuildingStates.Count > 0)
-            {
-                var stateSnapshot = snapshot.BuildingStates.Find(s => s != null && s.id == id);
-                if (stateSnapshot != null)
-                {
-                    building.IsOwned = stateSnapshot.owned;
-                    building.Level = stateSnapshot.level;
-                    building.CurrentIncome = stateSnapshot.currentIncome;
-                    building.CurrentExpenses = stateSnapshot.currentExpenses;
-                    continue;
-                }
-            }
+				string id = building.definition.id;
+				if (snapshot.buildingStates != null && snapshot.buildingStates.Count > 0)
+				{
+					BuildingStateSnapshot stateSnapshot = snapshot.buildingStates.Find(s => s != null && s.id == id);
+					if (stateSnapshot != null)
+					{
+						building.isOwned = stateSnapshot.owned;
+						building.level = stateSnapshot.level;
+						building.currentIncome = stateSnapshot.currentIncome;
+						building.currentExpenses = stateSnapshot.currentExpenses;
+						continue;
+					}
+				}
 
-            building.IsOwned = ownedSet.Contains(id);
-        }
-    }
+				building.isOwned = ownedSet.Contains(id);
+			}
+		}
 
-    private static QuestState FindQuestState(string questId, List<QuestState> quests)
-    {
-        if (quests == null) return null;
+		private static QuestState FindQuestState(string questId, List<QuestState> quests)
+		{
+			if (quests == null)
+			{
+				return null;
+			}
 
-        foreach (QuestState quest in quests)
-        {
-            if (quest != null && quest.Definition != null && quest.Definition.id == questId)
-            {
-                return quest;
-            }
-        }
+			foreach (QuestState quest in quests)
+			{
+				if (quest != null && quest.definition != null && quest.definition.id == questId)
+				{
+					return quest;
+				}
+			}
 
-        return null;
-    }
+			return null;
+		}
+	}
 }

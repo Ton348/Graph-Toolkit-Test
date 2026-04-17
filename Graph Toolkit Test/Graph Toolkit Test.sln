@@ -1,0 +1,69 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Prototype.Business", "Prototype.Business.csproj", "{f699e03e-2d9c-51ba-6b87-39b41b6da096}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dreamteck.Splines.Editor", "Dreamteck.Splines.Editor.csproj", "{d32675f0-10dc-1c12-f7da-184b782f9d00}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game1.Graph.Runtime", "Game1.Graph.Runtime.csproj", "{0d77301b-94a4-65ae-6091-f4062af0e1ce}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGraph.Editor", "GameGraph.Editor.csproj", "{9a5734be-8a6d-b236-34b5-8cbaf09e2fa9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dreamteck.Splines", "Dreamteck.Splines.csproj", "{c57d2a35-e23b-d30e-5a55-6c52963b9db0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graph.Core.Editor", "Graph.Core.Editor.csproj", "{63b4d853-b99a-130c-9019-2bddf6fb006b}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dreamteck.Utilities", "Dreamteck.Utilities.csproj", "{885e5688-1096-fe1f-057e-19504983689d}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graph.Core.Runtime", "Graph.Core.Runtime.csproj", "{0acb810f-4b73-7aef-52f4-0d3c745eb917}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{0242641f-550a-460c-57bb-395c0b8c55a9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Game1.Graph.Editor", "Game1.Graph.Editor.csproj", "{b05a7a38-dedf-c0e0-ffe1-ba18251c7727}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GameGraph.Runtime", "GameGraph.Runtime.csproj", "{f209df82-989a-46d3-8611-92b3259702ff}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample.Runtime", "Sample.Runtime.csproj", "{879ce974-1b1b-31a5-55fe-75b2b7cdb948}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dreamteck.Utilities.Editor", "Dreamteck.Utilities.Editor.csproj", "{ac55ed7a-47cc-ac35-b147-8f0c28686552}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{7543fae1-b282-60f8-fa37-2f4ad6ac27b8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{f699e03e-2d9c-51ba-6b87-39b41b6da096}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{f699e03e-2d9c-51ba-6b87-39b41b6da096}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{d32675f0-10dc-1c12-f7da-184b782f9d00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{d32675f0-10dc-1c12-f7da-184b782f9d00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0d77301b-94a4-65ae-6091-f4062af0e1ce}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0d77301b-94a4-65ae-6091-f4062af0e1ce}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9a5734be-8a6d-b236-34b5-8cbaf09e2fa9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9a5734be-8a6d-b236-34b5-8cbaf09e2fa9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{c57d2a35-e23b-d30e-5a55-6c52963b9db0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{c57d2a35-e23b-d30e-5a55-6c52963b9db0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63b4d853-b99a-130c-9019-2bddf6fb006b}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63b4d853-b99a-130c-9019-2bddf6fb006b}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{885e5688-1096-fe1f-057e-19504983689d}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{885e5688-1096-fe1f-057e-19504983689d}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0acb810f-4b73-7aef-52f4-0d3c745eb917}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0acb810f-4b73-7aef-52f4-0d3c745eb917}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0242641f-550a-460c-57bb-395c0b8c55a9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0242641f-550a-460c-57bb-395c0b8c55a9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{b05a7a38-dedf-c0e0-ffe1-ba18251c7727}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{b05a7a38-dedf-c0e0-ffe1-ba18251c7727}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{f209df82-989a-46d3-8611-92b3259702ff}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{f209df82-989a-46d3-8611-92b3259702ff}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{879ce974-1b1b-31a5-55fe-75b2b7cdb948}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{879ce974-1b1b-31a5-55fe-75b2b7cdb948}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ac55ed7a-47cc-ac35-b147-8f0c28686552}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ac55ed7a-47cc-ac35-b147-8f0c28686552}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7543fae1-b282-60f8-fa37-2f4ad6ac27b8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7543fae1-b282-60f8-fa37-2f4ad6ac27b8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

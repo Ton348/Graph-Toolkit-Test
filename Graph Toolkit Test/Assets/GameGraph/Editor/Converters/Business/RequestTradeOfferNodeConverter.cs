@@ -1,19 +1,23 @@
-using GraphCore.Editor;
-using Game1.Graph.Runtime;
-using Game1.Graph.Editor;
-
 using Game1.Graph.Editor.Infrastructure.Converters;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeConverter]
-public sealed class RequestTradeOfferNodeConverter : GameGraphNodeConverterBase<RequestTradeOfferNodeModel, RequestTradeOfferNode>
+using GameGraph.Editor.Business;
+using GameGraph.Runtime.Business;
+
+namespace GameGraph.Editor.Converters.Business
 {
-	protected override bool TryConvert(RequestTradeOfferNodeModel editorNodeModel, out RequestTradeOfferNode runtimeNode)
+	[GameGraphNodeConverter]
+	public sealed class
+		RequestTradeOfferNodeConverter : GameGraphNodeConverterBase<RequestTradeOfferNodeModel, RequestTradeOfferNode>
 	{
-		runtimeNode = new RequestTradeOfferNode
+		protected override bool TryConvert(
+			RequestTradeOfferNodeModel editorNodeModel,
+			out RequestTradeOfferNode runtimeNode)
 		{
-			buildingId = GetOptionValue<string>(editorNodeModel, RequestTradeOfferNodeModel.BuildingIdOption)
-		};
-		return true;
+			runtimeNode = new RequestTradeOfferNode
+			{
+				buildingId = GetOptionValue<string>(editorNodeModel, RequestTradeOfferNodeModel.BuildingIdOption)
+			};
+			return true;
+		}
 	}
 }
-

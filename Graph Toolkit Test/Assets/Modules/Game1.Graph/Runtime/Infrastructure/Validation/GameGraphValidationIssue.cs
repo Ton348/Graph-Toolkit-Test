@@ -1,5 +1,3 @@
-using GraphCore.Runtime;
-using Game1.Graph.Runtime;
 namespace Game1.Graph.Runtime.Infrastructure.Validation
 {
 	public readonly struct GameGraphValidationIssue
@@ -10,7 +8,12 @@ namespace Game1.Graph.Runtime.Infrastructure.Validation
 		public readonly string fieldName;
 		public readonly string message;
 
-		public GameGraphValidationIssue(GameGraphValidationIssueSeverity severity, string nodeId, string nodeType, string fieldName, string message)
+		public GameGraphValidationIssue(
+			GameGraphValidationIssueSeverity severity,
+			string nodeId,
+			string nodeType,
+			string fieldName,
+			string message)
 		{
 			this.severity = severity;
 			this.nodeId = nodeId;

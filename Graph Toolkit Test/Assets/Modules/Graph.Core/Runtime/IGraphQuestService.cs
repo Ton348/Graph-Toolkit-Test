@@ -1,8 +1,8 @@
-using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Nodes.Server;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using Graph.Core.Runtime.Nodes.Server;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public interface IGraphQuestService
 	{

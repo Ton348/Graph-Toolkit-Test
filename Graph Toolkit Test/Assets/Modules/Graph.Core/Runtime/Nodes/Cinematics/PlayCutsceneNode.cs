@@ -1,7 +1,7 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Nodes.Cinematics
+namespace Graph.Core.Runtime.Nodes.Cinematics
 {
 	[Serializable]
 	public sealed class PlayCutsceneNode : CoreGraphNextNode

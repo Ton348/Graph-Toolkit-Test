@@ -226,5 +226,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fdc50bbb5c58d49fe9d239da36307d9f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompassTickView
-  rectTransform: {fileID: 4132352428834177480}
-  label: {fileID: 7102598105915522209}
+  m_rectTransform: {fileID: 4132352428834177480}
+  m_label: {fileID: 7102598105915522209}

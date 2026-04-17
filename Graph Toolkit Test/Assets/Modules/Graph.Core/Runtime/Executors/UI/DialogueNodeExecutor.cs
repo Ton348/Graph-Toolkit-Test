@@ -1,13 +1,16 @@
-using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Nodes.UI;
 using System.Collections.Generic;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using Graph.Core.Runtime.Nodes.UI;
 
-namespace GraphCore.Runtime.Executors.UI
+namespace Graph.Core.Runtime.Executors.UI
 {
 	public sealed class DialogueNodeExecutor : BaseGraphNodeExecutor<DialogueNode>
 	{
-		protected override async UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(DialogueNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override async UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(
+			DialogueNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			IGraphDialogueService dialogueService = context.DialogueService;
 			if (dialogueService == null)
@@ -25,7 +28,10 @@ namespace GraphCore.Runtime.Executors.UI
 			return await ExecuteImmediateChoiceAsync(choiceNode, context, cancellationToken);
 		}
 
-		private static bool TryGetImmediateChoiceNode(DialogueNode node, GraphExecutionContext context, out ChoiceNode choiceNode)
+		private static bool TryGetImmediateChoiceNode(
+			DialogueNode node,
+			GraphExecutionContext context,
+			out ChoiceNode choiceNode)
 		{
 			choiceNode = null;
 			if (!context.ImmediateChoiceAfterDialogue)
@@ -39,7 +45,8 @@ namespace GraphCore.Runtime.Executors.UI
 				return false;
 			}
 
-			if (!graph.TryGetNodeById(node.nextNodeId, out BaseGraphNode nextNode) || nextNode is not ChoiceNode foundChoiceNode)
+			if (!graph.TryGetNodeById(node.nextNodeId, out BaseGraphNode nextNode) ||
+			    nextNode is not ChoiceNode foundChoiceNode)
 			{
 				return false;
 			}
@@ -48,18 +55,23 @@ namespace GraphCore.Runtime.Executors.UI
 			return true;
 		}
 
-		private static async UniTask<GraphNodeExecutionResult> ExecuteImmediateChoiceAsync(ChoiceNode choiceNode, GraphExecutionContext context, CancellationToken cancellationToken)
+		private static async UniTask<GraphNodeExecutionResult> ExecuteImmediateChoiceAsync(
+			ChoiceNode choiceNode,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (choiceNode.options == null)
 			{
-				return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' options list is null.", GraphNodeExecutionErrorType.InvalidNode);
+				return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' options list is null.",
+					GraphNodeExecutionErrorType.InvalidNode);
 			}
 
-			List<ChoiceOption> validOptions = new List<ChoiceOption>();
-			for (int i = 0; i < choiceNode.options.Count; i++)
+			var validOptions = new List<ChoiceOption>();
+			for (var i = 0; i < choiceNode.options.Count; i++)
 			{
 				ChoiceOption option = choiceNode.options[i];
-				if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId) && !string.IsNullOrWhiteSpace(option.label))
+				if (option != null && !string.IsNullOrWhiteSpace(option.nextNodeId) &&
+				    !string.IsNullOrWhiteSpace(option.label))
 				{
 					validOptions.Add(option);
 				}
@@ -67,7 +79,8 @@ namespace GraphCore.Runtime.Executors.UI
 
 			if (validOptions.Count == 0)
 			{
-				return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' has no valid options.", GraphNodeExecutionErrorType.InvalidTransition);
+				return GraphNodeExecutionResult.Fault($"ChoiceNode '{choiceNode.Id}' has no valid options.",
+					GraphNodeExecutionErrorType.InvalidTransition);
 			}
 
 			if (context.ChoiceService == null)
@@ -75,8 +88,8 @@ namespace GraphCore.Runtime.Executors.UI
 				return GraphNodeExecutionResult.ContinueTo(validOptions[0].nextNodeId);
 			}
 
-			List<GraphChoiceEntry> entries = new List<GraphChoiceEntry>(validOptions.Count);
-			for (int i = 0; i < validOptions.Count; i++)
+			var entries = new List<GraphChoiceEntry>(validOptions.Count);
+			for (var i = 0; i < validOptions.Count; i++)
 			{
 				entries.Add(new GraphChoiceEntry(validOptions[i].label));
 			}
@@ -84,7 +97,8 @@ namespace GraphCore.Runtime.Executors.UI
 			int selectedIndex = await context.ChoiceService.ShowAsync(entries, cancellationToken);
 			if (selectedIndex < 0 || selectedIndex >= validOptions.Count)
 			{
-				return GraphNodeExecutionResult.Fault($"Choice service returned invalid index: {selectedIndex}.", GraphNodeExecutionErrorType.ServiceFailure);
+				return GraphNodeExecutionResult.Fault($"Choice service returned invalid index: {selectedIndex}.",
+					GraphNodeExecutionErrorType.ServiceFailure);
 			}
 
 			return GraphNodeExecutionResult.ContinueTo(validOptions[selectedIndex].nextNodeId);

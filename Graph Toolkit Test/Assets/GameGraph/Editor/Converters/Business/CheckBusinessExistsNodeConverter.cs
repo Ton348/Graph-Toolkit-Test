@@ -1,19 +1,23 @@
-using GraphCore.Editor;
-using Game1.Graph.Runtime;
-using Game1.Graph.Editor;
-
 using Game1.Graph.Editor.Infrastructure.Converters;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeConverter]
-public sealed class CheckBusinessExistsNodeConverter : GameGraphNodeConverterBase<CheckBusinessExistsNodeModel, CheckBusinessExistsNode>
+using GameGraph.Editor.Business;
+using GameGraph.Runtime.Business;
+
+namespace GameGraph.Editor.Converters.Business
 {
-	protected override bool TryConvert(CheckBusinessExistsNodeModel editorNodeModel, out CheckBusinessExistsNode runtimeNode)
+	[GameGraphNodeConverter]
+	public sealed class
+		CheckBusinessExistsNodeConverter : GameGraphNodeConverterBase<CheckBusinessExistsNodeModel, CheckBusinessExistsNode>
 	{
-		runtimeNode = new CheckBusinessExistsNode
+		protected override bool TryConvert(
+			CheckBusinessExistsNodeModel editorNodeModel,
+			out CheckBusinessExistsNode runtimeNode)
 		{
-			lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessExistsNodeModel.LotIdOption)
-		};
-		return true;
+			runtimeNode = new CheckBusinessExistsNode
+			{
+				lotId = GetOptionValue<string>(editorNodeModel, CheckBusinessExistsNodeModel.LotIdOption)
+			};
+			return true;
+		}
 	}
 }
-

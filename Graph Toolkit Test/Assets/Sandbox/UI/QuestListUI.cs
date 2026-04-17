@@ -1,8 +1,10 @@
 using System.Text;
+using Prototype.Business.Bootstrap;
+using Sample.Runtime.GameData;
 using TMPro;
 using UnityEngine;
 
-public class QuestListUI : MonoBehaviour
+public class QuestListUi : MonoBehaviour
 {
     public GameBootstrap bootstrap;
     public TMP_Text questsText;

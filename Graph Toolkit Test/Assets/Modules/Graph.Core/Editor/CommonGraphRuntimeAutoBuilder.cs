@@ -1,16 +1,16 @@
 using System.Collections.Generic;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 using UnityEditor;
 
-namespace GraphCore.Editor
+namespace Graph.Core.Editor
 {
 	public sealed class CommonGraphRuntimeAutoBuilder : AssetPostprocessor
 	{
-		private const string AutoBuildPreferenceKey = "GraphCore.AutoBuildRuntimeGraphs";
-		private const string AutoBuildMenuPath = "Assets/GraphCore/Auto Build Runtime Graphs";
+		private const string s_autoBuildPreferenceKey = "GraphCore.AutoBuildRuntimeGraphs";
+		private const string s_autoBuildMenuPath = "Assets/GraphCore/Auto Build Runtime Graphs";
 
-		private static readonly HashSet<string> s_pendingBaseGraphPaths = new HashSet<string>();
-		private static readonly HashSet<string> s_pendingFirstSavePaths = new HashSet<string>();
+		private static readonly HashSet<string> s_pendingBaseGraphPaths = new();
+		private static readonly HashSet<string> s_pendingFirstSavePaths = new();
 		private static bool s_rebuildScheduled;
 		private static bool s_isProcessing;
 		private static CommonGraphRuntimeExporter.GraphCompiler s_graphCompiler;
@@ -38,24 +38,24 @@ namespace GraphCore.Editor
 			EditorApplication.delayCall += ProcessPendingBuilds;
 		}
 
-		[MenuItem(AutoBuildMenuPath, true)]
+		[MenuItem(s_autoBuildMenuPath, true)]
 		private static bool ValidateAutoBuildMenu()
 		{
-			Menu.SetChecked(AutoBuildMenuPath, IsAutoBuildEnabled());
+			Menu.SetChecked(s_autoBuildMenuPath, IsAutoBuildEnabled());
 			return true;
 		}
 
-		[MenuItem(AutoBuildMenuPath)]
+		[MenuItem(s_autoBuildMenuPath)]
 		private static void ToggleAutoBuild()
 		{
 			bool nextValue = !IsAutoBuildEnabled();
-			EditorPrefs.SetBool(AutoBuildPreferenceKey, nextValue);
-			Menu.SetChecked(AutoBuildMenuPath, nextValue);
+			EditorPrefs.SetBool(s_autoBuildPreferenceKey, nextValue);
+			Menu.SetChecked(s_autoBuildMenuPath, nextValue);
 		}
 
 		private static bool IsAutoBuildEnabled()
 		{
-			return EditorPrefs.GetBool(AutoBuildPreferenceKey, true);
+			return EditorPrefs.GetBool(s_autoBuildPreferenceKey, true);
 		}
 
 		public static void SetGraphCompiler(CommonGraphRuntimeExporter.GraphCompiler graphCompiler)
@@ -75,7 +75,7 @@ namespace GraphCore.Editor
 				return;
 			}
 
-			for (int i = 0; i < assetPaths.Length; i++)
+			for (var i = 0; i < assetPaths.Length; i++)
 			{
 				string path = assetPaths[i];
 				// Do not load GraphToolkit graph here: importer callback may run while asset is still being created.
@@ -101,13 +101,13 @@ namespace GraphCore.Editor
 			s_isProcessing = true;
 			try
 			{
-				string[] paths = new string[s_pendingBaseGraphPaths.Count];
+				var paths = new string[s_pendingBaseGraphPaths.Count];
 				s_pendingBaseGraphPaths.CopyTo(paths);
 				s_pendingBaseGraphPaths.Clear();
 				FilterPathsForSafeBuild(paths, out string[] safePaths);
 
 				// Avoid forcing Refresh during graph asset creation flow. It can race with GraphToolkit graph registration.
-				CommonGraphRuntimeExporter.BuildRuntimeGraphAssets(safePaths, saveAndRefresh: false, s_graphCompiler);
+				CommonGraphRuntimeExporter.BuildRuntimeGraphAssets(safePaths, false, s_graphCompiler);
 				AssetDatabase.SaveAssets();
 			}
 			finally
@@ -118,8 +118,8 @@ namespace GraphCore.Editor
 
 		private static void FilterPathsForSafeBuild(string[] sourcePaths, out string[] safePaths)
 		{
-			List<string> result = new List<string>(sourcePaths.Length);
-			for (int i = 0; i < sourcePaths.Length; i++)
+			var result = new List<string>(sourcePaths.Length);
+			for (var i = 0; i < sourcePaths.Length; i++)
 			{
 				string editorGraphPath = sourcePaths[i];
 				if (string.IsNullOrWhiteSpace(editorGraphPath))

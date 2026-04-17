@@ -1,16 +1,25 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime;
-using UnityEngine;
-using Game1.Graph.Runtime;
-
-using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeExecutorAttribute]
-public sealed class RequestUnlockContactNodeExecutor : GameGraphServerRequestExecutor<RequestUnlockContactNode>
+using GameGraph.Runtime.Business;
+using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Runtime.GraphExecutors.Infrastructure;
+using Prototype.Business.Services;
+
+namespace Prototype.Business.Runtime.GraphExecutors.Business
 {
-	protected override UniTask<ServerActionResult> ExecuteRequestAsync(RequestUnlockContactNode node, GameBootstrap bootstrap, GraphExecutionContext context, CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class RequestUnlockContactNodeExecutor : GameGraphServerRequestExecutor<RequestUnlockContactNode>
 	{
-		return GameGraphExecutorContext.ExecuteServerAsync(context, bootstrap.GameServer.TryUnlockContactAsync(node.contactId));
+		protected override UniTask<ServerActionResult> ExecuteRequestAsync(
+			RequestUnlockContactNode node,
+			GameBootstrap bootstrap,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
+		{
+			return GameGraphExecutorContext.ExecuteServerAsync(context,
+				bootstrap.GameServer.TryUnlockContactAsync(node.contactId));
+		}
 	}
 }

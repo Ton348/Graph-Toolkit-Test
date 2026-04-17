@@ -1,7 +1,7 @@
-using Cysharp.Threading.Tasks;
 using System;
 using System.Threading;
-using GraphCore.Runtime;
+using Cysharp.Threading.Tasks;
+using Graph.Core.Runtime;
 
 namespace Game1.Graph.Runtime.Infrastructure
 {
@@ -9,7 +9,10 @@ namespace Game1.Graph.Runtime.Infrastructure
 	{
 		public Type NodeType => typeof(TNode);
 
-		public UniTask<GraphNodeExecutionResult> ExecuteAsync(BaseGraphNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		public UniTask<GraphNodeExecutionResult> ExecuteAsync(
+			BaseGraphNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (node is not TNode typedNode)
 			{
@@ -21,6 +24,9 @@ namespace Game1.Graph.Runtime.Infrastructure
 			return ExecuteAsync(typedNode, context, cancellationToken);
 		}
 
-		protected abstract UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+		protected abstract UniTask<GraphNodeExecutionResult> ExecuteAsync(
+			TNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken);
 	}
 }

@@ -1,12 +1,15 @@
 using UnityEngine;
 
-public class CustomerSpawnPoint : MonoBehaviour
+namespace Prototype.Business.World
 {
-    public string lotId;
+	public class CustomerSpawnPoint : MonoBehaviour
+	{
+		public string lotId;
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.green;
-        Gizmos.DrawSphere(transform.position, 0.25f);
-    }
+		private void OnDrawGizmos()
+		{
+			Gizmos.color = Color.green;
+			Gizmos.DrawSphere(transform.position, 0.25f);
+		}
+	}
 }

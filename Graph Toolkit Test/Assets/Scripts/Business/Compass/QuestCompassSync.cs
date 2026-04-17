@@ -1,75 +1,81 @@
 using System.Collections.Generic;
-using UnityEngine;
+using Prototype.Business.Runtime;
+using Prototype.Business.Services;
+using Sample.Runtime.Compass;
+using Sample.Runtime.GameData;
 
-public sealed class QuestCompassSync
+namespace Prototype.Business.Compass
 {
-    private readonly GameDataRepository dataRepository;
-    private readonly PlayerStateSync playerStateSync;
-    private readonly HashSet<string> activeMarkerIds = new HashSet<string>();
+	public sealed class QuestCompassSync
+	{
+		private readonly HashSet<string> m_activeMarkerIds = new();
+		private readonly GameDataRepository m_dataRepository;
+		private readonly PlayerStateSync m_playerStateSync;
 
-    public QuestCompassSync(GameDataRepository dataRepository, PlayerStateSync playerStateSync)
-    {
-        this.dataRepository = dataRepository;
-        this.playerStateSync = playerStateSync;
+		public QuestCompassSync(GameDataRepository dataRepository, PlayerStateSync playerStateSync)
+		{
+			m_dataRepository = dataRepository;
+			m_playerStateSync = playerStateSync;
 
-        if (playerStateSync != null)
-        {
-            playerStateSync.SnapshotApplied += OnSnapshotApplied;
-        }
-    }
+			if (playerStateSync != null)
+			{
+				playerStateSync.snapshotApplied += OnSnapshotApplied;
+			}
+		}
 
-    public void Refresh()
-    {
-        if (dataRepository == null || playerStateSync == null)
-        {
-            return;
-        }
+		public void Refresh()
+		{
+			if (m_dataRepository == null || m_playerStateSync == null)
+			{
+				return;
+			}
 
-        var compass = CompassManager.Instance;
-        if (compass == null)
-        {
-            return;
-        }
+			var compass = CompassManager.Instance;
+			if (compass == null)
+			{
+				return;
+			}
 
-        var desired = new HashSet<string>();
+			var desired = new HashSet<string>();
 
-        foreach (var questId in playerStateSync.ActiveQuests)
-        {
-            if (string.IsNullOrEmpty(questId))
-            {
-                continue;
-            }
+			foreach (string questId in m_playerStateSync.ActiveQuests)
+			{
+				if (string.IsNullOrEmpty(questId))
+				{
+					continue;
+				}
 
-            var quest = dataRepository.GetQuestById(questId);
-            if (quest == null || string.IsNullOrEmpty(quest.markerId))
-            {
-                continue;
-            }
+				QuestDefinitionData quest = m_dataRepository.GetQuestById(questId);
+				if (quest == null || string.IsNullOrEmpty(quest.markerId))
+				{
+					continue;
+				}
 
-            desired.Add(quest.markerId);
-            if (!activeMarkerIds.Contains(quest.markerId))
-            {
-                compass.ShowTarget(quest.markerId);
-            }
-        }
+				desired.Add(quest.markerId);
+				if (!m_activeMarkerIds.Contains(quest.markerId))
+				{
+					compass.ShowTarget(quest.markerId);
+				}
+			}
 
-        foreach (var markerId in activeMarkerIds)
-        {
-            if (!desired.Contains(markerId))
-            {
-                compass.HideTarget(markerId);
-            }
-        }
+			foreach (string markerId in m_activeMarkerIds)
+			{
+				if (!desired.Contains(markerId))
+				{
+					compass.HideTarget(markerId);
+				}
+			}
 
-        activeMarkerIds.Clear();
-        foreach (var markerId in desired)
-        {
-            activeMarkerIds.Add(markerId);
-        }
-    }
+			m_activeMarkerIds.Clear();
+			foreach (string markerId in desired)
+			{
+				m_activeMarkerIds.Add(markerId);
+			}
+		}
 
-    private void OnSnapshotApplied(ProfileSnapshot snapshot)
-    {
-        Refresh();
-    }
+		private void OnSnapshotApplied(ProfileSnapshot snapshot)
+		{
+			Refresh();
+		}
+	}
 }

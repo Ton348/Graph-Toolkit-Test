@@ -104,5 +104,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingInteractable
   interactionDistance: 4
-  buildingId: 
+  buildingId: Building_Pizza
   bootstrap: {fileID: 0}

@@ -1,7 +1,7 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Nodes.Flow
+namespace Graph.Core.Runtime.Nodes.Flow
 {
 	[Serializable]
 	public sealed class StartNode : CoreGraphNextNode

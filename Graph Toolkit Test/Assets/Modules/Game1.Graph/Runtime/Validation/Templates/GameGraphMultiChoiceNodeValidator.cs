@@ -1,14 +1,11 @@
 using System;
-using GraphCore.Runtime;
-
-using Game1.Graph.Runtime;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Infrastructure.Validation;
 using Game1.Graph.Runtime.Templates;
-using Game1.Graph.Runtime.Validation;
+
 namespace Game1.Graph.Runtime.Validation.Templates
 {
-	[Game1.Graph.Runtime.Infrastructure.AutoRegistration.GameGraphNodeValidator]
+	[GameGraphNodeValidator]
 	public sealed class GameGraphMultiChoiceNodeValidator : IGameGraphNodeValidator
 	{
 		public Type NodeType => typeof(GameGraphMultiChoiceNode);
@@ -27,8 +24,8 @@ namespace Game1.Graph.Runtime.Validation.Templates
 				return false;
 			}
 
-			bool valid = true;
-			for (int i = 0; i < typedNode.options.Count; i++)
+			var valid = true;
+			for (var i = 0; i < typedNode.options.Count; i++)
 			{
 				GameGraphChoiceBranch option = typedNode.options[i];
 				if (option == null)

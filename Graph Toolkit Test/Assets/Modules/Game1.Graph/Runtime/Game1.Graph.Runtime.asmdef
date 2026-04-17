@@ -1,5 +1,6 @@
 {
   "name": "Game1.Graph.Runtime",
+  "rootNamespace": "Game1.Graph.Runtime",
   "references": [
     "Graph.Core.Runtime",
     "UniTask"
@@ -12,6 +13,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "Game1.Graph.Runtime"
+  "noEngineReferences": false
 }

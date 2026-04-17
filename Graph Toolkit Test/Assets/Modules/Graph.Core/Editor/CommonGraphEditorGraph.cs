@@ -2,11 +2,11 @@ using System;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 
-namespace GraphCore.Editor
+namespace Graph.Core.Editor
 {
 	[Serializable]
 	[Graph(AssetExtension)]
-	public sealed class CommonGraphEditorGraph : Graph
+	public sealed class CommonGraphEditorGraph : Unity.GraphToolkit.Editor.Graph
 	{
 		internal const string AssetExtension = "basegraph";
 

@@ -1,13 +1,13 @@
-using GraphCore.Runtime.Executors.Cinematics;
-using GraphCore.Runtime.Executors.Flow;
-using GraphCore.Runtime.Executors.Server;
-using GraphCore.Runtime.Executors.UI;
-using GraphCore.Runtime.Executors.Utility;
-using GraphCore.Runtime.Executors.World;
 using System;
 using System.Collections.Generic;
+using Graph.Core.Runtime.Executors.Cinematics;
+using Graph.Core.Runtime.Executors.Flow;
+using Graph.Core.Runtime.Executors.Server;
+using Graph.Core.Runtime.Executors.UI;
+using Graph.Core.Runtime.Executors.Utility;
+using Graph.Core.Runtime.Executors.World;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public static class CommonGraphRuntimeComposition
 	{

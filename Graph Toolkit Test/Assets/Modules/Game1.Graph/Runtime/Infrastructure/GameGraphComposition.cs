@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 namespace Game1.Graph.Runtime.Infrastructure
 {
 	public sealed class GameGraphComposition
 	{
-		public GameGraphExecutorRegistry ExecutorRegistry { get; }
-
 		public GameGraphComposition(GameGraphExecutorRegistry executorRegistry)
 		{
 			ExecutorRegistry = executorRegistry ?? throw new ArgumentNullException(nameof(executorRegistry));
 		}
 
+		public GameGraphExecutorRegistry ExecutorRegistry { get; }
+
 		public GraphNodeExecutorRegistry CreateRuntimeExecutorRegistry()
 		{
-			List<IGraphNodeExecutor> executors = new List<IGraphNodeExecutor>();
+			var executors = new List<IGraphNodeExecutor>();
 			executors.AddRange(CommonGraphRuntimeComposition.CreateDefaultExecutors());
 			executors.AddRange(ExecutorRegistry.GetExecutors());
 			return CommonGraphRuntimeComposition.CreateRegistry(executors);

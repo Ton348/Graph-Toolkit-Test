@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Sample.Runtime.GameData;
 using UnityEditor;
 using UnityEngine;
 
 public static class JsonContractValidator
 {
-    private const string MenuPath = "Tools/Game Data/Validate Client Server JSON";
+    private const string s_menuPath = "Tools/Game Data/Validate Client Server JSON";
 
-    [MenuItem(MenuPath)]
+    [MenuItem(s_menuPath)]
     public static void Validate()
     {
         int ok = 0;

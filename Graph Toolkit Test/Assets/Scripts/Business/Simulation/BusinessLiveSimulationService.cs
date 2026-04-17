@@ -1,89 +1,95 @@
 using System.Collections.Generic;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Runtime;
+using Prototype.Business.World;
 using UnityEngine;
 
-public class BusinessLiveSimulationService : MonoBehaviour
+namespace Prototype.Business.Simulation
 {
-    private GameBootstrap bootstrap;
-    private BusinessStateSyncService stateSync;
-    private BusinessSimulationService simulation;
-    private readonly Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime> runtimes = new Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime>();
+	public class BusinessLiveSimulationService : MonoBehaviour
+	{
+		private readonly Dictionary<BusinessWorldRuntime, BusinessWorkerSplineRuntime> m_runtimes = new();
+		private GameBootstrap m_bootstrap;
+		private BusinessSimulationService m_simulation;
+		private BusinessStateSyncService m_stateSync;
 
-    public void Initialize(GameBootstrap ownerBootstrap)
-    {
-        bootstrap = ownerBootstrap;
-        stateSync = bootstrap != null ? bootstrap.BusinessStateSyncService : null;
-        simulation = bootstrap != null ? bootstrap.BusinessSimulationService : null;
+		private void OnDestroy()
+		{
+			if (m_stateSync != null)
+			{
+				m_stateSync.stateChanged -= OnStateChanged;
+			}
+		}
 
-        if (stateSync != null)
-        {
-            stateSync.StateChanged -= OnStateChanged;
-            stateSync.StateChanged += OnStateChanged;
-        }
+		public void Initialize(GameBootstrap ownerBootstrap)
+		{
+			m_bootstrap = ownerBootstrap;
+			m_stateSync = m_bootstrap != null ? m_bootstrap.BusinessStateSyncService : null;
+			m_simulation = m_bootstrap != null ? m_bootstrap.BusinessSimulationService : null;
 
-        RebuildWorldRuntimes();
-        EvaluateAll();
-    }
+			if (m_stateSync != null)
+			{
+				m_stateSync.stateChanged -= OnStateChanged;
+				m_stateSync.stateChanged += OnStateChanged;
+			}
 
-    private void OnDestroy()
-    {
-        if (stateSync != null)
-        {
-            stateSync.StateChanged -= OnStateChanged;
-        }
-    }
+			RebuildWorldRuntimes();
+			EvaluateAll();
+		}
 
-    private void OnStateChanged()
-    {
-        RebuildWorldRuntimes();
-        EvaluateAll();
-    }
+		private void OnStateChanged()
+		{
+			RebuildWorldRuntimes();
+			EvaluateAll();
+		}
 
-    private void RebuildWorldRuntimes()
-    {
-        var worlds = FindObjectsByType<BusinessWorldRuntime>(FindObjectsSortMode.None);
-        var existing = new HashSet<BusinessWorldRuntime>(worlds);
+		private void RebuildWorldRuntimes()
+		{
+			BusinessWorldRuntime[] worlds = FindObjectsByType<BusinessWorldRuntime>(FindObjectsSortMode.None);
+			var existing = new HashSet<BusinessWorldRuntime>(worlds);
 
-        foreach (var world in worlds)
-        {
-            if (world == null || runtimes.ContainsKey(world))
-            {
-                continue;
-            }
+			foreach (BusinessWorldRuntime world in worlds)
+			{
+				if (world == null || m_runtimes.ContainsKey(world))
+				{
+					continue;
+				}
 
-            var runtime = world.GetComponent<BusinessWorkerSplineRuntime>();
-            if (runtime == null)
-            {
-                runtime = world.gameObject.AddComponent<BusinessWorkerSplineRuntime>();
-            }
+				var runtime = world.GetComponent<BusinessWorkerSplineRuntime>();
+				if (runtime == null)
+				{
+					runtime = world.gameObject.AddComponent<BusinessWorkerSplineRuntime>();
+				}
 
-            runtime.worldRuntime = world;
-            runtime.Initialize(simulation);
-            runtimes[world] = runtime;
-        }
+				runtime.worldRuntime = world;
+				runtime.Initialize(m_simulation);
+				m_runtimes[world] = runtime;
+			}
 
-        var toRemove = new List<BusinessWorldRuntime>();
-        foreach (var pair in runtimes)
-        {
-            if (pair.Key == null || !existing.Contains(pair.Key))
-            {
-                toRemove.Add(pair.Key);
-            }
-        }
+			var toRemove = new List<BusinessWorldRuntime>();
+			foreach (KeyValuePair<BusinessWorldRuntime, BusinessWorkerSplineRuntime> pair in m_runtimes)
+			{
+				if (pair.Key == null || !existing.Contains(pair.Key))
+				{
+					toRemove.Add(pair.Key);
+				}
+			}
 
-        foreach (var key in toRemove)
-        {
-            runtimes.Remove(key);
-        }
-    }
+			foreach (BusinessWorldRuntime key in toRemove)
+			{
+				m_runtimes.Remove(key);
+			}
+		}
 
-    private void EvaluateAll()
-    {
-        foreach (var runtime in runtimes.Values)
-        {
-            if (runtime != null)
-            {
-                runtime.EvaluateActivation();
-            }
-        }
-    }
+		private void EvaluateAll()
+		{
+			foreach (BusinessWorkerSplineRuntime runtime in m_runtimes.Values)
+			{
+				if (runtime != null)
+				{
+					runtime.EvaluateActivation();
+				}
+			}
+		}
+	}
 }

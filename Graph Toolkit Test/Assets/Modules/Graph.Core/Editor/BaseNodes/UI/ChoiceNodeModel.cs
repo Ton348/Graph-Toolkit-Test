@@ -1,8 +1,7 @@
-using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.UI
+namespace Graph.Core.Editor.BaseNodes.UI
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -18,8 +17,8 @@ namespace GraphCore.BaseNodes.Editor.UI
 		public const string Option3Port = "Option3";
 		public const string Option4Port = "Option4";
 
-		protected override string DefaultTitle => "Выбор игрока";
-		protected override string DefaultDescription => "Показывает варианты ответа игрока";
+		protected override string defaultTitle => "Выбор игрока";
+		protected override string defaultDescription => "Показывает варианты ответа игрока";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

@@ -1,30 +1,28 @@
-using Game1.Graph.Runtime;
-using GraphCore.Editor;
-using GraphCore.Runtime;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System;
+using Game1.Graph.Editor.Infrastructure.Validation;
+using Game1.Graph.Runtime;
+using Graph.Core.Editor;
+using Graph.Core.Runtime;
 using Unity.GraphToolkit.Editor;
 using UnityEditor;
 
-using Game1.Graph.Editor.Infrastructure.Validation;
 namespace Game1.Graph.Editor.Infrastructure.Bootstrap
 {
 	[InitializeOnLoad]
 	public static class GameGraphEditorBootstrap
 	{
-		private static GameGraphModule s_module;
-
-		public static GameGraphModule Module => s_module;
-
 		static GameGraphEditorBootstrap()
 		{
 			Initialize();
 		}
 
+		public static GameGraphModule Module { get; private set; }
+
 		private static void Initialize()
 		{
-			s_module = GameGraphModule.Create()
+			Module = GameGraphModule.Create()
 				.WithAutoRegistration(GetEditorAssemblies())
 				.Build();
 
@@ -34,9 +32,9 @@ namespace Game1.Graph.Editor.Infrastructure.Bootstrap
 
 		private static Assembly[] GetEditorAssemblies()
 		{
-			List<Assembly> assemblies = new List<Assembly>();
+			var assemblies = new List<Assembly>();
 			Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-			for (int i = 0; i < loadedAssemblies.Length; i++)
+			for (var i = 0; i < loadedAssemblies.Length; i++)
 			{
 				Assembly assembly = loadedAssemblies[i];
 				if (assembly == null || assembly.IsDynamic)
@@ -51,7 +49,7 @@ namespace Game1.Graph.Editor.Infrastructure.Bootstrap
 				}
 
 				if (!assemblyName.EndsWith(".Editor", StringComparison.Ordinal) &&
-					!string.Equals(assemblyName, "Assembly-CSharp-Editor", StringComparison.Ordinal))
+				    !string.Equals(assemblyName, "Assembly-CSharp-Editor", StringComparison.Ordinal))
 				{
 					continue;
 				}
@@ -64,17 +62,17 @@ namespace Game1.Graph.Editor.Infrastructure.Bootstrap
 
 		private static BaseGraphNode ConvertExternalNode(INode editorNode)
 		{
-			if (s_module == null || editorNode == null)
+			if (Module == null || editorNode == null)
 			{
 				return null;
 			}
 
-			if (s_module.EditorComposition == null || s_module.EditorComposition.ConverterRegistry == null)
+			if (Module.EditorComposition == null || Module.EditorComposition.ConverterRegistry == null)
 			{
 				return null;
 			}
 
-			if (s_module.EditorComposition.ConverterRegistry.TryConvert(editorNode, out GameGraphNode runtimeNode))
+			if (Module.EditorComposition.ConverterRegistry.TryConvert(editorNode, out GameGraphNode runtimeNode))
 			{
 				return runtimeNode;
 			}
@@ -82,14 +80,18 @@ namespace Game1.Graph.Editor.Infrastructure.Bootstrap
 			return null;
 		}
 
-		private static bool ValidateBeforeBuild(CommonGraphEditorGraph editorGraph, CommonGraph runtimeGraph, string editorGraphPath)
+		private static bool ValidateBeforeBuild(
+			CommonGraphEditorGraph editorGraph,
+			CommonGraph runtimeGraph,
+			string editorGraphPath)
 		{
-			if (s_module == null)
+			if (Module == null)
 			{
 				return true;
 			}
 
-			return GameGraphBuildValidationBridge.ValidateBeforeBuild(editorGraph, runtimeGraph, editorGraphPath, s_module.ValidationComposition);
+			return GameGraphBuildValidationBridge.ValidateBeforeBuild(editorGraph, runtimeGraph, editorGraphPath,
+				Module.ValidationComposition);
 		}
 	}
 }

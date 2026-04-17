@@ -1,20 +1,19 @@
 using System.Collections.Generic;
-using GraphCore.Runtime;
 
-using Game1.Graph.Runtime;
 namespace Game1.Graph.Runtime.Infrastructure.Validation
 {
 	public sealed class GameGraphValidationResult
 	{
-		private readonly List<GameGraphValidationIssue> m_issues = new List<GameGraphValidationIssue>();
+		private readonly List<GameGraphValidationIssue> m_issues = new();
 
 		public IReadOnlyList<GameGraphValidationIssue> Issues => m_issues;
+
 		public int ErrorCount
 		{
 			get
 			{
-				int count = 0;
-				for (int i = 0; i < m_issues.Count; i++)
+				var count = 0;
+				for (var i = 0; i < m_issues.Count; i++)
 				{
 					if (m_issues[i].severity == GameGraphValidationIssueSeverity.Error)
 					{
@@ -30,8 +29,8 @@ namespace Game1.Graph.Runtime.Infrastructure.Validation
 		{
 			get
 			{
-				int count = 0;
-				for (int i = 0; i < m_issues.Count; i++)
+				var count = 0;
+				for (var i = 0; i < m_issues.Count; i++)
 				{
 					if (m_issues[i].severity == GameGraphValidationIssueSeverity.Warning)
 					{
@@ -43,17 +42,15 @@ namespace Game1.Graph.Runtime.Infrastructure.Validation
 			}
 		}
 
-		public bool HasErrors
-		{
-			get
-			{
-				return ErrorCount > 0;
-			}
-		}
+		public bool HasErrors => ErrorCount > 0;
 
 		public bool HasWarnings => WarningCount > 0;
 
-		public void AddIssue(GameGraphValidationIssueSeverity severity, GameGraphNode node, string fieldName, string message)
+		public void AddIssue(
+			GameGraphValidationIssueSeverity severity,
+			GameGraphNode node,
+			string fieldName,
+			string message)
 		{
 			string nodeId = node?.nodeId;
 			string nodeType = node?.GetType().Name;

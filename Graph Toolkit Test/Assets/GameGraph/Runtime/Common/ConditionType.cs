@@ -1,9 +1,11 @@
-using Game1.Graph.Runtime;
-public enum ConditionType
+namespace GameGraph.Runtime.Common
 {
-	BuildingOwned,
-	HasEnoughMoney,
-	PlayerStatAtLeast,
-	QuestActive,
-	QuestCompleted
+	public enum ConditionType
+	{
+		BuildingOwned,
+		HasEnoughMoney,
+		PlayerStatAtLeast,
+		QuestActive,
+		QuestCompleted
+	}
 }

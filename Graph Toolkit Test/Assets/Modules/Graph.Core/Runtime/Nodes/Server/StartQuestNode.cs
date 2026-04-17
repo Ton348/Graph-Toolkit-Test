@@ -1,7 +1,7 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Nodes.Server
+namespace Graph.Core.Runtime.Nodes.Server
 {
 	[Serializable]
 	public sealed class StartQuestNode : CoreGraphSuccessFailNode

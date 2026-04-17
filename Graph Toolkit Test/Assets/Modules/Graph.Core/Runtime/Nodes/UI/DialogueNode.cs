@@ -1,7 +1,7 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Nodes.UI
+namespace Graph.Core.Runtime.Nodes.UI
 {
 	[Serializable]
 	public sealed class DialogueNode : CoreGraphNextNode

@@ -1,12 +1,10 @@
 using System;
-using UnityEngine.Serialization;
 
 namespace Game1.Graph.Runtime.Templates
 {
 	[Serializable]
 	public abstract class GameGraphNextNode : GameGraphNode
 	{
-		[FormerlySerializedAs("nextNodeId")]
 		public string nextNodeId;
 	}
 }

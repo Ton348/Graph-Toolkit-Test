@@ -1,5 +1,5 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
 namespace Game1.Graph.Runtime
 {

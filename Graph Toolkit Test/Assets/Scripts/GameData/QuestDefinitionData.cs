@@ -1,11 +1,14 @@
 using System;
 
-[Serializable]
-public class QuestDefinitionData
+namespace Sample.Runtime.GameData
 {
-    public string id;
-    public string title;
-    public string description;
-    public int rewardMoney;
-    public string markerId;
+	[Serializable]
+	public class QuestDefinitionData
+	{
+		public string id;
+		public string title;
+		public string description;
+		public int rewardMoney;
+		public string markerId;
+	}
 }

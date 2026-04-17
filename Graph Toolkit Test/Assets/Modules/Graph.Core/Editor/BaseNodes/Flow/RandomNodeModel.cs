@@ -1,8 +1,7 @@
-using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Flow
+namespace Graph.Core.Editor.BaseNodes.Flow
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -18,8 +17,8 @@ namespace GraphCore.BaseNodes.Editor.Flow
 		public const string Option3Port = "Option3";
 		public const string Option4Port = "Option4";
 
-		protected override string DefaultTitle => "Случайный выбор";
-		protected override string DefaultDescription => "Выбирает случайную ветку";
+		protected override string defaultTitle => "Случайный выбор";
+		protected override string defaultDescription => "Выбирает случайную ветку";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
@@ -33,10 +32,14 @@ namespace GraphCore.BaseNodes.Editor.Flow
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			context.AddOutputPort(Option1Port).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option2Port).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option3Port).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
-			context.AddOutputPort(Option4Port).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(Option1Port).WithDisplayName("Option1").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+			context.AddOutputPort(Option2Port).WithDisplayName("Option2").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+			context.AddOutputPort(Option3Port).WithDisplayName("Option3").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
+			context.AddOutputPort(Option4Port).WithDisplayName("Option4").WithConnectorUI(PortConnectorUI.Arrowhead)
+				.Build();
 		}
 	}
 }

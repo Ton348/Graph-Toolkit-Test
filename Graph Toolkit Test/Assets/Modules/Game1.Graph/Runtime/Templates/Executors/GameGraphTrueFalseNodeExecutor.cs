@@ -1,15 +1,17 @@
-using Cysharp.Threading.Tasks;
 using System.Threading;
-using GraphCore.Runtime;
-using Game1.Graph.Runtime;
-
+using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure;
-using Game1.Graph.Runtime.Templates;
+using Graph.Core.Runtime;
+
 namespace Game1.Graph.Runtime.Templates.Executors
 {
-	public abstract class GameGraphTrueFalseNodeExecutor<TNode> : GameGraphNodeExecutor<TNode> where TNode : GameGraphTrueFalseNode
+	public abstract class GameGraphTrueFalseNodeExecutor<TNode> : GameGraphNodeExecutor<TNode>
+		where TNode : GameGraphTrueFalseNode
 	{
-		protected sealed override async UniTask<GraphNodeExecutionResult> ExecuteAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected sealed override async UniTask<GraphNodeExecutionResult> ExecuteAsync(
+			TNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (node == null)
 			{
@@ -22,7 +24,10 @@ namespace Game1.Graph.Runtime.Templates.Executors
 				: GraphNodeExecutionResult.ContinueTo(node.falseNodeId);
 		}
 
-		protected abstract UniTask<bool> EvaluateConditionAsync(TNode node, GraphExecutionContext context, CancellationToken cancellationToken);
+		protected abstract UniTask<bool> EvaluateConditionAsync(
+			TNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken);
 
 		protected static GraphNodeExecutionResult True(TNode node)
 		{

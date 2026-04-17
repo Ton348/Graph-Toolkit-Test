@@ -1,16 +1,19 @@
 ﻿using System;
 using UnityEngine;
 
-public class Readme : ScriptableObject
+namespace TutorialInfo.Scripts
 {
-    public Texture2D icon;
-    public string title;
-    public Section[] sections;
-    public bool loadedLayout;
+	public class Readme : ScriptableObject
+	{
+		public Texture2D icon;
+		public string title;
+		public Section[] sections;
+		public bool loadedLayout;
 
-    [Serializable]
-    public class Section
-    {
-        public string heading, text, linkText, url;
-    }
+		[Serializable]
+		public class Section
+		{
+			public string heading, text, linkText, url;
+		}
+	}
 }

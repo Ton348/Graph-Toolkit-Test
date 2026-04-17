@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public sealed class GraphExecutionContext
 	{
-		private readonly Dictionary<GraphContextKey, (Type valueType, object value)> m_values = new Dictionary<GraphContextKey, (Type valueType, object value)>();
+		private readonly Dictionary<GraphContextKey, (Type valueType, object value)> m_values = new();
 
 		public GraphExecutionContext(IGraphRuntimeServices services = null)
 		{
@@ -62,9 +62,11 @@ namespace GraphCore.Runtime
 
 		private void SetInternal<T>(GraphContextKey<T> key, T value)
 		{
-			if (m_values.TryGetValue(key, out (Type valueType, object value) existing) && existing.valueType != key.ValueType)
+			if (m_values.TryGetValue(key, out (Type valueType, object value) existing) &&
+			    existing.valueType != key.ValueType)
 			{
-				throw new InvalidOperationException($"GraphExecutionContext type mismatch on key '{key.Id}'. Existing type: {existing.valueType.Name}, new type: {key.ValueType.Name}.");
+				throw new InvalidOperationException(
+					$"GraphExecutionContext type mismatch on key '{key.Id}'. Existing type: {existing.valueType.Name}, new type: {key.ValueType.Name}.");
 			}
 
 			m_values[key] = (key.ValueType, value);
@@ -80,7 +82,8 @@ namespace GraphCore.Runtime
 
 			if (stored.valueType != key.ValueType)
 			{
-				throw new InvalidOperationException($"GraphExecutionContext type mismatch on key '{key.Id}'. Stored type: {stored.valueType.Name}, requested type: {key.ValueType.Name}.");
+				throw new InvalidOperationException(
+					$"GraphExecutionContext type mismatch on key '{key.Id}'. Stored type: {stored.valueType.Name}, requested type: {key.ValueType.Name}.");
 			}
 
 			if (stored.value == null)
@@ -91,7 +94,8 @@ namespace GraphCore.Runtime
 
 			if (stored.value is not T typedValue)
 			{
-				throw new InvalidOperationException($"GraphExecutionContext stored value cast failed on key '{key.Id}'. Stored runtime type: {stored.value.GetType().Name}, requested type: {key.ValueType.Name}.");
+				throw new InvalidOperationException(
+					$"GraphExecutionContext stored value cast failed on key '{key.Id}'. Stored runtime type: {stored.value.GetType().Name}, requested type: {key.ValueType.Name}.");
 			}
 
 			value = typedValue;

@@ -1,5 +1,6 @@
 {
   "name": "GameGraph.Runtime",
+  "rootNamespace": "GameGraph.Runtime",
   "references": [
     "Game1.Graph.Runtime",
     "Graph.Core.Runtime",
@@ -13,6 +14,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "GameGraph.Runtime"
+  "noEngineReferences": false
 }

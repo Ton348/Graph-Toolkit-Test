@@ -1,8 +1,8 @@
 using System;
-using GraphCore.Editor;
+using Graph.Core.Runtime.Nodes.Server;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Server
+namespace Graph.Core.Editor.BaseNodes.Server
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -13,16 +13,16 @@ namespace GraphCore.BaseNodes.Editor.Server
 		public const string TruePort = "True";
 		public const string FalsePort = "False";
 
-		protected override string DefaultTitle => "Проверка квеста";
-		protected override string DefaultDescription => "Проверяет состояние квеста";
+		protected override string defaultTitle => "Проверка квеста";
+		protected override string defaultDescription => "Проверяет состояние квеста";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
 			base.OnDefineOptions(context);
 			context.AddOption<string>(QuestIdOption).WithDisplayName("QuestId");
-			context.AddOption<GraphCore.Runtime.Nodes.Server.QuestState>(StateOption)
+			context.AddOption<QuestState>(StateOption)
 				.WithDisplayName("State")
-				.WithDefaultValue(GraphCore.Runtime.Nodes.Server.QuestState.None);
+				.WithDefaultValue(QuestState.None);
 		}
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)

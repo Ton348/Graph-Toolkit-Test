@@ -1,7 +1,7 @@
-using GraphCore.Runtime.Executors.Templates;
-using GraphCore.Runtime.Nodes.Utility;
+using Graph.Core.Runtime.Executors.Templates;
+using Graph.Core.Runtime.Nodes.Utility;
 
-namespace GraphCore.Runtime.Executors.Utility
+namespace Graph.Core.Runtime.Executors.Utility
 {
 	public sealed class LogNodeExecutor : CoreGraphNextNodeExecutor<LogNode>
 	{

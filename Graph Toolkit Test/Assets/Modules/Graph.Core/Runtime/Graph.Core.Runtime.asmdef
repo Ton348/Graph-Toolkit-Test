@@ -1,5 +1,6 @@
 {
   "name": "Graph.Core.Runtime",
+  "rootNamespace": "Graph.Core.Runtime",
   "references": [
     "UniTask"
   ],
@@ -11,6 +12,5 @@
   "autoReferenced": true,
   "defineConstraints": [],
   "versionDefines": [],
-  "noEngineReferences": false,
-  "rootNamespace": "GraphCore.Runtime"
+  "noEngineReferences": false
 }

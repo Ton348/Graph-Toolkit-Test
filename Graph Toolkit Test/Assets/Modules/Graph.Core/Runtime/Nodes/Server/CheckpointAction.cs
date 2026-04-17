@@ -1,4 +1,4 @@
-namespace GraphCore.Runtime.Nodes.Server
+namespace Graph.Core.Runtime.Nodes.Server
 {
 	public enum CheckpointAction
 	{

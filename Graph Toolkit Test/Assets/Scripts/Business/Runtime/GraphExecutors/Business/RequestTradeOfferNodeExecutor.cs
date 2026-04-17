@@ -1,74 +1,91 @@
 using System.Threading;
 using Cysharp.Threading.Tasks;
-using GraphCore.Runtime;
-using UnityEngine;
-using Game1.Graph.Runtime;
-
-using Game1.Graph.Runtime.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
-[GameGraphNodeExecutorAttribute]
-public sealed class RequestTradeOfferNodeExecutor : GameGraphServerRequestExecutor<RequestTradeOfferNode>
+using GameGraph.Runtime.Business;
+using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.Runtime.GraphExecutors.Infrastructure;
+using Prototype.Business.Services;
+using Sample.Runtime.GameData;
+using Sample.Runtime.UI;
+using UnityEngine;
+
+namespace Prototype.Business.Runtime.GraphExecutors.Business
 {
-	protected override async UniTask<ServerActionResult> ExecuteRequestAsync(RequestTradeOfferNode node, GameBootstrap bootstrap, GraphExecutionContext context, CancellationToken cancellationToken)
+	[GameGraphNodeExecutor]
+	public sealed class RequestTradeOfferNodeExecutor : GameGraphServerRequestExecutor<RequestTradeOfferNode>
 	{
-		context?.Set(GraphContextKeys.BuildingLastRequestedId, node.buildingId);
-
-		int fallbackOffer = 0;
-		string buildingLabel = node.buildingId;
-		if (bootstrap.GameDataRepository != null && !string.IsNullOrWhiteSpace(node.buildingId))
+		protected override async UniTask<ServerActionResult> ExecuteRequestAsync(
+			RequestTradeOfferNode node,
+			GameBootstrap bootstrap,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
-			BuildingDefinitionData building = bootstrap.GameDataRepository.GetBuildingById(node.buildingId);
-			if (building != null)
+			context?.Set(GraphContextKeys.buildingLastRequestedId, node.buildingId);
+
+			var fallbackOffer = 0;
+			string buildingLabel = node.buildingId;
+			if (bootstrap.GameDataRepository != null && !string.IsNullOrWhiteSpace(node.buildingId))
 			{
-				fallbackOffer = Mathf.Max(1, building.purchaseCost);
-				buildingLabel = string.IsNullOrWhiteSpace(building.displayName) ? node.buildingId : building.displayName;
+				BuildingDefinitionData building = bootstrap.GameDataRepository.GetBuildingById(node.buildingId);
+				if (building != null)
+				{
+					fallbackOffer = Mathf.Max(1, building.purchaseCost);
+					buildingLabel = string.IsNullOrWhiteSpace(building.displayName)
+						? node.buildingId
+						: building.displayName;
+				}
 			}
+
+			int offeredAmount = await ResolveOfferAmountAsync(buildingLabel, fallbackOffer, cancellationToken);
+			return await GameGraphExecutorContext.ExecuteServerAsync(context,
+				bootstrap.GameServer.TrySubmitTradeOfferAsync(node.buildingId, offeredAmount));
 		}
 
-		int offeredAmount = await ResolveOfferAmountAsync(buildingLabel, fallbackOffer, cancellationToken);
-		return await GameGraphExecutorContext.ExecuteServerAsync(context, bootstrap.GameServer.TrySubmitTradeOfferAsync(node.buildingId, offeredAmount));
-	}
-
-	private static async UniTask<int> ResolveOfferAmountAsync(string buildingLabel, int fallbackOffer, CancellationToken cancellationToken)
-	{
-		TradeOfferUIService ui = Object.FindAnyObjectByType<TradeOfferUIService>(FindObjectsInactive.Include);
-		if (ui == null)
+		private static async UniTask<int> ResolveOfferAmountAsync(
+			string buildingLabel,
+			int fallbackOffer,
+			CancellationToken cancellationToken)
 		{
-			return Mathf.Max(1, fallbackOffer);
-		}
-
-		var tcs = new UniTaskCompletionSource<int>();
-		bool completed = false;
-		ui.ShowOffer(buildingLabel, Mathf.Max(1, fallbackOffer), amount =>
-		{
-			if (completed)
+			var ui = Object.FindAnyObjectByType<TradeOfferUiservice>(FindObjectsInactive.Include);
+			if (ui == null)
 			{
-				return;
-			}
-
-			completed = true;
-			tcs.TrySetResult(Mathf.Max(1, amount));
-		});
-
-		using (cancellationToken.Register(() =>
-		{
-			if (completed)
-			{
-				return;
-			}
-
-			completed = true;
-			tcs.TrySetCanceled();
-		}))
-		{
-			try
-			{
-				return await tcs.Task;
-			}
-			catch
-			{
-				ui.Hide();
 				return Mathf.Max(1, fallbackOffer);
+			}
+
+			var tcs = new UniTaskCompletionSource<int>();
+			var completed = false;
+			ui.ShowOffer(buildingLabel, Mathf.Max(1, fallbackOffer), amount =>
+			{
+				if (completed)
+				{
+					return;
+				}
+
+				completed = true;
+				tcs.TrySetResult(Mathf.Max(1, amount));
+			});
+
+			using (cancellationToken.Register(() =>
+			       {
+				       if (completed)
+				       {
+					       return;
+				       }
+
+				       completed = true;
+				       tcs.TrySetCanceled();
+			       }))
+			{
+				try
+				{
+					return await tcs.Task;
+				}
+				catch
+				{
+					ui.Hide();
+					return Mathf.Max(1, fallbackOffer);
+				}
 			}
 		}
 	}

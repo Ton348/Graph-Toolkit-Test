@@ -1,25 +1,24 @@
-using Game1.Graph.Runtime;
 using System;
-using GraphCore.Editor;
-using Unity.GraphToolkit.Editor;
-
 using Game1.Graph.Editor.Infrastructure;
 using Game1.Graph.Runtime.Infrastructure;
+using Graph.Core.Editor;
+using Unity.GraphToolkit.Editor;
+
 namespace Game1.Graph.Editor
 {
 	[Serializable]
 	public abstract class GameGraphEditorNode : CommonGraphEditorNode
 	{
-		protected virtual string Category => GameGraphNodeCategories.Common;
+		protected virtual string category => GameGraphNodeCategories.Common;
 
 		protected string BuildCategoryPath(string nodeName)
 		{
 			if (string.IsNullOrWhiteSpace(nodeName))
 			{
-				return Category;
+				return category;
 			}
 
-			return $"{Category}/{nodeName}";
+			return $"{category}/{nodeName}";
 		}
 
 		protected void AddNextPort(IPortDefinitionContext context)
@@ -56,28 +55,44 @@ namespace Game1.Graph.Editor
 				.Build();
 		}
 
-		protected void AddStringOption(IOptionDefinitionContext context, string optionKey, string displayName, string defaultValue = "")
+		protected void AddStringOption(
+			IOptionDefinitionContext context,
+			string optionKey,
+			string displayName,
+			string defaultValue = "")
 		{
 			context.AddOption<string>(optionKey)
 				.WithDisplayName(displayName)
 				.WithDefaultValue(defaultValue);
 		}
 
-		protected void AddIntOption(IOptionDefinitionContext context, string optionKey, string displayName, int defaultValue = 0)
+		protected void AddIntOption(
+			IOptionDefinitionContext context,
+			string optionKey,
+			string displayName,
+			int defaultValue = 0)
 		{
 			context.AddOption<int>(optionKey)
 				.WithDisplayName(displayName)
 				.WithDefaultValue(defaultValue);
 		}
 
-		protected void AddFloatOption(IOptionDefinitionContext context, string optionKey, string displayName, float defaultValue = 0f)
+		protected void AddFloatOption(
+			IOptionDefinitionContext context,
+			string optionKey,
+			string displayName,
+			float defaultValue = 0f)
 		{
 			context.AddOption<float>(optionKey)
 				.WithDisplayName(displayName)
 				.WithDefaultValue(defaultValue);
 		}
 
-		protected void AddBoolOption(IOptionDefinitionContext context, string optionKey, string displayName, bool defaultValue = false)
+		protected void AddBoolOption(
+			IOptionDefinitionContext context,
+			string optionKey,
+			string displayName,
+			bool defaultValue = false)
 		{
 			context.AddOption<bool>(optionKey)
 				.WithDisplayName(displayName)

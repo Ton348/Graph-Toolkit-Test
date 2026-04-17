@@ -1,13 +1,16 @@
-using Cysharp.Threading.Tasks;
-using GraphCore.Runtime.Executors.Templates;
-using GraphCore.Runtime.Nodes.World;
 using System.Threading;
+using Cysharp.Threading.Tasks;
+using Graph.Core.Runtime.Executors.Templates;
+using Graph.Core.Runtime.Nodes.World;
 
-namespace GraphCore.Runtime.Executors.World
+namespace Graph.Core.Runtime.Executors.World
 {
 	public sealed class MapMarkerNodeExecutor : CoreGraphNextNodeExecutor<MapMarkerNode>
 	{
-		protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(MapMarkerNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override UniTask<GraphNodeExecutionResult> ExecuteNodeAsync(
+			MapMarkerNode node,
+			GraphExecutionContext context,
+			CancellationToken cancellationToken)
 		{
 			if (context.MapMarkerService != null)
 			{

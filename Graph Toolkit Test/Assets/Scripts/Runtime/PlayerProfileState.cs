@@ -1,27 +1,31 @@
-public class PlayerProfileState
+using Sample.Runtime.GameData;
+
+namespace Sample.Runtime.Runtime
 {
-    public int Money;
-    public int Bargaining;
-    public int Speech;
-    public int Trading;
-    public int Speed;
-    public int Damage;
-    public int Health;
+	public class PlayerProfileState
+	{
+		public int bargaining;
+		public int damage;
+		public int health;
+		public int money;
+		public int speech;
+		public int speed;
+		public int trading;
 
-    public PlayerProfileState(EconomyConfigData config)
-    {
-        if (config == null)
-        {
-            return;
-        }
+		public PlayerProfileState(EconomyConfigData config)
+		{
+			if (config == null)
+			{
+				return;
+			}
 
-        Money = config.startMoney;
-        Bargaining = config.baseBargaining;
-        Speech = config.baseSpeech;
-        Trading = config.baseTrading;
-        Speed = config.baseSpeed;
-        Damage = config.baseDamage;
-        Health = config.baseHealth;
-    }
-
+			money = config.startMoney;
+			bargaining = config.baseBargaining;
+			speech = config.baseSpeech;
+			trading = config.baseTrading;
+			speed = config.baseSpeed;
+			damage = config.baseDamage;
+			health = config.baseHealth;
+		}
+	}
 }

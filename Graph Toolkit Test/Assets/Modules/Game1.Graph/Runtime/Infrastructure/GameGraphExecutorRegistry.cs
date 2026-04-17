@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using GraphCore.Runtime;
+using Graph.Core.Runtime;
 
 namespace Game1.Graph.Runtime.Infrastructure
 {
 	public sealed class GameGraphExecutorRegistry
 	{
-		private readonly List<IGraphNodeExecutor> m_executors = new List<IGraphNodeExecutor>();
-		private readonly Dictionary<Type, IGraphNodeExecutor> m_executorsByNodeType = new Dictionary<Type, IGraphNodeExecutor>();
+		private readonly List<IGraphNodeExecutor> m_executors = new();
+		private readonly Dictionary<Type, IGraphNodeExecutor> m_executorsByNodeType = new();
 
 		public void Register(IGraphNodeExecutor executor)
 		{

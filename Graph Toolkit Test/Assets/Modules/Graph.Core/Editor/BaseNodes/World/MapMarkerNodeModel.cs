@@ -1,8 +1,7 @@
-using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.World
+namespace Graph.Core.Editor.BaseNodes.World
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -11,8 +10,8 @@ namespace GraphCore.BaseNodes.Editor.World
 		public const string MarkerIdOption = "MarkerId";
 		public const string TargetOption = "Target";
 
-		protected override string DefaultTitle => "Метка на карте";
-		protected override string DefaultDescription => "Добавляет маркер на карту";
+		protected override string defaultTitle => "Метка на карте";
+		protected override string defaultDescription => "Добавляет маркер на карту";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

@@ -1,45 +1,49 @@
+using Prototype.Business.Bootstrap;
 using UnityEngine;
 
-public class BusinessSimulationTickRunner : MonoBehaviour
+namespace Prototype.Business.Simulation
 {
-    public GameBootstrap bootstrap;
-    public float tickIntervalSeconds = 1f;
-    public float timeScale = 1f;
+	public class BusinessSimulationTickRunner : MonoBehaviour
+	{
+		public GameBootstrap bootstrap;
+		public float tickIntervalSeconds = 1f;
+		public float timeScale = 1f;
+		private BusinessSimulationClock m_clock;
 
-    private BusinessSimulationService simulationService;
-    private BusinessSimulationClock clock;
+		private BusinessSimulationService m_simulationService;
 
-    private void Awake()
-    {
-        if (bootstrap == null)
-        {
-            bootstrap = FindObjectOfType<GameBootstrap>();
-        }
+		private void Awake()
+		{
+			if (bootstrap == null)
+			{
+				bootstrap = FindObjectOfType<GameBootstrap>();
+			}
 
-        if (bootstrap != null)
-        {
-            simulationService = bootstrap.BusinessSimulationService;
-        }
+			if (bootstrap != null)
+			{
+				m_simulationService = bootstrap.BusinessSimulationService;
+			}
 
-        clock = new BusinessSimulationClock
-        {
-            tickIntervalSeconds = tickIntervalSeconds
-        };
-    }
+			m_clock = new BusinessSimulationClock
+			{
+				tickIntervalSeconds = tickIntervalSeconds
+			};
+		}
 
-    private void Update()
-    {
-        if (simulationService == null || clock == null)
-        {
-            return;
-        }
+		private void Update()
+		{
+			if (m_simulationService == null || m_clock == null)
+			{
+				return;
+			}
 
-        clock.tickIntervalSeconds = tickIntervalSeconds;
-        simulationService.TimeScale = timeScale;
-        clock.Update(Time.deltaTime);
-        while (clock.TryConsumeTick(out var delta))
-        {
-            simulationService.RunTick(delta);
-        }
-    }
+			m_clock.tickIntervalSeconds = tickIntervalSeconds;
+			m_simulationService.TimeScale = timeScale;
+			m_clock.Update(Time.deltaTime);
+			while (m_clock.TryConsumeTick(out float delta))
+			{
+				m_simulationService.RunTick(delta);
+			}
+		}
+	}
 }

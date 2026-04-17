@@ -1,14 +1,11 @@
 using System;
-using GraphCore.Runtime;
-
-using Game1.Graph.Runtime;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
 using Game1.Graph.Runtime.Infrastructure.Validation;
 using Game1.Graph.Runtime.Templates;
-using Game1.Graph.Runtime.Validation;
+
 namespace Game1.Graph.Runtime.Validation.Templates
 {
-	[Game1.Graph.Runtime.Infrastructure.AutoRegistration.GameGraphNodeValidator]
+	[GameGraphNodeValidator]
 	public sealed class GameGraphTrueFalseNodeValidator : IGameGraphNodeValidator
 	{
 		public Type NodeType => typeof(GameGraphTrueFalseNode);
@@ -21,7 +18,7 @@ namespace Game1.Graph.Runtime.Validation.Templates
 				return false;
 			}
 
-			bool valid = true;
+			var valid = true;
 			if (string.IsNullOrWhiteSpace(typedNode.trueNodeId))
 			{
 				result?.AddError(typedNode, nameof(typedNode.trueNodeId), "True node id is required.");

@@ -1,7 +1,7 @@
-using GraphCore.Runtime.Executors.Templates;
-using GraphCore.Runtime.Nodes.Flow;
+using Graph.Core.Runtime.Executors.Templates;
+using Graph.Core.Runtime.Nodes.Flow;
 
-namespace GraphCore.Runtime.Executors.Flow
+namespace Graph.Core.Runtime.Executors.Flow
 {
 	public sealed class StartNodeExecutor : CoreGraphNextNodeExecutor<StartNode>
 	{

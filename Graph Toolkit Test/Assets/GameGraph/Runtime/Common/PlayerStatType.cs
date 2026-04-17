@@ -1,9 +1,11 @@
-using Game1.Graph.Runtime;
-public enum PlayerStatType
+namespace GameGraph.Runtime.Common
 {
-	Bargaining,
-	Speech,
-	Speed,
-	Damage,
-	Health
+	public enum PlayerStatType
+	{
+		Bargaining,
+		Speech,
+		Speed,
+		Damage,
+		Health
+	}
 }

@@ -1,7 +1,9 @@
-using Game1.Graph.Runtime;
-public static class GameRuntimeNodeConverterRegistration
+namespace GameGraph.Runtime.Infrastructure
 {
-	public static void Register()
+	public static class GameRuntimeNodeConverterRegistration
 	{
+		public static void Register()
+		{
+		}
 	}
 }

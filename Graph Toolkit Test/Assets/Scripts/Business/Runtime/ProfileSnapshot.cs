@@ -1,47 +1,50 @@
 using System;
 using System.Collections.Generic;
 
-[Serializable]
-public class ProfileSnapshot
+namespace Prototype.Business.Runtime
 {
-    public int Money;
-    public int Bargaining;
-    public int Speech;
-    public int Trading;
-    public int Speed;
-    public int Damage;
-    public int Health;
-    public List<string> ActiveQuestIds = new List<string>();
-    public List<string> CompletedQuestIds = new List<string>();
-    public List<string> OwnedBuildingIds = new List<string>();
-    public List<BuildingStateSnapshot> BuildingStates = new List<BuildingStateSnapshot>();
-    public List<GraphCheckpointSnapshot> GraphCheckpoints = new List<GraphCheckpointSnapshot>();
-    public List<ConstructedSiteSnapshot> ConstructedSites = new List<ConstructedSiteSnapshot>();
-    public List<BusinessInstanceSnapshot> Businesses = new List<BusinessInstanceSnapshot>();
-    public List<string> KnownContacts = new List<string>();
-}
+	[Serializable]
+	public class ProfileSnapshot
+	{
+		public int money;
+		public int bargaining;
+		public int speech;
+		public int trading;
+		public int speed;
+		public int damage;
+		public int health;
+		public List<string> activeQuestIds = new();
+		public List<string> completedQuestIds = new();
+		public List<string> ownedBuildingIds = new();
+		public List<BuildingStateSnapshot> buildingStates = new();
+		public List<GraphCheckpointSnapshot> graphCheckpoints = new();
+		public List<ConstructedSiteSnapshot> constructedSites = new();
+		public List<BusinessInstanceSnapshot> businesses = new();
+		public List<string> knownContacts = new();
+	}
 
-[Serializable]
-public class BuildingStateSnapshot
-{
-    public string id;
-    public bool owned;
-    public int level;
-    public int currentIncome;
-    public int currentExpenses;
-}
+	[Serializable]
+	public class BuildingStateSnapshot
+	{
+		public string id;
+		public bool owned;
+		public int level;
+		public int currentIncome;
+		public int currentExpenses;
+	}
 
-[Serializable]
-public class GraphCheckpointSnapshot
-{
-    public string graphId;
-    public string checkpointId;
-}
+	[Serializable]
+	public class GraphCheckpointSnapshot
+	{
+		public string graphId;
+		public string checkpointId;
+	}
 
-[Serializable]
-public class ConstructedSiteSnapshot
-{
-    public string siteId;
-    public string visualId;
-    public bool isConstructed;
+	[Serializable]
+	public class ConstructedSiteSnapshot
+	{
+		public string siteId;
+		public string visualId;
+		public bool isConstructed;
+	}
 }

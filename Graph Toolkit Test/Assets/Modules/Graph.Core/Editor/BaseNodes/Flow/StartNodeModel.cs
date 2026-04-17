@@ -1,15 +1,14 @@
-using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Flow
+namespace Graph.Core.Editor.BaseNodes.Flow
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
 	public sealed class StartNodeModel : CommonGraphEditorNode
 	{
-		protected override string DefaultTitle => "Начало графа";
-		protected override string DefaultDescription => "Стартовая точка выполнения сценария";
+		protected override string defaultTitle => "Начало графа";
+		protected override string defaultDescription => "Стартовая точка выполнения сценария";
 
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{

@@ -1,14 +1,17 @@
-using Game1.Graph.Runtime;
 using Game1.Graph.Runtime.Infrastructure;
-public static class GameRuntimeComposition
+
+namespace GameGraph.Runtime.Infrastructure
 {
-	public static GameGraphComposition Create()
+	public static class GameRuntimeComposition
 	{
-		GameGraphExecutorRegistry executorRegistry = new GameGraphExecutorRegistry();
+		public static GameGraphComposition Create()
+		{
+			var executorRegistry = new GameGraphExecutorRegistry();
 
-		GameRuntimeNodeConverterRegistration.Register();
-		GameRuntimeExecutorRegistration.Register(executorRegistry);
+			GameRuntimeNodeConverterRegistration.Register();
+			GameRuntimeExecutorRegistration.Register(executorRegistry);
 
-		return new GameGraphComposition(executorRegistry);
+			return new GameGraphComposition(executorRegistry);
+		}
 	}
 }

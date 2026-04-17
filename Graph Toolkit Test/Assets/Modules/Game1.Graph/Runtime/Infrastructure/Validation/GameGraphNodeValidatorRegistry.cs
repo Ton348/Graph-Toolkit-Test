@@ -1,15 +1,13 @@
-using System.Collections.Generic;
 using System;
-using GraphCore.Runtime;
-
-using Game1.Graph.Runtime;
+using System.Collections.Generic;
 using Game1.Graph.Runtime.Validation;
+
 namespace Game1.Graph.Runtime.Infrastructure.Validation
 {
 	public sealed class GameGraphNodeValidatorRegistry
 	{
-		private readonly Dictionary<Type, IGameGraphNodeValidator> m_validatorsByNodeType = new Dictionary<Type, IGameGraphNodeValidator>();
-		private readonly Dictionary<Type, IGameGraphNodeValidator> m_resolvedValidatorCache = new Dictionary<Type, IGameGraphNodeValidator>();
+		private readonly Dictionary<Type, IGameGraphNodeValidator> m_resolvedValidatorCache = new();
+		private readonly Dictionary<Type, IGameGraphNodeValidator> m_validatorsByNodeType = new();
 
 		public void Register(IGameGraphNodeValidator validator)
 		{
@@ -78,6 +76,7 @@ namespace Game1.Graph.Runtime.Infrastructure.Validation
 				{
 					result.AddError(null, nameof(node), "Node is null.");
 				}
+
 				return false;
 			}
 
@@ -91,7 +90,7 @@ namespace Game1.Graph.Runtime.Infrastructure.Validation
 
 		public GameGraphValidationResult ValidateAll(IEnumerable<GameGraphNode> nodes)
 		{
-			GameGraphValidationResult result = new GameGraphValidationResult();
+			var result = new GameGraphValidationResult();
 			if (nodes == null)
 			{
 				result.AddWarning(null, nameof(nodes), "Nodes collection is null.");

@@ -1,4 +1,4 @@
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public readonly struct GraphNodeExecutionResult
 	{
@@ -7,7 +7,11 @@ namespace GraphCore.Runtime
 		public readonly string diagnosticMessage;
 		public readonly GraphNodeExecutionErrorType errorType;
 
-		public GraphNodeExecutionResult(GraphNodeExecutionSignal signal, string nextNodeId, string diagnosticMessage, GraphNodeExecutionErrorType errorType)
+		public GraphNodeExecutionResult(
+			GraphNodeExecutionSignal signal,
+			string nextNodeId,
+			string diagnosticMessage,
+			GraphNodeExecutionErrorType errorType)
 		{
 			this.signal = signal;
 			this.nextNodeId = nextNodeId;
@@ -17,15 +21,19 @@ namespace GraphCore.Runtime
 
 		public static GraphNodeExecutionResult ContinueTo(string nextNodeId)
 		{
-			return new GraphNodeExecutionResult(GraphNodeExecutionSignal.Continue, nextNodeId, null, GraphNodeExecutionErrorType.None);
+			return new GraphNodeExecutionResult(GraphNodeExecutionSignal.Continue, nextNodeId, null,
+				GraphNodeExecutionErrorType.None);
 		}
 
 		public static GraphNodeExecutionResult Stop(string message = null)
 		{
-			return new GraphNodeExecutionResult(GraphNodeExecutionSignal.Stop, null, message, GraphNodeExecutionErrorType.None);
+			return new GraphNodeExecutionResult(GraphNodeExecutionSignal.Stop, null, message,
+				GraphNodeExecutionErrorType.None);
 		}
 
-		public static GraphNodeExecutionResult Fault(string message, GraphNodeExecutionErrorType errorType = GraphNodeExecutionErrorType.InternalError)
+		public static GraphNodeExecutionResult Fault(
+			string message,
+			GraphNodeExecutionErrorType errorType = GraphNodeExecutionErrorType.InternalError)
 		{
 			return new GraphNodeExecutionResult(GraphNodeExecutionSignal.Fault, null, message, errorType);
 		}

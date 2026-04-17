@@ -3,18 +3,19 @@ using Stopwatch = System.Diagnostics.Stopwatch;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Prototype.Business.Bootstrap;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class ServerRequestToolsWindow : EditorWindow
 {
-    private string baseUrl = "http://127.0.0.1:3000";
-    private string playerId = "player";
-    private string questId = "buy_building";
-    private string buildingId = "car_wash_01";
-    private float timeoutSeconds = 5f;
-    private bool logRawResponse = true;
+    private string m_baseUrl = "http://127.0.0.1:3000";
+    private string m_playerId = "player";
+    private string m_questId = "buy_building";
+    private string m_buildingId = "car_wash_01";
+    private float m_timeoutSeconds = 5f;
+    private bool m_logRawResponse = true;
 
     [MenuItem("Tools/Server Requests/Quick Actions")]
     private static void Open()
@@ -27,18 +28,18 @@ public class ServerRequestToolsWindow : EditorWindow
         TryLoadFromBootstrap();
     }
 
-    private void OnGUI()
+    private void OnGui()
     {
         EditorGUILayout.LabelField("Server", EditorStyles.boldLabel);
-        baseUrl = EditorGUILayout.TextField("Base Url", baseUrl);
-        playerId = EditorGUILayout.TextField("Player Id", playerId);
-        timeoutSeconds = EditorGUILayout.FloatField("Timeout (sec)", timeoutSeconds);
-        logRawResponse = EditorGUILayout.Toggle("Log Raw Response", logRawResponse);
+        m_baseUrl = EditorGUILayout.TextField("Base Url", m_baseUrl);
+        m_playerId = EditorGUILayout.TextField("Player Id", m_playerId);
+        m_timeoutSeconds = EditorGUILayout.FloatField("Timeout (sec)", m_timeoutSeconds);
+        m_logRawResponse = EditorGUILayout.Toggle("Log Raw Response", m_logRawResponse);
 
         EditorGUILayout.Space(8);
         EditorGUILayout.LabelField("Ids", EditorStyles.boldLabel);
-        questId = EditorGUILayout.TextField("Quest Id", questId);
-        buildingId = EditorGUILayout.TextField("Building Id", buildingId);
+        m_questId = EditorGUILayout.TextField("Quest Id", m_questId);
+        m_buildingId = EditorGUILayout.TextField("Building Id", m_buildingId);
 
         EditorGUILayout.Space(8);
         EditorGUILayout.BeginHorizontal();
@@ -72,13 +73,13 @@ public class ServerRequestToolsWindow : EditorWindow
 
     private async Task SendActionAsync(string action)
     {
-        if (string.IsNullOrWhiteSpace(baseUrl))
+        if (string.IsNullOrWhiteSpace(m_baseUrl))
         {
             Debug.LogWarning("[ServerTool] Base Url is empty.");
             return;
         }
 
-        string resolvedPlayerId = string.IsNullOrWhiteSpace(playerId) ? "player" : playerId;
+        string resolvedPlayerId = string.IsNullOrWhiteSpace(m_playerId) ? "player" : m_playerId;
         string json;
 
         switch (action)
@@ -95,7 +96,7 @@ public class ServerRequestToolsWindow : EditorWindow
                 {
                     action = action,
                     playerId = resolvedPlayerId,
-                    data = new QuestData { questId = questId }
+                    data = new QuestData { questId = m_questId }
                 });
                 break;
             case "complete_quest":
@@ -103,7 +104,7 @@ public class ServerRequestToolsWindow : EditorWindow
                 {
                     action = action,
                     playerId = resolvedPlayerId,
-                    data = new QuestData { questId = questId }
+                    data = new QuestData { questId = m_questId }
                 });
                 break;
             case "buy_building":
@@ -111,7 +112,7 @@ public class ServerRequestToolsWindow : EditorWindow
                 {
                     action = action,
                     playerId = resolvedPlayerId,
-                    data = new BuyBuildingData { buildingId = buildingId }
+                    data = new BuyBuildingData { buildingId = m_buildingId }
                 });
                 break;
             default:
@@ -119,14 +120,14 @@ public class ServerRequestToolsWindow : EditorWindow
                 return;
         }
 
-        string url = $"{baseUrl.TrimEnd('/')}/api/action";
+        string url = $"{m_baseUrl.TrimEnd('/')}/api/action";
         if (action == "start_quest" || action == "complete_quest")
         {
-            Debug.Log($"[ServerTool] action={action} questId='{questId}'");
+            Debug.Log($"[ServerTool] action={action} questId='{m_questId}'");
         }
         else if (action == "buy_building")
         {
-            Debug.Log($"[ServerTool] action={action} buildingId='{buildingId}'");
+            Debug.Log($"[ServerTool] action={action} buildingId='{m_buildingId}'");
         }
 
         Debug.Log($"[ServerTool] POST {url}\n{json}");
@@ -136,16 +137,16 @@ public class ServerRequestToolsWindow : EditorWindow
         request.uploadHandler = new UploadHandlerRaw(body);
         request.downloadHandler = new DownloadHandlerBuffer();
         request.SetRequestHeader("Content-Type", "application/json");
-        if (timeoutSeconds >= 1f)
+        if (m_timeoutSeconds >= 1f)
         {
-            request.timeout = Mathf.CeilToInt(timeoutSeconds);
+            request.timeout = Mathf.CeilToInt(m_timeoutSeconds);
         }
 
         var stopwatch = Stopwatch.StartNew();
         var op = request.SendWebRequest();
         while (!op.isDone)
         {
-            if (timeoutSeconds > 0f && timeoutSeconds < 1f && stopwatch.Elapsed.TotalSeconds >= timeoutSeconds)
+            if (m_timeoutSeconds > 0f && m_timeoutSeconds < 1f && stopwatch.Elapsed.TotalSeconds >= m_timeoutSeconds)
             {
                 request.Abort();
                 Debug.LogWarning($"[ServerTool] Timeout after {stopwatch.Elapsed.TotalMilliseconds:0.0}ms");
@@ -157,7 +158,7 @@ public class ServerRequestToolsWindow : EditorWindow
         string responseText = request.downloadHandler != null ? request.downloadHandler.text : string.Empty;
         double elapsedMs = stopwatch.Elapsed.TotalMilliseconds;
 
-        if (logRawResponse)
+        if (m_logRawResponse)
         {
             Debug.Log($"[ServerTool] Response ({request.responseCode}) in {elapsedMs:0.0}ms: {responseText}");
         }
@@ -185,7 +186,7 @@ public class ServerRequestToolsWindow : EditorWindow
     private void ResetCurrentPlayer()
     {
         string root = Directory.GetParent(Application.dataPath)?.FullName ?? Application.dataPath;
-        string filePath = Path.Combine(root, "server", "playerData", $"{playerId}.json");
+        string filePath = Path.Combine(root, "server", "playerData", $"{m_playerId}.json");
         if (!File.Exists(filePath))
         {
             Debug.LogWarning($"[ServerTool] Player file not found: {filePath}");
@@ -204,9 +205,9 @@ public class ServerRequestToolsWindow : EditorWindow
             return;
         }
 
-        baseUrl = bootstrap.remoteBaseUrl;
-        playerId = bootstrap.remotePlayerId;
-        timeoutSeconds = bootstrap.remoteTimeoutSeconds;
+        m_baseUrl = bootstrap.remoteBaseUrl;
+        m_playerId = bootstrap.remotePlayerId;
+        m_timeoutSeconds = bootstrap.remoteTimeoutSeconds;
     }
 
     [Serializable]

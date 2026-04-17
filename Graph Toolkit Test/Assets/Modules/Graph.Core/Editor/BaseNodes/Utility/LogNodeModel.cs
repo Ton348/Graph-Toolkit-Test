@@ -1,8 +1,7 @@
-using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Utility
+namespace Graph.Core.Editor.BaseNodes.Utility
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -10,8 +9,8 @@ namespace GraphCore.BaseNodes.Editor.Utility
 	{
 		public const string MessageOption = "Message";
 
-		protected override string DefaultTitle => "Лог";
-		protected override string DefaultDescription => "Выводит сообщение в консоль";
+		protected override string defaultTitle => "Лог";
+		protected override string defaultDescription => "Выводит сообщение в консоль";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{

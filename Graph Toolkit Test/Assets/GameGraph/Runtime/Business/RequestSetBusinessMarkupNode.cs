@@ -1,10 +1,12 @@
 using System;
-using Game1.Graph.Runtime;
-
 using Game1.Graph.Runtime.Templates;
-[Serializable]
-public sealed class RequestSetBusinessMarkupNode : GameGraphSuccessFailNode
+
+namespace GameGraph.Runtime.Business
 {
-    public string lotId;
-    public int markupPercent;
+	[Serializable]
+	public sealed class RequestSetBusinessMarkupNode : GameGraphSuccessFailNode
+	{
+		public string lotId;
+		public int markupPercent;
+	}
 }

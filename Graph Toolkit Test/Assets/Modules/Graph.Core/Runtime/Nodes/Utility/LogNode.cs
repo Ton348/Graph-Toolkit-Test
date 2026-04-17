@@ -1,7 +1,7 @@
 using System;
-using GraphCore.Runtime.Templates;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime.Nodes.Utility
+namespace Graph.Core.Runtime.Nodes.Utility
 {
 	[Serializable]
 	public sealed class LogNode : CoreGraphNextNode

@@ -1,21 +1,21 @@
-using GraphCore.Runtime.Nodes.Cinematics;
-using GraphCore.Runtime.Nodes.Flow;
-using GraphCore.Runtime.Nodes.Server;
-using GraphCore.Runtime.Nodes.UI;
-using GraphCore.Runtime.Nodes.Utility;
-using GraphCore.Runtime.Nodes.World;
-using GraphCore.Runtime.Templates;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Graph.Core.Runtime.Nodes.Cinematics;
+using Graph.Core.Runtime.Nodes.Flow;
+using Graph.Core.Runtime.Nodes.Server;
+using Graph.Core.Runtime.Nodes.UI;
+using Graph.Core.Runtime.Nodes.Utility;
+using Graph.Core.Runtime.Nodes.World;
+using Graph.Core.Runtime.Templates;
 
-namespace GraphCore.Runtime
+namespace Graph.Core.Runtime
 {
 	public static class CommonGraphValidator
 	{
 		public static GraphValidationResult Validate(CommonGraph graph)
 		{
-			GraphValidationResult result = new GraphValidationResult();
+			var result = new GraphValidationResult();
 
 			if (graph == null)
 			{
@@ -99,7 +99,11 @@ namespace GraphCore.Runtime
 			return result;
 		}
 
-		private static void ValidateBaseNext(Dictionary<string, BaseGraphNode> lookup, BaseGraphNode node, string nextNodeId, GraphValidationResult result)
+		private static void ValidateBaseNext(
+			Dictionary<string, BaseGraphNode> lookup,
+			BaseGraphNode node,
+			string nextNodeId,
+			GraphValidationResult result)
 		{
 			if (string.IsNullOrWhiteSpace(nextNodeId))
 			{
@@ -109,17 +113,21 @@ namespace GraphCore.Runtime
 			ValidateLink(lookup, node, "nextNodeId", nextNodeId, result);
 		}
 
-		private static void ValidateChoiceOptions(Dictionary<string, BaseGraphNode> lookup, ChoiceNode node, GraphValidationResult result)
+		private static void ValidateChoiceOptions(
+			Dictionary<string, BaseGraphNode> lookup,
+			ChoiceNode node,
+			GraphValidationResult result)
 		{
 			if (node.options == null || node.options.Count == 0)
 			{
-				result.AddWarning($"Choice node '{node.Id}' has no options.", node.Id, node.GetType().Name, nameof(node.options));
+				result.AddWarning($"Choice node '{node.Id}' has no options.", node.Id, node.GetType().Name,
+					nameof(node.options));
 				return;
 			}
 
-			bool hasValidOption = false;
+			var hasValidOption = false;
 
-			for (int i = 0; i < node.options.Count; i++)
+			for (var i = 0; i < node.options.Count; i++)
 			{
 				ChoiceOption option = node.options[i];
 				if (option == null || string.IsNullOrWhiteSpace(option.nextNodeId))
@@ -133,20 +141,25 @@ namespace GraphCore.Runtime
 
 			if (!hasValidOption)
 			{
-				result.AddWarning($"Choice node '{node.Id}' has no valid outgoing options.", node.Id, node.GetType().Name, nameof(node.options));
+				result.AddWarning($"Choice node '{node.Id}' has no valid outgoing options.", node.Id,
+					node.GetType().Name, nameof(node.options));
 			}
 		}
 
-		private static void ValidateRandomOptions(Dictionary<string, BaseGraphNode> lookup, RandomNode node, GraphValidationResult result)
+		private static void ValidateRandomOptions(
+			Dictionary<string, BaseGraphNode> lookup,
+			RandomNode node,
+			GraphValidationResult result)
 		{
 			if (node.options == null || node.options.Count == 0)
 			{
-				result.AddWarning($"Random node '{node.Id}' has no options.", node.Id, node.GetType().Name, nameof(node.options));
+				result.AddWarning($"Random node '{node.Id}' has no options.", node.Id, node.GetType().Name,
+					nameof(node.options));
 				return;
 			}
 
-			bool hasValidOption = false;
-			for (int i = 0; i < node.options.Count; i++)
+			var hasValidOption = false;
+			for (var i = 0; i < node.options.Count; i++)
 			{
 				RandomOption option = node.options[i];
 				if (option == null || string.IsNullOrWhiteSpace(option.nextNodeId))
@@ -160,11 +173,17 @@ namespace GraphCore.Runtime
 
 			if (!hasValidOption)
 			{
-				result.AddWarning($"Random node '{node.Id}' has no valid outgoing options.", node.Id, node.GetType().Name, nameof(node.options));
+				result.AddWarning($"Random node '{node.Id}' has no valid outgoing options.", node.Id,
+					node.GetType().Name, nameof(node.options));
 			}
 		}
 
-		private static void ValidateLink(Dictionary<string, BaseGraphNode> lookup, BaseGraphNode sourceNode, string fieldName, string nodeId, GraphValidationResult result)
+		private static void ValidateLink(
+			Dictionary<string, BaseGraphNode> lookup,
+			BaseGraphNode sourceNode,
+			string fieldName,
+			string nodeId,
+			GraphValidationResult result)
 		{
 			if (string.IsNullOrWhiteSpace(nodeId))
 			{
@@ -173,13 +192,15 @@ namespace GraphCore.Runtime
 
 			if (!lookup.ContainsKey(nodeId))
 			{
-				result.AddError($"Node '{sourceNode.Id}' has invalid link '{fieldName}' -> '{nodeId}'.", sourceNode.Id, sourceNode.GetType().Name, fieldName);
+				result.AddError($"Node '{sourceNode.Id}' has invalid link '{fieldName}' -> '{nodeId}'.", sourceNode.Id,
+					sourceNode.GetType().Name, fieldName);
 				return;
 			}
 
 			if (nodeId == sourceNode.Id)
 			{
-				result.AddWarning($"Node '{sourceNode.Id}' has self-link in '{fieldName}'.", sourceNode.Id, sourceNode.GetType().Name, fieldName);
+				result.AddWarning($"Node '{sourceNode.Id}' has self-link in '{fieldName}'.", sourceNode.Id,
+					sourceNode.GetType().Name, fieldName);
 			}
 		}
 
@@ -187,61 +208,74 @@ namespace GraphCore.Runtime
 		{
 			if (node is DialogueNode dialogueNode)
 			{
-				ValidateNotEmpty(dialogueNode.Id, dialogueNode.GetType().Name, nameof(dialogueNode.dialogueTitle), dialogueNode.dialogueTitle, result);
-				ValidateNotEmpty(dialogueNode.Id, dialogueNode.GetType().Name, nameof(dialogueNode.body), dialogueNode.body, result);
+				ValidateNotEmpty(dialogueNode.Id, dialogueNode.GetType().Name, nameof(dialogueNode.dialogueTitle),
+					dialogueNode.dialogueTitle, result);
+				ValidateNotEmpty(dialogueNode.Id, dialogueNode.GetType().Name, nameof(dialogueNode.body),
+					dialogueNode.body, result);
 			}
 
 			if (node is ChoiceNode choiceNode)
 			{
 				if (choiceNode.options != null)
 				{
-					bool hasValidLabel = choiceNode.options.Any(option => option != null && !string.IsNullOrWhiteSpace(option.label));
+					bool hasValidLabel = choiceNode.options.Any(option =>
+						option != null && !string.IsNullOrWhiteSpace(option.label));
 					if (!hasValidLabel)
 					{
-						result.AddWarning($"Choice node '{choiceNode.Id}' has no non-empty labels.", choiceNode.Id, choiceNode.GetType().Name, nameof(choiceNode.options));
+						result.AddWarning($"Choice node '{choiceNode.Id}' has no non-empty labels.", choiceNode.Id,
+							choiceNode.GetType().Name, nameof(choiceNode.options));
 					}
 				}
 			}
 
 			if (node is DelayNode delayNode && delayNode.delaySeconds < 0f)
 			{
-				result.AddWarning($"Delay node '{node.Id}' has negative delay.", node.Id, node.GetType().Name, nameof(delayNode.delaySeconds));
+				result.AddWarning($"Delay node '{node.Id}' has negative delay.", node.Id, node.GetType().Name,
+					nameof(delayNode.delaySeconds));
 			}
 
 			if (node is LogNode logNode)
 			{
-				ValidateNotEmpty(logNode.Id, logNode.GetType().Name, nameof(logNode.message), logNode.message, result, false);
+				ValidateNotEmpty(logNode.Id, logNode.GetType().Name, nameof(logNode.message), logNode.message, result,
+					false);
 			}
 
 			if (node is MapMarkerNode mapMarkerNode)
 			{
-				ValidateNotEmpty(mapMarkerNode.Id, mapMarkerNode.GetType().Name, nameof(mapMarkerNode.markerId), mapMarkerNode.markerId, result);
-				ValidateNotEmpty(mapMarkerNode.Id, mapMarkerNode.GetType().Name, nameof(mapMarkerNode.targetObjectName), mapMarkerNode.targetObjectName, result, false);
+				ValidateNotEmpty(mapMarkerNode.Id, mapMarkerNode.GetType().Name, nameof(mapMarkerNode.markerId),
+					mapMarkerNode.markerId, result);
+				ValidateNotEmpty(mapMarkerNode.Id, mapMarkerNode.GetType().Name, nameof(mapMarkerNode.targetObjectName),
+					mapMarkerNode.targetObjectName, result, false);
 			}
 
 			if (node is PlayCutsceneNode playCutsceneNode)
 			{
-				ValidateNotEmpty(playCutsceneNode.Id, playCutsceneNode.GetType().Name, nameof(playCutsceneNode.cutsceneReference), playCutsceneNode.cutsceneReference, result);
+				ValidateNotEmpty(playCutsceneNode.Id, playCutsceneNode.GetType().Name,
+					nameof(playCutsceneNode.cutsceneReference), playCutsceneNode.cutsceneReference, result);
 			}
 
 			if (node is CheckpointNode checkpointNode)
 			{
-				ValidateNotEmpty(checkpointNode.Id, checkpointNode.GetType().Name, nameof(checkpointNode.checkpointId), checkpointNode.checkpointId, result);
+				ValidateNotEmpty(checkpointNode.Id, checkpointNode.GetType().Name, nameof(checkpointNode.checkpointId),
+					checkpointNode.checkpointId, result);
 			}
 
 			if (node is StartQuestNode startQuestNode)
 			{
-				ValidateNotEmpty(startQuestNode.Id, startQuestNode.GetType().Name, nameof(startQuestNode.questId), startQuestNode.questId, result);
+				ValidateNotEmpty(startQuestNode.Id, startQuestNode.GetType().Name, nameof(startQuestNode.questId),
+					startQuestNode.questId, result);
 			}
 
 			if (node is CompleteQuestNode completeQuestNode)
 			{
-				ValidateNotEmpty(completeQuestNode.Id, completeQuestNode.GetType().Name, nameof(completeQuestNode.questId), completeQuestNode.questId, result);
+				ValidateNotEmpty(completeQuestNode.Id, completeQuestNode.GetType().Name,
+					nameof(completeQuestNode.questId), completeQuestNode.questId, result);
 			}
 
 			if (node is QuestStateConditionNode conditionNode)
 			{
-				ValidateNotEmpty(conditionNode.Id, conditionNode.GetType().Name, nameof(conditionNode.questId), conditionNode.questId, result);
+				ValidateNotEmpty(conditionNode.Id, conditionNode.GetType().Name, nameof(conditionNode.questId),
+					conditionNode.questId, result);
 			}
 		}
 
@@ -257,7 +291,8 @@ namespace GraphCore.Runtime
 				return;
 			}
 
-			result.AddWarning($"Node '{node.Id}' has no outgoing links and may terminate graph execution unexpectedly.", node.Id, node.GetType().Name);
+			result.AddWarning($"Node '{node.Id}' has no outgoing links and may terminate graph execution unexpectedly.",
+				node.Id, node.GetType().Name);
 		}
 
 		private static bool HasOutgoingLinks(BaseGraphNode node)
@@ -273,7 +308,13 @@ namespace GraphCore.Runtime
 			return false;
 		}
 
-		private static void ValidateNotEmpty(string nodeId, string nodeType, string fieldName, string value, GraphValidationResult result, bool error = true)
+		private static void ValidateNotEmpty(
+			string nodeId,
+			string nodeType,
+			string fieldName,
+			string value,
+			GraphValidationResult result,
+			bool error = true)
 		{
 			if (!string.IsNullOrWhiteSpace(value))
 			{
@@ -282,23 +323,28 @@ namespace GraphCore.Runtime
 
 			if (error)
 			{
-				result.AddError($"Node '{nodeId}' has empty required field '{fieldName}'.", nodeId, nodeType, fieldName);
+				result.AddError($"Node '{nodeId}' has empty required field '{fieldName}'.", nodeId, nodeType,
+					fieldName);
 			}
 			else
 			{
-				result.AddWarning($"Node '{nodeId}' has empty optional field '{fieldName}'.", nodeId, nodeType, fieldName);
+				result.AddWarning($"Node '{nodeId}' has empty optional field '{fieldName}'.", nodeId, nodeType,
+					fieldName);
 			}
 		}
 
-		private static void ValidateUnreachableNodes(CommonGraph graph, Dictionary<string, BaseGraphNode> lookup, GraphValidationResult result)
+		private static void ValidateUnreachableNodes(
+			CommonGraph graph,
+			Dictionary<string, BaseGraphNode> lookup,
+			GraphValidationResult result)
 		{
 			if (string.IsNullOrWhiteSpace(graph.startNodeId) || !lookup.ContainsKey(graph.startNodeId))
 			{
 				return;
 			}
 
-			HashSet<string> visited = new HashSet<string>();
-			Queue<string> queue = new Queue<string>();
+			var visited = new HashSet<string>();
+			var queue = new Queue<string>();
 			queue.Enqueue(graph.startNodeId);
 
 			while (queue.Count > 0)
@@ -328,7 +374,7 @@ namespace GraphCore.Runtime
 				}
 			}
 
-			for (int i = 0; i < graph.nodes.Count; i++)
+			for (var i = 0; i < graph.nodes.Count; i++)
 			{
 				BaseGraphNode node = graph.nodes[i];
 				if (node == null || string.IsNullOrWhiteSpace(node.Id))
@@ -338,7 +384,8 @@ namespace GraphCore.Runtime
 
 				if (!visited.Contains(node.Id))
 				{
-					result.AddWarning($"Node '{node.Id}' is unreachable from start node '{graph.startNodeId}'.", node.Id, node.GetType().Name, nodeIndex: i);
+					result.AddWarning($"Node '{node.Id}' is unreachable from start node '{graph.startNodeId}'.",
+						node.Id, node.GetType().Name, nodeIndex: i);
 				}
 			}
 		}
@@ -376,7 +423,7 @@ namespace GraphCore.Runtime
 
 			if (node is ChoiceNode choiceNode && choiceNode.options != null)
 			{
-				for (int i = 0; i < choiceNode.options.Count; i++)
+				for (var i = 0; i < choiceNode.options.Count; i++)
 				{
 					ChoiceOption option = choiceNode.options[i];
 					if (option != null)
@@ -388,7 +435,7 @@ namespace GraphCore.Runtime
 
 			if (node is RandomNode randomNode && randomNode.options != null)
 			{
-				for (int i = 0; i < randomNode.options.Count; i++)
+				for (var i = 0; i < randomNode.options.Count; i++)
 				{
 					RandomOption option = randomNode.options[i];
 					if (option != null)

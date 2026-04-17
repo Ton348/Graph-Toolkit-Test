@@ -1,8 +1,7 @@
-using GraphCore.Editor;
 using System;
 using Unity.GraphToolkit.Editor;
 
-namespace GraphCore.BaseNodes.Editor.Cinematics
+namespace Graph.Core.Editor.BaseNodes.Cinematics
 {
 	[Serializable]
 	[UseWithGraph(typeof(CommonGraphEditorGraph))]
@@ -10,8 +9,8 @@ namespace GraphCore.BaseNodes.Editor.Cinematics
 	{
 		public const string CutsceneReferenceOption = "CutsceneReference";
 
-		protected override string DefaultTitle => "Запуск катсцены";
-		protected override string DefaultDescription => "Запускает катсцену через Cinemachine";
+		protected override string defaultTitle => "Запуск катсцены";
+		protected override string defaultDescription => "Запускает катсцену через Cinemachine";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
