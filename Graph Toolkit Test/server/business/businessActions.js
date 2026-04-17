@@ -113,13 +113,16 @@ function installBusinessModule(profile, data, businessDefs) {
 
 function assignSupplier(profile, data, businessDefs) {
   const lotId = data && data.lotId;
-  const supplierId = data && data.supplierId;
+  const supplierId = data && typeof data.supplierId === 'string' ? data.supplierId.trim() : '';
   const lotCheck = requireLotId(lotId);
   if (lotCheck) return lotCheck;
-  if (!supplierId) return fail('SupplierIdEmpty', 'supplierId is required.');
 
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
+  if (!supplierId) {
+    business.selectedSupplierId = null;
+    return ok('Clear supplier success.');
+  }
 
   const supplierDef = businessDefs && businessDefs.supplierById && businessDefs.supplierById.get(supplierId);
   if (!supplierDef) return fail('SupplierNotFound', 'Supplier not found.');
@@ -135,17 +138,29 @@ function assignSupplier(profile, data, businessDefs) {
 function hireBusinessWorker(profile, data, businessDefs) {
   const lotId = data && data.lotId;
   const roleId = data && data.roleId;
-  const contactId = data && data.contactId;
+  const contactId = data && typeof data.contactId === 'string' ? data.contactId.trim() : '';
   const lotCheck = requireLotId(lotId);
   if (lotCheck) return lotCheck;
   if (!roleId) return fail('RoleIdEmpty', 'roleId is required.');
-  if (!contactId) return fail('ContactIdEmpty', 'contactId is required.');
 
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
   const roleDef = businessDefs && businessDefs.staffRoleById && businessDefs.staffRoleById.get(roleId);
   if (!roleDef) return fail('InvalidWorkerRole', 'Worker role not found.');
+  if (!contactId) {
+    if (roleId === 'cashier') {
+      business.hiredCashierContactId = null;
+      return ok('Clear cashier success.');
+    }
+
+    if (roleId === 'merchandiser') {
+      business.hiredMerchContactId = null;
+      return ok('Clear merchandiser success.');
+    }
+
+    return fail('InvalidWorkerRole', 'Unsupported worker role.');
+  }
 
   if (!Array.isArray(profile.knownContacts) || !profile.knownContacts.includes(contactId)) {
     return fail('ContactNotKnown', 'Contact not unlocked.');

@@ -38,10 +38,21 @@ namespace Prototype.Business.Runtime
 			return ExecuteAsync("AssignSupplier", () => m_gameServer.TryAssignSupplierAsync(lotId, supplierId));
 		}
 
+		public Task<ServerActionResult> ClearSupplier(string lotId)
+		{
+			return ExecuteAsync("ClearSupplier", () => m_gameServer.TryAssignSupplierAsync(lotId, string.Empty));
+		}
+
 		public Task<ServerActionResult> HireWorker(string lotId, string roleId, string contactId)
 		{
 			return ExecuteAsync("HireBusinessWorker",
 				() => m_gameServer.TryHireBusinessWorkerAsync(lotId, roleId, contactId));
+		}
+
+		public Task<ServerActionResult> ClearWorker(string lotId, string roleId)
+		{
+			return ExecuteAsync("ClearBusinessWorker",
+				() => m_gameServer.TryHireBusinessWorkerAsync(lotId, roleId, string.Empty));
 		}
 
 		public Task<ServerActionResult> OpenBusiness(string lotId)

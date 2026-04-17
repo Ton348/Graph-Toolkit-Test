@@ -9,118 +9,175 @@ using UnityEngine.UI;
 
 namespace Prototype.Business.UI
 {
-	public class BusinessDetailsView : MonoBehaviour
+	public sealed class BusinessDetailsView : MonoBehaviour
 	{
-		[Header("Summary")]
-		public TMP_Text lotIdText;
+		public enum TabType
+		{
+			Overview,
+			Setup,
+			Staff
+		}
 
-		public TMP_Text businessTypeText;
-		public TMP_Text isOpenText;
-		public TMP_Text rentPerDayText;
+		[Header("Window")]
+		[SerializeField]
+		private TMP_Text titleText;
 
-		[Header("Modules")]
-		public TMP_Text requiredModulesText;
+		[SerializeField]
+		private Button closeButton;
 
-		public TMP_Text installedModulesText;
-		public TMP_Text missingModulesText;
+		[Header("Top Bar")]
+		[SerializeField]
+		private TMP_Dropdown businessDropdown;
 
-		[Header("Economy")]
-		public TMP_Text markupText;
+		[SerializeField]
+		private Button openCloseButton;
 
-		public TMP_Text storageStockText;
-		public TMP_Text shelfStockText;
-		public TMP_Text incomeText;
-		public TMP_Text expensesText;
-		public TMP_Text profitText;
+		[SerializeField]
+		private TMP_Text openCloseButtonText;
 
-		[Header("Staff & Supplier")]
-		public TMP_Text supplierText;
+		[Header("Tabs")]
+		[SerializeField]
+		private Button overviewTabButton;
 
-		public TMP_Text cashierText;
-		public TMP_Text merchText;
+		[SerializeField]
+		private Button setupTabButton;
 
-		[Header("Contacts")]
-		public TMP_Text knownContactsText;
+		[SerializeField]
+		private Button staffTabButton;
 
-		[Header("Inputs")]
-		public TMP_InputField lotIdInput;
+		[SerializeField]
+		private GameObject overviewTabRoot;
 
-		public TMP_InputField businessTypeIdInput;
-		public TMP_InputField moduleIdInput;
-		public TMP_InputField supplierIdInput;
-		public TMP_InputField roleIdInput;
-		public TMP_InputField contactIdInput;
-		public TMP_InputField markupInput;
-		public TMP_InputField rentInput;
+		[SerializeField]
+		private GameObject setupTabRoot;
 
-		[Header("Dropdowns (Player Facing)")]
-		public TMP_Dropdown lotDropdown;
+		[SerializeField]
+		private GameObject staffTabRoot;
 
-		public TMP_Dropdown businessTypeDropdown;
-		public TMP_Dropdown moduleDropdown;
-		public TMP_Dropdown supplierDropdown;
-		public TMP_Dropdown roleDropdown;
-		public TMP_Dropdown workerContactDropdown;
-		public TMP_Dropdown unlockContactDropdown;
+		[Header("Overview")]
+		[SerializeField]
+		private TMP_Text incomeValueText;
 
-		[Header("Buttons")]
-		public Button rentButton;
+		[SerializeField]
+		private TMP_Text expensesValueText;
 
-		public Button assignTypeButton;
-		public Button installModuleButton;
-		public Button assignSupplierButton;
-		public Button hireWorkerButton;
-		public Button openButton;
-		public Button closeButton;
-		public Button setMarkupButton;
-		public Button unlockContactButton;
-		private readonly List<IdOption> m_businessTypeOptions = new();
-		private readonly List<IdOption> m_lotOptions = new();
-		private readonly List<IdOption> m_moduleOptions = new();
-		private readonly List<IdOption> m_roleOptions = new();
+		[SerializeField]
+		private TMP_Text profitValueText;
+
+		[SerializeField]
+		private Slider priceSlider;
+
+		[SerializeField]
+		private TMP_Text priceValueText;
+
+		[Header("Setup")]
+		[SerializeField]
+		private TMP_Dropdown storageDropdown;
+
+		[SerializeField]
+		private TMP_Dropdown cashDeskDropdown;
+
+		[SerializeField]
+		private TMP_Dropdown shelfDropdown;
+
+		[Header("Staff")]
+		[SerializeField]
+		private TMP_Dropdown supplierDropdown;
+
+		[SerializeField]
+		private TMP_Dropdown cashierDropdown;
+
+		[SerializeField]
+		private TMP_Dropdown merchandiserDropdown;
+
+		private readonly List<IdOption> m_businessOptions = new();
+		private readonly List<IdOption> m_storageOptions = new();
+		private readonly List<IdOption> m_cashDeskOptions = new();
+		private readonly List<IdOption> m_shelfOptions = new();
 		private readonly List<IdOption> m_supplierOptions = new();
-		private readonly List<IdOption> m_unlockContactOptions = new();
-		private readonly List<IdOption> m_workerContactOptions = new();
+		private readonly List<IdOption> m_cashierOptions = new();
+		private readonly List<IdOption> m_merchandiserOptions = new();
 
 		private BusinessInstanceSnapshot m_currentBusiness;
+		private string m_currentLotId;
+		private bool m_isBusinessOpen;
+		private bool m_updatingBusinessDropdown;
+
+		private int m_pendingPrice;
+		private string m_pendingStorageId;
+		private string m_pendingCashDeskId;
+		private string m_pendingShelfId;
+		private string m_pendingSupplierId;
+		private string m_pendingCashierId;
+		private string m_pendingMerchandiserId;
+
+		public event Action closeClicked;
+		public event Action<string> businessChanged;
+		public event Action openCloseClicked;
+		public event Action<TabType> tabChanged;
 
 		private void Awake()
 		{
-			HookButton(rentButton, () => rentClicked?.Invoke());
-			HookButton(assignTypeButton, () => assignTypeClicked?.Invoke());
-			HookButton(installModuleButton, () => installModuleClicked?.Invoke());
-			HookButton(assignSupplierButton, () => assignSupplierClicked?.Invoke());
-			HookButton(hireWorkerButton, () => hireWorkerClicked?.Invoke());
-			HookButton(openButton, () => openClicked?.Invoke());
 			HookButton(closeButton, () => closeClicked?.Invoke());
-			HookButton(setMarkupButton, () => setMarkupClicked?.Invoke());
-			HookButton(unlockContactButton, () => unlockContactClicked?.Invoke());
+			HookButton(openCloseButton, () => openCloseClicked?.Invoke());
+			HookButton(overviewTabButton, () => SetTab(TabType.Overview));
+			HookButton(setupTabButton, () => SetTab(TabType.Setup));
+			HookButton(staffTabButton, () => SetTab(TabType.Staff));
 
-			if (roleDropdown != null)
+			if (businessDropdown != null)
 			{
-				roleDropdown.onValueChanged.AddListener(value => roleChanged?.Invoke());
+				businessDropdown.onValueChanged.AddListener(OnBusinessDropdownChanged);
+			}
+
+			if (priceSlider != null)
+			{
+				priceSlider.onValueChanged.AddListener(OnPriceChanged);
+			}
+
+			HookPendingDropdown(storageDropdown, m_storageOptions, value => m_pendingStorageId = value);
+			HookPendingDropdown(cashDeskDropdown, m_cashDeskOptions, value => m_pendingCashDeskId = value);
+			HookPendingDropdown(shelfDropdown, m_shelfOptions, value => m_pendingShelfId = value);
+			HookPendingDropdown(supplierDropdown, m_supplierOptions, value => m_pendingSupplierId = value);
+			HookPendingDropdown(cashierDropdown, m_cashierOptions, value => m_pendingCashierId = value);
+			HookPendingDropdown(merchandiserDropdown, m_merchandiserOptions, value => m_pendingMerchandiserId = value);
+
+			SetTab(TabType.Overview);
+			SetBusinessOpenState(false);
+			UpdatePriceText(0);
+		}
+
+		public void SetTab(TabType tab)
+		{
+			if (overviewTabRoot != null)
+			{
+				overviewTabRoot.SetActive(tab == TabType.Overview);
+			}
+
+			if (setupTabRoot != null)
+			{
+				setupTabRoot.SetActive(tab == TabType.Setup);
+			}
+
+			if (staffTabRoot != null)
+			{
+				staffTabRoot.SetActive(tab == TabType.Staff);
+			}
+
+			tabChanged?.Invoke(tab);
+		}
+
+		public void SetBusinessOpenState(bool isOpen)
+		{
+			m_isBusinessOpen = isOpen;
+			if (openCloseButtonText != null)
+			{
+				openCloseButtonText.text = isOpen ? "Закрыть" : "Открыть";
 			}
 		}
 
-		public event Action rentClicked;
-		public event Action assignTypeClicked;
-		public event Action installModuleClicked;
-		public event Action assignSupplierClicked;
-		public event Action hireWorkerClicked;
-		public event Action openClicked;
-		public event Action closeClicked;
-		public event Action setMarkupClicked;
-		public event Action unlockContactClicked;
-		public event Action roleChanged;
-
-		private static void HookButton(Button button, Action action)
+		public bool IsBusinessOpen()
 		{
-			if (button == null || action == null)
-			{
-				return;
-			}
-
-			button.onClick.AddListener(() => action());
+			return m_isBusinessOpen;
 		}
 
 		public void SetBusiness(
@@ -135,62 +192,58 @@ namespace Prototype.Business.UI
 			string cashierDisplayName,
 			string merchDisplayName)
 		{
+			string nextLotId = business != null ? NormalizeId(business.lotId) : null;
+			bool isNewSelection = !string.Equals(m_currentLotId, nextLotId, StringComparison.Ordinal);
+			m_currentLotId = nextLotId;
 			m_currentBusiness = business;
+			SetBusinessOpenState(business != null && business.isOpen);
 
-			SetText(lotIdText,
-				!string.IsNullOrWhiteSpace(lotDisplayName) ? lotDisplayName : business != null ? business.lotId : "-");
-			SetText(businessTypeText,
-				!string.IsNullOrWhiteSpace(businessTypeDisplayName) ? businessTypeDisplayName :
-				business != null ? business.businessTypeId : "-");
-			SetText(isOpenText, business != null ? business.isOpen ? "Open" : "Closed" : "-");
-			SetText(rentPerDayText, business != null ? business.rentPerDay.ToString() : "-");
-
-			SetText(requiredModulesText, requiredModules != null ? string.Join(", ", requiredModules) : "-");
-			SetText(installedModulesText,
-				business != null && business.installedModules != null ? string.Join(", ", business.installedModules) : "-");
-			SetText(missingModulesText, missingModules != null ? string.Join(", ", missingModules) : "-");
-
-			SetText(markupText, business != null ? business.markupPercent.ToString() : "-");
-
-			if (simulation != null)
+			if (titleText != null)
 			{
-				SetText(storageStockText, simulation.storageStock.ToString("0.##"));
-				SetText(shelfStockText, simulation.shelfStock.ToString("0.##"));
-				SetText(incomeText, simulation.accumulatedIncome.ToString("0.##"));
-				SetText(expensesText, simulation.accumulatedExpenses.ToString("0.##"));
-				SetText(profitText, (simulation.accumulatedIncome - simulation.accumulatedExpenses).ToString("0.##"));
-			}
-			else
-			{
-				SetText(storageStockText, business != null ? business.storageStock.ToString() : "-");
-				SetText(shelfStockText, business != null ? business.shelfStock.ToString() : "-");
-				SetText(incomeText, "-");
-				SetText(expensesText, "-");
-				SetText(profitText, "-");
+				string lotTitle = !string.IsNullOrWhiteSpace(lotDisplayName)
+					? lotDisplayName
+					: business != null
+						? business.lotId
+						: string.Empty;
+				titleText.text = string.IsNullOrWhiteSpace(lotTitle) ? "Управление бизнесом" : $"Ваш бизнес: {lotTitle}";
 			}
 
-			SetText(supplierText, string.IsNullOrWhiteSpace(supplierDisplayName) ? "-" : supplierDisplayName);
-			SetText(cashierText, string.IsNullOrWhiteSpace(cashierDisplayName) ? "-" : cashierDisplayName);
-			SetText(merchText, string.IsNullOrWhiteSpace(merchDisplayName) ? "-" : merchDisplayName);
+			float income = simulation != null ? simulation.accumulatedIncome : 0f;
+			float expenses = simulation != null ? simulation.accumulatedExpenses : 0f;
+			float profit = income - expenses;
+			SetIncome(income);
+			SetExpenses(expenses);
+			SetProfit(profit);
 
-			SetText(knownContactsText,
-				knownContactDisplayNames != null ? string.Join(", ", knownContactDisplayNames) : "-");
+			if (isNewSelection && business != null)
+			{
+				m_pendingPrice = business.markupPercent;
+			}
+			if (priceSlider != null)
+			{
+				float clamped = Mathf.Clamp(m_pendingPrice, priceSlider.minValue, priceSlider.maxValue);
+				priceSlider.SetValueWithoutNotify(clamped);
+				m_pendingPrice = Mathf.RoundToInt(clamped);
+			}
+
+			UpdatePriceText(m_pendingPrice);
+
+			m_pendingSupplierId = NormalizeId(business != null ? business.selectedSupplierId : m_pendingSupplierId);
+			m_pendingCashierId = NormalizeId(business != null ? business.hiredCashierContactId : m_pendingCashierId);
+			m_pendingMerchandiserId = NormalizeId(business != null ? business.hiredMerchContactId : m_pendingMerchandiserId);
 		}
 
-		private static void SetText(TMP_Text target, string value)
+		public void SetBusinessOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			if (target != null)
-			{
-				target.text = value;
-			}
+			SetOptions(businessDropdown, m_businessOptions, options, selectedId, "Нет доступных бизнесов");
 		}
 
-		public string GetLotId()
+		public string GetSelectedBusinessId()
 		{
-			string selectedLot = GetSelectedId(lotDropdown, m_lotOptions);
-			if (!string.IsNullOrWhiteSpace(selectedLot))
+			string selected = GetSelectedId(businessDropdown, m_businessOptions);
+			if (!string.IsNullOrWhiteSpace(selected))
 			{
-				return selectedLot;
+				return selected;
 			}
 
 			if (m_currentBusiness != null && !string.IsNullOrWhiteSpace(m_currentBusiness.lotId))
@@ -198,99 +251,237 @@ namespace Prototype.Business.UI
 				return m_currentBusiness.lotId;
 			}
 
-			return lotIdInput != null ? lotIdInput.text : null;
+			return null;
 		}
 
-		public string GetBusinessTypeId()
+		public void SetStorageOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			return GetSelectedId(businessTypeDropdown, m_businessTypeOptions) ??
-			       (businessTypeIdInput != null ? businessTypeIdInput.text : null);
+			SetOptionsWithNone(storageDropdown, m_storageOptions, options, selectedId, "Нет");
+			m_pendingStorageId = NormalizeId(GetSelectedId(storageDropdown, m_storageOptions));
 		}
 
-		public string GetModuleId()
+		public void SetCashDeskOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			return GetSelectedId(moduleDropdown, m_moduleOptions) ?? (moduleIdInput != null ? moduleIdInput.text : null);
+			SetOptionsWithNone(cashDeskDropdown, m_cashDeskOptions, options, selectedId, "Нет");
+			m_pendingCashDeskId = NormalizeId(GetSelectedId(cashDeskDropdown, m_cashDeskOptions));
 		}
 
-		public string GetSupplierId()
+		public void SetShelfOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			return GetSelectedId(supplierDropdown, m_supplierOptions) ??
-			       (supplierIdInput != null ? supplierIdInput.text : null);
-		}
-
-		public string GetRoleId()
-		{
-			return GetSelectedId(roleDropdown, m_roleOptions) ?? (roleIdInput != null ? roleIdInput.text : null);
-		}
-
-		public string GetContactId()
-		{
-			return GetSelectedId(workerContactDropdown, m_workerContactOptions) ??
-			       (contactIdInput != null ? contactIdInput.text : null);
-		}
-
-		public string GetUnlockContactId()
-		{
-			return GetSelectedId(unlockContactDropdown, m_unlockContactOptions) ??
-			       (contactIdInput != null ? contactIdInput.text : null);
-		}
-
-		public int GetMarkupPercent()
-		{
-			if (markupInput == null)
-			{
-				return 0;
-			}
-
-			return int.TryParse(markupInput.text, out int value) ? value : 0;
-		}
-
-		public int GetRentPerDay()
-		{
-			if (rentInput == null)
-			{
-				return 0;
-			}
-
-			return int.TryParse(rentInput.text, out int value) ? value : 0;
-		}
-
-		public void SetLotOptions(IEnumerable<IdOption> options, string selectedId)
-		{
-			SetOptions(lotDropdown, m_lotOptions, options, selectedId, "Нет доступных помещений");
-		}
-
-		public void SetBusinessTypeOptions(IEnumerable<IdOption> options, string selectedId)
-		{
-			SetOptions(businessTypeDropdown, m_businessTypeOptions, options, selectedId, "Нет доступных типов");
-		}
-
-		public void SetModuleOptions(IEnumerable<IdOption> options, string selectedId)
-		{
-			SetOptions(moduleDropdown, m_moduleOptions, options, selectedId, "Нет доступных модулей");
+			SetOptionsWithNone(shelfDropdown, m_shelfOptions, options, selectedId, "Нет");
+			m_pendingShelfId = NormalizeId(GetSelectedId(shelfDropdown, m_shelfOptions));
 		}
 
 		public void SetSupplierOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptions(supplierDropdown, m_supplierOptions, options, selectedId, "Нет доступных поставщиков");
+			SetOptionsWithNone(supplierDropdown, m_supplierOptions, options, selectedId, "Нет");
+			m_pendingSupplierId = NormalizeId(GetSelectedId(supplierDropdown, m_supplierOptions));
 		}
 
-		public void SetRoleOptions(IEnumerable<IdOption> options, string selectedId)
+		public void SetCashierOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptions(roleDropdown, m_roleOptions, options, selectedId, "Нет доступных ролей");
+			SetOptionsWithNone(cashierDropdown, m_cashierOptions, options, selectedId, "Нет");
+			m_pendingCashierId = NormalizeId(GetSelectedId(cashierDropdown, m_cashierOptions));
 		}
 
-		public void SetWorkerContactOptions(IEnumerable<IdOption> options, string selectedId)
+		public void SetMerchandiserOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptions(workerContactDropdown, m_workerContactOptions, options, selectedId, "Нет доступных сотрудников");
+			SetOptionsWithNone(merchandiserDropdown, m_merchandiserOptions, options, selectedId, "Нет");
+			m_pendingMerchandiserId = NormalizeId(GetSelectedId(merchandiserDropdown, m_merchandiserOptions));
 		}
 
-		public void SetUnlockContactOptions(IEnumerable<IdOption> options, string selectedId)
+		public void SetIncome(float value)
 		{
-			SetOptions(unlockContactDropdown, m_unlockContactOptions, options, selectedId, "Нет доступных контактов");
+			if (incomeValueText != null)
+			{
+				incomeValueText.text = value.ToString("0.##");
+			}
 		}
 
-		private static string GetSelectedId(TMP_Dropdown dropdown, List<IdOption> options)
+		public void SetExpenses(float value)
+		{
+			if (expensesValueText != null)
+			{
+				expensesValueText.text = value.ToString("0.##");
+			}
+		}
+
+		public void SetProfit(float value)
+		{
+			if (profitValueText != null)
+			{
+				profitValueText.text = value.ToString("0.##");
+			}
+		}
+
+		public int GetPendingPrice()
+		{
+			return m_pendingPrice;
+		}
+
+		public string GetPendingStorageId()
+		{
+			return m_pendingStorageId;
+		}
+
+		public string GetPendingCashDeskId()
+		{
+			return m_pendingCashDeskId;
+		}
+
+		public string GetPendingShelfId()
+		{
+			return m_pendingShelfId;
+		}
+
+		public string GetPendingSupplierId()
+		{
+			return m_pendingSupplierId;
+		}
+
+		public string GetPendingCashierId()
+		{
+			return m_pendingCashierId;
+		}
+
+		public string GetPendingMerchandiserId()
+		{
+			return m_pendingMerchandiserId;
+		}
+
+		private void OnBusinessDropdownChanged(int value)
+		{
+			if (m_updatingBusinessDropdown)
+			{
+				return;
+			}
+
+			businessChanged?.Invoke(GetSelectedBusinessId());
+		}
+
+		private void OnPriceChanged(float value)
+		{
+			m_pendingPrice = Mathf.RoundToInt(value);
+			UpdatePriceText(m_pendingPrice);
+		}
+
+		private static void HookButton(Button button, Action handler)
+		{
+			if (button == null || handler == null)
+			{
+				return;
+			}
+
+			button.onClick.AddListener(() => handler());
+		}
+
+		private static void HookPendingDropdown(TMP_Dropdown dropdown, List<IdOption> options, Action<string> setValue)
+		{
+			if (dropdown == null || options == null || setValue == null)
+			{
+				return;
+			}
+
+			dropdown.onValueChanged.AddListener(_ => setValue(NormalizeId(GetSelectedId(dropdown, options))));
+		}
+
+		private void SetOptionsWithNone(
+			TMP_Dropdown dropdown,
+			List<IdOption> buffer,
+			IEnumerable<IdOption> options,
+			string selectedId,
+			string noneLabel)
+		{
+			var merged = new List<IdOption>
+			{
+				new IdOption
+				{
+					id = string.Empty,
+					displayName = noneLabel
+				}
+			};
+
+			if (options != null)
+			{
+				merged.AddRange(options.Where(o => o != null));
+			}
+
+			SetOptions(dropdown, buffer, merged, selectedId, noneLabel);
+		}
+
+		private void SetOptions(
+			TMP_Dropdown dropdown,
+			List<IdOption> buffer,
+			IEnumerable<IdOption> options,
+			string selectedId,
+			string emptyLabel)
+		{
+			if (buffer == null)
+			{
+				return;
+			}
+
+			buffer.Clear();
+			if (options != null)
+			{
+				foreach (IdOption option in options)
+				{
+					if (option == null)
+					{
+						continue;
+					}
+
+					buffer.Add(new IdOption
+					{
+						id = option.id,
+						displayName = option.displayName
+					});
+				}
+			}
+
+			if (dropdown == null)
+			{
+				return;
+			}
+
+			dropdown.ClearOptions();
+			if (buffer.Count == 0)
+			{
+				dropdown.AddOptions(new List<string> { emptyLabel });
+				dropdown.value = 0;
+				dropdown.RefreshShownValue();
+				return;
+			}
+
+			int selectedIndex = 0;
+			string normalizedSelectedId = NormalizeId(selectedId);
+			var labels = new List<string>(buffer.Count);
+			for (int i = 0; i < buffer.Count; i++)
+			{
+				IdOption option = buffer[i];
+				labels.Add(string.IsNullOrWhiteSpace(option.displayName) ? option.id : option.displayName);
+				if (normalizedSelectedId == NormalizeId(option.id))
+				{
+					selectedIndex = i;
+				}
+			}
+
+			if (dropdown == businessDropdown)
+			{
+				m_updatingBusinessDropdown = true;
+			}
+
+			dropdown.AddOptions(labels);
+			dropdown.value = Mathf.Clamp(selectedIndex, 0, labels.Count - 1);
+			dropdown.RefreshShownValue();
+
+			if (dropdown == businessDropdown)
+			{
+				m_updatingBusinessDropdown = false;
+			}
+		}
+
+		private static string GetSelectedId(TMP_Dropdown dropdown, IReadOnlyList<IdOption> options)
 		{
 			if (dropdown == null || options == null || options.Count == 0)
 			{
@@ -306,56 +497,26 @@ namespace Prototype.Business.UI
 			return options[index].id;
 		}
 
-		private static void SetOptions(
-			TMP_Dropdown dropdown,
-			List<IdOption> buffer,
-			IEnumerable<IdOption> options,
-			string selectedId,
-			string emptyLabel)
+		private static string NormalizeId(string value)
 		{
-			if (buffer == null)
+			if (string.IsNullOrWhiteSpace(value))
 			{
-				return;
+				return null;
 			}
 
-			buffer.Clear();
-			if (options != null)
-			{
-				buffer.AddRange(options.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id)));
-			}
+			return value.Trim();
+		}
 
-			if (dropdown == null)
+		private void UpdatePriceText(int value)
+		{
+			if (priceValueText != null)
 			{
-				return;
+				priceValueText.text = value.ToString();
 			}
-
-			dropdown.ClearOptions();
-			if (buffer.Count == 0)
-			{
-				dropdown.AddOptions(new List<string> { emptyLabel });
-				dropdown.value = 0;
-				return;
-			}
-
-			var labels = new List<string>(buffer.Count);
-			var selectedIndex = 0;
-			for (var i = 0; i < buffer.Count; i++)
-			{
-				IdOption option = buffer[i];
-				labels.Add(string.IsNullOrWhiteSpace(option.displayName) ? option.id : option.displayName);
-				if (!string.IsNullOrWhiteSpace(selectedId) && option.id == selectedId)
-				{
-					selectedIndex = i;
-				}
-			}
-
-			dropdown.AddOptions(labels);
-			dropdown.value = selectedIndex;
-			dropdown.RefreshShownValue();
 		}
 
 		[Serializable]
-		public class IdOption
+		public sealed class IdOption
 		{
 			public string id;
 			public string displayName;

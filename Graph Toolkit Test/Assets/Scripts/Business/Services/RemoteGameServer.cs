@@ -275,16 +275,17 @@ namespace Prototype.Business.Services
 
 		public Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId)
 		{
+			string normalizedSupplierId = supplierId ?? string.Empty;
 			if (m_debugLog)
 			{
-				Debug.Log($"[RemoteGameServer] action=assign_supplier lotId='{lotId}' supplierId='{supplierId}'");
+				Debug.Log($"[RemoteGameServer] action=assign_supplier lotId='{lotId}' supplierId='{normalizedSupplierId}'");
 			}
 
 			var request = new RemoteAssignSupplierRequest
 			{
 				action = "assign_supplier",
 				playerId = m_playerId,
-				data = new RemoteAssignSupplierData { lotId = lotId, supplierId = supplierId }
+				data = new RemoteAssignSupplierData { lotId = lotId, supplierId = normalizedSupplierId }
 			};
 
 			return SendRequestAsync(request);
@@ -292,17 +293,18 @@ namespace Prototype.Business.Services
 
 		public Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
 		{
+			string normalizedContactId = contactId ?? string.Empty;
 			if (m_debugLog)
 			{
 				Debug.Log(
-					$"[RemoteGameServer] action=hire_business_worker lotId='{lotId}' roleId='{roleId}' contactId='{contactId}'");
+					$"[RemoteGameServer] action=hire_business_worker lotId='{lotId}' roleId='{roleId}' contactId='{normalizedContactId}'");
 			}
 
 			var request = new RemoteHireBusinessWorkerRequest
 			{
 				action = "hire_business_worker",
 				playerId = m_playerId,
-				data = new RemoteHireBusinessWorkerData { lotId = lotId, roleId = roleId, contactId = contactId }
+				data = new RemoteHireBusinessWorkerData { lotId = lotId, roleId = roleId, contactId = normalizedContactId }
 			};
 
 			return SendRequestAsync(request);

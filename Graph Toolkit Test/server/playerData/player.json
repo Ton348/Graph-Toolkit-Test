@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 314,
+  "money": 200,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -33,7 +33,7 @@
   ],
   "businesses": [
     {
-      "instanceId": "biz_1776413538316_2568",
+      "instanceId": "biz_1776425028712_7953",
       "lotId": "lot_market_01",
       "businessTypeId": "",
       "isRented": true,
@@ -51,5 +51,7 @@
       "hiredMerchContactId": null
     }
   ],
-  "knownContacts": []
+  "knownContacts": [
+    "merch_1"
+  ]
 }
