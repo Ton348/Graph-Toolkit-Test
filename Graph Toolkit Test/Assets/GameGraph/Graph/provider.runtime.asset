@@ -12,46 +12,46 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: provider.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: cbb5f1c6-d6ad-4ff6-b6d5-b3b535e27fad
+  startNodeId: 25e9fe6a-a704-40fd-8479-1a2885d03ab2
   nodes:
-  - rid: 7634388992456655393
-  - rid: 7634388992456655394
-  - rid: 7634388992456655395
-  - rid: 7634388992456655396
+  - rid: 7634389010782617756
+  - rid: 7634389010782617757
+  - rid: 7634389010782617758
+  - rid: 7634389010782617759
   references:
     version: 2
     RefIds:
-    - rid: 7634388992456655393
+    - rid: 7634389010782617756
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: cbb5f1c6-d6ad-4ff6-b6d5-b3b535e27fad
+        nodeId: 25e9fe6a-a704-40fd-8479-1a2885d03ab2
         title: StartNode
         description: Entry point of the graph
-        nextNodeId: 56922582-5735-4c32-9549-73cc6c387687
-    - rid: 7634388992456655394
+        nextNodeId: 956a642c-e840-4424-a532-fcc866b994a7
+    - rid: 7634389010782617757
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 56922582-5735-4c32-9549-73cc6c387687
+        nodeId: 956a642c-e840-4424-a532-fcc866b994a7
         title: DialogueNode
         description: Shows dialogue and continues
-        nextNodeId: 02a1ed44-0e5b-4d1e-b813-bf55881a8e4c
+        nextNodeId: 3c233875-bb98-4f1c-820b-1745da3ff11e
         dialogueTitle: "\u041B\u043E\u0433\u0438\u0441\u0442\u0438\u043A\u0430"
         body: "\u0412\u043E\u0437\u044C\u043C\u0438 \u0432\u0438\u0437\u0438\u0442\u043A\u0443,
           \u0432\u0434\u0440\u0443\u0433 \u0434\u043E\u0441\u0442\u0430\u0432\u043A\u0430
           \u0422\u043E\u0432\u0430\u0440\u0430 \u043F\u043E\u043D\u0430\u0434\u043E\u0431\u0438\u0442\u0441\u044F."
-    - rid: 7634388992456655395
+    - rid: 7634389010782617758
       type: {class: RequestAssignSupplierNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 02a1ed44-0e5b-4d1e-b813-bf55881a8e4c
+        nodeId: 3c233875-bb98-4f1c-820b-1745da3ff11e
         title: RequestAssignSupplierNode
         description: 
-        successNodeId: 8681f3d1-9cba-48b0-a674-47c57b78c832
-        failNodeId: 8681f3d1-9cba-48b0-a674-47c57b78c832
+        successNodeId: 14721e15-87af-405d-afcf-e2e19b2e8773
+        failNodeId: 14721e15-87af-405d-afcf-e2e19b2e8773
         lotId: lot_market_01
         supplierId: grocery_wholesale
-    - rid: 7634388992456655396
+    - rid: 7634389010782617759
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 8681f3d1-9cba-48b0-a674-47c57b78c832
+        nodeId: 14721e15-87af-405d-afcf-e2e19b2e8773
         title: FinishNode
         description: Terminates graph execution

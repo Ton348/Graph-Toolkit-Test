@@ -6060,12 +6060,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c9865aadb1104bd190f8ba1eb4f3d39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompassUIController
-  m_compassManager: {fileID: 0}
-  m_compassBar: {fileID: 0}
-  m_markersContainer: {fileID: 0}
-  m_markerPrefab: {fileID: 0}
-  m_ticksContainer: {fileID: 0}
-  m_tickPrefab: {fileID: 0}
+  m_compassManager: {fileID: 945300131}
+  m_compassBar: {fileID: 170037760}
+  m_markersContainer: {fileID: 1976714188}
+  m_markerPrefab: {fileID: -6503408261323146138, guid: daba8b8b8ae814f9c997e986845d7526, type: 3}
+  m_ticksContainer: {fileID: 4878201732167722802, guid: 09810256cf90a483794fd5e9c7b3b301, type: 3}
+  m_tickPrefab: {fileID: 2182091308671812915, guid: 01ac0d41f588a4df4a962b341881c4ed, type: 3}
   m_maxVisibleAngle: 90
   m_tickDefinitions: []
 --- !u!4 &170414306 stripped
@@ -36063,7 +36063,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 320439a1d80d6435b9d6266ea388aa08, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CompassManager
-  m_player: {fileID: 0}
+  m_player: {fileID: 1248676882}
 --- !u!114 &945300132
 MonoBehaviour:
   m_ObjectHideFlags: 0

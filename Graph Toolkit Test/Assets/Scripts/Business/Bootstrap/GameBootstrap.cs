@@ -64,6 +64,11 @@ namespace Prototype.Business.Bootstrap
 			InitializeRuntime();
 		}
 
+		private void Start()
+		{
+			StartAsync();
+		}
+
 		private async void StartAsync()
 		{
 			if (useRemoteServer && refreshProfileOnGameStart)
