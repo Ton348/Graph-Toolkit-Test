@@ -39,7 +39,7 @@ namespace Prototype.Business.Services
 			m_businessStateSync?.ApplySnapshot(snapshot);
 
 			Debug.Log(
-				$"[ProfileSync] Applied snapshot: money={snapshot.money}, active={snapshot.activeQuestIds?.Count ?? 0}, completed={snapshot.completedQuestIds?.Count ?? 0}, owned={snapshot.ownedBuildingIds?.Count ?? 0}");
+				$"[ProfileSync] Applied snapshot: money={snapshot.money}, active={snapshot.activeQuestIds?.Count ?? 0}, completed={snapshot.completedQuestIds?.Count ?? 0}, businesses={snapshot.businesses?.Count ?? 0}");
 
 			synced?.Invoke(snapshot);
 		}
@@ -115,40 +115,6 @@ namespace Prototype.Business.Services
 					status = status
 				};
 				m_runtime.quests.Add(state);
-			}
-		}
-
-		private void ApplyBuildings(ProfileSnapshot snapshot)
-		{
-			if (m_runtime.buildings == null)
-			{
-				return;
-			}
-
-			var ownedSet = new HashSet<string>(snapshot.ownedBuildingIds ?? new List<string>());
-
-			foreach (BuildingState building in m_runtime.buildings)
-			{
-				if (building == null || building.definition == null)
-				{
-					continue;
-				}
-
-				string id = building.definition.id;
-				if (snapshot.buildingStates != null && snapshot.buildingStates.Count > 0)
-				{
-					BuildingStateSnapshot stateSnapshot = snapshot.buildingStates.Find(s => s != null && s.id == id);
-					if (stateSnapshot != null)
-					{
-						building.isOwned = stateSnapshot.owned;
-						building.level = stateSnapshot.level;
-						building.currentIncome = stateSnapshot.currentIncome;
-						building.currentExpenses = stateSnapshot.currentExpenses;
-						continue;
-					}
-				}
-
-				building.isOwned = ownedSet.Contains(id);
 			}
 		}
 

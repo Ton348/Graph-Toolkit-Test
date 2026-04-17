@@ -8,11 +8,9 @@ namespace Prototype.Business.Services
 	public class PlayerStateSync
 	{
 		private readonly HashSet<string> m_activeQuests = new();
-		private readonly Dictionary<string, BuildingStateSnapshot> m_buildingStates = new();
 		private readonly HashSet<string> m_completedQuests = new();
 		private readonly Dictionary<string, ConstructedSiteSnapshot> m_constructedSites = new();
 		private readonly Dictionary<string, string> m_graphCheckpoints = new();
-		private readonly HashSet<string> m_ownedBuildings = new();
 
 		public int Money { get; private set; }
 		public int Bargaining { get; private set; }
@@ -23,8 +21,6 @@ namespace Prototype.Business.Services
 		public int Health { get; private set; }
 		public IReadOnlyCollection<string> ActiveQuests => m_activeQuests;
 		public IReadOnlyCollection<string> CompletedQuests => m_completedQuests;
-		public IReadOnlyCollection<string> OwnedBuildings => m_ownedBuildings;
-		public IReadOnlyDictionary<string, BuildingStateSnapshot> BuildingStates => m_buildingStates;
 		public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
 		public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => m_constructedSites;
 
@@ -66,36 +62,6 @@ namespace Prototype.Business.Services
 					if (!string.IsNullOrEmpty(id))
 					{
 						m_completedQuests.Add(id);
-					}
-				}
-			}
-
-			m_ownedBuildings.Clear();
-			if (snapshot.ownedBuildingIds != null)
-			{
-				foreach (string id in snapshot.ownedBuildingIds)
-				{
-					if (!string.IsNullOrEmpty(id))
-					{
-						m_ownedBuildings.Add(id);
-					}
-				}
-			}
-
-			m_buildingStates.Clear();
-			if (snapshot.buildingStates != null && snapshot.buildingStates.Count > 0)
-			{
-				foreach (BuildingStateSnapshot state in snapshot.buildingStates)
-				{
-					if (state == null || string.IsNullOrEmpty(state.id))
-					{
-						continue;
-					}
-
-					m_buildingStates[state.id] = state;
-					if (state.owned)
-					{
-						m_ownedBuildings.Add(state.id);
 					}
 				}
 			}
@@ -150,8 +116,6 @@ namespace Prototype.Business.Services
 			Health = 0;
 			m_activeQuests.Clear();
 			m_completedQuests.Clear();
-			m_ownedBuildings.Clear();
-			m_buildingStates.Clear();
 			m_graphCheckpoints.Clear();
 			m_constructedSites.Clear();
 			snapshotApplied?.Invoke(null);
@@ -165,22 +129,6 @@ namespace Prototype.Business.Services
 		public bool IsQuestCompleted(string questId)
 		{
 			return !string.IsNullOrEmpty(questId) && m_completedQuests.Contains(questId);
-		}
-
-		public bool IsBuildingOwned(string buildingId)
-		{
-			return !string.IsNullOrEmpty(buildingId) && m_ownedBuildings.Contains(buildingId);
-		}
-
-		public bool TryGetBuildingState(string buildingId, out BuildingStateSnapshot state)
-		{
-			if (string.IsNullOrEmpty(buildingId))
-			{
-				state = null;
-				return false;
-			}
-
-			return m_buildingStates.TryGetValue(buildingId, out state);
 		}
 
 		public bool TryGetGraphCheckpoint(string graphId, out string checkpointId)

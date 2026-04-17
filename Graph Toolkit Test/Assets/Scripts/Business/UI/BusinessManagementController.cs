@@ -177,20 +177,20 @@ namespace Prototype.Business.UI
 			}
 
 			business = m_runtimeService.GetBusinessView(lotId);
-			string supplierId = NormalizeId(m_view.GetPendingSupplierId());
-			if (string.IsNullOrWhiteSpace(supplierId))
+			string logistId = NormalizeId(m_view.GetPendingSupplierId());
+			if (string.IsNullOrWhiteSpace(logistId))
 			{
-				if (business != null && !string.IsNullOrWhiteSpace(business.selectedSupplierId))
+				if (business != null && !string.IsNullOrWhiteSpace(business.hiredLogistContactId))
 				{
-					if (!await RunActionCheckedAsync(m_actionFacade.ClearSupplier(lotId), "Снятие поставщика"))
+					if (!await RunActionCheckedAsync(m_actionFacade.ClearWorker(lotId, "logist"), "Снятие логиста"))
 					{
 						return false;
 					}
 				}
 			}
-			else if (business == null || business.selectedSupplierId != supplierId)
+			else if (business == null || business.hiredLogistContactId != logistId)
 			{
-				if (!await RunActionCheckedAsync(m_actionFacade.AssignSupplier(lotId, supplierId), "Назначение поставщика"))
+				if (!await RunActionCheckedAsync(m_actionFacade.HireWorker(lotId, "logist", logistId), "Назначение логиста"))
 				{
 					return false;
 				}

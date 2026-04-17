@@ -43,7 +43,7 @@ namespace Prototype.Business.World
 		public bool IsOwned()
 		{
 			BusinessInstanceSnapshot business = GetBusiness();
-			return business != null && business.isRented;
+			return business != null;
 		}
 
 		public bool IsOpen()

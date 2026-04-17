@@ -673,31 +673,6 @@ namespace Prototype.Business.Services
 				snapshot.completedQuestIds.AddRange(profile.completedQuests);
 			}
 
-			if (profile.buildings != null)
-			{
-				snapshot.ownedBuildingIds.AddRange(profile.buildings);
-			}
-
-			if (profile.buildingStates != null)
-			{
-				foreach (RemoteBuildingStateDto state in profile.buildingStates)
-				{
-					if (state == null || string.IsNullOrEmpty(state.id))
-					{
-						continue;
-					}
-
-					snapshot.buildingStates.Add(new BuildingStateSnapshot
-					{
-						id = state.id,
-						owned = state.owned,
-						level = state.level,
-						currentIncome = state.currentIncome,
-						currentExpenses = state.currentExpenses
-					});
-				}
-			}
-
 			if (profile.graphCheckpoints != null)
 			{
 				foreach (RemoteGraphCheckpointDto checkpoint in profile.graphCheckpoints)
@@ -747,7 +722,6 @@ namespace Prototype.Business.Services
 						instanceId = business.instanceId,
 						lotId = business.lotId,
 						businessTypeId = business.businessTypeId,
-						isRented = business.isRented,
 						isOpen = business.isOpen,
 						rentPerDay = business.rentPerDay,
 						storageCapacity = business.storageCapacity,
@@ -758,7 +732,8 @@ namespace Prototype.Business.Services
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
 						hiredCashierContactId = business.hiredCashierContactId,
-						hiredMerchContactId = business.hiredMerchContactId
+						hiredMerchContactId = business.hiredMerchContactId,
+						hiredLogistContactId = business.hiredLogistContactId
 					};
 
 					if (business.installedModules != null)
@@ -1098,28 +1073,16 @@ namespace Prototype.Business.Services
 			public int money;
 			public string[] activeQuests;
 			public string[] completedQuests;
-			public string[] buildings;
 			public int bargaining;
 			public int speech;
 			public int trading;
 			public int speed;
 			public int damage;
 			public int health;
-			public RemoteBuildingStateDto[] buildingStates;
 			public RemoteGraphCheckpointDto[] graphCheckpoints;
 			public RemoteConstructedSiteDto[] constructedSites;
 			public RemoteBusinessStateDto[] businesses;
 			public string[] knownContacts;
-		}
-
-		[Serializable]
-		private class RemoteBuildingStateDto
-		{
-			public string id;
-			public bool owned;
-			public int level;
-			public int currentIncome;
-			public int currentExpenses;
 		}
 
 		[Serializable]
@@ -1143,7 +1106,6 @@ namespace Prototype.Business.Services
 			public string instanceId;
 			public string lotId;
 			public string businessTypeId;
-			public bool isRented;
 			public bool isOpen;
 			public int rentPerDay;
 			public string[] installedModules;
@@ -1156,6 +1118,7 @@ namespace Prototype.Business.Services
 			public int markupPercent;
 			public string hiredCashierContactId;
 			public string hiredMerchContactId;
+			public string hiredLogistContactId;
 		}
 	}
 }

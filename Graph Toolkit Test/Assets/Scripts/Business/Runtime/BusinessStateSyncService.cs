@@ -251,6 +251,14 @@ namespace Prototype.Business.Runtime
 				business.hiredMerchContactId = null;
 			}
 
+			if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId) && contacts != null &&
+			    !contacts.Contains(business.hiredLogistContactId))
+			{
+				BusinessDebugLog.Warn(
+					$"[Business] Logistician '{business.hiredLogistContactId}' not in knownContacts for lotId='{business.lotId}'. Cleared.");
+				business.hiredLogistContactId = null;
+			}
+
 			if (string.IsNullOrWhiteSpace(business.businessTypeId))
 			{
 				BusinessDebugLog.Warn($"[Business] Missing businessTypeId on lotId='{business.lotId}'.");

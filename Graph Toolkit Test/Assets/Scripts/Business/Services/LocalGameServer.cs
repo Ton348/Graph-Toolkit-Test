@@ -523,7 +523,6 @@ namespace Prototype.Business.Services
 				instanceId = $"local_{Guid.NewGuid():N}",
 				lotId = lotId,
 				businessTypeId = null,
-				isRented = true,
 				isOpen = false,
 				rentPerDay = lotDef.rentPerDay < 0 ? 0 : lotDef.rentPerDay,
 				installedModules = new List<string>(),
@@ -535,7 +534,8 @@ namespace Prototype.Business.Services
 				autoDeliveryPerDay = 0,
 				markupPercent = 0,
 				hiredCashierContactId = null,
-				hiredMerchContactId = null
+				hiredMerchContactId = null,
+				hiredLogistContactId = null
 			};
 
 			m_businesses.Add(business);
@@ -833,6 +833,10 @@ namespace Prototype.Business.Services
 			{
 				business.hiredMerchContactId = contactId;
 			}
+			else if (roleId == "logist")
+			{
+				business.hiredLogistContactId = contactId;
+			}
 			else
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidWorkerRole",
@@ -865,12 +869,6 @@ namespace Prototype.Business.Services
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
 					"Business not found.");
-			}
-
-			if (!business.isRented)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotRented",
-					"Business is not rented.");
 			}
 
 			if (string.IsNullOrWhiteSpace(business.businessTypeId))
@@ -1253,31 +1251,6 @@ namespace Prototype.Business.Services
 				}
 			}
 
-			if (m_runtime != null && m_runtime.buildings != null)
-			{
-				foreach (BuildingState building in m_runtime.buildings)
-				{
-					if (building == null || building.definition == null)
-					{
-						continue;
-					}
-
-					if (building.isOwned)
-					{
-						var buildingSnapshot = new BuildingStateSnapshot
-						{
-							id = building.definition.id,
-							owned = true,
-							level = building.level,
-							currentIncome = building.currentIncome,
-							currentExpenses = building.currentExpenses
-						};
-						snapshot.buildingStates.Add(buildingSnapshot);
-						snapshot.ownedBuildingIds.Add(building.definition.id);
-					}
-				}
-			}
-
 			if (m_graphCheckpoints.Count > 0)
 			{
 				foreach (KeyValuePair<string, string> pair in m_graphCheckpoints)
@@ -1322,7 +1295,6 @@ namespace Prototype.Business.Services
 						instanceId = business.instanceId,
 						lotId = business.lotId,
 						businessTypeId = business.businessTypeId,
-						isRented = business.isRented,
 						isOpen = business.isOpen,
 						rentPerDay = business.rentPerDay,
 						storageCapacity = business.storageCapacity,
@@ -1333,7 +1305,8 @@ namespace Prototype.Business.Services
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
 						hiredCashierContactId = business.hiredCashierContactId,
-						hiredMerchContactId = business.hiredMerchContactId
+						hiredMerchContactId = business.hiredMerchContactId,
+						hiredLogistContactId = business.hiredLogistContactId
 					};
 
 					if (business.installedModules != null)

@@ -13,6 +13,13 @@
       "salaryPerDay": 90,
       "throughputPerHour": 80,
       "roleId": "merchandiser"
+    },
+    {
+      "id": "logist_1",
+      "displayName": "Логист Павел",
+      "salaryPerDay": 100,
+      "throughputPerHour": 70,
+      "roleId": "logist"
     }
   ]
 }

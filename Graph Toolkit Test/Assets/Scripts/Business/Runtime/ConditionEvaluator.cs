@@ -55,21 +55,8 @@ namespace Prototype.Business.Runtime
 
 		private static bool IsBuildingOwned(string buildingId, PlayerStateSync playerStateSync, out string reason)
 		{
-			if (string.IsNullOrEmpty(buildingId))
-			{
-				reason = "Target building id is empty.";
-				return false;
-			}
-
-			if (playerStateSync == null)
-			{
-				reason = "PlayerStateSync is null.";
-				return false;
-			}
-
-			bool owned = playerStateSync.IsBuildingOwned(buildingId);
-			reason = owned ? string.Empty : $"Building '{buildingId}' is not owned.";
-			return owned;
+			reason = "BuildingOwned condition is deprecated in businesses-only model.";
+			return false;
 		}
 
 		private static bool HasEnoughMoney(PlayerStateSync playerStateSync, int requiredMoney, out string reason)

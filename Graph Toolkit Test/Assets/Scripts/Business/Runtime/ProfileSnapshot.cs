@@ -15,22 +15,10 @@ namespace Prototype.Business.Runtime
 		public int health;
 		public List<string> activeQuestIds = new();
 		public List<string> completedQuestIds = new();
-		public List<string> ownedBuildingIds = new();
-		public List<BuildingStateSnapshot> buildingStates = new();
 		public List<GraphCheckpointSnapshot> graphCheckpoints = new();
 		public List<ConstructedSiteSnapshot> constructedSites = new();
 		public List<BusinessInstanceSnapshot> businesses = new();
 		public List<string> knownContacts = new();
-	}
-
-	[Serializable]
-	public class BuildingStateSnapshot
-	{
-		public string id;
-		public bool owned;
-		public int level;
-		public int currentIncome;
-		public int currentExpenses;
 	}
 
 	[Serializable]

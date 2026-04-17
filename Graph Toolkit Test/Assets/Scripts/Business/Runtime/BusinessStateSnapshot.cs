@@ -9,7 +9,6 @@ namespace Prototype.Business.Runtime
 		public string instanceId;
 		public string lotId;
 		public string businessTypeId;
-		public bool isRented;
 		public bool isOpen;
 		public int rentPerDay;
 		public List<string> installedModules = new();
@@ -22,5 +21,6 @@ namespace Prototype.Business.Runtime
 		public int markupPercent;
 		public string hiredCashierContactId;
 		public string hiredMerchContactId;
+		public string hiredLogistContactId;
 	}
 }

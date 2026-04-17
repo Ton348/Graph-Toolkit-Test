@@ -33,6 +33,7 @@ namespace Prototype.Business.UI
 			EnsureDependencies();
 			Subscribe();
 			Refresh();
+			LogPanelSnapshot("OnEnable");
 		}
 
 		private void OnDisable()
@@ -185,12 +186,14 @@ namespace Prototype.Business.UI
 		{
 			EnsureDependencies();
 			Refresh();
+			LogPanelSnapshot("OnProfileSynced");
 		}
 
 		private void OnStateChanged()
 		{
 			EnsureDependencies();
 			Refresh();
+			LogPanelSnapshot("OnStateChanged");
 		}
 
 		private void OnSimulationUpdated()
@@ -205,14 +208,17 @@ namespace Prototype.Business.UI
 				EnsureDependencies();
 			}
 
-			if (m_runtimeService == null || listView == null)
+			if (m_runtimeService == null)
 			{
 				return;
 			}
 
 			List<BusinessInstanceSnapshot> businesses = m_runtimeService.GetBusinesses().ToList();
-			listView.SetBusinesses(businesses,
-				business => ResolveLotDisplayName(business != null ? business.lotId : null));
+			if (listView != null)
+			{
+				listView.SetBusinesses(businesses,
+					business => ResolveLotDisplayName(business != null ? business.lotId : null));
+			}
 
 			if (string.IsNullOrWhiteSpace(m_selectedLotId) && businesses.Count > 0)
 			{
@@ -220,6 +226,45 @@ namespace Prototype.Business.UI
 			}
 
 			RefreshSelected();
+		}
+
+		private void LogPanelSnapshot(string source)
+		{
+			List<BusinessInstanceSnapshot> businesses = m_runtimeService != null
+				? m_runtimeService.GetBusinesses().Where(b => b != null).ToList()
+				: new List<BusinessInstanceSnapshot>();
+
+			List<string> businessLots = businesses
+				.Select(b => $"{b.lotId}|type={b.businessTypeId}|open={b.isOpen}")
+				.ToList();
+
+			List<string> knownContacts = m_stateSync != null
+				? m_stateSync.GetKnownContacts().Where(id => !string.IsNullOrWhiteSpace(id)).ToList()
+				: new List<string>();
+
+			List<string> cashierOptions = BuildWorkerContactOptions("cashier")
+				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
+				.Select(o => $"{o.id}:{o.displayName}")
+				.ToList();
+
+			List<string> merchOptions = BuildWorkerContactOptions("merchandiser")
+				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
+				.Select(o => $"{o.id}:{o.displayName}")
+				.ToList();
+
+			List<string> logistOptions = BuildWorkerContactOptions("logist")
+				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
+				.Select(o => $"{o.id}:{o.displayName}")
+				.ToList();
+
+			Debug.Log(
+				$"[BusinessPanelDebug] {source} " +
+				$"runtime={(m_runtimeService != null)} stateSync={(m_stateSync != null)} defs={(m_definitions != null)} " +
+				$"businesses={businesses.Count} [{string.Join(", ", businessLots)}] " +
+				$"knownContacts={knownContacts.Count} [{string.Join(", ", knownContacts)}] " +
+				$"cashiers={cashierOptions.Count} [{string.Join(", ", cashierOptions)}] " +
+				$"merchandisers={merchOptions.Count} [{string.Join(", ", merchOptions)}] " +
+				$"logists={logistOptions.Count} [{string.Join(", ", logistOptions)}]");
 		}
 
 		private void OnBusinessSelected(BusinessInstanceSnapshot business)
@@ -317,8 +362,6 @@ namespace Prototype.Business.UI
 			}
 
 			string selectedLot = !string.IsNullOrWhiteSpace(lotId) ? lotId : detailsView.GetSelectedBusinessId();
-			string selectedSupplier = business != null ? business.selectedSupplierId : detailsView.GetPendingSupplierId();
-
 			detailsView.SetBusinessOptions(BuildBusinessOptions(), selectedLot);
 
 			List<BusinessDetailsView.IdOption> moduleOptions = BuildModuleOptions(business).ToList();
@@ -326,11 +369,9 @@ namespace Prototype.Business.UI
 			detailsView.SetCashDeskOptions(moduleOptions, detailsView.GetPendingCashDeskId());
 			detailsView.SetShelfOptions(moduleOptions, detailsView.GetPendingShelfId());
 
-			detailsView.SetSupplierOptions(BuildSupplierOptions(business), selectedSupplier);
-			detailsView.SetCashierOptions(BuildWorkerContactOptions("cashier"),
-				business != null ? business.hiredCashierContactId : detailsView.GetPendingCashierId());
-			detailsView.SetMerchandiserOptions(BuildWorkerContactOptions("merchandiser"),
-				business != null ? business.hiredMerchContactId : detailsView.GetPendingMerchandiserId());
+			detailsView.SetSupplierOptions(BuildWorkerContactOptions("logist"), detailsView.GetPendingSupplierId());
+			detailsView.SetCashierOptions(BuildWorkerContactOptions("cashier"), detailsView.GetPendingCashierId());
+			detailsView.SetMerchandiserOptions(BuildWorkerContactOptions("merchandiser"), detailsView.GetPendingMerchandiserId());
 		}
 
 		private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessOptions()

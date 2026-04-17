@@ -11,7 +11,6 @@ namespace Prototype.Business.Simulation
 		public List<string> installedModules = new();
 		public string instanceId;
 		public bool isOpen;
-		public bool isRented;
 		public float lastDelivered;
 		public float lastDemand;
 		public float lastExpenses;

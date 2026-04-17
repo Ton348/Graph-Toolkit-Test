@@ -30,13 +30,6 @@ namespace Prototype.Business.World
 				return;
 			}
 
-			if (bootstrap.PlayerStateSync != null && bootstrap.PlayerStateSync.IsBuildingOwned(buildingId))
-			{
-				Debug.LogWarning(
-					$"[BuildingInteractable] Upgrade is not supported by server yet. BuildingId='{buildingId}'");
-				return;
-			}
-
 			TryBuyBuildingAsync(buildingId);
 		}
 

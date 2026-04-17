@@ -170,34 +170,6 @@ const lotDefs = (() => {
   }
 })();
 
-function ensureBuildingStates(profile) {
-  if (!profile || !defs || !defs.buildingById) return;
-
-  const existing = new Map();
-  (profile.buildingStates || []).forEach(state => {
-    if (state && state.id) existing.set(state.id, state);
-  });
-
-  profile.buildingStates = [];
-  const ownedIds = profile.ownedBuildings || [];
-  ownedIds.forEach(id => {
-    const def = defs.buildingById.get(id);
-    if (!def) return;
-    const state = existing.get(id);
-    const level = state && Number.isFinite(state.level) ? state.level : 0;
-    const currentIncome = state && Number.isFinite(state.currentIncome) ? state.currentIncome : 0;
-    const currentExpenses = state && Number.isFinite(state.currentExpenses) ? state.currentExpenses : 0;
-
-    profile.buildingStates.push({
-      id,
-      owned: true,
-      level,
-      currentIncome,
-      currentExpenses
-    });
-  });
-}
-
 function loadPlayerProfile(playerId) {
   const id = safePlayerId(playerId);
   const filePath = path.join(PLAYER_DIR, `${id}.json`);
@@ -214,14 +186,11 @@ function loadPlayerProfile(playerId) {
       health: defs.economy && Number.isFinite(defs.economy.baseHealth) ? defs.economy.baseHealth : 0,
       activeQuests: [],
       completedQuests: [],
-      ownedBuildings: [],
-      buildingStates: [],
       graphCheckpoints: {},
       constructedSites: [],
       businesses: [],
       knownContacts: []
     };
-    ensureBuildingStates(profile);
     normalizeBusinessProfile(profile);
     sanitizeBusinessProfile(profile, businessDefs);
     normalizeConstructedSites(profile);
@@ -233,8 +202,6 @@ function loadPlayerProfile(playerId) {
   const profile = readJson(filePath);
   if (!profile.activeQuests) profile.activeQuests = [];
   if (!profile.completedQuests) profile.completedQuests = [];
-  if (!profile.ownedBuildings) profile.ownedBuildings = [];
-  if (!profile.buildingStates) profile.buildingStates = [];
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   if (!profile.constructedSites) profile.constructedSites = [];
   if (!profile.businesses) profile.businesses = [];
@@ -245,23 +212,16 @@ function loadPlayerProfile(playerId) {
   if (!Number.isFinite(profile.speed)) profile.speed = defs.economy?.baseSpeed ?? 0;
   if (!Number.isFinite(profile.damage)) profile.damage = defs.economy?.baseDamage ?? 0;
   if (!Number.isFinite(profile.health)) profile.health = defs.economy?.baseHealth ?? 0;
-  ensureBuildingStates(profile);
   normalizeBusinessProfile(profile);
   sanitizeBusinessProfile(profile, businessDefs);
   normalizeConstructedSites(profile);
   sanitizeConstructedSites(profile);
-  const ownedCount = (profile.ownedBuildings || []).length;
-  if ((profile.buildingStates || []).length !== ownedCount)
-  {
-    savePlayerProfile(profile);
-  }
   return profile;
 }
 
 function savePlayerProfile(profile) {
   const id = safePlayerId(profile.playerId);
   const filePath = path.join(PLAYER_DIR, `${id}.json`);
-  ensureBuildingStates(profile);
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   normalizeBusinessProfile(profile);
   sanitizeBusinessProfile(profile, businessDefs);
@@ -293,8 +253,6 @@ function toResponseProfile(profile) {
     health: profile.health,
     activeQuests: profile.activeQuests || [],
     completedQuests: profile.completedQuests || [],
-    buildings: profile.ownedBuildings || [],
-    buildingStates: profile.buildingStates || [],
     graphCheckpoints: toGraphCheckpointList(profile),
     constructedSites: profile.constructedSites || [],
     businesses: profile.businesses || [],
@@ -364,10 +322,6 @@ function handleBuyBuilding(req, res, payload) {
     }
   }
 
-  if ((profile.ownedBuildings || []).includes(buildingId)) {
-    return fail(res, 'BuildingAlreadyOwned', 'Building already owned.', profile);
-  }
-
   const cost = Number(building.purchaseCost) || 0;
   console.log(`[server] purchaseCost=${cost}`);
   if (profile.money < cost) {
@@ -375,7 +329,6 @@ function handleBuyBuilding(req, res, payload) {
   }
 
   profile.money -= cost;
-  profile.ownedBuildings.push(buildingId);
   applyConstructedSiteFromBuilding(profile, building);
 
   if (questAction === 'start') {
@@ -387,7 +340,6 @@ function handleBuyBuilding(req, res, payload) {
     profile.completedQuests.push(questId);
   }
 
-  ensureBuildingStates(profile);
   savePlayerProfile(profile);
   return success(res, 'Buy building success.', profile);
 }
@@ -563,10 +515,6 @@ function handleSubmitTradeOffer(req, res, payload) {
 
   const profile = loadPlayerProfile(playerId);
 
-  if ((profile.ownedBuildings || []).includes(buildingId)) {
-    return fail(res, 'BuildingAlreadyOwned', 'Building already owned.', profile);
-  }
-
   if (profile.money < offeredAmount) {
     return fail(res, 'NotEnoughMoney', 'Not enough money.', profile);
   }
@@ -586,9 +534,7 @@ function handleSubmitTradeOffer(req, res, payload) {
   }
 
   profile.money -= offeredAmount;
-  profile.ownedBuildings.push(buildingId);
   applyConstructedSiteFromBuilding(profile, building);
-  ensureBuildingStates(profile);
   savePlayerProfile(profile);
   return success(res, 'Trade offer accepted.', profile);
 }
@@ -623,7 +569,6 @@ function handleGetProfile(req, res, payload) {
   const playerId = payload.playerId || 'player';
   console.log(`[server] action=get_profile playerId=${playerId}`);
   const profile = loadPlayerProfile(playerId);
-  ensureBuildingStates(profile);
   savePlayerProfile(profile);
   return success(res, 'Profile fetch success.', profile);
 }

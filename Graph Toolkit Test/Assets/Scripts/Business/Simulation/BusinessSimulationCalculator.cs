@@ -25,11 +25,6 @@ namespace Prototype.Business.Simulation
 
 			state.ResetTick();
 
-			if (!state.isRented)
-			{
-				return;
-			}
-
 			StaffRoleDefinitionData cashierRole = definitions.GetStaffRole(s_roleCashier);
 			StaffRoleDefinitionData merchRole = definitions.GetStaffRole(s_roleMerchandiser);
 			SupplierDefinitionData supplier = definitions.GetSupplier(state.selectedSupplierId);

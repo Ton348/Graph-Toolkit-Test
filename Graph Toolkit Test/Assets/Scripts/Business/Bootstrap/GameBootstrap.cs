@@ -324,30 +324,6 @@ namespace Prototype.Business.Bootstrap
 				}
 			}
 
-			if (RuntimeState.buildings != null)
-			{
-				foreach (BuildingState building in RuntimeState.buildings)
-				{
-					if (building == null || building.definition == null)
-					{
-						continue;
-					}
-
-					if (building.isOwned)
-					{
-						snapshot.ownedBuildingIds.Add(building.definition.id);
-						snapshot.buildingStates.Add(new BuildingStateSnapshot
-						{
-							id = building.definition.id,
-							owned = true,
-							level = building.level,
-							currentIncome = building.currentIncome,
-							currentExpenses = building.currentExpenses
-						});
-					}
-				}
-			}
-
 			if (ProfileSyncService != null)
 			{
 				ProfileSyncService.ApplySnapshot(snapshot);

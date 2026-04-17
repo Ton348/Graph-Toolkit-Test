@@ -3,7 +3,6 @@ function normalizeBusinessInstance(business) {
     instanceId: typeof business?.instanceId === 'string' ? business.instanceId : '',
     lotId: typeof business?.lotId === 'string' ? business.lotId : '',
     businessTypeId: typeof business?.businessTypeId === 'string' ? business.businessTypeId : '',
-    isRented: Boolean(business?.isRented),
     isOpen: Boolean(business?.isOpen),
     rentPerDay: Number.isFinite(business?.rentPerDay) ? business.rentPerDay : 0,
     installedModules: Array.isArray(business?.installedModules) ? business.installedModules.filter(Boolean) : [],
@@ -15,7 +14,8 @@ function normalizeBusinessInstance(business) {
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
     hiredCashierContactId: typeof business?.hiredCashierContactId === 'string' ? business.hiredCashierContactId : null,
-    hiredMerchContactId: typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null
+    hiredMerchContactId: typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null,
+    hiredLogistContactId: typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null
   };
 
   if (normalized.rentPerDay < 0) normalized.rentPerDay = 0;
@@ -96,6 +96,9 @@ function sanitizeBusinessProfile(profile, businessDefs) {
     }
     if (business.hiredMerchContactId && !knownContacts.includes(business.hiredMerchContactId)) {
       business.hiredMerchContactId = null;
+    }
+    if (business.hiredLogistContactId && !knownContacts.includes(business.hiredLogistContactId)) {
+      business.hiredLogistContactId = null;
     }
 
     if (business.isOpen) {

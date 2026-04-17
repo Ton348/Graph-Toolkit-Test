@@ -21,7 +21,6 @@ function createBusinessInstance(lotId, rentPerDay) {
     instanceId,
     lotId,
     businessTypeId: null,
-    isRented: true,
     isOpen: false,
     rentPerDay: Number.isFinite(rentPerDay) && rentPerDay >= 0 ? rentPerDay : 0,
     installedModules: [],
@@ -33,7 +32,8 @@ function createBusinessInstance(lotId, rentPerDay) {
     autoDeliveryPerDay: 0,
     markupPercent: 0,
     hiredCashierContactId: null,
-    hiredMerchContactId: null
+    hiredMerchContactId: null,
+    hiredLogistContactId: null
   };
 }
 
@@ -158,6 +158,10 @@ function hireBusinessWorker(profile, data, businessDefs) {
       business.hiredMerchContactId = null;
       return ok('Clear merchandiser success.');
     }
+    if (roleId === 'logist') {
+      business.hiredLogistContactId = null;
+      return ok('Clear logist success.');
+    }
 
     return fail('InvalidWorkerRole', 'Unsupported worker role.');
   }
@@ -175,6 +179,8 @@ function hireBusinessWorker(profile, data, businessDefs) {
     business.hiredCashierContactId = contactId;
   } else if (roleId === 'merchandiser') {
     business.hiredMerchContactId = contactId;
+  } else if (roleId === 'logist') {
+    business.hiredLogistContactId = contactId;
   } else {
     return fail('InvalidWorkerRole', 'Unsupported worker role.');
   }
@@ -189,7 +195,6 @@ function openBusiness(profile, data, businessDefs) {
 
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
-  if (!business.isRented) return fail('BusinessNotRented', 'Business is not rented.');
   if (!business.businessTypeId) return fail('BusinessTypeMissing', 'Business type not assigned.');
 
   const typeDef = businessDefs && businessDefs.businessTypeById && businessDefs.businessTypeById.get(business.businessTypeId);
