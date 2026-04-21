@@ -449,6 +449,23 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TrySimulateBusinessDayAsync(string lotId)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log($"[RemoteGameServer] action=simulate_business_day lotId='{lotId}'");
+			}
+
+			var request = new RemoteSimulateBusinessDayRequest
+			{
+				action = "simulate_business_day",
+				playerId = m_playerId,
+				data = new RemoteSimulateBusinessDayData { lotId = lotId }
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		public Task<ServerActionResult> TryUnlockContactAsync(string contactId)
 		{
 			if (m_debugLog)
@@ -944,6 +961,12 @@ namespace Prototype.Business.Services
 						selectedSupplierId = business.selectedSupplierId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
+						lastDayRevenue = business.lastDayRevenue,
+						lastDayExpenses = business.lastDayExpenses,
+						lastDayProfit = business.lastDayProfit,
+						totalRevenue = business.totalRevenue,
+						totalExpenses = business.totalExpenses,
+						totalProfit = business.totalProfit,
 						hiredCashierContactId = business.hiredCashierContactId,
 						hiredMerchContactId = business.hiredMerchContactId,
 						hiredLogistContactId = business.hiredLogistContactId
@@ -1244,6 +1267,20 @@ namespace Prototype.Business.Services
 		}
 
 		[Serializable]
+		private class RemoteSimulateBusinessDayRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteSimulateBusinessDayData data;
+		}
+
+		[Serializable]
+		private class RemoteSimulateBusinessDayData
+		{
+			public string lotId;
+		}
+
+		[Serializable]
 		private class RemoteAddBusinessStockRequest
 		{
 			public string action;
@@ -1399,6 +1436,12 @@ namespace Prototype.Business.Services
 			public string selectedSupplierId;
 			public int autoDeliveryPerDay;
 			public int markupPercent;
+			public int lastDayRevenue;
+			public int lastDayExpenses;
+			public int lastDayProfit;
+			public int totalRevenue;
+			public int totalExpenses;
+			public int totalProfit;
 			public string hiredCashierContactId;
 			public string hiredMerchContactId;
 			public string hiredLogistContactId;

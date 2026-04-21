@@ -231,10 +231,11 @@ namespace Prototype.Business.UI
 				titleText.text = string.IsNullOrWhiteSpace(lotTitle) ? "Управление бизнесом" : $"Ваш бизнес: {lotTitle}";
 			}
 
-			float income = simulation != null ? simulation.accumulatedIncome : 0f;
-			float profit = income - expensesPerDay;
+			float income = business != null ? Mathf.Max(0, business.lastDayRevenue) : 0f;
+			float expenses = business != null ? Mathf.Max(0, business.lastDayExpenses) : expensesPerDay;
+			float profit = business != null ? business.totalProfit : income - expenses;
 			SetIncome(income);
-			SetExpenses(expensesPerDay);
+			SetExpenses(expenses);
 			SetProfit(profit);
 
 			int safeStock = simulation != null

@@ -18,7 +18,13 @@ function normalizeBusinessInstance(business) {
     shelfItemId: typeof business?.shelfItemId === 'string' ? business.shelfItemId : null,
     hiredCashierContactId: typeof business?.hiredCashierContactId === 'string' ? business.hiredCashierContactId : null,
     hiredMerchContactId: typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null,
-    hiredLogistContactId: typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null
+    hiredLogistContactId: typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null,
+    lastDayRevenue: Number.isFinite(business?.lastDayRevenue) ? business.lastDayRevenue : 0,
+    lastDayExpenses: Number.isFinite(business?.lastDayExpenses) ? business.lastDayExpenses : 0,
+    lastDayProfit: Number.isFinite(business?.lastDayProfit) ? business.lastDayProfit : 0,
+    totalRevenue: Number.isFinite(business?.totalRevenue) ? business.totalRevenue : 0,
+    totalExpenses: Number.isFinite(business?.totalExpenses) ? business.totalExpenses : 0,
+    totalProfit: Number.isFinite(business?.totalProfit) ? business.totalProfit : 0
   };
 
   if (normalized.rentPerDay < 0) normalized.rentPerDay = 0;
@@ -28,6 +34,8 @@ function normalizeBusinessInstance(business) {
   if (normalized.shelfStock < 0) normalized.shelfStock = 0;
   if (normalized.autoDeliveryPerDay < 0) normalized.autoDeliveryPerDay = 0;
   if (normalized.markupPercent < 0) normalized.markupPercent = 0;
+  if (normalized.lastDayRevenue < 0) normalized.lastDayRevenue = 0;
+  if (normalized.lastDayExpenses < 0) normalized.lastDayExpenses = 0;
 
   return normalized;
 }

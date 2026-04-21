@@ -14,7 +14,15 @@ function readJson(filePath) {
   return JSON.parse(raw);
 }
 
-function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors, traders) {
+function validateBusinessDefinitions(
+  businessTypes,
+  modules,
+  suppliers,
+  staffRoles,
+  staffContacts,
+  behaviors,
+  traders,
+  pizzeriaDemand) {
   let errors = 0;
   let warnings = 0;
 
@@ -206,6 +214,32 @@ function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRol
     });
   }
 
+  if (!pizzeriaDemand || !Array.isArray(pizzeriaDemand.ranges)) {
+    console.error('[server][business] pizzeria_demand missing "ranges" array');
+    errors++;
+  } else {
+    pizzeriaDemand.ranges.forEach((range, i) => {
+      if (!range ||
+        !Number.isFinite(range.minPrice) ||
+        !Number.isFinite(range.maxPrice) ||
+        !Number.isFinite(range.dailyDemand)) {
+        console.error(`[server][business] pizzeria_demand range at index ${i} invalid`);
+        errors++;
+        return;
+      }
+
+      if (range.minPrice > range.maxPrice) {
+        console.error(`[server][business] pizzeria_demand range at index ${i} has minPrice > maxPrice`);
+        errors++;
+      }
+
+      if (range.dailyDemand < 0) {
+        console.warn(`[server][business] pizzeria_demand range at index ${i} has negative dailyDemand`);
+        warnings++;
+      }
+    });
+  }
+
   if (errors > 0) {
     throw new Error(`[server][business] validation failed with ${errors} error(s), ${warnings} warning(s)`);
   }
@@ -254,8 +288,17 @@ function loadBusinessDefinitions() {
   const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
   const behaviors = readJson(path.join(BUSINESS_DIR, 'customer_behavior.json'));
   const traders = readJson(path.join(BUSINESS_DIR, 'traders.json'));
+  const pizzeriaDemand = readJson(path.join(BUSINESS_DIR, 'pizzeria_demand.json'));
 
-  validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors, traders);
+  validateBusinessDefinitions(
+    businessTypes,
+    modules,
+    suppliers,
+    staffRoles,
+    staffContacts,
+    behaviors,
+    traders,
+    pizzeriaDemand);
 
   const businessTypeById = new Map();
   (businessTypes.businessTypes || []).forEach(item => {
@@ -326,6 +369,18 @@ function loadBusinessDefinitions() {
     });
   });
 
+  const demandByBusinessTypeId = new Map();
+  const pizzeriaRanges = Array.isArray(pizzeriaDemand.ranges)
+    ? pizzeriaDemand.ranges
+      .map(range => ({
+        minPrice: range.minPrice,
+        maxPrice: range.maxPrice,
+        dailyDemand: range.dailyDemand
+      }))
+      .sort((a, b) => a.minPrice - b.minPrice)
+    : [];
+  demandByBusinessTypeId.set('grocery_store', pizzeriaRanges);
+
   return {
     businessTypes,
     modules,
@@ -341,7 +396,8 @@ function loadBusinessDefinitions() {
     staffContactById,
     behaviorByBusinessTypeId,
     traderById,
-    traderItemById
+    traderItemById,
+    demandByBusinessTypeId
   };
 }
 

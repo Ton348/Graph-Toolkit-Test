@@ -738,6 +738,14 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
+    case 'simulate_business_day': {
+      console.log('[BusinessServer] action=simulate_business_day');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.simulateBusinessDay(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     case 'unlock_contact': {
       console.log('[BusinessServer] action=unlock_contact');
       const profile = loadPlayerProfile(payload.playerId || 'player');

@@ -22,6 +22,12 @@ namespace Prototype.Business.Runtime
 		public string selectedSupplierId;
 		public int autoDeliveryPerDay;
 		public int markupPercent;
+		public int lastDayRevenue;
+		public int lastDayExpenses;
+		public int lastDayProfit;
+		public int totalRevenue;
+		public int totalExpenses;
+		public int totalProfit;
 		public string hiredCashierContactId;
 		public string hiredMerchContactId;
 		public string hiredLogistContactId;

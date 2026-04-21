@@ -86,6 +86,11 @@ namespace Prototype.Business.Runtime
 				() => m_gameServer.TrySetBusinessAutoDeliveryAsync(lotId, dailyAmount));
 		}
 
+		public Task<ServerActionResult> SimulateBusinessDay(string lotId)
+		{
+			return ExecuteAsync("SimulateBusinessDay", () => m_gameServer.TrySimulateBusinessDayAsync(lotId));
+		}
+
 		public Task<ServerActionResult> UnlockContact(string contactId)
 		{
 			return ExecuteAsync("UnlockContact", () => m_gameServer.TryUnlockContactAsync(contactId));

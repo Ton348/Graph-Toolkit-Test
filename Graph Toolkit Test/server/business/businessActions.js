@@ -45,7 +45,13 @@ function createBusinessInstance(lotId, rentPerDay) {
     markupPercent: 0,
     hiredCashierContactId: null,
     hiredMerchContactId: null,
-    hiredLogistContactId: null
+    hiredLogistContactId: null,
+    lastDayRevenue: 0,
+    lastDayExpenses: 0,
+    lastDayProfit: 0,
+    totalRevenue: 0,
+    totalExpenses: 0,
+    totalProfit: 0
   };
 }
 
@@ -261,6 +267,78 @@ function setBusinessAutoDelivery(profile, data) {
 
   business.autoDeliveryPerDay = Math.floor(dailyAmount);
   return ok('Set auto delivery success.');
+}
+
+function resolveDailyDemand(ranges, currentPrice) {
+  if (!Array.isArray(ranges) || !Number.isFinite(currentPrice)) {
+    return 0;
+  }
+
+  for (const range of ranges) {
+    if (!range) {
+      continue;
+    }
+
+    if (currentPrice >= range.minPrice && currentPrice <= range.maxPrice) {
+      return Number.isFinite(range.dailyDemand) ? Math.max(0, Math.floor(range.dailyDemand)) : 0;
+    }
+  }
+
+  return 0;
+}
+
+function simulateBusinessDay(profile, data, businessDefs) {
+  const lotId = data && data.lotId;
+  const lotCheck = requireLotId(lotId);
+  if (lotCheck) return lotCheck;
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) return fail('BusinessNotFound', 'Business not found.');
+
+  const demandRanges = businessDefs?.demandByBusinessTypeId
+    ? businessDefs.demandByBusinessTypeId.get(business.businessTypeId)
+    : null;
+
+  const currentPrice = Number.isFinite(business.markupPercent) ? Math.max(0, Math.floor(business.markupPercent)) : 0;
+  const stock = Number.isFinite(business.storageStock) ? Math.max(0, Math.floor(business.storageStock)) : 0;
+  const storageCapacity = Number.isFinite(business.storageCapacity) ? Math.max(0, Math.floor(business.storageCapacity)) : 0;
+  const dailyOrderAmount = Number.isFinite(business.autoDeliveryPerDay)
+    ? Math.max(0, Math.floor(business.autoDeliveryPerDay))
+    : 0;
+
+  const supplier = businessDefs?.supplierById && business.selectedSupplierId
+    ? businessDefs.supplierById.get(business.selectedSupplierId)
+    : null;
+  const unitCost = supplier && Number.isFinite(supplier.unitBuyPrice) ? Math.max(0, supplier.unitBuyPrice) : 0;
+  const rentPerDay = Number.isFinite(business.rentPerDay) ? Math.max(0, business.rentPerDay) : 0;
+  const staffById = businessDefs?.staffContactById || null;
+  const cashier = staffById && business.hiredCashierContactId ? staffById.get(business.hiredCashierContactId) : null;
+  const merch = staffById && business.hiredMerchContactId ? staffById.get(business.hiredMerchContactId) : null;
+  const logist = staffById && business.hiredLogistContactId ? staffById.get(business.hiredLogistContactId) : null;
+  const cashierSalary = cashier && Number.isFinite(cashier.salaryPerDay) ? Math.max(0, cashier.salaryPerDay) : 0;
+  const merchSalary = merch && Number.isFinite(merch.salaryPerDay) ? Math.max(0, merch.salaryPerDay) : 0;
+  const logistSalary = logist && Number.isFinite(logist.salaryPerDay) ? Math.max(0, logist.salaryPerDay) : 0;
+
+  const storageFreeSpace = Math.max(0, storageCapacity - stock);
+  const delivered = Math.min(dailyOrderAmount, storageFreeSpace);
+  const stockAfterDelivery = stock + delivered;
+  const dailyDemand = resolveDailyDemand(demandRanges, currentPrice);
+  const sold = Math.min(dailyDemand, stockAfterDelivery);
+  const revenue = sold * currentPrice;
+  const deliveryCost = dailyOrderAmount * unitCost;
+  const totalExpenses = deliveryCost + rentPerDay + cashierSalary + merchSalary + logistSalary;
+  const profit = revenue - totalExpenses;
+  const stockEnd = Math.max(0, stockAfterDelivery - sold);
+
+  business.storageStock = stockEnd;
+  business.lastDayRevenue = revenue;
+  business.lastDayExpenses = totalExpenses;
+  business.lastDayProfit = profit;
+  business.totalRevenue = (Number.isFinite(business.totalRevenue) ? business.totalRevenue : 0) + revenue;
+  business.totalExpenses = (Number.isFinite(business.totalExpenses) ? business.totalExpenses : 0) + totalExpenses;
+  business.totalProfit = (Number.isFinite(business.totalProfit) ? business.totalProfit : 0) + profit;
+
+  return ok('Simulate business day success.');
 }
 
 function unlockContact(profile, data) {
@@ -566,6 +644,7 @@ module.exports = {
   closeBusiness,
   setBusinessMarkup,
   setBusinessAutoDelivery,
+  simulateBusinessDay,
   unlockContact,
   addBusinessStock,
   addBusinessShelfStock,

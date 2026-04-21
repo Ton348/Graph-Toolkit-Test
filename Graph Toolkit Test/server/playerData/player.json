@@ -29,17 +29,23 @@
       "installedModules": [],
       "storageCapacity": 500,
       "shelfCapacity": 300,
-      "storageStock": 0,
+      "storageStock": 189,
       "shelfStock": 0,
       "selectedSupplierId": "logist_1",
-      "autoDeliveryPerDay": 100,
-      "markupPercent": 53,
+      "autoDeliveryPerDay": 233,
+      "markupPercent": 14,
       "storageItemId": "storage_basic",
       "cashDeskItemId": "cashdesk_basic",
       "shelfItemId": "shelf_basic",
       "hiredCashierContactId": "cashier_1",
       "hiredMerchContactId": "merch_1",
-      "hiredLogistContactId": "logist_1"
+      "hiredLogistContactId": "logist_1",
+      "lastDayRevenue": 2380,
+      "lastDayExpenses": 2242,
+      "lastDayProfit": 138,
+      "totalRevenue": 97463,
+      "totalExpenses": 85472,
+      "totalProfit": 11991
     }
   ],
   "knownContacts": [

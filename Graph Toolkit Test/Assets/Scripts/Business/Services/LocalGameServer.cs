@@ -1227,6 +1227,34 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set auto delivery success.");
 		}
 
+		public async Task<ServerActionResult> TrySimulateBusinessDayAsync(string lotId)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Simulate business day success.");
+		}
+
 		public async Task<ServerActionResult> TryUnlockContactAsync(string contactId)
 		{
 			int delayMs = NextDelayMs();
@@ -1569,6 +1597,12 @@ namespace Prototype.Business.Services
 						selectedSupplierId = business.selectedSupplierId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
+						lastDayRevenue = business.lastDayRevenue,
+						lastDayExpenses = business.lastDayExpenses,
+						lastDayProfit = business.lastDayProfit,
+						totalRevenue = business.totalRevenue,
+						totalExpenses = business.totalExpenses,
+						totalProfit = business.totalProfit,
 						hiredCashierContactId = business.hiredCashierContactId,
 						hiredMerchContactId = business.hiredMerchContactId,
 						hiredLogistContactId = business.hiredLogistContactId

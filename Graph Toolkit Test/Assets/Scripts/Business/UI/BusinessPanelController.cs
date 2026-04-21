@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.Data;
 using Prototype.Business.Runtime;
@@ -18,6 +19,11 @@ namespace Prototype.Business.UI
 		public BusinessDetailsView detailsView;
 		public TMP_Text statusText;
 
+		[Header("Day Simulation")]
+		[Min(1f)]
+		public float secondsPerBusinessDay = 60f;
+		public bool autoSimulateServerBusinessDay;
+
 		private BusinessManagementController m_managementController;
 		private BusinessActionFacade m_actionFacade;
 		private BusinessDefinitionsRepository m_definitions;
@@ -28,11 +34,15 @@ namespace Prototype.Business.UI
 		private PlayerStateSync m_playerStateSync;
 		private string m_selectedLotId;
 		private ProfileSyncService m_profileSync;
+		private float m_businessDayTimer;
+		private bool m_daySimulationInProgress;
 
 		private void OnEnable()
 		{
 			EnsureDependencies();
 			Subscribe();
+			m_businessDayTimer = 0f;
+			m_daySimulationInProgress = false;
 			m_playerStateSync?.Refresh();
 			Refresh();
 			LogPanelSnapshot("OnEnable");
@@ -41,6 +51,26 @@ namespace Prototype.Business.UI
 		private void OnDisable()
 		{
 			Unsubscribe();
+			m_businessDayTimer = 0f;
+			m_daySimulationInProgress = false;
+		}
+
+		private void Update()
+		{
+			if (!autoSimulateServerBusinessDay || m_daySimulationInProgress || m_actionFacade == null || m_runtimeService == null)
+			{
+				return;
+			}
+
+			float daySeconds = Mathf.Max(1f, secondsPerBusinessDay);
+			m_businessDayTimer += Time.deltaTime;
+			if (m_businessDayTimer < daySeconds)
+			{
+				return;
+			}
+
+			m_businessDayTimer = 0f;
+			_ = SimulateBusinessDayAsync();
 		}
 
 		private void EnsureDependencies()
@@ -358,6 +388,32 @@ namespace Prototype.Business.UI
 			if (statusText != null)
 			{
 				statusText.text = message;
+			}
+		}
+
+		private async Task SimulateBusinessDayAsync()
+		{
+			if (m_daySimulationInProgress || m_actionFacade == null || m_runtimeService == null)
+			{
+				return;
+			}
+
+			m_daySimulationInProgress = true;
+			try
+			{
+				List<BusinessInstanceSnapshot> businesses = m_runtimeService
+					.GetBusinesses()
+					.Where(b => b != null && !string.IsNullOrWhiteSpace(b.lotId))
+					.ToList();
+
+				foreach (BusinessInstanceSnapshot business in businesses)
+				{
+					await m_actionFacade.SimulateBusinessDay(business.lotId);
+				}
+			}
+			finally
+			{
+				m_daySimulationInProgress = false;
 			}
 		}
 
