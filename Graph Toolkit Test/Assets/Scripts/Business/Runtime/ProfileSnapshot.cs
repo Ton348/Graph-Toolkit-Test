@@ -19,6 +19,7 @@ namespace Prototype.Business.Runtime
 		public List<ConstructedSiteSnapshot> constructedSites = new();
 		public List<BusinessInstanceSnapshot> businesses = new();
 		public List<string> knownContacts = new();
+		public List<string> items = new();
 	}
 
 	[Serializable]

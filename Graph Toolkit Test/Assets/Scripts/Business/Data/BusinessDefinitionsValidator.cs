@@ -11,7 +11,8 @@ namespace Prototype.Business.Data
 			SupplierDatabaseData suppliers,
 			StaffRoleDatabaseData staffRoles,
 			StaffContactDatabaseData staffContacts,
-			CustomerBehaviorDatabaseData behaviors)
+			CustomerBehaviorDatabaseData behaviors,
+			TraderDatabaseData traders)
 		{
 			var ok = true;
 			var moduleIds = new HashSet<string>();
@@ -213,6 +214,64 @@ namespace Prototype.Business.Data
 				}
 			}
 
+			if (traders?.traders == null)
+			{
+				Debug.LogError("[BusinessDefinitions] traders list is missing.");
+				ok = false;
+			}
+			else
+			{
+				var traderIds = new HashSet<string>();
+				var itemIds = new HashSet<string>();
+				foreach (TraderDefinitionData trader in traders.traders)
+				{
+					if (trader == null || string.IsNullOrWhiteSpace(trader.id))
+					{
+						Debug.LogError("[BusinessDefinitions] trader has empty id.");
+						ok = false;
+						continue;
+					}
+
+					if (!traderIds.Add(trader.id))
+					{
+						Debug.LogError($"[BusinessDefinitions] duplicate trader id: {trader.id}");
+						ok = false;
+					}
+
+					if (trader.items == null)
+					{
+						continue;
+					}
+
+					foreach (TraderItemDefinitionData item in trader.items)
+					{
+						if (item == null || string.IsNullOrWhiteSpace(item.id))
+						{
+							Debug.LogError($"[BusinessDefinitions] trader {trader.id} has item with empty id.");
+							ok = false;
+							continue;
+						}
+
+						if (!itemIds.Add(item.id))
+						{
+							Debug.LogError($"[BusinessDefinitions] duplicate trader item id: {item.id}");
+							ok = false;
+						}
+
+						if (string.IsNullOrWhiteSpace(item.category))
+						{
+							Debug.LogError($"[BusinessDefinitions] trader item {item.id} has empty category.");
+							ok = false;
+						}
+
+						if (item.price < 0)
+						{
+							Debug.LogError($"[BusinessDefinitions] trader item {item.id} has negative price.");
+							ok = false;
+						}
+					}
+				}
+			}
 			return ok;
 		}
 	}

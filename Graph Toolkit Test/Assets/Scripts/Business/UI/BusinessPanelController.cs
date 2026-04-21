@@ -242,17 +242,17 @@ namespace Prototype.Business.UI
 				? m_stateSync.GetKnownContacts().Where(id => !string.IsNullOrWhiteSpace(id)).ToList()
 				: new List<string>();
 
-			List<string> cashierOptions = BuildWorkerContactOptions()
+			List<string> cashierOptions = BuildCashierContactOptions()
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
 
-			List<string> merchOptions = BuildWorkerContactOptions()
+			List<string> merchOptions = BuildMerchandiserContactOptions()
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
 
-			List<string> logistOptions = BuildWorkerContactOptions()
+			List<string> logistOptions = BuildSupplierContactOptions(null)
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
@@ -369,10 +369,9 @@ namespace Prototype.Business.UI
 			detailsView.SetCashDeskOptions(moduleOptions, detailsView.GetPendingCashDeskId());
 			detailsView.SetShelfOptions(moduleOptions, detailsView.GetPendingShelfId());
 
-			IEnumerable<BusinessDetailsView.IdOption> contacts = BuildWorkerContactOptions();
-			detailsView.SetSupplierOptions(contacts, detailsView.GetPendingSupplierId());
-			detailsView.SetCashierOptions(contacts, detailsView.GetPendingCashierId());
-			detailsView.SetMerchandiserOptions(contacts, detailsView.GetPendingMerchandiserId());
+			detailsView.SetSupplierOptions(BuildSupplierContactOptions(business), detailsView.GetPendingSupplierId());
+			detailsView.SetCashierOptions(BuildCashierContactOptions(), detailsView.GetPendingCashierId());
+			detailsView.SetMerchandiserOptions(BuildMerchandiserContactOptions(), detailsView.GetPendingMerchandiserId());
 		}
 
 		private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessOptions()
@@ -466,7 +465,7 @@ namespace Prototype.Business.UI
 			return options;
 		}
 
-		private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptions()
+		private IEnumerable<BusinessDetailsView.IdOption> BuildSupplierContactOptions(BusinessInstanceSnapshot business)
 		{
 			var options = new List<BusinessDetailsView.IdOption>();
 			if (m_definitions == null || m_stateSync == null)
@@ -475,9 +474,67 @@ namespace Prototype.Business.UI
 			}
 
 			HashSet<string> known = new HashSet<string>(m_stateSync.GetKnownContacts());
+			HashSet<string> knownSuppliers = new HashSet<string>();
+			foreach (BusinessDetailsView.IdOption option in BuildSupplierOptions(business))
+			{
+				if (option != null && !string.IsNullOrWhiteSpace(option.id))
+				{
+					knownSuppliers.Add(option.id);
+				}
+			}
+
 			foreach (StaffContactDefinitionData contact in m_definitions.GetAllStaffContacts())
 			{
 				if (contact == null || string.IsNullOrWhiteSpace(contact.id) || !known.Contains(contact.id))
+				{
+					continue;
+				}
+
+				string id = contact.id.Trim().ToLowerInvariant();
+				bool isSupplier = knownSuppliers.Contains(contact.id) || id.Contains("supplier") || id.Contains("logist");
+				if (!isSupplier)
+				{
+					continue;
+				}
+
+				options.Add(new BusinessDetailsView.IdOption
+				{
+					id = contact.id,
+					displayName = !string.IsNullOrWhiteSpace(contact.displayName) ? contact.displayName : contact.id
+				});
+			}
+
+			return options;
+		}
+
+		private IEnumerable<BusinessDetailsView.IdOption> BuildCashierContactOptions()
+		{
+			return BuildWorkerContactOptionsByKeyword("cashier");
+		}
+
+		private IEnumerable<BusinessDetailsView.IdOption> BuildMerchandiserContactOptions()
+		{
+			return BuildWorkerContactOptionsByKeyword("merch");
+		}
+
+		private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptionsByKeyword(string keyword)
+		{
+			var options = new List<BusinessDetailsView.IdOption>();
+			if (m_definitions == null || m_stateSync == null || string.IsNullOrWhiteSpace(keyword))
+			{
+				return options;
+			}
+
+			HashSet<string> known = new HashSet<string>(m_stateSync.GetKnownContacts());
+			string normalizedKeyword = keyword.Trim().ToLowerInvariant();
+			foreach (StaffContactDefinitionData contact in m_definitions.GetAllStaffContacts())
+			{
+				if (contact == null || string.IsNullOrWhiteSpace(contact.id) || !known.Contains(contact.id))
+				{
+					continue;
+				}
+
+				if (!contact.id.Trim().ToLowerInvariant().Contains(normalizedKeyword))
 				{
 					continue;
 				}

@@ -10,6 +10,8 @@ namespace Prototype.Business.Data
 		private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new();
 		private readonly Dictionary<string, StaffRoleDefinitionData> m_staffRoles = new();
 		private readonly Dictionary<string, SupplierDefinitionData> m_suppliers = new();
+		private readonly Dictionary<string, TraderDefinitionData> m_traders = new();
+		private readonly Dictionary<string, TraderItemDefinitionData> m_traderItems = new();
 
 		public BusinessDefinitionsRepository(
 			BusinessTypeDatabaseData businessTypeDb,
@@ -17,7 +19,8 @@ namespace Prototype.Business.Data
 			SupplierDatabaseData supplierDb,
 			StaffRoleDatabaseData staffRoleDb,
 			StaffContactDatabaseData staffContactDb,
-			CustomerBehaviorDatabaseData behaviorDb)
+			CustomerBehaviorDatabaseData behaviorDb,
+			TraderDatabaseData traderDb)
 		{
 			if (businessTypeDb?.businessTypes != null)
 			{
@@ -82,6 +85,33 @@ namespace Prototype.Business.Data
 					    !m_behaviors.ContainsKey(item.businessTypeId))
 					{
 						m_behaviors[item.businessTypeId] = item;
+					}
+				}
+			}
+
+			if (traderDb?.traders != null)
+			{
+				foreach (TraderDefinitionData trader in traderDb.traders)
+				{
+					if (trader == null || string.IsNullOrWhiteSpace(trader.id) || m_traders.ContainsKey(trader.id))
+					{
+						continue;
+					}
+
+					m_traders[trader.id] = trader;
+					if (trader.items == null)
+					{
+						continue;
+					}
+
+					foreach (TraderItemDefinitionData item in trader.items)
+					{
+						if (item == null || string.IsNullOrWhiteSpace(item.id) || m_traderItems.ContainsKey(item.id))
+						{
+							continue;
+						}
+
+						m_traderItems[item.id] = item;
 					}
 				}
 			}
@@ -239,6 +269,38 @@ namespace Prototype.Business.Data
 		public IEnumerable<CustomerBehaviorDefinitionData> GetAllCustomerBehaviors()
 		{
 			return m_behaviors.Values;
+		}
+
+		public TraderDefinitionData GetTrader(string traderId)
+		{
+			if (string.IsNullOrWhiteSpace(traderId))
+			{
+				return null;
+			}
+
+			m_traders.TryGetValue(traderId, out TraderDefinitionData value);
+			return value;
+		}
+
+		public IEnumerable<TraderDefinitionData> GetAllTraders()
+		{
+			return m_traders.Values;
+		}
+
+		public TraderItemDefinitionData GetTraderItem(string itemId)
+		{
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return null;
+			}
+
+			m_traderItems.TryGetValue(itemId, out TraderItemDefinitionData value);
+			return value;
+		}
+
+		public IEnumerable<TraderItemDefinitionData> GetAllTraderItems()
+		{
+			return m_traderItems.Values;
 		}
 	}
 }

@@ -19,6 +19,7 @@ namespace Prototype.Business.Services
 		private readonly List<ConstructedSiteSnapshot> m_constructedSites = new();
 		private readonly GameDataRepository m_dataRepository;
 		private readonly Dictionary<string, string> m_graphCheckpoints = new();
+		private readonly HashSet<string> m_items = new();
 		private readonly HashSet<string> m_knownContacts = new();
 		private readonly int m_maxDelayMs;
 		private readonly int m_minDelayMs;
@@ -775,6 +776,80 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign supplier success.");
 		}
 
+		public async Task<ServerActionResult> TrySetBusinessEquipmentAsync(
+			string lotId,
+			string storageItemId,
+			string cashDeskItemId,
+			string shelfItemId)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			string normalizedStorageItemId = NormalizeOptionalId(storageItemId);
+			string normalizedCashDeskItemId = NormalizeOptionalId(cashDeskItemId);
+			string normalizedShelfItemId = NormalizeOptionalId(shelfItemId);
+
+			ServerActionResult validationResult = ValidateEquipmentItem(normalizedStorageItemId, "storage");
+			if (!validationResult.Success)
+			{
+				return validationResult;
+			}
+
+			validationResult = ValidateEquipmentItem(normalizedCashDeskItemId, "cashdesk");
+			if (!validationResult.Success)
+			{
+				return validationResult;
+			}
+
+			validationResult = ValidateEquipmentItem(normalizedShelfItemId, "shelf");
+			if (!validationResult.Success)
+			{
+				return validationResult;
+			}
+
+			business.storageItemId = normalizedStorageItemId;
+			business.cashDeskItemId = normalizedCashDeskItemId;
+			business.shelfItemId = normalizedShelfItemId;
+
+			TraderItemDefinitionData storageItem = m_businessRepository?.GetTraderItem(normalizedStorageItemId);
+			TraderItemDefinitionData shelfItem = m_businessRepository?.GetTraderItem(normalizedShelfItemId);
+
+			business.storageCapacity = storageItem != null ? storageItem.storageCapacity : 0;
+			business.shelfCapacity = shelfItem != null ? shelfItem.shelfCapacity : 0;
+
+			if (business.storageStock > business.storageCapacity)
+			{
+				business.storageStock = business.storageCapacity;
+			}
+
+			if (business.shelfStock > business.shelfCapacity)
+			{
+				business.shelfStock = business.shelfCapacity;
+			}
+
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set business equipment success.");
+		}
+
 		public async Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
 		{
 			int delayMs = NextDelayMs();
@@ -857,6 +932,148 @@ namespace Prototype.Business.Services
 			}
 
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Hire worker success.");
+		}
+
+		public async Task<ServerActionResult> TryBuyItemAsync(string traderId, string itemId)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(traderId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "TraderIdEmpty",
+					"traderId is required.");
+			}
+
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemIdEmpty",
+					"itemId is required.");
+			}
+
+			TraderDefinitionData trader = m_businessRepository?.GetTrader(traderId);
+			if (trader == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "TraderNotFound",
+					"Trader not found.");
+			}
+
+			TraderItemDefinitionData item = m_businessRepository?.GetTraderItem(itemId);
+			if (item == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemNotFound",
+					"Item not found.");
+			}
+
+			bool soldByTrader = false;
+			if (trader.items != null)
+			{
+				for (int i = 0; i < trader.items.Count; i++)
+				{
+					TraderItemDefinitionData traderItem = trader.items[i];
+					if (traderItem != null && traderItem.id == itemId)
+					{
+						soldByTrader = true;
+						break;
+					}
+				}
+			}
+
+			if (!soldByTrader)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemNotSoldByTrader",
+					"Item is not sold by this trader.");
+			}
+
+			if (m_items.Contains(itemId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemAlreadyOwned",
+					"Item already owned.");
+			}
+
+			if (m_runtime == null || m_runtime.player == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing",
+					"Runtime state is not available.");
+			}
+
+			if (m_runtime.player.money < item.price)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney",
+					"Not enough money.");
+			}
+
+			m_runtime.player.money -= item.price;
+			m_items.Add(item.id);
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Buy item success.");
+		}
+
+		public async Task<TraderItemsResponse> TryGetTraderItemsAsync(string traderId)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = networkIssue.ToString(),
+					Message = "Network error."
+				};
+			}
+
+			if (string.IsNullOrWhiteSpace(traderId))
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = "TraderIdEmpty",
+					Message = "traderId is required."
+				};
+			}
+
+			TraderDefinitionData trader = m_businessRepository?.GetTrader(traderId);
+			if (trader == null)
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = "TraderNotFound",
+					Message = "Trader not found."
+				};
+			}
+
+			var response = new TraderItemsResponse
+			{
+				Success = true,
+				TraderId = trader.id,
+				TraderName = trader.name,
+				Message = "Get trader items success."
+			};
+
+			if (trader.items != null)
+			{
+				for (int i = 0; i < trader.items.Count; i++)
+				{
+					TraderItemDefinitionData item = trader.items[i];
+					if (item != null)
+					{
+						response.Items.Add(item);
+					}
+				}
+			}
+
+			return response;
 		}
 
 		public async Task<ServerActionResult> TryOpenBusinessAsync(string lotId)
@@ -1336,7 +1553,51 @@ namespace Prototype.Business.Services
 				snapshot.knownContacts.AddRange(m_knownContacts);
 			}
 
+			if (m_items.Count > 0)
+			{
+				snapshot.items.AddRange(m_items);
+			}
+
 			return snapshot;
+		}
+
+		private ServerActionResult ValidateEquipmentItem(string itemId, string requiredCategory)
+		{
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return ServerActionResult.SuccessResult(null, "Skipped.");
+			}
+
+			if (!m_items.Contains(itemId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemNotOwned",
+					$"Item '{itemId}' is not owned.");
+			}
+
+			TraderItemDefinitionData item = m_businessRepository?.GetTraderItem(itemId);
+			if (item == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemNotFound",
+					$"Item '{itemId}' not found.");
+			}
+
+			if (!string.Equals(item.category, requiredCategory, StringComparison.OrdinalIgnoreCase))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidItemCategory",
+					$"Item '{itemId}' is not category '{requiredCategory}'.");
+			}
+
+			return ServerActionResult.SuccessResult(null, "Valid.");
+		}
+
+		private static string NormalizeOptionalId(string value)
+		{
+			if (string.IsNullOrWhiteSpace(value))
+			{
+				return null;
+			}
+
+			return value.Trim();
 		}
 
 		private ServerActionResult TryStartQuestInternal(QuestDefinitionData questDefinition)

@@ -23,8 +23,12 @@ namespace Prototype.Business.Services
 		Task<ServerActionResult> TryRentBusinessAsync(string lotId);
 		Task<ServerActionResult> TryAssignBusinessTypeAsync(string lotId, string businessTypeId);
 		Task<ServerActionResult> TryInstallBusinessModuleAsync(string lotId, string moduleId);
+		Task<ServerActionResult> TrySetBusinessEquipmentAsync(string lotId, string storageItemId, string cashDeskItemId,
+			string shelfItemId);
 		Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId);
 		Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId);
+		Task<ServerActionResult> TryBuyItemAsync(string traderId, string itemId);
+		Task<TraderItemsResponse> TryGetTraderItemsAsync(string traderId);
 		Task<ServerActionResult> TryOpenBusinessAsync(string lotId);
 		Task<ServerActionResult> TryCloseBusinessAsync(string lotId);
 		Task<ServerActionResult> TrySetBusinessMarkupAsync(string lotId, int markupPercent);

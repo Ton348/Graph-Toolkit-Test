@@ -89,6 +89,27 @@ namespace Prototype.Business.Data
 	}
 
 	[Serializable]
+	public class TraderItemDefinitionData
+	{
+		public string id;
+		public string category;
+		public string name;
+		public string description;
+		public int price;
+		public int storageCapacity;
+		public int cashCapacity;
+		public int shelfCapacity;
+	}
+
+	[Serializable]
+	public class TraderDefinitionData
+	{
+		public string id;
+		public string name;
+		public List<TraderItemDefinitionData> items = new();
+	}
+
+	[Serializable]
 	public class BusinessTypeDatabaseData
 	{
 		public List<BusinessTypeDefinitionData> businessTypes = new();
@@ -122,6 +143,12 @@ namespace Prototype.Business.Data
 	public class CustomerBehaviorDatabaseData
 	{
 		public List<CustomerBehaviorDefinitionData> behaviors = new();
+	}
+
+	[Serializable]
+	public class TraderDatabaseData
+	{
+		public List<TraderDefinitionData> traders = new();
 	}
 
 	[Serializable]

@@ -16,6 +16,9 @@ namespace Prototype.Business.Runtime
 		public int shelfCapacity;
 		public int storageStock;
 		public int shelfStock;
+		public string storageItemId;
+		public string cashDeskItemId;
+		public string shelfItemId;
 		public string selectedSupplierId;
 		public int autoDeliveryPerDay;
 		public int markupPercent;

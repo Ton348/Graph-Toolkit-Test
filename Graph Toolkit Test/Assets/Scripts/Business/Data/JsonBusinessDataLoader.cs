@@ -92,6 +92,11 @@ namespace Prototype.Business.Data
 			return Load<CustomerBehaviorDatabaseData>("customer_behavior.json", "customer behaviors");
 		}
 
+		public TraderDatabaseData LoadTraders()
+		{
+			return Load<TraderDatabaseData>("traders.json", "traders");
+		}
+
 		private T Load<T>(string fileName, string label) where T : class
 		{
 			string path = Path.Combine(m_rootPath, fileName);

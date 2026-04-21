@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
 using GameGraph.Runtime.Quest;
+using Prototype.Business.Data;
 using Prototype.Business.Runtime;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -273,6 +274,34 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TrySetBusinessEquipmentAsync(
+			string lotId,
+			string storageItemId,
+			string cashDeskItemId,
+			string shelfItemId)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log(
+					$"[RemoteGameServer] action=set_business_equipment lotId='{lotId}' storageItemId='{storageItemId}' cashDeskItemId='{cashDeskItemId}' shelfItemId='{shelfItemId}'");
+			}
+
+			var request = new RemoteSetBusinessEquipmentRequest
+			{
+				action = "set_business_equipment",
+				playerId = m_playerId,
+				data = new RemoteSetBusinessEquipmentData
+				{
+					lotId = lotId,
+					storageItemId = storageItemId,
+					cashDeskItemId = cashDeskItemId,
+					shelfItemId = shelfItemId
+				}
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		public Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId)
 		{
 			string normalizedSupplierId = supplierId ?? string.Empty;
@@ -289,6 +318,47 @@ namespace Prototype.Business.Services
 			};
 
 			return SendRequestAsync(request);
+		}
+
+		public Task<ServerActionResult> TryBuyItemAsync(string traderId, string itemId)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log($"[RemoteGameServer] action=buy_item traderId='{traderId}' itemId='{itemId}'");
+			}
+
+			var request = new RemoteBuyItemRequest
+			{
+				action = "buy_item",
+				playerId = m_playerId,
+				data = new RemoteBuyItemData
+				{
+					traderId = traderId,
+					itemId = itemId
+				}
+			};
+
+			return SendRequestAsync(request);
+		}
+
+		public async Task<TraderItemsResponse> TryGetTraderItemsAsync(string traderId)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log($"[RemoteGameServer] action=get_trader_items traderId='{traderId}'");
+			}
+
+			var request = new RemoteGetTraderItemsRequest
+			{
+				action = "get_trader_items",
+				playerId = m_playerId,
+				data = new RemoteGetTraderItemsData
+				{
+					traderId = traderId
+				}
+			};
+
+			return await SendTraderItemsRequestAsync(request);
 		}
 
 		public Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
@@ -629,6 +699,128 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(snapshot, response.message);
 		}
 
+		private async Task<TraderItemsResponse> SendTraderItemsRequestAsync<T>(T requestPayload)
+		{
+			var url = $"{m_baseUrl}/api/action";
+			string payload = JsonUtility.ToJson(requestPayload);
+
+			using var request = new UnityWebRequest(url, "POST");
+			byte[] body = Encoding.UTF8.GetBytes(payload);
+			request.uploadHandler = new UploadHandlerRaw(body);
+			request.downloadHandler = new DownloadHandlerBuffer();
+			request.SetRequestHeader("Content-Type", "application/json");
+			if (m_timeoutSeconds >= 1f)
+			{
+				request.timeout = Mathf.CeilToInt(m_timeoutSeconds);
+			}
+
+			var manualTimeout = false;
+			var stopwatch = Stopwatch.StartNew();
+			UnityWebRequestAsyncOperation op = request.SendWebRequest();
+			while (!op.isDone)
+			{
+				if (m_timeoutSeconds > 0f && m_timeoutSeconds < 1f && stopwatch.Elapsed.TotalSeconds >= m_timeoutSeconds)
+				{
+					manualTimeout = true;
+					request.Abort();
+					break;
+				}
+
+				await Task.Yield();
+			}
+
+			if (manualTimeout)
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = "Timeout",
+					Message = "Request timeout."
+				};
+			}
+
+			if (request.result != UnityWebRequest.Result.Success)
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = $"Http{request.responseCode}",
+					Message = request.error
+				};
+			}
+
+			string responseText = request.downloadHandler != null ? request.downloadHandler.text : null;
+			if (string.IsNullOrEmpty(responseText))
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = "EmptyResponse",
+					Message = "Server returned empty response."
+				};
+			}
+
+			RemoteTraderItemsResponse response;
+			try
+			{
+				response = JsonUtility.FromJson<RemoteTraderItemsResponse>(responseText);
+			}
+			catch (Exception ex)
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = "InvalidJson",
+					Message = ex.Message
+				};
+			}
+
+			if (response == null)
+			{
+				return new TraderItemsResponse
+				{
+					Success = false,
+					ErrorCode = "InvalidResponse",
+					Message = "Response could not be parsed."
+				};
+			}
+
+			var result = new TraderItemsResponse
+			{
+				Success = response.success,
+				ErrorCode = response.errorCode,
+				Message = response.message,
+				TraderId = response.traderId,
+				TraderName = response.traderName
+			};
+
+			if (response.items != null)
+			{
+				for (int i = 0; i < response.items.Length; i++)
+				{
+					RemoteTraderItemDto item = response.items[i];
+					if (item == null || string.IsNullOrWhiteSpace(item.id))
+					{
+						continue;
+					}
+
+					result.Items.Add(new TraderItemDefinitionData
+					{
+						id = item.id,
+						category = item.category,
+						name = item.name,
+						description = item.description,
+						price = item.price,
+						storageCapacity = item.storageCapacity,
+						cashCapacity = item.cashCapacity,
+						shelfCapacity = item.shelfCapacity
+					});
+				}
+			}
+
+			return result;
+		}
+
 		private ServerActionResult.ErrorType MapNetworkError(UnityWebRequest request)
 		{
 			if (request == null)
@@ -728,6 +920,9 @@ namespace Prototype.Business.Services
 						shelfCapacity = business.shelfCapacity,
 						storageStock = business.storageStock,
 						shelfStock = business.shelfStock,
+						storageItemId = business.storageItemId,
+						cashDeskItemId = business.cashDeskItemId,
+						shelfItemId = business.shelfItemId,
 						selectedSupplierId = business.selectedSupplierId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
@@ -748,6 +943,11 @@ namespace Prototype.Business.Services
 			if (profile.knownContacts != null)
 			{
 				snapshot.knownContacts.AddRange(profile.knownContacts);
+			}
+
+			if (profile.items != null)
+			{
+				snapshot.items.AddRange(profile.items);
 			}
 
 			return snapshot;
@@ -920,6 +1120,23 @@ namespace Prototype.Business.Services
 		}
 
 		[Serializable]
+		private class RemoteSetBusinessEquipmentRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteSetBusinessEquipmentData data;
+		}
+
+		[Serializable]
+		private class RemoteSetBusinessEquipmentData
+		{
+			public string lotId;
+			public string storageItemId;
+			public string cashDeskItemId;
+			public string shelfItemId;
+		}
+
+		[Serializable]
 		private class RemoteHireBusinessWorkerRequest
 		{
 			public string action;
@@ -933,6 +1150,35 @@ namespace Prototype.Business.Services
 			public string lotId;
 			public string roleId;
 			public string contactId;
+		}
+
+		[Serializable]
+		private class RemoteBuyItemRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteBuyItemData data;
+		}
+
+		[Serializable]
+		private class RemoteBuyItemData
+		{
+			public string traderId;
+			public string itemId;
+		}
+
+		[Serializable]
+		private class RemoteGetTraderItemsRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteGetTraderItemsData data;
+		}
+
+		[Serializable]
+		private class RemoteGetTraderItemsData
+		{
+			public string traderId;
 		}
 
 		[Serializable]
@@ -1083,6 +1329,7 @@ namespace Prototype.Business.Services
 			public RemoteConstructedSiteDto[] constructedSites;
 			public RemoteBusinessStateDto[] businesses;
 			public string[] knownContacts;
+			public string[] items;
 		}
 
 		[Serializable]
@@ -1113,12 +1360,39 @@ namespace Prototype.Business.Services
 			public int shelfCapacity;
 			public int storageStock;
 			public int shelfStock;
+			public string storageItemId;
+			public string cashDeskItemId;
+			public string shelfItemId;
 			public string selectedSupplierId;
 			public int autoDeliveryPerDay;
 			public int markupPercent;
 			public string hiredCashierContactId;
 			public string hiredMerchContactId;
 			public string hiredLogistContactId;
+		}
+
+		[Serializable]
+		private class RemoteTraderItemsResponse
+		{
+			public bool success;
+			public string errorCode;
+			public string message;
+			public string traderId;
+			public string traderName;
+			public RemoteTraderItemDto[] items;
+		}
+
+		[Serializable]
+		private class RemoteTraderItemDto
+		{
+			public string id;
+			public string category;
+			public string name;
+			public string description;
+			public int price;
+			public int storageCapacity;
+			public int cashCapacity;
+			public int shelfCapacity;
 		}
 	}
 }

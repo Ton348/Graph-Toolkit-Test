@@ -33,6 +33,16 @@ namespace Prototype.Business.Runtime
 			return ExecuteAsync("InstallBusinessModule", () => m_gameServer.TryInstallBusinessModuleAsync(lotId, moduleId));
 		}
 
+		public Task<ServerActionResult> SetBusinessEquipment(
+			string lotId,
+			string storageItemId,
+			string cashDeskItemId,
+			string shelfItemId)
+		{
+			return ExecuteAsync("SetBusinessEquipment",
+				() => m_gameServer.TrySetBusinessEquipmentAsync(lotId, storageItemId, cashDeskItemId, shelfItemId));
+		}
+
 		public Task<ServerActionResult> AssignSupplier(string lotId, string supplierId)
 		{
 			return ExecuteAsync("AssignSupplier", () => m_gameServer.TryAssignSupplierAsync(lotId, supplierId));
@@ -73,6 +83,16 @@ namespace Prototype.Business.Runtime
 		public Task<ServerActionResult> UnlockContact(string contactId)
 		{
 			return ExecuteAsync("UnlockContact", () => m_gameServer.TryUnlockContactAsync(contactId));
+		}
+
+		public Task<ServerActionResult> BuyItem(string traderId, string itemId)
+		{
+			return ExecuteAsync("BuyItem", () => m_gameServer.TryBuyItemAsync(traderId, itemId));
+		}
+
+		public Task<TraderItemsResponse> GetTraderItems(string traderId)
+		{
+			return m_gameServer.TryGetTraderItemsAsync(traderId);
 		}
 
 		public Task<ServerActionResult> AddBusinessStock(string lotId, int amount)

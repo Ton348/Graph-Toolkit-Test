@@ -1,0 +1,40 @@
+{
+  "traders": [
+    {
+      "id": "trader_equipment_01",
+      "name": "Торговец оборудованием",
+      "items": [
+        {
+          "id": "storage_basic",
+          "category": "storage",
+          "name": "Складское оборудование",
+          "description": "Базовый склад для хранения товара",
+          "price": 200,
+          "storageCapacity": 500,
+          "cashCapacity": 0,
+          "shelfCapacity": 0
+        },
+        {
+          "id": "cashdesk_basic",
+          "category": "cashdesk",
+          "name": "Касса",
+          "description": "Базовая кассовая зона",
+          "price": 150,
+          "storageCapacity": 0,
+          "cashCapacity": 1000,
+          "shelfCapacity": 0
+        },
+        {
+          "id": "shelf_basic",
+          "category": "shelf",
+          "name": "Полки",
+          "description": "Базовые торговые полки",
+          "price": 120,
+          "storageCapacity": 0,
+          "cashCapacity": 0,
+          "shelfCapacity": 300
+        }
+      ]
+    }
+  ]
+}

@@ -72,32 +72,25 @@ namespace Prototype.Business.UI
 
 		[Header("Setup")]
 		[SerializeField]
-		private TMP_Dropdown storageDropdown;
+		private ContactSelectView storageSelectView;
 
 		[SerializeField]
-		private TMP_Dropdown cashDeskDropdown;
+		private ContactSelectView cashDeskSelectView;
 
 		[SerializeField]
-		private TMP_Dropdown shelfDropdown;
+		private ContactSelectView shelfSelectView;
 
 		[Header("Staff")]
 		[SerializeField]
-		private TMP_Dropdown supplierDropdown;
+		private ContactSelectView supplierSelectView;
 
 		[SerializeField]
-		private TMP_Dropdown cashierDropdown;
+		private ContactSelectView cashierSelectView;
 
 		[SerializeField]
-		private TMP_Dropdown merchandiserDropdown;
+		private ContactSelectView merchandiserSelectView;
 
 		private readonly List<IdOption> m_businessOptions = new();
-		private readonly List<IdOption> m_storageOptions = new();
-		private readonly List<IdOption> m_cashDeskOptions = new();
-		private readonly List<IdOption> m_shelfOptions = new();
-		private readonly List<IdOption> m_supplierOptions = new();
-		private readonly List<IdOption> m_cashierOptions = new();
-		private readonly List<IdOption> m_merchandiserOptions = new();
-
 		private BusinessInstanceSnapshot m_currentBusiness;
 		private string m_currentLotId;
 		private bool m_isBusinessOpen;
@@ -134,12 +127,12 @@ namespace Prototype.Business.UI
 				priceSlider.onValueChanged.AddListener(OnPriceChanged);
 			}
 
-			HookPendingDropdown(storageDropdown, m_storageOptions, value => m_pendingStorageId = value);
-			HookPendingDropdown(cashDeskDropdown, m_cashDeskOptions, value => m_pendingCashDeskId = value);
-			HookPendingDropdown(shelfDropdown, m_shelfOptions, value => m_pendingShelfId = value);
-			HookPendingDropdown(supplierDropdown, m_supplierOptions, value => m_pendingSupplierId = value);
-			HookPendingDropdown(cashierDropdown, m_cashierOptions, value => m_pendingCashierId = value);
-			HookPendingDropdown(merchandiserDropdown, m_merchandiserOptions, value => m_pendingMerchandiserId = value);
+			HookContactSelectView(storageSelectView, value => m_pendingStorageId = value);
+			HookContactSelectView(cashDeskSelectView, value => m_pendingCashDeskId = value);
+			HookContactSelectView(shelfSelectView, value => m_pendingShelfId = value);
+			HookContactSelectView(supplierSelectView, value => m_pendingSupplierId = value);
+			HookContactSelectView(cashierSelectView, value => m_pendingCashierId = value);
+			HookContactSelectView(merchandiserSelectView, value => m_pendingMerchandiserId = value);
 
 			SetTab(TabType.Overview);
 			SetBusinessOpenState(false);
@@ -268,38 +261,38 @@ namespace Prototype.Business.UI
 
 		public void SetStorageOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptionsWithNone(storageDropdown, m_storageOptions, options, selectedId, "Нет");
-			m_pendingStorageId = NormalizeId(GetSelectedId(storageDropdown, m_storageOptions));
+			SetContactOptionsWithNone(storageSelectView, options, selectedId, "Нет");
+			m_pendingStorageId = NormalizeId(storageSelectView != null ? storageSelectView.GetSelectedId() : selectedId);
 		}
 
 		public void SetCashDeskOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptionsWithNone(cashDeskDropdown, m_cashDeskOptions, options, selectedId, "Нет");
-			m_pendingCashDeskId = NormalizeId(GetSelectedId(cashDeskDropdown, m_cashDeskOptions));
+			SetContactOptionsWithNone(cashDeskSelectView, options, selectedId, "Нет");
+			m_pendingCashDeskId = NormalizeId(cashDeskSelectView != null ? cashDeskSelectView.GetSelectedId() : selectedId);
 		}
 
 		public void SetShelfOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptionsWithNone(shelfDropdown, m_shelfOptions, options, selectedId, "Нет");
-			m_pendingShelfId = NormalizeId(GetSelectedId(shelfDropdown, m_shelfOptions));
+			SetContactOptionsWithNone(shelfSelectView, options, selectedId, "Нет");
+			m_pendingShelfId = NormalizeId(shelfSelectView != null ? shelfSelectView.GetSelectedId() : selectedId);
 		}
 
 		public void SetSupplierOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptionsWithNone(supplierDropdown, m_supplierOptions, options, selectedId, "Нет");
-			m_pendingSupplierId = NormalizeId(GetSelectedId(supplierDropdown, m_supplierOptions));
+			SetContactOptionsWithNone(supplierSelectView, options, selectedId, "Нет");
+			m_pendingSupplierId = NormalizeId(supplierSelectView != null ? supplierSelectView.GetSelectedId() : selectedId);
 		}
 
 		public void SetCashierOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptionsWithNone(cashierDropdown, m_cashierOptions, options, selectedId, "Нет");
-			m_pendingCashierId = NormalizeId(GetSelectedId(cashierDropdown, m_cashierOptions));
+			SetContactOptionsWithNone(cashierSelectView, options, selectedId, "Нет");
+			m_pendingCashierId = NormalizeId(cashierSelectView != null ? cashierSelectView.GetSelectedId() : selectedId);
 		}
 
 		public void SetMerchandiserOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptionsWithNone(merchandiserDropdown, m_merchandiserOptions, options, selectedId, "Нет");
-			m_pendingMerchandiserId = NormalizeId(GetSelectedId(merchandiserDropdown, m_merchandiserOptions));
+			SetContactOptionsWithNone(merchandiserSelectView, options, selectedId, "Нет");
+			m_pendingMerchandiserId = NormalizeId(merchandiserSelectView != null ? merchandiserSelectView.GetSelectedId() : selectedId);
 		}
 
 		public void SetIncome(float value)
@@ -395,6 +388,48 @@ namespace Prototype.Business.UI
 			}
 
 			dropdown.onValueChanged.AddListener(_ => setValue(NormalizeId(GetSelectedId(dropdown, options))));
+		}
+
+		private static void HookContactSelectView(ContactSelectView view, Action<string> setValue)
+		{
+			if (view == null || setValue == null)
+			{
+				return;
+			}
+
+			view.selectionChanged += value => setValue(NormalizeId(value));
+		}
+
+		private static void SetContactOptionsWithNone(
+			ContactSelectView view,
+			IEnumerable<IdOption> options,
+			string selectedId,
+			string noneLabel)
+		{
+			if (view == null)
+			{
+				return;
+			}
+
+			var list = new List<ContactSelectOption>();
+			if (options != null)
+			{
+				foreach (IdOption option in options)
+				{
+					if (option == null)
+					{
+						continue;
+					}
+
+					list.Add(new ContactSelectOption
+					{
+						id = option.id,
+						displayName = option.displayName
+					});
+				}
+			}
+
+			view.Setup(list, selectedId, true, noneLabel);
 		}
 
 		private void SetOptionsWithNone(

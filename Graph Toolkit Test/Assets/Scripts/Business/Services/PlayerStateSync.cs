@@ -11,6 +11,7 @@ namespace Prototype.Business.Services
 		private readonly HashSet<string> m_completedQuests = new();
 		private readonly Dictionary<string, ConstructedSiteSnapshot> m_constructedSites = new();
 		private readonly Dictionary<string, string> m_graphCheckpoints = new();
+		private readonly HashSet<string> m_items = new();
 
 		public int Money { get; private set; }
 		public int Bargaining { get; private set; }
@@ -23,6 +24,7 @@ namespace Prototype.Business.Services
 		public IReadOnlyCollection<string> CompletedQuests => m_completedQuests;
 		public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
 		public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => m_constructedSites;
+		public IReadOnlyCollection<string> Items => m_items;
 
 		public event Action<ProfileSnapshot> snapshotApplied;
 		public event Action refreshRequested;
@@ -102,6 +104,18 @@ namespace Prototype.Business.Services
 				}
 			}
 
+			m_items.Clear();
+			if (snapshot.items != null)
+			{
+				foreach (string itemId in snapshot.items)
+				{
+					if (!string.IsNullOrWhiteSpace(itemId))
+					{
+						m_items.Add(itemId.Trim());
+					}
+				}
+			}
+
 			snapshotApplied?.Invoke(snapshot);
 		}
 
@@ -118,7 +132,13 @@ namespace Prototype.Business.Services
 			m_completedQuests.Clear();
 			m_graphCheckpoints.Clear();
 			m_constructedSites.Clear();
+			m_items.Clear();
 			snapshotApplied?.Invoke(null);
+		}
+
+		public bool HasItem(string itemId)
+		{
+			return !string.IsNullOrWhiteSpace(itemId) && m_items.Contains(itemId.Trim());
 		}
 
 		public bool IsQuestActive(string questId)
