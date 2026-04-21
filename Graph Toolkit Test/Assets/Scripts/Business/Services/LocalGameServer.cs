@@ -1192,6 +1192,41 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set markup success.");
 		}
 
+		public async Task<ServerActionResult> TrySetBusinessAutoDeliveryAsync(string lotId, int dailyAmount)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			if (dailyAmount < 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidDailyAmount",
+					"dailyAmount must be >= 0.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			business.autoDeliveryPerDay = dailyAmount;
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set auto delivery success.");
+		}
+
 		public async Task<ServerActionResult> TryUnlockContactAsync(string contactId)
 		{
 			int delayMs = NextDelayMs();

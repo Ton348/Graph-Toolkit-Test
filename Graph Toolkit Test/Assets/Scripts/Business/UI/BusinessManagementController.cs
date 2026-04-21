@@ -150,6 +150,28 @@ namespace Prototype.Business.UI
 			}
 
 			business = m_runtimeService.GetBusinessView(lotId);
+			int pendingPrice = m_view.GetPendingPrice();
+			if (business == null || business.markupPercent != pendingPrice)
+			{
+				if (!await RunActionCheckedAsync(m_actionFacade.SetMarkup(lotId, pendingPrice), "Установка цены"))
+				{
+					return false;
+				}
+			}
+
+			business = m_runtimeService.GetBusinessView(lotId);
+			int pendingAutoDelivery = m_view.GetPendingAutoDeliveryPerDay();
+			if (business == null || business.autoDeliveryPerDay != pendingAutoDelivery)
+			{
+				if (!await RunActionCheckedAsync(
+					    m_actionFacade.SetAutoDelivery(lotId, pendingAutoDelivery),
+					    "Установка заказа в сутки"))
+				{
+					return false;
+				}
+			}
+
+			business = m_runtimeService.GetBusinessView(lotId);
 			string storageItemId = NormalizeId(m_view.GetPendingStorageId());
 			string cashDeskItemId = NormalizeId(m_view.GetPendingCashDeskId());
 			string shelfItemId = NormalizeId(m_view.GetPendingShelfId());
@@ -222,16 +244,6 @@ namespace Prototype.Business.UI
 			else if (business == null || business.hiredMerchContactId != merchandiserId)
 			{
 				if (!await RunActionCheckedAsync(m_actionFacade.HireWorker(lotId, "merchandiser", merchandiserId), "Назначение мерчендайзера"))
-				{
-					return false;
-				}
-			}
-
-			business = m_runtimeService.GetBusinessView(lotId);
-			int pendingPrice = m_view.GetPendingPrice();
-			if (business == null || business.markupPercent != pendingPrice)
-			{
-				if (!await RunActionCheckedAsync(m_actionFacade.SetMarkup(lotId, pendingPrice), "Установка цены"))
 				{
 					return false;
 				}

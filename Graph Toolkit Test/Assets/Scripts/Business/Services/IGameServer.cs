@@ -32,6 +32,7 @@ namespace Prototype.Business.Services
 		Task<ServerActionResult> TryOpenBusinessAsync(string lotId);
 		Task<ServerActionResult> TryCloseBusinessAsync(string lotId);
 		Task<ServerActionResult> TrySetBusinessMarkupAsync(string lotId, int markupPercent);
+		Task<ServerActionResult> TrySetBusinessAutoDeliveryAsync(string lotId, int dailyAmount);
 		Task<ServerActionResult> TryUnlockContactAsync(string contactId);
 		Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount);
 		Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount);

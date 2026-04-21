@@ -431,6 +431,24 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TrySetBusinessAutoDeliveryAsync(string lotId, int dailyAmount)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log(
+					$"[RemoteGameServer] action=set_business_auto_delivery lotId='{lotId}' dailyAmount={dailyAmount}");
+			}
+
+			var request = new RemoteSetBusinessAutoDeliveryRequest
+			{
+				action = "set_business_auto_delivery",
+				playerId = m_playerId,
+				data = new RemoteSetBusinessAutoDeliveryData { lotId = lotId, dailyAmount = dailyAmount }
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		public Task<ServerActionResult> TryUnlockContactAsync(string contactId)
 		{
 			if (m_debugLog)
@@ -1208,6 +1226,21 @@ namespace Prototype.Business.Services
 		{
 			public string lotId;
 			public int markupPercent;
+		}
+
+		[Serializable]
+		private class RemoteSetBusinessAutoDeliveryRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteSetBusinessAutoDeliveryData data;
+		}
+
+		[Serializable]
+		private class RemoteSetBusinessAutoDeliveryData
+		{
+			public string lotId;
+			public int dailyAmount;
 		}
 
 		[Serializable]

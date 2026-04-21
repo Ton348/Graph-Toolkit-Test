@@ -70,6 +70,15 @@ namespace Prototype.Business.UI
 		[SerializeField]
 		private TMP_Text priceValueText;
 
+		[SerializeField]
+		private TMP_Text warehouseStockText;
+
+		[SerializeField]
+		private Slider warehouseSlider;
+
+		[SerializeField]
+		private TMP_Text warehouseDailyValueText;
+
 		[Header("Setup")]
 		[SerializeField]
 		private ContactSelectView storageSelectView;
@@ -103,6 +112,7 @@ namespace Prototype.Business.UI
 		private string m_pendingSupplierId;
 		private string m_pendingCashierId;
 		private string m_pendingMerchandiserId;
+		private int m_pendingAutoDeliveryPerDay;
 
 		public event Action closeClicked;
 		public event Action<string> businessChanged;
@@ -111,6 +121,8 @@ namespace Prototype.Business.UI
 
 		private void Awake()
 		{
+			TryResolveWarehouseRowBindings();
+
 			HookButton(closeButton, () => closeClicked?.Invoke());
 			HookButton(openCloseButton, () => openCloseClicked?.Invoke());
 			HookButton(overviewTabButton, () => SetTab(TabType.Overview));
@@ -124,7 +136,16 @@ namespace Prototype.Business.UI
 
 			if (priceSlider != null)
 			{
+				priceSlider.wholeNumbers = true;
+				priceSlider.minValue = 0f;
+				priceSlider.maxValue = 100f;
 				priceSlider.onValueChanged.AddListener(OnPriceChanged);
+			}
+
+			if (warehouseSlider != null)
+			{
+				warehouseSlider.wholeNumbers = true;
+				warehouseSlider.onValueChanged.AddListener(OnWarehouseDailyAmountChanged);
 			}
 
 			HookContactSelectView(storageSelectView, value => m_pendingStorageId = value);
@@ -137,6 +158,8 @@ namespace Prototype.Business.UI
 			SetTab(TabType.Overview);
 			SetBusinessOpenState(false);
 			UpdatePriceText(0);
+			UpdateWarehouseDailyAmountText(0);
+			SetWarehouseStock(0, 0);
 		}
 
 		private void OnEnable()
@@ -182,6 +205,7 @@ namespace Prototype.Business.UI
 			BusinessInstanceSnapshot business,
 			BusinessRuntimeSimulationState simulation,
 			float expensesPerDay,
+			int dailyOrderAmount,
 			IEnumerable<string> requiredModules,
 			IEnumerable<string> missingModules,
 			string lotDisplayName,
@@ -213,9 +237,23 @@ namespace Prototype.Business.UI
 			SetExpenses(expensesPerDay);
 			SetProfit(profit);
 
+			int safeStock = simulation != null
+				? Mathf.Max(0, Mathf.RoundToInt(simulation.storageStock))
+				: business != null
+					? Mathf.Max(0, business.storageStock)
+					: 0;
+			int safeCapacity = business != null ? Mathf.Max(0, business.storageCapacity) : 0;
+			SetWarehouseStock(safeStock, safeCapacity);
+
 			if (isNewSelection && business != null)
 			{
 				m_pendingPrice = business.markupPercent;
+				m_pendingAutoDeliveryPerDay = Mathf.Max(0, dailyOrderAmount);
+			}
+			else if (isNewSelection)
+			{
+				m_pendingPrice = 0;
+				m_pendingAutoDeliveryPerDay = 0;
 			}
 			if (priceSlider != null)
 			{
@@ -225,6 +263,15 @@ namespace Prototype.Business.UI
 			}
 
 			UpdatePriceText(m_pendingPrice);
+			RefreshWarehouseSliderRange(business);
+			if (warehouseSlider != null)
+			{
+				float clampedDaily = Mathf.Clamp(m_pendingAutoDeliveryPerDay, warehouseSlider.minValue, warehouseSlider.maxValue);
+				warehouseSlider.SetValueWithoutNotify(clampedDaily);
+				m_pendingAutoDeliveryPerDay = Mathf.RoundToInt(clampedDaily);
+			}
+
+			UpdateWarehouseDailyAmountText(m_pendingAutoDeliveryPerDay);
 
 			if (isNewSelection && business != null)
 			{
@@ -353,6 +400,11 @@ namespace Prototype.Business.UI
 			return m_pendingMerchandiserId;
 		}
 
+		public int GetPendingAutoDeliveryPerDay()
+		{
+			return m_pendingAutoDeliveryPerDay;
+		}
+
 		private void OnBusinessDropdownChanged(int value)
 		{
 			if (m_updatingBusinessDropdown)
@@ -365,8 +417,14 @@ namespace Prototype.Business.UI
 
 		private void OnPriceChanged(float value)
 		{
-			m_pendingPrice = Mathf.RoundToInt(value);
+			m_pendingPrice = Mathf.Clamp(Mathf.RoundToInt(value), 0, 100);
 			UpdatePriceText(m_pendingPrice);
+		}
+
+		private void OnWarehouseDailyAmountChanged(float value)
+		{
+			m_pendingAutoDeliveryPerDay = Mathf.Max(0, Mathf.RoundToInt(value));
+			UpdateWarehouseDailyAmountText(m_pendingAutoDeliveryPerDay);
 		}
 
 		private static void HookButton(Button button, Action handler)
@@ -558,6 +616,77 @@ namespace Prototype.Business.UI
 			if (priceValueText != null)
 			{
 				priceValueText.text = value.ToString();
+			}
+		}
+
+		private void UpdateWarehouseDailyAmountText(int value)
+		{
+			if (warehouseDailyValueText != null)
+			{
+				warehouseDailyValueText.text = $"{Mathf.Max(0, value)} в день";
+			}
+		}
+
+		private void SetWarehouseStock(int currentStock, int capacity)
+		{
+			if (warehouseStockText != null)
+			{
+				warehouseStockText.text = $"{Mathf.Max(0, currentStock)} / {Mathf.Max(0, capacity)}";
+			}
+		}
+
+		private void RefreshWarehouseSliderRange(BusinessInstanceSnapshot business)
+		{
+			if (warehouseSlider == null)
+			{
+				return;
+			}
+
+			int capacity = business != null ? Mathf.Max(0, business.storageCapacity) : 0;
+			warehouseSlider.wholeNumbers = true;
+			warehouseSlider.minValue = 0f;
+			warehouseSlider.maxValue = Mathf.Max(1, capacity);
+		}
+
+		private void TryResolveWarehouseRowBindings()
+		{
+			if (warehouseSlider != null && warehouseStockText != null && warehouseDailyValueText != null)
+			{
+				return;
+			}
+
+			Transform root = overviewTabRoot != null ? overviewTabRoot.transform : transform;
+			Transform row = root != null ? root.Find("WarehouseRow") : null;
+			if (row == null)
+			{
+				return;
+			}
+
+			if (warehouseSlider == null)
+			{
+				Transform sliderTransform = row.Find("PriceControls/PriceSlider");
+				if (sliderTransform != null)
+				{
+					warehouseSlider = sliderTransform.GetComponent<Slider>();
+				}
+			}
+
+			if (warehouseStockText == null)
+			{
+				Transform stockTransform = row.Find("PriceLabel");
+				if (stockTransform != null)
+				{
+					warehouseStockText = stockTransform.GetComponent<TMP_Text>();
+				}
+			}
+
+			if (warehouseDailyValueText == null)
+			{
+				Transform valueTransform = row.Find("PriceControls/PriceValueText");
+				if (valueTransform != null)
+				{
+					warehouseDailyValueText = valueTransform.GetComponent<TMP_Text>();
+				}
 			}
 		}
 

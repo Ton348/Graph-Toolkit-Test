@@ -33,6 +33,7 @@ namespace Prototype.Business.UI
 		{
 			EnsureDependencies();
 			Subscribe();
+			m_playerStateSync?.Refresh();
 			Refresh();
 			LogPanelSnapshot("OnEnable");
 		}
@@ -308,6 +309,7 @@ namespace Prototype.Business.UI
 				business,
 				simulation,
 				expensesPerDay,
+				business != null ? Mathf.Max(0, business.autoDeliveryPerDay) : 0,
 				requiredModules.Select(ResolveModuleDisplayName),
 				missingModules.Select(ResolveModuleDisplayName),
 				business != null ? ResolveLotDisplayName(business.lotId) : null,

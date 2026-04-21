@@ -246,6 +246,23 @@ function setBusinessMarkup(profile, data) {
   return ok('Set markup success.');
 }
 
+function setBusinessAutoDelivery(profile, data) {
+  const lotId = data && data.lotId;
+  const dailyAmount = data && data.dailyAmount;
+  const lotCheck = requireLotId(lotId);
+  if (lotCheck) return lotCheck;
+
+  if (!Number.isFinite(dailyAmount) || dailyAmount < 0) {
+    return fail('InvalidDailyAmount', 'dailyAmount must be >= 0.');
+  }
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) return fail('BusinessNotFound', 'Business not found.');
+
+  business.autoDeliveryPerDay = Math.floor(dailyAmount);
+  return ok('Set auto delivery success.');
+}
+
 function unlockContact(profile, data) {
   const contactId = data && data.contactId;
   if (!contactId || !String(contactId).trim()) {
@@ -548,6 +565,7 @@ module.exports = {
   openBusiness,
   closeBusiness,
   setBusinessMarkup,
+  setBusinessAutoDelivery,
   unlockContact,
   addBusinessStock,
   addBusinessShelfStock,

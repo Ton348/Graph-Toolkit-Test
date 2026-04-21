@@ -730,6 +730,14 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
+    case 'set_business_auto_delivery': {
+      console.log('[BusinessServer] action=set_business_auto_delivery');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.setBusinessAutoDelivery(profile, payload.data);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     case 'unlock_contact': {
       console.log('[BusinessServer] action=unlock_contact');
       const profile = loadPlayerProfile(payload.playerId || 'player');

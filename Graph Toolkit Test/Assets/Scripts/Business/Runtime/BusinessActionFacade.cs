@@ -80,6 +80,12 @@ namespace Prototype.Business.Runtime
 			return ExecuteAsync("SetBusinessMarkup", () => m_gameServer.TrySetBusinessMarkupAsync(lotId, markupPercent));
 		}
 
+		public Task<ServerActionResult> SetAutoDelivery(string lotId, int dailyAmount)
+		{
+			return ExecuteAsync("SetBusinessAutoDelivery",
+				() => m_gameServer.TrySetBusinessAutoDeliveryAsync(lotId, dailyAmount));
+		}
+
 		public Task<ServerActionResult> UnlockContact(string contactId)
 		{
 			return ExecuteAsync("UnlockContact", () => m_gameServer.TryUnlockContactAsync(contactId));
