@@ -14,7 +14,7 @@ function readJson(filePath) {
   return JSON.parse(raw);
 }
 
-function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors) {
+function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors, traders) {
   let errors = 0;
   let warnings = 0;
 
@@ -160,6 +160,52 @@ function validateBusinessDefinitions(businessTypes, modules, suppliers, staffRol
     });
   }
 
+  if (!traders || !Array.isArray(traders.traders)) {
+    console.error('[server][business] traders missing "traders" array');
+    errors++;
+  } else {
+    const traderIds = new Set();
+    const itemIds = new Set();
+    traders.traders.forEach((trader, traderIndex) => {
+      if (!trader || !trader.id || !String(trader.id).trim()) {
+        console.error(`[server][business] trader at index ${traderIndex} missing id`);
+        errors++;
+        return;
+      }
+
+      if (traderIds.has(trader.id)) {
+        console.error(`[server][business] duplicate trader id: ${trader.id}`);
+        errors++;
+      }
+      traderIds.add(trader.id);
+
+      if (!Array.isArray(trader.items)) {
+        console.error(`[server][business] trader ${trader.id} missing "items" array`);
+        errors++;
+        return;
+      }
+
+      trader.items.forEach((item, itemIndex) => {
+        if (!item || !item.id || !String(item.id).trim()) {
+          console.error(`[server][business] trader ${trader.id} item at index ${itemIndex} missing id`);
+          errors++;
+          return;
+        }
+
+        if (itemIds.has(item.id)) {
+          console.error(`[server][business] duplicate trader item id: ${item.id}`);
+          errors++;
+        }
+        itemIds.add(item.id);
+
+        if (Number.isFinite(item.price) && item.price < 0) {
+          console.warn(`[server][business] trader item ${item.id} price < 0`);
+          warnings++;
+        }
+      });
+    });
+  }
+
   if (errors > 0) {
     throw new Error(`[server][business] validation failed with ${errors} error(s), ${warnings} warning(s)`);
   }
@@ -207,8 +253,9 @@ function loadBusinessDefinitions() {
   const peopleData = readJson(path.join(BUSINESS_DIR, 'people.json'));
   const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
   const behaviors = readJson(path.join(BUSINESS_DIR, 'customer_behavior.json'));
+  const traders = readJson(path.join(BUSINESS_DIR, 'traders.json'));
 
-  validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors);
+  validateBusinessDefinitions(businessTypes, modules, suppliers, staffRoles, staffContacts, behaviors, traders);
 
   const businessTypeById = new Map();
   (businessTypes.businessTypes || []).forEach(item => {
@@ -242,6 +289,43 @@ function loadBusinessDefinitions() {
     }
   });
 
+  const traderById = new Map();
+  const traderItemById = new Map();
+  (traders.traders || []).forEach(trader => {
+    if (!trader || !trader.id || traderById.has(trader.id)) {
+      return;
+    }
+
+    const normalizedItems = [];
+    if (Array.isArray(trader.items)) {
+      trader.items.forEach(item => {
+        if (!item || !item.id || traderItemById.has(item.id)) {
+          return;
+        }
+
+        const normalizedItem = {
+          id: item.id,
+          category: item.category || '',
+          name: item.name || item.id,
+          description: item.description || '',
+          price: Number.isFinite(item.price) ? item.price : 0,
+          storageCapacity: Number.isFinite(item.storageCapacity) ? item.storageCapacity : 0,
+          cashCapacity: Number.isFinite(item.cashCapacity) ? item.cashCapacity : 0,
+          shelfCapacity: Number.isFinite(item.shelfCapacity) ? item.shelfCapacity : 0
+        };
+
+        normalizedItems.push(normalizedItem);
+        traderItemById.set(normalizedItem.id, normalizedItem);
+      });
+    }
+
+    traderById.set(trader.id, {
+      id: trader.id,
+      name: trader.name || trader.id,
+      items: normalizedItems
+    });
+  });
+
   return {
     businessTypes,
     modules,
@@ -249,12 +333,15 @@ function loadBusinessDefinitions() {
     staffRoles,
     staffContacts,
     behaviors,
+    traders,
     businessTypeById,
     moduleById,
     supplierById,
     staffRoleById,
     staffContactById,
-    behaviorByBusinessTypeId
+    behaviorByBusinessTypeId,
+    traderById,
+    traderItemById
   };
 }
 

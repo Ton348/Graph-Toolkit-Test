@@ -15,6 +15,15 @@ function requireLotId(lotId) {
   return null;
 }
 
+function normalizeOptionalId(value) {
+  if (!value || typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
 function createBusinessInstance(lotId, rentPerDay) {
   const instanceId = `biz_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
   return {
@@ -28,6 +37,9 @@ function createBusinessInstance(lotId, rentPerDay) {
     shelfCapacity: 0,
     storageStock: 0,
     shelfStock: 0,
+    storageItemId: null,
+    cashDeskItemId: null,
+    shelfItemId: null,
     selectedSupplierId: null,
     autoDeliveryPerDay: 0,
     markupPercent: 0,
@@ -321,6 +333,204 @@ function clearBusinessStock(profile, data) {
   return ok('Cleared business stock.');
 }
 
+function validateEquipmentItem(profile, businessDefs, itemId, requiredCategory) {
+  if (!itemId) {
+    return ok();
+  }
+
+  const ownedItems = Array.isArray(profile.items) ? profile.items : [];
+  if (!ownedItems.includes(itemId)) {
+    return fail('ItemNotOwned', `Item '${itemId}' is not owned.`);
+  }
+
+  const item = businessDefs?.traderItemById ? businessDefs.traderItemById.get(itemId) : null;
+  if (!item) {
+    return fail('ItemNotFound', `Item '${itemId}' not found.`);
+  }
+
+  if (item.category !== requiredCategory) {
+    return fail('InvalidItemCategory', `Item '${itemId}' is not category '${requiredCategory}'.`);
+  }
+
+  return ok();
+}
+
+function setBusinessEquipment(profile, data, businessDefs) {
+  const lotId = data && data.lotId;
+  const lotCheck = requireLotId(lotId);
+  if (lotCheck) return lotCheck;
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) return fail('BusinessNotFound', 'Business not found.');
+
+  const storageItemId = normalizeOptionalId(data && data.storageItemId);
+  const cashDeskItemId = normalizeOptionalId(data && data.cashDeskItemId);
+  const shelfItemId = normalizeOptionalId(data && data.shelfItemId);
+  const currentStorageItemId = normalizeOptionalId(business.storageItemId);
+  const currentCashDeskItemId = normalizeOptionalId(business.cashDeskItemId);
+  const currentShelfItemId = normalizeOptionalId(business.shelfItemId);
+  profile.items = Array.isArray(profile.items) ? profile.items : [];
+
+  let validation = validateEquipmentItem(
+    profile,
+    businessDefs,
+    storageItemId !== currentStorageItemId ? storageItemId : null,
+    'storage');
+  if (!validation.ok) return validation;
+  validation = validateEquipmentItem(
+    profile,
+    businessDefs,
+    cashDeskItemId !== currentCashDeskItemId ? cashDeskItemId : null,
+    'cashdesk');
+  if (!validation.ok) return validation;
+  validation = validateEquipmentItem(
+    profile,
+    businessDefs,
+    shelfItemId !== currentShelfItemId ? shelfItemId : null,
+    'shelf');
+  if (!validation.ok) return validation;
+
+  if (storageItemId !== currentStorageItemId) {
+    if (storageItemId) {
+      profile.items = profile.items.filter(id => id !== storageItemId);
+    }
+    if (currentStorageItemId && !profile.items.includes(currentStorageItemId)) {
+      profile.items.push(currentStorageItemId);
+    }
+  }
+
+  if (cashDeskItemId !== currentCashDeskItemId) {
+    if (cashDeskItemId) {
+      profile.items = profile.items.filter(id => id !== cashDeskItemId);
+    }
+    if (currentCashDeskItemId && !profile.items.includes(currentCashDeskItemId)) {
+      profile.items.push(currentCashDeskItemId);
+    }
+  }
+
+  if (shelfItemId !== currentShelfItemId) {
+    if (shelfItemId) {
+      profile.items = profile.items.filter(id => id !== shelfItemId);
+    }
+    if (currentShelfItemId && !profile.items.includes(currentShelfItemId)) {
+      profile.items.push(currentShelfItemId);
+    }
+  }
+
+  business.storageItemId = storageItemId;
+  business.cashDeskItemId = cashDeskItemId;
+  business.shelfItemId = shelfItemId;
+
+  const storageItem = storageItemId && businessDefs?.traderItemById
+    ? businessDefs.traderItemById.get(storageItemId)
+    : null;
+  const shelfItem = shelfItemId && businessDefs?.traderItemById
+    ? businessDefs.traderItemById.get(shelfItemId)
+    : null;
+
+  business.storageCapacity = storageItem && Number.isFinite(storageItem.storageCapacity)
+    ? storageItem.storageCapacity
+    : 0;
+  business.shelfCapacity = shelfItem && Number.isFinite(shelfItem.shelfCapacity)
+    ? shelfItem.shelfCapacity
+    : 0;
+
+  if (business.storageStock > business.storageCapacity) {
+    business.storageStock = business.storageCapacity;
+  }
+
+  if (business.shelfStock > business.shelfCapacity) {
+    business.shelfStock = business.shelfCapacity;
+  }
+
+  return ok('Set business equipment success.');
+}
+
+function buyItem(profile, data, businessDefs) {
+  const traderId = data && data.traderId;
+  const itemId = data && data.itemId;
+  const lotId = data && data.lotId;
+
+  if (!traderId || !String(traderId).trim()) {
+    return fail('TraderIdEmpty', 'traderId is required.');
+  }
+
+  if (!itemId || !String(itemId).trim()) {
+    return fail('ItemIdEmpty', 'itemId is required.');
+  }
+
+  const trader = businessDefs?.traderById ? businessDefs.traderById.get(traderId) : null;
+  if (!trader) {
+    return fail('TraderNotFound', 'Trader not found.');
+  }
+
+  const item = businessDefs?.traderItemById ? businessDefs.traderItemById.get(itemId) : null;
+  if (!item) {
+    return fail('ItemNotFound', 'Item not found.');
+  }
+
+  const soldByTrader = Array.isArray(trader.items) && trader.items.some(t => t && t.id === itemId);
+  if (!soldByTrader) {
+    return fail('ItemNotSoldByTrader', 'Item is not sold by this trader.');
+  }
+
+  profile.items = Array.isArray(profile.items) ? profile.items : [];
+  if (profile.items.includes(itemId)) {
+    return fail('ItemAlreadyOwned', 'Item already owned.');
+  }
+
+  const price = Number.isFinite(item.price) ? item.price : 0;
+  if (!Number.isFinite(profile.money) || profile.money < price) {
+    return fail('NotEnoughMoney', 'Not enough money.');
+  }
+
+  profile.money -= price;
+  profile.items.push(itemId);
+
+  if (lotId && String(lotId).trim()) {
+    const business = findBusinessByLotId(profile, lotId);
+    if (business) {
+      if (item.category === 'storage') {
+        business.storageItemId = item.id;
+        business.storageCapacity = Number.isFinite(item.storageCapacity) ? item.storageCapacity : 0;
+        if (business.storageStock > business.storageCapacity) {
+          business.storageStock = business.storageCapacity;
+        }
+      } else if (item.category === 'cashdesk') {
+        business.cashDeskItemId = item.id;
+      } else if (item.category === 'shelf') {
+        business.shelfItemId = item.id;
+        business.shelfCapacity = Number.isFinite(item.shelfCapacity) ? item.shelfCapacity : 0;
+        if (business.shelfStock > business.shelfCapacity) {
+          business.shelfStock = business.shelfCapacity;
+        }
+      }
+    }
+  }
+
+  return ok('Buy item success.');
+}
+
+function getTraderItems(data, businessDefs) {
+  const traderId = data && data.traderId;
+  if (!traderId || !String(traderId).trim()) {
+    return fail('TraderIdEmpty', 'traderId is required.');
+  }
+
+  const trader = businessDefs?.traderById ? businessDefs.traderById.get(traderId) : null;
+  if (!trader) {
+    return fail('TraderNotFound', 'Trader not found.');
+  }
+
+  return {
+    ok: true,
+    message: 'Get trader items success.',
+    traderId: trader.id,
+    traderName: trader.name,
+    items: Array.isArray(trader.items) ? trader.items : []
+  };
+}
+
 function resetBusinesses(profile) {
   profile.businesses = [];
   return ok('Businesses reset.');
@@ -331,6 +541,9 @@ module.exports = {
   assignBusinessType,
   installBusinessModule,
   assignSupplier,
+  setBusinessEquipment,
+  buyItem,
+  getTraderItems,
   hireBusinessWorker,
   openBusiness,
   closeBusiness,

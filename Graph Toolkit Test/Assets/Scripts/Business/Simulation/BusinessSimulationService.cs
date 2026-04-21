@@ -8,13 +8,13 @@ namespace Prototype.Business.Simulation
 {
 	public class BusinessSimulationService
 	{
-		private const float s_secondsPerDay = 86400f;
 		private readonly Dictionary<string, BusinessRuntimeSimulationState> m_statesByLotId = new();
-
+		private readonly BusinessDefinitionsRepository m_definitions;
 		private readonly BusinessStateSyncService m_stateSync;
 
 		public BusinessSimulationService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
 		{
+			m_definitions = definitions;
 			m_stateSync = stateSync;
 			if (m_stateSync != null)
 			{
@@ -56,18 +56,15 @@ namespace Prototype.Business.Simulation
 
 			foreach (BusinessRuntimeSimulationState state in m_statesByLotId.Values)
 			{
-				if (state == null || string.IsNullOrWhiteSpace(state.lotId) ||
-				    string.IsNullOrWhiteSpace(state.businessTypeId))
+				if (state is not BusinessSimulationState simulationState ||
+				    string.IsNullOrWhiteSpace(simulationState.lotId) ||
+				    string.IsNullOrWhiteSpace(simulationState.businessTypeId))
 				{
 					continue;
 				}
 
-				var tickIncome = 0f;
-				float tickExpenses = state.rentPerDay > 0 ? state.rentPerDay / s_secondsPerDay * scaledDelta : 0f;
-
-				state.accumulatedIncome += tickIncome;
-				state.accumulatedExpenses += tickExpenses;
-				state.profit = state.accumulatedIncome - state.accumulatedExpenses;
+				BusinessSimulationCalculator.SimulateTick(simulationState, m_definitions, scaledDelta);
+				simulationState.profit = simulationState.accumulatedIncome - simulationState.accumulatedExpenses;
 			}
 
 			simulationUpdated?.Invoke();
@@ -171,20 +168,33 @@ namespace Prototype.Business.Simulation
 
 				if (!m_statesByLotId.TryGetValue(business.lotId, out BusinessRuntimeSimulationState state))
 				{
-					state = new BusinessRuntimeSimulationState
+					state = new BusinessSimulationState
 					{
 						lotId = business.lotId
 					};
 					m_statesByLotId[business.lotId] = state;
 				}
 
-				state.businessTypeId = business.businessTypeId;
-				state.rentPerDay = business.rentPerDay;
-				state.storageCapacity = business.storageCapacity;
-				state.shelfCapacity = business.shelfCapacity;
-				state.storageStock = business.storageStock;
-				state.shelfStock = business.shelfStock;
-				state.profit = state.accumulatedIncome - state.accumulatedExpenses;
+				if (state is BusinessSimulationState typedState)
+				{
+					typedState.instanceId = business.instanceId;
+					typedState.businessTypeId = business.businessTypeId;
+					typedState.rentPerDay = business.rentPerDay;
+					typedState.storageCapacity = business.storageCapacity;
+					typedState.shelfCapacity = business.shelfCapacity;
+					typedState.storageStock = business.storageStock;
+					typedState.shelfStock = business.shelfStock;
+					typedState.selectedSupplierId = business.selectedSupplierId;
+					typedState.autoDeliveryPerDay = business.autoDeliveryPerDay;
+					typedState.markupPercent = business.markupPercent;
+					typedState.hiredCashierContactId = business.hiredCashierContactId;
+					typedState.hiredMerchContactId = business.hiredMerchContactId;
+					typedState.isOpen = business.isOpen;
+					typedState.installedModules = business.installedModules != null
+						? new List<string>(business.installedModules)
+						: new List<string>();
+					typedState.profit = typedState.accumulatedIncome - typedState.accumulatedExpenses;
+				}
 			}
 
 			var toRemove = new List<string>();

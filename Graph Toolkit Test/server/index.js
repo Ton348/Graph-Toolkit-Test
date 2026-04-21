@@ -189,7 +189,8 @@ function loadPlayerProfile(playerId) {
       graphCheckpoints: {},
       constructedSites: [],
       businesses: [],
-      knownContacts: []
+      knownContacts: [],
+      items: []
     };
     normalizeBusinessProfile(profile);
     sanitizeBusinessProfile(profile, businessDefs);
@@ -206,6 +207,7 @@ function loadPlayerProfile(playerId) {
   if (!profile.constructedSites) profile.constructedSites = [];
   if (!profile.businesses) profile.businesses = [];
   if (!profile.knownContacts) profile.knownContacts = [];
+  if (!profile.items) profile.items = [];
   if (!Number.isFinite(profile.bargaining)) profile.bargaining = defs.economy?.baseBargaining ?? 0;
   if (!Number.isFinite(profile.speech)) profile.speech = defs.economy?.baseSpeech ?? 0;
   if (!Number.isFinite(profile.trading)) profile.trading = defs.economy?.baseTrading ?? 0;
@@ -256,7 +258,8 @@ function toResponseProfile(profile) {
     graphCheckpoints: toGraphCheckpointList(profile),
     constructedSites: profile.constructedSites || [],
     businesses: profile.businesses || [],
-    knownContacts: profile.knownContacts || []
+    knownContacts: profile.knownContacts || [],
+    items: profile.items || []
   };
 }
 
@@ -656,6 +659,14 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
+    case 'set_business_equipment': {
+      console.log('[BusinessServer] action=set_business_equipment');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.setBusinessEquipment(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     case 'hire_business_worker': {
       console.log('[BusinessServer] action=hire_business_worker');
       const profile = loadPlayerProfile(payload.playerId || 'player');
@@ -663,6 +674,37 @@ function handleAction(req, res, payload) {
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);
+    }
+    case 'buy_item': {
+      console.log('[BusinessServer] action=buy_item');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.buyItem(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'get_trader_items': {
+      console.log('[BusinessServer] action=get_trader_items');
+      const result = businessActions.getTraderItems(payload.data, businessDefs);
+      if (!result.ok) {
+        return respondJson(res, 200, {
+          success: false,
+          errorCode: result.errorCode,
+          message: result.message || '',
+          traderId: null,
+          traderName: null,
+          items: []
+        });
+      }
+
+      return respondJson(res, 200, {
+        success: true,
+        errorCode: null,
+        message: result.message || '',
+        traderId: result.traderId,
+        traderName: result.traderName,
+        items: result.items
+      });
     }
     case 'open_business': {
       console.log('[BusinessServer] action=open_business');

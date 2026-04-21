@@ -25,6 +25,7 @@ namespace Prototype.Business.UI
 		private BusinessRuntimeService m_runtimeService;
 		private BusinessSimulationService m_simulationService;
 		private BusinessStateSyncService m_stateSync;
+		private PlayerStateSync m_playerStateSync;
 		private string m_selectedLotId;
 		private ProfileSyncService m_profileSync;
 
@@ -57,6 +58,7 @@ namespace Prototype.Business.UI
 				m_runtimeService = bootstrap.BusinessRuntimeService;
 				m_actionFacade = bootstrap.BusinessActionFacade;
 				m_stateSync = bootstrap.BusinessStateSyncService;
+				m_playerStateSync = bootstrap.PlayerStateSync;
 				m_definitions = bootstrap.BusinessDefinitionsRepository;
 				m_gameData = bootstrap.GameDataRepository;
 				m_simulationService = bootstrap.BusinessSimulationService;
@@ -65,6 +67,7 @@ namespace Prototype.Business.UI
 			else
 			{
 				m_profileSync = null;
+				m_playerStateSync = null;
 			}
 
 			if (m_managementController == null)
@@ -299,10 +302,12 @@ namespace Prototype.Business.UI
 				m_simulationService != null && !string.IsNullOrWhiteSpace(m_selectedLotId)
 					? m_simulationService.GetStateByLotId(m_selectedLotId)
 					: null;
+			float expensesPerDay = CalculateExpensesPerDay(business);
 
 			detailsView.SetBusiness(
 				business,
 				simulation,
+				expensesPerDay,
 				requiredModules.Select(ResolveModuleDisplayName),
 				missingModules.Select(ResolveModuleDisplayName),
 				business != null ? ResolveLotDisplayName(business.lotId) : null,
@@ -364,10 +369,16 @@ namespace Prototype.Business.UI
 			string selectedLot = !string.IsNullOrWhiteSpace(lotId) ? lotId : detailsView.GetSelectedBusinessId();
 			detailsView.SetBusinessOptions(BuildBusinessOptions(), selectedLot);
 
-			List<BusinessDetailsView.IdOption> moduleOptions = BuildModuleOptions(business).ToList();
-			detailsView.SetStorageOptions(moduleOptions, detailsView.GetPendingStorageId());
-			detailsView.SetCashDeskOptions(moduleOptions, detailsView.GetPendingCashDeskId());
-			detailsView.SetShelfOptions(moduleOptions, detailsView.GetPendingShelfId());
+			List<BusinessDetailsView.IdOption> storageOptions = BuildEquipmentOptions(business, "storage").ToList();
+			List<BusinessDetailsView.IdOption> cashDeskOptions = BuildEquipmentOptions(business, "cashdesk").ToList();
+			List<BusinessDetailsView.IdOption> shelfOptions = BuildEquipmentOptions(business, "shelf").ToList();
+
+			detailsView.SetStorageOptions(storageOptions,
+				ResolveSelectedOptionId(storageOptions, detailsView.GetPendingStorageId(), business != null ? business.storageItemId : null));
+			detailsView.SetCashDeskOptions(cashDeskOptions,
+				ResolveSelectedOptionId(cashDeskOptions, detailsView.GetPendingCashDeskId(), business != null ? business.cashDeskItemId : null));
+			detailsView.SetShelfOptions(shelfOptions,
+				ResolveSelectedOptionId(shelfOptions, detailsView.GetPendingShelfId(), business != null ? business.shelfItemId : null));
 
 			detailsView.SetSupplierOptions(BuildSupplierContactOptions(business), detailsView.GetPendingSupplierId());
 			detailsView.SetCashierOptions(BuildCashierContactOptions(), detailsView.GetPendingCashierId());
@@ -399,33 +410,150 @@ namespace Prototype.Business.UI
 			return options;
 		}
 
-		private IEnumerable<BusinessDetailsView.IdOption> BuildModuleOptions(BusinessInstanceSnapshot business)
+		private IEnumerable<BusinessDetailsView.IdOption> BuildEquipmentOptions(
+			BusinessInstanceSnapshot business,
+			string category)
 		{
 			var options = new List<BusinessDetailsView.IdOption>();
-			if (m_definitions == null)
+			if (m_definitions == null || m_playerStateSync == null || string.IsNullOrWhiteSpace(category))
 			{
 				return options;
 			}
 
-			HashSet<string> installed = business != null && business.installedModules != null
-				? new HashSet<string>(business.installedModules)
-				: new HashSet<string>();
-
-			foreach (BusinessModuleDefinitionData module in m_definitions.GetAllModules())
+			var blockedItems = new HashSet<string>();
+			if (m_runtimeService != null)
 			{
-				if (module == null || string.IsNullOrWhiteSpace(module.id) || installed.Contains(module.id))
+				foreach (BusinessInstanceSnapshot other in m_runtimeService.GetBusinesses())
+				{
+					if (other == null || business != null && other.instanceId == business.instanceId)
+					{
+						continue;
+					}
+
+					AddIfNotEmpty(blockedItems, other.storageItemId);
+					AddIfNotEmpty(blockedItems, other.cashDeskItemId);
+					AddIfNotEmpty(blockedItems, other.shelfItemId);
+				}
+			}
+
+			string equippedItemId = GetEquippedItemId(business, category);
+			if (!string.IsNullOrWhiteSpace(equippedItemId))
+			{
+				TraderItemDefinitionData equippedItem = m_definitions.GetTraderItem(equippedItemId);
+				if (equippedItem != null && string.Equals(equippedItem.category, category, System.StringComparison.OrdinalIgnoreCase))
+				{
+					options.Add(new BusinessDetailsView.IdOption
+					{
+						id = equippedItem.id,
+						displayName = !string.IsNullOrWhiteSpace(equippedItem.name) ? equippedItem.name : equippedItem.id
+					});
+				}
+			}
+
+			foreach (string itemId in m_playerStateSync.Items)
+			{
+				if (string.IsNullOrWhiteSpace(itemId) || blockedItems.Contains(itemId))
+				{
+					continue;
+				}
+
+				TraderItemDefinitionData item = m_definitions.GetTraderItem(itemId);
+				if (item == null || !string.Equals(item.category, category, System.StringComparison.OrdinalIgnoreCase))
 				{
 					continue;
 				}
 
 				options.Add(new BusinessDetailsView.IdOption
 				{
-					id = module.id,
-					displayName = !string.IsNullOrWhiteSpace(module.displayName) ? module.displayName : module.id
+					id = item.id,
+					displayName = !string.IsNullOrWhiteSpace(item.name) ? item.name : item.id
 				});
 			}
 
 			return options;
+		}
+
+		private static string ResolveSelectedOptionId(
+			IReadOnlyList<BusinessDetailsView.IdOption> options,
+			string pendingId,
+			string currentId)
+		{
+			string normalizedPending = NormalizeId(pendingId);
+			string normalizedCurrent = NormalizeId(currentId);
+
+			if (normalizedPending != normalizedCurrent)
+			{
+				if (!string.IsNullOrWhiteSpace(normalizedPending) && ContainsOption(options, normalizedPending))
+				{
+					return normalizedPending;
+				}
+
+				return null;
+			}
+
+			if (!string.IsNullOrWhiteSpace(normalizedPending) && ContainsOption(options, normalizedPending))
+			{
+				return normalizedPending;
+			}
+
+			return ContainsOption(options, normalizedCurrent) ? normalizedCurrent : null;
+		}
+
+		private static bool ContainsOption(IReadOnlyList<BusinessDetailsView.IdOption> options, string id)
+		{
+			if (options == null || string.IsNullOrWhiteSpace(id))
+			{
+				return false;
+			}
+
+			for (int i = 0; i < options.Count; i++)
+			{
+				BusinessDetailsView.IdOption option = options[i];
+				if (option != null && NormalizeId(option.id) == id)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		private static string NormalizeId(string value)
+		{
+			return string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+		}
+
+		private static string GetEquippedItemId(BusinessInstanceSnapshot business, string category)
+		{
+			if (business == null || string.IsNullOrWhiteSpace(category))
+			{
+				return null;
+			}
+
+			if (string.Equals(category, "storage", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return business.storageItemId;
+			}
+
+			if (string.Equals(category, "cashdesk", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return business.cashDeskItemId;
+			}
+
+			if (string.Equals(category, "shelf", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return business.shelfItemId;
+			}
+
+			return null;
+		}
+
+		private static void AddIfNotEmpty(HashSet<string> set, string value)
+		{
+			if (!string.IsNullOrWhiteSpace(value))
+			{
+				set.Add(value.Trim());
+			}
 		}
 
 		private IEnumerable<BusinessDetailsView.IdOption> BuildSupplierOptions(BusinessInstanceSnapshot business)
@@ -602,6 +730,39 @@ namespace Prototype.Business.UI
 			}
 
 			return contactId;
+		}
+
+		private float CalculateExpensesPerDay(BusinessInstanceSnapshot business)
+		{
+			if (business == null)
+			{
+				return 0f;
+			}
+
+			float expenses = Mathf.Max(0, business.rentPerDay);
+
+			if (m_definitions != null)
+			{
+				StaffContactDefinitionData cashier = m_definitions.GetStaffContact(business.hiredCashierContactId);
+				if (cashier != null)
+				{
+					expenses += Mathf.Max(0, cashier.salaryPerDay);
+				}
+
+				StaffContactDefinitionData merch = m_definitions.GetStaffContact(business.hiredMerchContactId);
+				if (merch != null)
+				{
+					expenses += Mathf.Max(0, merch.salaryPerDay);
+				}
+
+				SupplierDefinitionData supplier = m_definitions.GetSupplier(business.selectedSupplierId);
+				if (supplier != null && business.autoDeliveryPerDay > 0)
+				{
+					expenses += Mathf.Max(0, business.autoDeliveryPerDay) * Mathf.Max(0f, supplier.unitBuyPrice);
+				}
+			}
+
+			return expenses;
 		}
 	}
 }

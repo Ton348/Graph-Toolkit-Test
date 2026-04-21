@@ -13,6 +13,9 @@ function normalizeBusinessInstance(business) {
     selectedSupplierId: typeof business?.selectedSupplierId === 'string' ? business.selectedSupplierId : null,
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
+    storageItemId: typeof business?.storageItemId === 'string' ? business.storageItemId : null,
+    cashDeskItemId: typeof business?.cashDeskItemId === 'string' ? business.cashDeskItemId : null,
+    shelfItemId: typeof business?.shelfItemId === 'string' ? business.shelfItemId : null,
     hiredCashierContactId: typeof business?.hiredCashierContactId === 'string' ? business.hiredCashierContactId : null,
     hiredMerchContactId: typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null,
     hiredLogistContactId: typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null

@@ -150,30 +150,21 @@ namespace Prototype.Business.UI
 			}
 
 			business = m_runtimeService.GetBusinessView(lotId);
-			HashSet<string> installed = business != null && business.installedModules != null
-				? new HashSet<string>(business.installedModules)
-				: new HashSet<string>();
-
-			var modules = new[]
+			string storageItemId = NormalizeId(m_view.GetPendingStorageId());
+			string cashDeskItemId = NormalizeId(m_view.GetPendingCashDeskId());
+			string shelfItemId = NormalizeId(m_view.GetPendingShelfId());
+			bool equipmentChanged = business == null ||
+			                        NormalizeId(business.storageItemId) != storageItemId ||
+			                        NormalizeId(business.cashDeskItemId) != cashDeskItemId ||
+			                        NormalizeId(business.shelfItemId) != shelfItemId;
+			if (equipmentChanged)
 			{
-				new { Id = NormalizeId(m_view.GetPendingStorageId()), Step = "Установка склада" },
-				new { Id = NormalizeId(m_view.GetPendingCashDeskId()), Step = "Установка касс" },
-				new { Id = NormalizeId(m_view.GetPendingShelfId()), Step = "Установка полок" }
-			};
-
-			foreach (var module in modules)
-			{
-				if (string.IsNullOrWhiteSpace(module.Id) || installed.Contains(module.Id))
-				{
-					continue;
-				}
-
-				if (!await RunActionCheckedAsync(m_actionFacade.InstallModule(lotId, module.Id), module.Step))
+				if (!await RunActionCheckedAsync(
+					    m_actionFacade.SetBusinessEquipment(lotId, storageItemId, cashDeskItemId, shelfItemId),
+					    "Установка оборудования"))
 				{
 					return false;
 				}
-
-				installed.Add(module.Id);
 			}
 
 			business = m_runtimeService.GetBusinessView(lotId);
@@ -244,6 +235,28 @@ namespace Prototype.Business.UI
 				{
 					return false;
 				}
+			}
+
+			business = m_runtimeService.GetBusinessView(lotId);
+			HashSet<string> installed = business != null && business.installedModules != null
+				? new HashSet<string>(business.installedModules)
+				: new HashSet<string>();
+			IEnumerable<string> missingModules = m_runtimeService != null
+				? m_runtimeService.GetMissingRequiredModules(business)
+				: Enumerable.Empty<string>();
+			foreach (string moduleId in missingModules)
+			{
+				if (string.IsNullOrWhiteSpace(moduleId) || installed.Contains(moduleId))
+				{
+					continue;
+				}
+
+				if (!await RunActionCheckedAsync(m_actionFacade.InstallModule(lotId, moduleId), "Установка модуля"))
+				{
+					return false;
+				}
+
+				installed.Add(moduleId);
 			}
 
 			return true;

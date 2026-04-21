@@ -181,6 +181,7 @@ namespace Prototype.Business.UI
 		public void SetBusiness(
 			BusinessInstanceSnapshot business,
 			BusinessRuntimeSimulationState simulation,
+			float expensesPerDay,
 			IEnumerable<string> requiredModules,
 			IEnumerable<string> missingModules,
 			string lotDisplayName,
@@ -207,14 +208,9 @@ namespace Prototype.Business.UI
 			}
 
 			float income = simulation != null ? simulation.accumulatedIncome : 0f;
-			float expenses = simulation != null ? simulation.accumulatedExpenses : 0f;
-			if (business != null && expenses <= 0f && business.rentPerDay > 0)
-			{
-				expenses = business.rentPerDay;
-			}
-			float profit = income - expenses;
+			float profit = income - expensesPerDay;
 			SetIncome(income);
-			SetExpenses(expenses);
+			SetExpenses(expensesPerDay);
 			SetProfit(profit);
 
 			if (isNewSelection && business != null)
@@ -232,6 +228,9 @@ namespace Prototype.Business.UI
 
 			if (isNewSelection && business != null)
 			{
+				m_pendingStorageId = NormalizeId(business.storageItemId);
+				m_pendingCashDeskId = NormalizeId(business.cashDeskItemId);
+				m_pendingShelfId = NormalizeId(business.shelfItemId);
 				m_pendingSupplierId = NormalizeId(business.selectedSupplierId);
 				m_pendingCashierId = NormalizeId(business.hiredCashierContactId);
 				m_pendingMerchandiserId = NormalizeId(business.hiredMerchContactId);

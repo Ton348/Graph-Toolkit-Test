@@ -50,7 +50,7 @@ namespace Prototype.Business.Runtime.GraphExecutors.Business
 			var ui = Object.FindAnyObjectByType<TradeOfferUiservice>(FindObjectsInactive.Include);
 			if (ui == null)
 			{
-				return Mathf.Max(1, fallbackOffer);
+				return await ResolveOfferAmountViaLegacyUiAsync(buildingLabel, fallbackOffer, cancellationToken);
 			}
 
 			var tcs = new UniTaskCompletionSource<int>();
@@ -85,6 +85,83 @@ namespace Prototype.Business.Runtime.GraphExecutors.Business
 				{
 					ui.Hide();
 					return Mathf.Max(1, fallbackOffer);
+				}
+			}
+		}
+
+		private static async UniTask<int> ResolveOfferAmountViaLegacyUiAsync(
+			string buildingLabel,
+			int fallbackOffer,
+			CancellationToken cancellationToken)
+		{
+			MonoBehaviour[] allBehaviours = Object.FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include,
+				FindObjectsSortMode.None);
+			MonoBehaviour legacyUi = null;
+			for (int i = 0; i < allBehaviours.Length; i++)
+			{
+				MonoBehaviour behaviour = allBehaviours[i];
+				if (behaviour != null && behaviour.GetType().Name == "TradeOfferUIService")
+				{
+					legacyUi = behaviour;
+					break;
+				}
+			}
+
+			if (legacyUi == null)
+			{
+				return Mathf.Max(1, fallbackOffer);
+			}
+
+			System.Reflection.MethodInfo showOffer = legacyUi.GetType()
+				.GetMethod("ShowOffer", new[] { typeof(string), typeof(int), typeof(System.Action<int>) });
+			System.Reflection.MethodInfo hide = legacyUi.GetType().GetMethod("Hide", System.Type.EmptyTypes);
+			if (showOffer == null)
+			{
+				return Mathf.Max(1, fallbackOffer);
+			}
+
+			var tcs = new UniTaskCompletionSource<int>();
+			var completed = false;
+			var minOffer = Mathf.Max(1, fallbackOffer);
+			System.Action<int> callback = amount =>
+			{
+				if (completed)
+				{
+					return;
+				}
+
+				completed = true;
+				tcs.TrySetResult(Mathf.Max(1, amount));
+			};
+
+			try
+			{
+				showOffer.Invoke(legacyUi, new object[] { buildingLabel, minOffer, callback });
+			}
+			catch
+			{
+				return minOffer;
+			}
+
+			using (cancellationToken.Register(() =>
+			       {
+				       if (completed)
+				       {
+					       return;
+				       }
+
+				       completed = true;
+				       tcs.TrySetCanceled();
+			       }))
+			{
+				try
+				{
+					return await tcs.Task;
+				}
+				catch
+				{
+					hide?.Invoke(legacyUi, null);
+					return minOffer;
 				}
 			}
 		}
