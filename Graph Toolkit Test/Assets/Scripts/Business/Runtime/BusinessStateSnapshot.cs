@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-
 namespace Prototype.Business.Runtime
 {
 	[Serializable]
@@ -11,7 +9,6 @@ namespace Prototype.Business.Runtime
 		public string businessTypeId;
 		public bool isOpen;
 		public int rentPerDay;
-		public List<string> installedModules = new();
 		public int storageCapacity;
 		public int shelfCapacity;
 		public int storageStock;

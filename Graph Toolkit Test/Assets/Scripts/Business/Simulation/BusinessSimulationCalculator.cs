@@ -26,6 +26,9 @@ namespace Prototype.Business.Simulation
 			StaffContactDefinitionData cashierContact = definitions.GetStaffContact(state.hiredCashierContactId);
 			StaffContactDefinitionData merchContact = definitions.GetStaffContact(state.hiredMerchContactId);
 			SupplierDefinitionData supplier = definitions.GetSupplier(state.selectedSupplierId);
+			bool hasStorageItem = !string.IsNullOrWhiteSpace(state.storageItemId);
+			bool hasCashDeskItem = !string.IsNullOrWhiteSpace(state.cashDeskItemId);
+			bool hasShelfItem = !string.IsNullOrWhiteSpace(state.shelfItemId);
 
 			var tickIncome = 0f;
 			var tickExpenses = 0f;
@@ -45,22 +48,22 @@ namespace Prototype.Business.Simulation
 				tickExpenses += merchContact.salaryPerDay / s_secondsPerDay * deltaSeconds;
 			}
 
-			if (supplier != null && state.autoDeliveryPerDay > 0 && state.storageCapacity > 0)
+			if (hasStorageItem && supplier != null && state.autoDeliveryPerDay > 0)
 			{
 				float deliveryRatePerSecond = state.autoDeliveryPerDay / s_secondsPerDay;
 				float desired = deliveryRatePerSecond * deltaSeconds;
 				float storageSpace = Mathf.Max(0f, state.storageCapacity - state.storageStock);
 				float delivered = Mathf.Min(desired, storageSpace);
+				tickExpenses += desired * supplier.unitBuyPrice;
 				if (delivered > 0f)
 				{
 					state.storageStock += delivered;
 					state.lastDelivered = delivered;
-					tickExpenses += delivered * supplier.unitBuyPrice;
 				}
 			}
 
-			if (state.HasModule(s_moduleStorage)
-			    && state.HasModule(s_moduleShelves)
+			if (hasStorageItem
+			    && hasShelfItem
 			    && !string.IsNullOrWhiteSpace(state.hiredMerchContactId)
 			    && merchContact != null)
 			{
@@ -77,9 +80,10 @@ namespace Prototype.Business.Simulation
 			}
 
 			if (state.isOpen
-			    && state.HasModule(s_moduleCashRegister)
-			    && state.HasModule(s_moduleShelves)
+			    && hasCashDeskItem
+			    && hasShelfItem
 			    && !string.IsNullOrWhiteSpace(state.hiredCashierContactId)
+			    && !string.IsNullOrWhiteSpace(state.hiredMerchContactId)
 			    && cashierContact != null
 			    && state.shelfStock > 0f)
 			{

@@ -70,32 +70,6 @@ namespace Prototype.Business.Data
 						ok = false;
 					}
 
-					if (type.requiredModules == null || type.requiredModules.Count == 0)
-					{
-						Debug.LogError($"[BusinessDefinitions] business type {type.id} has empty requiredModules.");
-						ok = false;
-					}
-					else
-					{
-						foreach (string moduleId in type.requiredModules)
-						{
-							if (string.IsNullOrWhiteSpace(moduleId))
-							{
-								Debug.LogError(
-									$"[BusinessDefinitions] business type {type.id} has empty module reference.");
-								ok = false;
-								continue;
-							}
-
-							if (!moduleIds.Contains(moduleId))
-							{
-								Debug.LogError(
-									$"[BusinessDefinitions] business type {type.id} references missing module: {moduleId}");
-								ok = false;
-							}
-						}
-					}
-
 					if (type.defaultShelfCapacity < 0 || type.defaultStorageCapacity < 0)
 					{
 						Debug.LogError($"[BusinessDefinitions] business type {type.id} has negative capacity values.");

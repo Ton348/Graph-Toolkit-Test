@@ -130,12 +130,6 @@ namespace Prototype.Business.Runtime
 			return business != null && business.isOpen;
 		}
 
-		public bool HasModule(string lotId, string moduleId)
-		{
-			BusinessInstanceSnapshot business = GetBusinessByLotId(lotId);
-			return business != null && business.installedModules != null && business.installedModules.Contains(moduleId);
-		}
-
 		public IEnumerable<BusinessInstanceSnapshot> GetAllBusinesses()
 		{
 			return m_businessesByInstanceId.Values;
@@ -153,11 +147,6 @@ namespace Prototype.Business.Runtime
 
 		private void NormalizeBusiness(BusinessInstanceSnapshot business, HashSet<string> contacts)
 		{
-			if (business.installedModules == null)
-			{
-				business.installedModules = new List<string>();
-			}
-
 			if (business.markupPercent < 0 || business.markupPercent > 100)
 			{
 				BusinessDebugLog.Warn(
@@ -199,24 +188,6 @@ namespace Prototype.Business.Runtime
 			{
 				BusinessDebugLog.Warn($"[Business] shelfStock exceeds capacity for lotId='{business.lotId}'. Clamped.");
 				business.shelfStock = business.shelfCapacity;
-			}
-
-			var moduleSet = new HashSet<string>();
-			for (int i = business.installedModules.Count - 1; i >= 0; i--)
-			{
-				string moduleId = business.installedModules[i];
-				if (string.IsNullOrWhiteSpace(moduleId) || !moduleSet.Add(moduleId))
-				{
-					business.installedModules.RemoveAt(i);
-					continue;
-				}
-
-				if (m_definitions != null && !m_definitions.HasModule(moduleId))
-				{
-					BusinessDebugLog.Warn(
-						$"[Business] Unknown moduleId '{moduleId}' on lotId='{business.lotId}'. Removed.");
-					business.installedModules.RemoveAt(i);
-				}
 			}
 
 			if (!string.IsNullOrWhiteSpace(business.selectedSupplierId))
@@ -279,16 +250,15 @@ namespace Prototype.Business.Runtime
 				}
 				else if (m_definitions != null)
 				{
-					IReadOnlyList<string> required = m_definitions.GetRequiredModules(business.businessTypeId);
-					foreach (string moduleId in required)
+					bool hasRequiredEquipment =
+						!string.IsNullOrWhiteSpace(business.storageItemId) &&
+						!string.IsNullOrWhiteSpace(business.cashDeskItemId) &&
+						!string.IsNullOrWhiteSpace(business.shelfItemId);
+					if (!hasRequiredEquipment)
 					{
-						if (!business.installedModules.Contains(moduleId))
-						{
-							BusinessDebugLog.Warn(
-								$"[Business] Open business missing module '{moduleId}' on lotId='{business.lotId}'. Closing.");
-							business.isOpen = false;
-							break;
-						}
+						BusinessDebugLog.Warn(
+							$"[Business] Open business missing required equipment on lotId='{business.lotId}'. Closing.");
+						business.isOpen = false;
 					}
 				}
 			}

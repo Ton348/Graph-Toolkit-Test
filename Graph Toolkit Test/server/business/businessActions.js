@@ -32,7 +32,6 @@ function createBusinessInstance(lotId, rentPerDay) {
     businessTypeId: null,
     isOpen: false,
     rentPerDay: Number.isFinite(rentPerDay) && rentPerDay >= 0 ? rentPerDay : 0,
-    installedModules: [],
     storageCapacity: 0,
     shelfCapacity: 0,
     storageStock: 0,
@@ -114,18 +113,8 @@ function installBusinessModule(profile, data, businessDefs) {
   const moduleDef = businessDefs && businessDefs.moduleById && businessDefs.moduleById.get(moduleId);
   if (!moduleDef) return fail('ModuleNotFound', 'Module not found.');
 
-  if (Array.isArray(business.installedModules) && business.installedModules.includes(moduleId)) {
-    return fail('ModuleAlreadyInstalled', 'Module already installed.');
-  }
-
   const cost = Number.isFinite(moduleDef.installCost) ? moduleDef.installCost : 0;
-  if (profile.money < cost) {
-    return fail('NotEnoughMoney', 'Not enough money.');
-  }
-
-  profile.money -= cost;
-  business.installedModules = Array.isArray(business.installedModules) ? business.installedModules : [];
-  business.installedModules.push(moduleId);
+  business.totalProfit = (Number.isFinite(business.totalProfit) ? business.totalProfit : 0) - cost;
   return ok('Install module success.');
 }
 
@@ -139,6 +128,7 @@ function assignSupplier(profile, data, businessDefs) {
   if (!business) return fail('BusinessNotFound', 'Business not found.');
   if (!supplierId) {
     business.selectedSupplierId = null;
+    business.autoDeliveryPerDay = 0;
     return ok('Clear supplier success.');
   }
 
@@ -177,6 +167,7 @@ function hireBusinessWorker(profile, data, businessDefs) {
     if (roleId === 'logist') {
       business.hiredLogistContactId = null;
       business.selectedSupplierId = null;
+      business.autoDeliveryPerDay = 0;
       return ok('Clear logist success.');
     }
 
@@ -213,11 +204,12 @@ function openBusiness(profile, data, businessDefs) {
   const typeDef = businessDefs && businessDefs.businessTypeById && businessDefs.businessTypeById.get(business.businessTypeId);
   if (!typeDef) return fail('BusinessTypeNotFound', 'Business type not found.');
 
-  const required = Array.isArray(typeDef.requiredModules) ? typeDef.requiredModules : [];
-  const installed = Array.isArray(business.installedModules) ? business.installedModules : [];
-  const missing = required.filter(id => !installed.includes(id));
-  if (missing.length > 0) {
-    return fail('MissingRequiredModules', `Missing required modules: ${missing.join(', ')}`);
+  const hasRequiredEquipment =
+    !!(business.storageItemId && String(business.storageItemId).trim()) &&
+    !!(business.cashDeskItemId && String(business.cashDeskItemId).trim()) &&
+    !!(business.shelfItemId && String(business.shelfItemId).trim());
+  if (!hasRequiredEquipment) {
+    return fail('MissingRequiredEquipment', 'Missing required equipment.');
   }
 
   business.isOpen = true;
@@ -318,14 +310,19 @@ function simulateBusinessDay(profile, data, businessDefs) {
   const cashierSalary = cashier && Number.isFinite(cashier.salaryPerDay) ? Math.max(0, cashier.salaryPerDay) : 0;
   const merchSalary = merch && Number.isFinite(merch.salaryPerDay) ? Math.max(0, merch.salaryPerDay) : 0;
   const logistSalary = logist && Number.isFinite(logist.salaryPerDay) ? Math.max(0, logist.salaryPerDay) : 0;
+  const hasStorageItem = !!(business.storageItemId && String(business.storageItemId).trim());
+  const hasCashDeskItem = !!(business.cashDeskItemId && String(business.cashDeskItemId).trim());
+  const hasShelfItem = !!(business.shelfItemId && String(business.shelfItemId).trim());
+  const canDeliver = hasStorageItem && supplier && dailyOrderAmount > 0;
+  const canSell = business.isOpen && hasCashDeskItem && hasShelfItem && cashier && merch;
 
   const storageFreeSpace = Math.max(0, storageCapacity - stock);
-  const delivered = Math.min(dailyOrderAmount, storageFreeSpace);
+  const delivered = canDeliver ? Math.min(dailyOrderAmount, storageFreeSpace) : 0;
   const stockAfterDelivery = stock + delivered;
   const dailyDemand = resolveDailyDemand(demandRanges, currentPrice);
-  const sold = Math.min(dailyDemand, stockAfterDelivery);
+  const sold = canSell ? Math.min(dailyDemand, stockAfterDelivery) : 0;
   const revenue = sold * currentPrice;
-  const deliveryCost = dailyOrderAmount * unitCost;
+  const deliveryCost = canDeliver ? dailyOrderAmount * unitCost : 0;
   const totalExpenses = deliveryCost + rentPerDay + cashierSalary + merchSalary + logistSalary;
   const profit = revenue - totalExpenses;
   const stockEnd = Math.max(0, stockAfterDelivery - sold);
@@ -368,9 +365,8 @@ function addBusinessStock(profile, data) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
-  const installed = Array.isArray(business.installedModules) ? business.installedModules : [];
-  if (!installed.includes('storage')) {
-    return fail('StorageNotInstalled', 'Storage module not installed.');
+  if (!business.storageItemId) {
+    return fail('StorageMissing', 'Storage equipment not installed.');
   }
 
   const capacity = Number.isFinite(business.storageCapacity) ? business.storageCapacity : 0;
@@ -398,9 +394,8 @@ function addBusinessShelfStock(profile, data) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
-  const installed = Array.isArray(business.installedModules) ? business.installedModules : [];
-  if (!installed.includes('shelves')) {
-    return fail('ShelvesNotInstalled', 'Shelves module not installed.');
+  if (!business.shelfItemId) {
+    return fail('ShelvesMissing', 'Shelves equipment not installed.');
   }
 
   const capacity = Number.isFinite(business.shelfCapacity) ? business.shelfCapacity : 0;

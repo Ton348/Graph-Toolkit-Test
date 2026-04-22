@@ -249,28 +249,6 @@ namespace Prototype.Business.UI
 				}
 			}
 
-			business = m_runtimeService.GetBusinessView(lotId);
-			HashSet<string> installed = business != null && business.installedModules != null
-				? new HashSet<string>(business.installedModules)
-				: new HashSet<string>();
-			IEnumerable<string> missingModules = m_runtimeService != null
-				? m_runtimeService.GetMissingRequiredModules(business)
-				: Enumerable.Empty<string>();
-			foreach (string moduleId in missingModules)
-			{
-				if (string.IsNullOrWhiteSpace(moduleId) || installed.Contains(moduleId))
-				{
-					continue;
-				}
-
-				if (!await RunActionCheckedAsync(m_actionFacade.InstallModule(lotId, moduleId), "Установка модуля"))
-				{
-					return false;
-				}
-
-				installed.Add(moduleId);
-			}
-
 			return true;
 		}
 

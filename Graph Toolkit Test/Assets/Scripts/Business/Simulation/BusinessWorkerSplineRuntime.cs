@@ -48,10 +48,8 @@ namespace Prototype.Business.Simulation
 
 			BusinessInstanceSnapshot business = worldRuntime.GetBusiness();
 			bool hasMerch = business != null && !string.IsNullOrWhiteSpace(business.hiredMerchContactId);
-			bool hasStorage = business != null && business.installedModules != null &&
-			                  business.installedModules.Contains("storage");
-			bool hasShelves = business != null && business.installedModules != null &&
-			                  business.installedModules.Contains("shelves");
+			bool hasStorage = business != null && !string.IsNullOrWhiteSpace(business.storageItemId);
+			bool hasShelves = business != null && !string.IsNullOrWhiteSpace(business.shelfItemId);
 			bool ready = hasMerch && hasStorage && hasShelves && worldRuntime.merchRoute != null &&
 			             worldRuntime.merchWorkerPrefab != null;
 

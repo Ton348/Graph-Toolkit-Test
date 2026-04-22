@@ -184,15 +184,15 @@ namespace Prototype.Business.Simulation
 					typedState.shelfCapacity = business.shelfCapacity;
 					typedState.storageStock = business.storageStock;
 					typedState.shelfStock = business.shelfStock;
+					typedState.storageItemId = business.storageItemId;
+					typedState.cashDeskItemId = business.cashDeskItemId;
+					typedState.shelfItemId = business.shelfItemId;
 					typedState.selectedSupplierId = business.selectedSupplierId;
 					typedState.autoDeliveryPerDay = business.autoDeliveryPerDay;
 					typedState.markupPercent = business.markupPercent;
 					typedState.hiredCashierContactId = business.hiredCashierContactId;
 					typedState.hiredMerchContactId = business.hiredMerchContactId;
 					typedState.isOpen = business.isOpen;
-					typedState.installedModules = business.installedModules != null
-						? new List<string>(business.installedModules)
-						: new List<string>();
 					typedState.profit = typedState.accumulatedIncome - typedState.accumulatedExpenses;
 				}
 			}

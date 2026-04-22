@@ -194,6 +194,23 @@ namespace Prototype.Business.UI
 			{
 				openCloseButtonText.text = isOpen ? "Закрыть" : "Открыть";
 			}
+
+			if (openCloseButton != null && openCloseButton.image != null)
+			{
+				Color baseColor = isOpen
+					? new Color(0.85f, 0.2f, 0.2f, 1f)
+					: new Color(0.17f, 0.8f, 0.25f, 1f);
+				openCloseButton.image.color = baseColor;
+
+				ColorBlock colors = openCloseButton.colors;
+				colors.normalColor = baseColor;
+				colors.highlightedColor = Color.Lerp(baseColor, Color.white, 0.12f);
+				colors.pressedColor = Color.Lerp(baseColor, Color.black, 0.18f);
+				colors.selectedColor = colors.highlightedColor;
+				colors.disabledColor = new Color(0.45f, 0.45f, 0.45f, 0.7f);
+				colors.colorMultiplier = 1f;
+				openCloseButton.colors = colors;
+			}
 		}
 
 		public bool IsBusinessOpen()

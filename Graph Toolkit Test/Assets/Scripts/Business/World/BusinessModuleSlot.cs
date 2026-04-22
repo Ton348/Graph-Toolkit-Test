@@ -128,8 +128,10 @@ namespace Prototype.Business.World
 			}
 
 			BusinessInstanceSnapshot business = worldRuntime != null ? worldRuntime.GetBusiness() : null;
-			m_isInstalled = business != null && business.installedModules != null &&
-			                business.installedModules.Contains(moduleId);
+			m_isInstalled = business != null &&
+			                ((moduleId == "storage" && !string.IsNullOrWhiteSpace(business.storageItemId)) ||
+			                 (moduleId == "cash_register" && !string.IsNullOrWhiteSpace(business.cashDeskItemId)) ||
+			                 (moduleId == "shelves" && !string.IsNullOrWhiteSpace(business.shelfItemId)));
 			SetVisual(m_isInstalled);
 		}
 

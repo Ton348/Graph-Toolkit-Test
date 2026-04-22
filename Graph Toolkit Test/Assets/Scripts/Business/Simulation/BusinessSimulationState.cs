@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Prototype.Business.Simulation
 {
 	public class BusinessSimulationState : BusinessRuntimeSimulationState
@@ -8,7 +6,6 @@ namespace Prototype.Business.Simulation
 		public float cashierMultiplier = 1f;
 		public string hiredCashierContactId;
 		public string hiredMerchContactId;
-		public List<string> installedModules = new();
 		public string instanceId;
 		public bool isOpen;
 		public float lastDelivered;
@@ -19,11 +16,6 @@ namespace Prototype.Business.Simulation
 		public float lastSold;
 		public int markupPercent;
 		public string selectedSupplierId;
-
-		public bool HasModule(string moduleId)
-		{
-			return !string.IsNullOrWhiteSpace(moduleId) && installedModules != null && installedModules.Contains(moduleId);
-		}
 
 		public void ResetTick()
 		{

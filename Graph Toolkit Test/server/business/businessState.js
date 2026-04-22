@@ -5,7 +5,6 @@ function normalizeBusinessInstance(business) {
     businessTypeId: typeof business?.businessTypeId === 'string' ? business.businessTypeId : '',
     isOpen: Boolean(business?.isOpen),
     rentPerDay: Number.isFinite(business?.rentPerDay) ? business.rentPerDay : 0,
-    installedModules: Array.isArray(business?.installedModules) ? business.installedModules.filter(Boolean) : [],
     storageCapacity: Number.isFinite(business?.storageCapacity) ? business.storageCapacity : 0,
     shelfCapacity: Number.isFinite(business?.shelfCapacity) ? business.shelfCapacity : 0,
     storageStock: Number.isFinite(business?.storageStock) ? business.storageStock : 0,
@@ -63,7 +62,6 @@ function normalizeBusinessProfile(profile) {
 function sanitizeBusinessProfile(profile, businessDefs) {
   if (!profile || !businessDefs) return profile;
 
-  const moduleById = businessDefs.moduleById;
   const supplierById = businessDefs.supplierById;
   const businessTypeById = businessDefs.businessTypeById;
   const knownContacts = Array.isArray(profile.knownContacts) ? profile.knownContacts : [];
@@ -78,9 +76,6 @@ function sanitizeBusinessProfile(profile, businessDefs) {
     if (seenLots.has(business.lotId)) continue;
     seenInstances.add(business.instanceId);
     seenLots.add(business.lotId);
-
-    business.installedModules = Array.isArray(business.installedModules) ? business.installedModules.filter(Boolean) : [];
-    business.installedModules = business.installedModules.filter(id => !moduleById || moduleById.has(id));
 
     if (business.markupPercent < 0) business.markupPercent = 0;
     if (business.markupPercent > 100) business.markupPercent = 100;
@@ -116,11 +111,11 @@ function sanitizeBusinessProfile(profile, businessDefs) {
       if (!business.businessTypeId || (businessTypeById && !businessTypeById.has(business.businessTypeId))) {
         business.isOpen = false;
       } else {
-        const typeDef = businessTypeById ? businessTypeById.get(business.businessTypeId) : null;
-        const required = Array.isArray(typeDef?.requiredModules) ? typeDef.requiredModules : [];
-        const installed = Array.isArray(business.installedModules) ? business.installedModules : [];
-        const missing = required.filter(id => !installed.includes(id));
-        if (missing.length > 0) {
+        const hasRequiredEquipment =
+          !!(business.storageItemId && String(business.storageItemId).trim()) &&
+          !!(business.cashDeskItemId && String(business.cashDeskItemId).trim()) &&
+          !!(business.shelfItemId && String(business.shelfItemId).trim());
+        if (!hasRequiredEquipment) {
           business.isOpen = false;
         }
       }

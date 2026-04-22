@@ -130,19 +130,12 @@ namespace Prototype.Business.Data
 
 		public IReadOnlyList<string> GetRequiredModules(string businessTypeId)
 		{
-			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);
-			return type?.requiredModules ?? new List<string>();
+			return new List<string>();
 		}
 
 		public bool IsModuleRequired(string businessTypeId, string moduleId)
 		{
-			if (string.IsNullOrWhiteSpace(moduleId))
-			{
-				return false;
-			}
-
-			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);
-			return type != null && type.requiredModules != null && type.requiredModules.Contains(moduleId);
+			return false;
 		}
 
 		public BusinessModuleDefinitionData GetModule(string id)

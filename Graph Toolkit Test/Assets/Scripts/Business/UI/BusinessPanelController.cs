@@ -317,10 +317,20 @@ namespace Prototype.Business.UI
 			var missingModules = new List<string>();
 			if (business != null && m_definitions != null)
 			{
-				requiredModules.AddRange(m_definitions.GetRequiredModules(business.businessTypeId));
-				if (m_runtimeService != null)
+				requiredModules.AddRange(new[] { "Складское оборудование", "Касса", "Полки" });
+				if (string.IsNullOrWhiteSpace(business.storageItemId))
 				{
-					missingModules.AddRange(m_runtimeService.GetMissingRequiredModules(business));
+					missingModules.Add("Складское оборудование");
+				}
+
+				if (string.IsNullOrWhiteSpace(business.cashDeskItemId))
+				{
+					missingModules.Add("Касса");
+				}
+
+				if (string.IsNullOrWhiteSpace(business.shelfItemId))
+				{
+					missingModules.Add("Полки");
 				}
 			}
 
@@ -340,8 +350,8 @@ namespace Prototype.Business.UI
 				simulation,
 				expensesPerDay,
 				business != null ? Mathf.Max(0, business.autoDeliveryPerDay) : 0,
-				requiredModules.Select(ResolveModuleDisplayName),
-				missingModules.Select(ResolveModuleDisplayName),
+				requiredModules,
+				missingModules,
 				business != null ? ResolveLotDisplayName(business.lotId) : null,
 				business != null ? ResolveBusinessTypeDisplayName(business.businessTypeId) : null,
 				knownContactIds.Select(ResolveContactDisplayName),

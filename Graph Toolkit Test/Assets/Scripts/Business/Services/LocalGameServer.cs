@@ -526,7 +526,6 @@ namespace Prototype.Business.Services
 				businessTypeId = null,
 				isOpen = false,
 				rentPerDay = lotDef.rentPerDay < 0 ? 0 : lotDef.rentPerDay,
-				installedModules = new List<string>(),
 				storageCapacity = 0,
 				shelfCapacity = 0,
 				storageStock = 0,
@@ -705,26 +704,7 @@ namespace Prototype.Business.Services
 					"Module not found.");
 			}
 
-			if (business.installedModules.Contains(moduleId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleAlreadyInstalled",
-					"Module already installed.");
-			}
-
-			if (m_runtime == null || m_runtime.player == null)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing",
-					"Runtime state is not available.");
-			}
-
-			if (m_runtime.player.money < moduleDef.installCost)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NotEnoughMoney",
-					"Not enough money.");
-			}
-
-			m_runtime.player.money -= moduleDef.installCost;
-			business.installedModules.Add(moduleId);
+			business.totalProfit -= moduleDef.installCost;
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Install module success.");
 		}
 
@@ -746,17 +726,18 @@ namespace Prototype.Business.Services
 					"lotId is required.");
 			}
 
-			if (string.IsNullOrWhiteSpace(supplierId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "SupplierIdEmpty",
-					"supplierId is required.");
-			}
-
 			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
 			if (business == null)
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
 					"Business not found.");
+			}
+
+			if (string.IsNullOrWhiteSpace(supplierId))
+			{
+				business.selectedSupplierId = null;
+				business.autoDeliveryPerDay = 0;
+				return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear supplier success.");
 			}
 
 			SupplierDefinitionData supplier = m_businessRepository?.GetSupplier(supplierId);
@@ -899,6 +880,7 @@ namespace Prototype.Business.Services
 				{
 					business.hiredLogistContactId = null;
 					business.selectedSupplierId = null;
+					business.autoDeliveryPerDay = 0;
 					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear logist success.");
 				}
 
@@ -1114,14 +1096,12 @@ namespace Prototype.Business.Services
 					"Business type not found.");
 			}
 
-			List<string> required = typeDef.requiredModules ?? new List<string>();
-			foreach (string moduleId in required)
+			if (string.IsNullOrWhiteSpace(business.storageItemId) ||
+			    string.IsNullOrWhiteSpace(business.cashDeskItemId) ||
+			    string.IsNullOrWhiteSpace(business.shelfItemId))
 			{
-				if (!business.installedModules.Contains(moduleId))
-				{
-					return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError,
-						"MissingRequiredModules", "Missing required modules.");
-				}
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError,
+					"MissingRequiredEquipment", "Missing required equipment.");
 			}
 
 			business.isOpen = true;
@@ -1308,10 +1288,10 @@ namespace Prototype.Business.Services
 					"Business not found.");
 			}
 
-			if (business.installedModules == null || !business.installedModules.Contains("storage"))
+			if (string.IsNullOrWhiteSpace(business.storageItemId))
 			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StorageNotInstalled",
-					"Storage module not installed.");
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StorageMissing",
+					"Storage equipment not installed.");
 			}
 
 			int capacity = business.storageCapacity;
@@ -1358,10 +1338,10 @@ namespace Prototype.Business.Services
 					"Business not found.");
 			}
 
-			if (business.installedModules == null || !business.installedModules.Contains("shelves"))
+			if (string.IsNullOrWhiteSpace(business.shelfItemId))
 			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ShelvesNotInstalled",
-					"Shelves module not installed.");
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ShelvesMissing",
+					"Shelves equipment not installed.");
 			}
 
 			int capacity = business.shelfCapacity;
@@ -1607,11 +1587,6 @@ namespace Prototype.Business.Services
 						hiredMerchContactId = business.hiredMerchContactId,
 						hiredLogistContactId = business.hiredLogistContactId
 					};
-
-					if (business.installedModules != null)
-					{
-						businessSnapshot.installedModules.AddRange(business.installedModules);
-					}
 
 					snapshot.businesses.Add(businessSnapshot);
 				}

@@ -972,11 +972,6 @@ namespace Prototype.Business.Services
 						hiredLogistContactId = business.hiredLogistContactId
 					};
 
-					if (business.installedModules != null)
-					{
-						snapshotBusiness.installedModules.AddRange(business.installedModules);
-					}
-
 					snapshot.businesses.Add(snapshotBusiness);
 				}
 			}
@@ -1425,7 +1420,6 @@ namespace Prototype.Business.Services
 			public string businessTypeId;
 			public bool isOpen;
 			public int rentPerDay;
-			public string[] installedModules;
 			public int storageCapacity;
 			public int shelfCapacity;
 			public int storageStock;

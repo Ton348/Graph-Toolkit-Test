@@ -81,14 +81,7 @@ namespace Prototype.Business.Runtime
 
 		public IEnumerable<string> GetMissingRequiredModules(BusinessInstanceSnapshot business)
 		{
-			if (business == null || m_definitions == null)
-			{
-				return Enumerable.Empty<string>();
-			}
-
-			IReadOnlyList<string> required = m_definitions.GetRequiredModules(business.businessTypeId);
-			List<string> installed = business.installedModules ?? new List<string>();
-			return required.Where(moduleId => !installed.Contains(moduleId));
+			return Enumerable.Empty<string>();
 		}
 	}
 }
