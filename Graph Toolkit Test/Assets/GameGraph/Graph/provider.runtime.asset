@@ -12,55 +12,55 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: provider.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: 27747c2e-44d8-4310-b83a-d0972169c82e
+  startNodeId: 8f9746ca-f8d0-473f-9b7c-315c2ec49676
   nodes:
-  - rid: 7634389102796735123
-  - rid: 7634389102796735124
-  - rid: 7634389102796735125
-  - rid: 7634389102796735126
-  - rid: 7634389102796735127
+  - rid: 7634389124185063799
+  - rid: 7634389124185063800
+  - rid: 7634389124185063801
+  - rid: 7634389124185063802
+  - rid: 7634389124185063803
   references:
     version: 2
     RefIds:
-    - rid: 7634389102796735123
+    - rid: 7634389124185063799
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 27747c2e-44d8-4310-b83a-d0972169c82e
+        nodeId: 8f9746ca-f8d0-473f-9b7c-315c2ec49676
         title: StartNode
         description: Entry point of the graph
-        nextNodeId: 69c2c974-e60d-4e98-aa60-7266302ca2cc
-    - rid: 7634389102796735124
+        nextNodeId: 57c93901-e26c-4b72-a715-20d1da83c709
+    - rid: 7634389124185063800
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 453dd623-12a5-49c6-9965-b9ffc1e6ab7b
+        nodeId: 1c89c0ea-8e39-4ed6-ab0f-ec29803af439
         title: DialogueNode
         description: Shows dialogue and continues
-        nextNodeId: 0e4f0980-5a4f-4188-85fd-a55ebef4ecdd
+        nextNodeId: fe069574-2db0-4703-90ce-4914dbaeb54e
         dialogueTitle: "\u041B\u043E\u0433\u0438\u0441\u0442\u0438\u043A\u0430"
         body: "\u0412\u043E\u0437\u044C\u043C\u0438 \u0432\u0438\u0437\u0438\u0442\u043A\u0443,
           \u0432\u0434\u0440\u0443\u0433 \u0434\u043E\u0441\u0442\u0430\u0432\u043A\u0430
           \u0422\u043E\u0432\u0430\u0440\u0430 \u043F\u043E\u043D\u0430\u0434\u043E\u0431\u0438\u0442\u0441\u044F."
-    - rid: 7634389102796735125
+    - rid: 7634389124185063801
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 34d63c18-7fda-4351-afe8-bc78356c047d
+        nodeId: 550197f6-1778-447a-868d-50de5ad2a5f1
         title: FinishNode
         description: Terminates graph execution
-    - rid: 7634389102796735126
+    - rid: 7634389124185063802
       type: {class: RequestUnlockContactNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 0e4f0980-5a4f-4188-85fd-a55ebef4ecdd
+        nodeId: fe069574-2db0-4703-90ce-4914dbaeb54e
         title: RequestUnlockContactNode
         description: 
-        successNodeId: 34d63c18-7fda-4351-afe8-bc78356c047d
-        failNodeId: 34d63c18-7fda-4351-afe8-bc78356c047d
+        successNodeId: 550197f6-1778-447a-868d-50de5ad2a5f1
+        failNodeId: 550197f6-1778-447a-868d-50de5ad2a5f1
         contactId: logist_1
-    - rid: 7634389102796735127
+    - rid: 7634389124185063803
       type: {class: CheckContactKnownNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 69c2c974-e60d-4e98-aa60-7266302ca2cc
+        nodeId: 57c93901-e26c-4b72-a715-20d1da83c709
         title: CheckContactKnownNode
         description: 
-        trueNodeId: 34d63c18-7fda-4351-afe8-bc78356c047d
-        falseNodeId: 453dd623-12a5-49c6-9965-b9ffc1e6ab7b
+        trueNodeId: 550197f6-1778-447a-868d-50de5ad2a5f1
+        falseNodeId: 1c89c0ea-8e39-4ed6-ab0f-ec29803af439
         contactId: logist_1

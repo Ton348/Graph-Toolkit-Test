@@ -8,9 +8,6 @@ namespace GameGraph.Runtime.Infrastructure
 		{
 			var executorRegistry = new GameGraphExecutorRegistry();
 
-			GameRuntimeNodeConverterRegistration.Register();
-			GameRuntimeExecutorRegistration.Register(executorRegistry);
-
 			return new GameGraphComposition(executorRegistry);
 		}
 	}

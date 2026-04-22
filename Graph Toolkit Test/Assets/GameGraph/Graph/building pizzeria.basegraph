@@ -102,7 +102,7 @@ MonoBehaviour:
           serializedVersion: 2
           x: 14.5
           y: -183.5
-          width: 2240
+          width: 2269
           height: 1477.5
         m_GraphElementMetaData:
         - m_Guid:
@@ -1024,7 +1024,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: d32a31fef900d2153a4301ef7cdd026c
         m_Version: 2
-        m_Position: {x: 1013.99023, y: 52.894066}
+        m_Position: {x: 1013.99023, y: 81.22699}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -2604,9 +2604,9 @@ MonoBehaviour:
           - __option_NodeDescription
           - __option_ItemId
           m_ValueList:
-          - rid: 7634389100628017516
-          - rid: 7634389100628017517
-          - rid: 7634389100628017518
+          - rid: 7634389124185063547
+          - rid: 7634389124185063548
+          - rid: 7634389124185063549
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2622,21 +2622,6 @@ MonoBehaviour:
           m_HasUserColor: 0
         m_Node:
           rid: 7634389100628017519
-    - rid: 7634389100628017516
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: "\u041A\u0443\u043F\u0438\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442
-          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430"
-    - rid: 7634389100628017517
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: "\u0417\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442
-          \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430
-          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430."
-    - rid: 7634389100628017518
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: storage_basic
     - rid: 7634389100628017519
       type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: Assembly-CSharp}
       data: 
@@ -2694,9 +2679,9 @@ MonoBehaviour:
           - __option_NodeDescription
           - __option_ItemId
           m_ValueList:
-          - rid: 7634389100628017526
-          - rid: 7634389100628017527
-          - rid: 7634389100628017528
+          - rid: 7634389124185063550
+          - rid: 7634389124185063551
+          - rid: 7634389124185063552
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2712,21 +2697,6 @@ MonoBehaviour:
           m_HasUserColor: 0
         m_Node:
           rid: 7634389100628017529
-    - rid: 7634389100628017526
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: "\u041A\u0443\u043F\u0438\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442
-          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430"
-    - rid: 7634389100628017527
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: "\u0417\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442
-          \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430
-          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430."
-    - rid: 7634389100628017528
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: cashdesk_basic
     - rid: 7634389100628017529
       type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: Assembly-CSharp}
       data: 
@@ -2752,9 +2722,9 @@ MonoBehaviour:
           - __option_NodeDescription
           - __option_ItemId
           m_ValueList:
-          - rid: 7634389100628017535
-          - rid: 7634389100628017536
-          - rid: 7634389100628017537
+          - rid: 7634389124185063553
+          - rid: 7634389124185063554
+          - rid: 7634389124185063555
         m_InputPortInfos:
           expandedPortsById:
             m_KeyList: []
@@ -2770,21 +2740,6 @@ MonoBehaviour:
           m_HasUserColor: 0
         m_Node:
           rid: 7634389100628017538
-    - rid: 7634389100628017535
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: "\u041A\u0443\u043F\u0438\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442
-          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430"
-    - rid: 7634389100628017536
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: "\u0417\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442
-          \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430
-          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430."
-    - rid: 7634389100628017537
-      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
-      data:
-        m_Value: shelf_basic
     - rid: 7634389100628017538
       type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: Assembly-CSharp}
       data: 
@@ -3220,3 +3175,48 @@ MonoBehaviour:
           m_PortDirection: 1
           m_PortOrientation: 0
           m_Title: 
+    - rid: 7634389124185063547
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041A\u0443\u043F\u0438\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442
+          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430"
+    - rid: 7634389124185063548
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442
+          \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430
+          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430."
+    - rid: 7634389124185063549
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: storage_basic
+    - rid: 7634389124185063550
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041A\u0443\u043F\u0438\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442
+          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430"
+    - rid: 7634389124185063551
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442
+          \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430
+          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430."
+    - rid: 7634389124185063552
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: cashdesk_basic
+    - rid: 7634389124185063553
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u041A\u0443\u043F\u0438\u0442\u044C \u043F\u0440\u0435\u0434\u043C\u0435\u0442
+          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430"
+    - rid: 7634389124185063554
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: "\u0417\u0430\u043F\u0440\u0430\u0448\u0438\u0432\u0430\u0435\u0442
+          \u043F\u043E\u043A\u0443\u043F\u043A\u0443 \u043F\u0440\u0435\u0434\u043C\u0435\u0442\u0430
+          \u0443 \u0442\u043E\u0440\u0433\u043E\u0432\u0446\u0430."
+    - rid: 7634389124185063555
+      type: {class: 'Constant`1[[System.String, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
+      data:
+        m_Value: shelf_basic

@@ -2,12 +2,22 @@ using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure.AutoRegistration;
+using Game1.Graph.Runtime.Templates;
 using GameGraph.Runtime.Business;
 using Graph.Core.Runtime;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.Data;
 using Prototype.Business.Runtime.GraphExecutors.Infrastructure;
 using Prototype.Business.Services;
+
+namespace GameGraph.Runtime.Business
+{
+	[Serializable]
+	public sealed class RequestBuyTraderItemNode : GameGraphSuccessFailNode
+	{
+		public string itemId;
+	}
+}
 
 namespace Prototype.Business.Runtime.GraphExecutors.Business
 {
@@ -67,3 +77,49 @@ namespace Prototype.Business.Runtime.GraphExecutors.Business
 		}
 	}
 }
+
+#if UNITY_EDITOR
+namespace GameGraph.Editor.Business
+{
+	using Graph.Core.Editor;
+	using Unity.GraphToolkit.Editor;
+
+	[Serializable]
+	[UseWithGraph(typeof(CommonGraphEditorGraph))]
+	public sealed class RequestBuyTraderItemNodeModel : GameGraphSuccessFailNodeModel
+	{
+		public const string ItemIdOption = "ItemId";
+
+		protected override string defaultTitle => "Купить предмет у торговца";
+		protected override string defaultDescription => "Запрашивает покупку предмета у торговца.";
+
+		protected override void OnDefineOptions(IOptionDefinitionContext context)
+		{
+			base.OnDefineOptions(context);
+			context.AddOption<string>(ItemIdOption).WithDisplayName("ItemId");
+		}
+	}
+}
+
+namespace GameGraph.Editor.Converters.Business
+{
+	using Game1.Graph.Editor.Infrastructure.Converters;
+
+	[GameGraphNodeConverter]
+	public sealed class RequestBuyTraderItemNodeConverter :
+		GameGraphNodeConverterBase<GameGraph.Editor.Business.RequestBuyTraderItemNodeModel, RequestBuyTraderItemNode>
+	{
+		protected override bool TryConvert(
+			GameGraph.Editor.Business.RequestBuyTraderItemNodeModel editorNodeModel,
+			out RequestBuyTraderItemNode runtimeNode)
+		{
+			runtimeNode = new RequestBuyTraderItemNode
+			{
+				itemId = GetOptionValue<string>(editorNodeModel,
+					GameGraph.Editor.Business.RequestBuyTraderItemNodeModel.ItemIdOption)
+			};
+			return true;
+		}
+	}
+}
+#endif
