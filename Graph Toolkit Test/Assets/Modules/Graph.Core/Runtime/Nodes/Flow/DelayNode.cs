@@ -10,8 +10,8 @@ namespace Graph.Core.Runtime.Nodes.Flow
 
 		public DelayNode()
 		{
-			Title = "Delay";
-			Description = "Waits for a duration and continues";
+			Title = "Задержка";
+			Description = "Останавливает выполнение следующих нод на время";
 		}
 	}
 }

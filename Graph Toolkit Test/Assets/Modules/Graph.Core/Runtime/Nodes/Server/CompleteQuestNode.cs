@@ -10,8 +10,8 @@ namespace Graph.Core.Runtime.Nodes.Server
 
 		public CompleteQuestNode()
 		{
-			Title = "Complete Quest";
-			Description = "Requests quest completion";
+			Title = "Завершить квест";
+			Description = "Завершает квест в профиле игрока";
 		}
 	}
 }

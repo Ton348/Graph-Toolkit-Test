@@ -11,8 +11,8 @@ namespace Graph.Core.Runtime.Nodes.World
 
 		public MapMarkerNode()
 		{
-			Title = "Map Marker";
-			Description = "Shows or updates a map marker";
+			Title = "Метка на карте";
+			Description = "Добавляет маркер на карту";
 		}
 	}
 }

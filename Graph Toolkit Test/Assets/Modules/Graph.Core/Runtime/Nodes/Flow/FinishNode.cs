@@ -7,8 +7,8 @@ namespace Graph.Core.Runtime.Nodes.Flow
 	{
 		public FinishNode()
 		{
-			Title = "Finish";
-			Description = "Terminates graph execution";
+			Title = "Завершение графа";
+			Description = "Завершает выполнение сценария";
 		}
 	}
 }

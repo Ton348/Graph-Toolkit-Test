@@ -16,8 +16,8 @@ namespace Graph.Core.Runtime.Nodes.Flow
 
 		public RandomNode()
 		{
-			Title = "Random";
-			Description = "Chooses a weighted random branch";
+			Title = "Случайный выбор";
+			Description = "Выбирает случайную ветку";
 		}
 	}
 }

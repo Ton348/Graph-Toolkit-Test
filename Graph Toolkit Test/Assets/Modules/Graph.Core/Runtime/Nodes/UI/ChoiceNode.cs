@@ -16,8 +16,8 @@ namespace Graph.Core.Runtime.Nodes.UI
 
 		public ChoiceNode()
 		{
-			title = "Choice";
-			description = "Shows player choices and branches by selection";
+			title = "Выбор игрока";
+			description = "Показывает варианты ответа игрока";
 		}
 	}
 }

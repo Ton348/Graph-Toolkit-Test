@@ -10,8 +10,8 @@ namespace Graph.Core.Runtime.Nodes.Cinematics
 
 		public PlayCutsceneNode()
 		{
-			Title = "Play Cutscene";
-			Description = "Plays a cutscene and continues";
+			Title = "Запуск катсцены";
+			Description = "Запускает катсцену через Cinemachine";
 		}
 	}
 }

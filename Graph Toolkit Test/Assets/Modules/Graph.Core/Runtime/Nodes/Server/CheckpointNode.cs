@@ -11,8 +11,8 @@ namespace Graph.Core.Runtime.Nodes.Server
 
 		public CheckpointNode()
 		{
-			Title = "Checkpoint";
-			Description = "Saves or clears checkpoint state";
+			Title = "Управление чекпоинтом";
+			Description = "Сохраняет или удаляет checkpoint с которого начнется старт графа в профиле игрока";
 		}
 	}
 }

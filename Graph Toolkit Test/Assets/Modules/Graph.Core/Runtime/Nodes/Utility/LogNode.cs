@@ -10,8 +10,8 @@ namespace Graph.Core.Runtime.Nodes.Utility
 
 		public LogNode()
 		{
-			Title = "Log";
-			Description = "Writes a debug message";
+			Title = "Лог";
+			Description = "Выводит сообщение в консоль";
 		}
 	}
 }

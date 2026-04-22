@@ -11,8 +11,8 @@ namespace Graph.Core.Runtime.Nodes.UI
 
 		public DialogueNode()
 		{
-			Title = "Dialogue";
-			Description = "Shows dialogue and continues";
+			Title = "Диалог NPC";
+			Description = "Показывает диалог NPC";
 		}
 	}
 }

@@ -8,8 +8,8 @@ namespace Graph.Core.Runtime.Nodes.Flow
 	{
 		public StartNode()
 		{
-			Title = "Start";
-			Description = "Entry point of the graph";
+			Title = "Начало графа";
+			Description = "Стартовая точка выполнения сценария";
 		}
 	}
 }

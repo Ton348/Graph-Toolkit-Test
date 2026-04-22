@@ -10,8 +10,8 @@ namespace Graph.Core.Runtime.Nodes.Server
 
 		public StartQuestNode()
 		{
-			Title = "Start Quest";
-			Description = "Requests quest start";
+			Title = "Активировать квест";
+			Description = "Активирует квест в профиле игрока";
 		}
 	}
 }

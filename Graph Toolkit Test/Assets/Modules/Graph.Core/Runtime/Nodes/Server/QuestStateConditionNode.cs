@@ -11,8 +11,8 @@ namespace Graph.Core.Runtime.Nodes.Server
 
 		public QuestStateConditionNode()
 		{
-			Title = "Quest State Condition";
-			Description = "Checks quest state and branches";
+			Title = "Проверка квеста";
+			Description = "Проверяет состояние квеста";
 		}
 	}
 }
