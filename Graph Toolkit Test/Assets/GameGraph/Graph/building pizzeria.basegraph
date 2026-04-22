@@ -102,7 +102,7 @@ MonoBehaviour:
           serializedVersion: 2
           x: 14.5
           y: -183.5
-          width: 2269
+          width: 2247.5
           height: 1477.5
         m_GraphElementMetaData:
         - m_Guid:
@@ -2623,7 +2623,7 @@ MonoBehaviour:
         m_Node:
           rid: 7634389100628017519
     - rid: 7634389100628017519
-      type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: Assembly-CSharp}
+      type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: GameGraph.Editor}
       data: 
     - rid: 7634389100628017520
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
@@ -2698,7 +2698,7 @@ MonoBehaviour:
         m_Node:
           rid: 7634389100628017529
     - rid: 7634389100628017529
-      type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: Assembly-CSharp}
+      type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: GameGraph.Editor}
       data: 
     - rid: 7634389100628017534
       type: {class: UserNodeModelImp, ns: Unity.GraphToolkit.Editor.Implementation, asm: Unity.GraphToolkit.Editor}
@@ -2710,7 +2710,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: ff571b108e12488cc207b40cf04f501f
         m_Version: 2
-        m_Position: {x: 1049.3759, y: 1061.7946}
+        m_Position: {x: 1050.6691, y: 1085.0735}
         m_Title: RequestBuyTraderItemNodeModel
         m_Tooltip: 
         m_NodePreviewModel:
@@ -2741,7 +2741,7 @@ MonoBehaviour:
         m_Node:
           rid: 7634389100628017538
     - rid: 7634389100628017538
-      type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: Assembly-CSharp}
+      type: {class: RequestBuyTraderItemNodeModel, ns: GameGraph.Editor.Business, asm: GameGraph.Editor}
       data: 
     - rid: 7634389100628017539
       type: {class: WireModel, ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
