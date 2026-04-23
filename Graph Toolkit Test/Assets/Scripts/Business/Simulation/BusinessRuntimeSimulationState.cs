@@ -16,6 +16,8 @@ namespace Prototype.Business.Simulation
 		public string storageItemId;
 		public string cashDeskItemId;
 		public string shelfItemId;
+		public int cashCapacity;
+		public float baseProfit;
 
 		public float accumulatedIncome;
 		public float accumulatedExpenses;

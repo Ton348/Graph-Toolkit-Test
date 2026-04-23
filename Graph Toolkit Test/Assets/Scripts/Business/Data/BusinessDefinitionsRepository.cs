@@ -7,6 +7,7 @@ namespace Prototype.Business.Data
 		private readonly Dictionary<string, CustomerBehaviorDefinitionData> m_behaviors = new();
 		private readonly Dictionary<string, BusinessTypeDefinitionData> m_businessTypes = new();
 		private readonly Dictionary<string, BusinessModuleDefinitionData> m_modules = new();
+		private readonly List<PriceDemandRangeDefinitionData> m_pizzeriaDemandRanges = new();
 		private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new();
 		private readonly Dictionary<string, StaffRoleDefinitionData> m_staffRoles = new();
 		private readonly Dictionary<string, SupplierDefinitionData> m_suppliers = new();
@@ -20,6 +21,7 @@ namespace Prototype.Business.Data
 			StaffRoleDatabaseData staffRoleDb,
 			StaffContactDatabaseData staffContactDb,
 			CustomerBehaviorDatabaseData behaviorDb,
+			PriceDemandDatabaseData pizzeriaDemandDb,
 			TraderDatabaseData traderDb)
 		{
 			if (businessTypeDb?.businessTypes != null)
@@ -85,6 +87,17 @@ namespace Prototype.Business.Data
 					    !m_behaviors.ContainsKey(item.businessTypeId))
 					{
 						m_behaviors[item.businessTypeId] = item;
+					}
+				}
+			}
+
+			if (pizzeriaDemandDb?.ranges != null)
+			{
+				foreach (PriceDemandRangeDefinitionData item in pizzeriaDemandDb.ranges)
+				{
+					if (item != null)
+					{
+						m_pizzeriaDemandRanges.Add(item);
 					}
 				}
 			}
@@ -180,6 +193,33 @@ namespace Prototype.Business.Data
 
 			m_behaviors.TryGetValue(businessTypeId, out CustomerBehaviorDefinitionData value);
 			return value;
+		}
+
+		public int GetDailyDemandForPrice(string businessTypeId, int price)
+		{
+			if (string.IsNullOrWhiteSpace(businessTypeId))
+			{
+				return 0;
+			}
+
+			if (businessTypeId == "grocery_store")
+			{
+				for (int i = 0; i < m_pizzeriaDemandRanges.Count; i++)
+				{
+					PriceDemandRangeDefinitionData range = m_pizzeriaDemandRanges[i];
+					if (range == null)
+					{
+						continue;
+					}
+
+					if (price >= range.minPrice && price <= range.maxPrice)
+					{
+						return range.dailyDemand;
+					}
+				}
+			}
+
+			return 0;
 		}
 
 		public StaffContactDefinitionData GetStaffContact(string id)

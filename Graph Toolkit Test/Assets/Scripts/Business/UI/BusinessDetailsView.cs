@@ -65,6 +65,9 @@ namespace Prototype.Business.UI
 		private TMP_Text profitValueText;
 
 		[SerializeField]
+		private Button collectProfitButton;
+
+		[SerializeField]
 		private Slider priceSlider;
 
 		[SerializeField]
@@ -117,14 +120,17 @@ namespace Prototype.Business.UI
 		public event Action closeClicked;
 		public event Action<string> businessChanged;
 		public event Action openCloseClicked;
+		public event Action collectProfitClicked;
 		public event Action<TabType> tabChanged;
 
 		private void Awake()
 		{
 			TryResolveWarehouseRowBindings();
+			TryResolveProfitRowBindings();
 
 			HookButton(closeButton, () => closeClicked?.Invoke());
 			HookButton(openCloseButton, () => openCloseClicked?.Invoke());
+			HookButton(collectProfitButton, () => collectProfitClicked?.Invoke());
 			HookButton(overviewTabButton, () => SetTab(TabType.Overview));
 			HookButton(setupTabButton, () => SetTab(TabType.Setup));
 			HookButton(staffTabButton, () => SetTab(TabType.Staff));
@@ -251,6 +257,20 @@ namespace Prototype.Business.UI
 			float income = business != null ? Mathf.Max(0, business.lastDayRevenue) : 0f;
 			float expenses = business != null ? Mathf.Max(0, business.lastDayExpenses) : expensesPerDay;
 			float profit = business != null ? business.totalProfit : income - expenses;
+			if (simulation != null && business != null)
+			{
+				float baseProfit = business.totalProfit;
+				if (simulation.cashCapacity > 0)
+				{
+					baseProfit = Mathf.Min(baseProfit, simulation.cashCapacity);
+				}
+
+				profit = baseProfit + Mathf.Max(0f, simulation.accumulatedIncome);
+				if (simulation.cashCapacity > 0)
+				{
+					profit = Mathf.Min(profit, simulation.cashCapacity);
+				}
+			}
 			SetIncome(income);
 			SetExpenses(expenses);
 			SetProfit(profit);
@@ -380,6 +400,11 @@ namespace Prototype.Business.UI
 			if (profitValueText != null)
 			{
 				profitValueText.text = value.ToString("0.##");
+			}
+
+			if (collectProfitButton != null)
+			{
+				collectProfitButton.interactable = value > 0f;
 			}
 		}
 
@@ -705,6 +730,26 @@ namespace Prototype.Business.UI
 				{
 					warehouseDailyValueText = valueTransform.GetComponent<TMP_Text>();
 				}
+			}
+		}
+
+		private void TryResolveProfitRowBindings()
+		{
+			if (collectProfitButton != null)
+			{
+				return;
+			}
+
+			Transform root = overviewTabRoot != null ? overviewTabRoot.transform : transform;
+			Transform buttonTransform = root != null ? root.Find("take_money") : null;
+			if (buttonTransform == null)
+			{
+				buttonTransform = root != null ? root.Find("ProfitRow/take_money") : null;
+			}
+
+			if (buttonTransform != null)
+			{
+				collectProfitButton = buttonTransform.GetComponent<Button>();
 			}
 		}
 

@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 50,
+  "money": 229,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -21,30 +21,30 @@
   ],
   "businesses": [
     {
-      "instanceId": "biz_1776929691945_2551",
+      "instanceId": "biz_1776938864919_3732",
       "lotId": "lot_market_01",
       "businessTypeId": "grocery_store",
       "isOpen": true,
       "rentPerDay": 1000,
       "storageCapacity": 500,
       "shelfCapacity": 300,
-      "storageStock": 0,
+      "storageStock": 340,
       "shelfStock": 0,
       "selectedSupplierId": "logist_1",
-      "autoDeliveryPerDay": 140,
-      "markupPercent": 19,
+      "autoDeliveryPerDay": 200,
+      "markupPercent": 20,
       "storageItemId": "storage_basic",
       "cashDeskItemId": "cashdesk_basic",
       "shelfItemId": "shelf_basic",
       "hiredCashierContactId": "cashier_1",
       "hiredMerchContactId": "merch_1",
       "hiredLogistContactId": "logist_1",
-      "lastDayRevenue": 2660,
-      "lastDayExpenses": 1870,
-      "lastDayProfit": 790,
-      "totalRevenue": 10640,
-      "totalExpenses": 10790,
-      "totalProfit": -150
+      "lastDayRevenue": 3200,
+      "lastDayExpenses": 1950,
+      "lastDayProfit": 1250,
+      "totalRevenue": 166400,
+      "totalExpenses": 101328,
+      "totalProfit": 5000
     }
   ],
   "knownContacts": [
@@ -52,5 +52,7 @@
     "merch_1",
     "cashier_1"
   ],
-  "items": []
+  "items": [
+    "storage_basic"
+  ]
 }

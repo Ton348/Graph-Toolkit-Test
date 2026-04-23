@@ -92,6 +92,11 @@ namespace Prototype.Business.Data
 			return Load<CustomerBehaviorDatabaseData>("customer_behavior.json", "customer behaviors");
 		}
 
+		public PriceDemandDatabaseData LoadPizzeriaDemand()
+		{
+			return Load<PriceDemandDatabaseData>("pizzeria_demand.json", "pizzeria demand");
+		}
+
 		public TraderDatabaseData LoadTraders()
 		{
 			return Load<TraderDatabaseData>("traders.json", "traders");

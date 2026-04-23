@@ -789,24 +789,41 @@ namespace Prototype.Business.Services
 			string normalizedStorageItemId = NormalizeOptionalId(storageItemId);
 			string normalizedCashDeskItemId = NormalizeOptionalId(cashDeskItemId);
 			string normalizedShelfItemId = NormalizeOptionalId(shelfItemId);
+			string currentStorageItemId = NormalizeOptionalId(business.storageItemId);
+			string currentCashDeskItemId = NormalizeOptionalId(business.cashDeskItemId);
+			string currentShelfItemId = NormalizeOptionalId(business.shelfItemId);
 
-			ServerActionResult validationResult = ValidateEquipmentItem(normalizedStorageItemId, "storage");
+			ServerActionResult validationResult = ValidateEquipmentItem(
+				normalizedStorageItemId != currentStorageItemId ? normalizedStorageItemId : null,
+				"storage");
 			if (!validationResult.Success)
 			{
 				return validationResult;
 			}
 
-			validationResult = ValidateEquipmentItem(normalizedCashDeskItemId, "cashdesk");
+			validationResult = ValidateEquipmentItem(
+				normalizedCashDeskItemId != currentCashDeskItemId ? normalizedCashDeskItemId : null,
+				"cashdesk");
 			if (!validationResult.Success)
 			{
 				return validationResult;
 			}
 
-			validationResult = ValidateEquipmentItem(normalizedShelfItemId, "shelf");
+			validationResult = ValidateEquipmentItem(
+				normalizedShelfItemId != currentShelfItemId ? normalizedShelfItemId : null,
+				"shelf");
 			if (!validationResult.Success)
 			{
 				return validationResult;
 			}
+
+			m_items.Remove(normalizedStorageItemId);
+			m_items.Remove(normalizedCashDeskItemId);
+			m_items.Remove(normalizedShelfItemId);
+
+			AddItemBackToInventory(currentStorageItemId, normalizedStorageItemId);
+			AddItemBackToInventory(currentCashDeskItemId, normalizedCashDeskItemId);
+			AddItemBackToInventory(currentShelfItemId, normalizedShelfItemId);
 
 			business.storageItemId = normalizedStorageItemId;
 			business.cashDeskItemId = normalizedCashDeskItemId;
@@ -829,6 +846,16 @@ namespace Prototype.Business.Services
 			}
 
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set business equipment success.");
+		}
+
+		private void AddItemBackToInventory(string currentItemId, string nextItemId)
+		{
+			if (!string.IsNullOrWhiteSpace(currentItemId) &&
+			    !string.Equals(currentItemId, nextItemId, StringComparison.Ordinal) &&
+			    !m_items.Contains(currentItemId))
+			{
+				m_items.Add(currentItemId);
+			}
 		}
 
 		public async Task<ServerActionResult> TryHireBusinessWorkerAsync(string lotId, string roleId, string contactId)
@@ -1235,6 +1262,55 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Simulate business day success.");
 		}
 
+		public async Task<ServerActionResult> TryCollectBusinessProfitAsync(string lotId)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			if (m_runtime == null || m_runtime.player == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing",
+					"Runtime state is not available.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			int cashCapacity = ResolveCashCapacity(business);
+			if (cashCapacity > 0 && business.totalProfit > cashCapacity)
+			{
+				business.totalProfit = cashCapacity;
+			}
+
+			int amount = Mathf.Max(0, business.totalProfit);
+			if (amount <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoProfitToCollect",
+					"No positive profit to collect.");
+			}
+
+			m_runtime.player.money += amount;
+			business.totalProfit = 0;
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Collect business profit success.");
+		}
+
 		public async Task<ServerActionResult> TryUnlockContactAsync(string contactId)
 		{
 			int delayMs = NextDelayMs();
@@ -1305,6 +1381,17 @@ namespace Prototype.Business.Services
 			int added = amount > space ? space : amount;
 			business.storageStock += added;
 			return ServerActionResult.SuccessResult(BuildSnapshot(), $"Added stock: {added}.");
+		}
+
+		private int ResolveCashCapacity(BusinessInstanceSnapshot business)
+		{
+			if (business == null || string.IsNullOrWhiteSpace(business.cashDeskItemId))
+			{
+				return 0;
+			}
+
+			TraderItemDefinitionData cashDeskItem = m_businessRepository?.GetTraderItem(business.cashDeskItemId);
+			return cashDeskItem != null ? Mathf.Max(0, cashDeskItem.cashCapacity) : 0;
 		}
 
 		public async Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount)
@@ -1625,7 +1712,8 @@ namespace Prototype.Business.Services
 					$"Item '{itemId}' not found.");
 			}
 
-			if (!string.Equals(item.category, requiredCategory, StringComparison.OrdinalIgnoreCase))
+			if (!string.Equals(NormalizeEquipmentCategory(item.category), NormalizeEquipmentCategory(requiredCategory),
+				    StringComparison.OrdinalIgnoreCase))
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidItemCategory",
 					$"Item '{itemId}' is not category '{requiredCategory}'.");
@@ -1642,6 +1730,32 @@ namespace Prototype.Business.Services
 			}
 
 			return value.Trim();
+		}
+
+		private static string NormalizeEquipmentCategory(string category)
+		{
+			if (string.IsNullOrWhiteSpace(category))
+			{
+				return null;
+			}
+
+			string trimmed = category.Trim();
+			if (trimmed.StartsWith("storage", StringComparison.OrdinalIgnoreCase))
+			{
+				return "storage";
+			}
+
+			if (trimmed.StartsWith("cashdesk", StringComparison.OrdinalIgnoreCase))
+			{
+				return "cashdesk";
+			}
+
+			if (trimmed.StartsWith("shelf", StringComparison.OrdinalIgnoreCase))
+			{
+				return "shelf";
+			}
+
+			return trimmed;
 		}
 
 		private ServerActionResult TryStartQuestInternal(QuestDefinitionData questDefinition)

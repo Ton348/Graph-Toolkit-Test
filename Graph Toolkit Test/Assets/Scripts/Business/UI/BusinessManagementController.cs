@@ -42,6 +42,7 @@ namespace Prototype.Business.UI
 			if (m_view != null)
 			{
 				m_view.openCloseClicked += OnOpenCloseClicked;
+				m_view.collectProfitClicked += OnCollectProfitClicked;
 				m_view.businessChanged += OnBusinessChanged;
 			}
 		}
@@ -51,6 +52,7 @@ namespace Prototype.Business.UI
 			if (m_view != null)
 			{
 				m_view.openCloseClicked -= OnOpenCloseClicked;
+				m_view.collectProfitClicked -= OnCollectProfitClicked;
 				m_view.businessChanged -= OnBusinessChanged;
 			}
 
@@ -101,6 +103,46 @@ namespace Prototype.Business.UI
 				else
 				{
 					await OpenBusinessAsync(lotId);
+				}
+			}
+			finally
+			{
+				m_isApplying = false;
+			}
+		}
+
+		private async void OnCollectProfitClicked()
+		{
+			if (m_isApplying)
+			{
+				return;
+			}
+
+			if (m_view == null || m_actionFacade == null || m_runtimeService == null)
+			{
+				return;
+			}
+
+			string lotId = m_view.GetSelectedBusinessId();
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				SetStatus("Fail: LotIdEmpty");
+				return;
+			}
+
+			BusinessInstanceSnapshot business = m_runtimeService.GetBusinessView(lotId);
+			if (business == null || business.totalProfit <= 0)
+			{
+				SetStatus("Нет прибыли для вывода");
+				return;
+			}
+
+			m_isApplying = true;
+			try
+			{
+				if (await RunActionCheckedAsync(m_actionFacade.CollectBusinessProfit(lotId), "Вывод прибыли"))
+				{
+					m_onBusinessChanged?.Invoke(lotId);
 				}
 			}
 			finally

@@ -313,6 +313,10 @@ function simulateBusinessDay(profile, data, businessDefs) {
   const hasStorageItem = !!(business.storageItemId && String(business.storageItemId).trim());
   const hasCashDeskItem = !!(business.cashDeskItemId && String(business.cashDeskItemId).trim());
   const hasShelfItem = !!(business.shelfItemId && String(business.shelfItemId).trim());
+  const cashDeskItem = businessDefs?.traderItemById && business.cashDeskItemId
+    ? businessDefs.traderItemById.get(business.cashDeskItemId)
+    : null;
+  const cashCapacity = cashDeskItem && Number.isFinite(cashDeskItem.cashCapacity) ? Math.max(0, cashDeskItem.cashCapacity) : 0;
   const canDeliver = hasStorageItem && supplier && dailyOrderAmount > 0;
   const canSell = business.isOpen && hasCashDeskItem && hasShelfItem && cashier && merch;
 
@@ -322,7 +326,7 @@ function simulateBusinessDay(profile, data, businessDefs) {
   const dailyDemand = resolveDailyDemand(demandRanges, currentPrice);
   const sold = canSell ? Math.min(dailyDemand, stockAfterDelivery) : 0;
   const revenue = sold * currentPrice;
-  const deliveryCost = canDeliver ? dailyOrderAmount * unitCost : 0;
+  const deliveryCost = canDeliver ? delivered * unitCost : 0;
   const totalExpenses = deliveryCost + rentPerDay + cashierSalary + merchSalary + logistSalary;
   const profit = revenue - totalExpenses;
   const stockEnd = Math.max(0, stockAfterDelivery - sold);
@@ -334,8 +338,37 @@ function simulateBusinessDay(profile, data, businessDefs) {
   business.totalRevenue = (Number.isFinite(business.totalRevenue) ? business.totalRevenue : 0) + revenue;
   business.totalExpenses = (Number.isFinite(business.totalExpenses) ? business.totalExpenses : 0) + totalExpenses;
   business.totalProfit = (Number.isFinite(business.totalProfit) ? business.totalProfit : 0) + profit;
+  if (cashCapacity > 0 && business.totalProfit > cashCapacity) {
+    business.totalProfit = cashCapacity;
+  }
 
   return ok('Simulate business day success.');
+}
+
+function collectBusinessProfit(profile, data, businessDefs) {
+  const lotId = data && data.lotId;
+  const lotCheck = requireLotId(lotId);
+  if (lotCheck) return lotCheck;
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) return fail('BusinessNotFound', 'Business not found.');
+
+  const cashDeskItem = businessDefs?.traderItemById && business.cashDeskItemId
+    ? businessDefs.traderItemById.get(business.cashDeskItemId)
+    : null;
+  const cashCapacity = cashDeskItem && Number.isFinite(cashDeskItem.cashCapacity) ? Math.max(0, cashDeskItem.cashCapacity) : 0;
+  if (cashCapacity > 0 && business.totalProfit > cashCapacity) {
+    business.totalProfit = cashCapacity;
+  }
+
+  const amount = Number.isFinite(business.totalProfit) ? Math.max(0, business.totalProfit) : 0;
+  if (amount <= 0) {
+    return fail('NoProfitToCollect', 'No positive profit to collect.');
+  }
+
+  profile.money = (Number.isFinite(profile.money) ? profile.money : 0) + amount;
+  business.totalProfit = 0;
+  return ok('Collect business profit success.');
 }
 
 function unlockContact(profile, data) {
@@ -438,11 +471,20 @@ function validateEquipmentItem(profile, businessDefs, itemId, requiredCategory) 
     return fail('ItemNotFound', `Item '${itemId}' not found.`);
   }
 
-  if (item.category !== requiredCategory) {
+  if (normalizeEquipmentCategory(item.category) !== normalizeEquipmentCategory(requiredCategory)) {
     return fail('InvalidItemCategory', `Item '${itemId}' is not category '${requiredCategory}'.`);
   }
 
   return ok();
+}
+
+function normalizeEquipmentCategory(category) {
+  if (!category || typeof category !== 'string') return null;
+  const trimmed = category.trim().toLowerCase();
+  if (trimmed.startsWith('storage')) return 'storage';
+  if (trimmed.startsWith('cashdesk')) return 'cashdesk';
+  if (trimmed.startsWith('shelf')) return 'shelf';
+  return trimmed;
 }
 
 function setBusinessEquipment(profile, data, businessDefs) {
@@ -644,5 +686,6 @@ module.exports = {
   addBusinessStock,
   addBusinessShelfStock,
   clearBusinessStock,
+  collectBusinessProfit,
   resetBusinesses,
 };

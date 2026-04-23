@@ -466,6 +466,28 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TryCollectBusinessProfitAsync(string lotId)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log($"[RemoteGameServer] action=collect_business_profit lotId='{lotId}'");
+			}
+
+			var request = new RemoteBusinessLotRequest
+			{
+				action = "collect_business_profit",
+				playerId = m_playerId,
+				data = new RemoteBusinessLotData { lotId = lotId }
+			};
+
+			return SendRequestAsync(request);
+		}
+
+		Task<ServerActionResult> IGameServer.TryCollectBusinessProfitAsync(string lotId)
+		{
+			return TryCollectBusinessProfitAsync(lotId);
+		}
+
 		public Task<ServerActionResult> TryUnlockContactAsync(string contactId)
 		{
 			if (m_debugLog)

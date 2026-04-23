@@ -91,6 +91,11 @@ namespace Prototype.Business.Runtime
 			return ExecuteAsync("SimulateBusinessDay", () => m_gameServer.TrySimulateBusinessDayAsync(lotId));
 		}
 
+		public Task<ServerActionResult> CollectBusinessProfit(string lotId)
+		{
+			return ExecuteAsync("CollectBusinessProfit", () => m_gameServer.TryCollectBusinessProfitAsync(lotId));
+		}
+
 		public Task<ServerActionResult> UnlockContact(string contactId)
 		{
 			return ExecuteAsync("UnlockContact", () => m_gameServer.TryUnlockContactAsync(contactId));

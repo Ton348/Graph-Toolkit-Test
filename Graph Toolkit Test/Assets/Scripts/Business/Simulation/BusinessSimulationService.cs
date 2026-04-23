@@ -25,6 +25,7 @@ namespace Prototype.Business.Simulation
 		}
 
 		public float TimeScale { get; set; } = 1f;
+		public float SecondsPerGameDay { get; set; } = 60f;
 		public bool DebugLogTicks { get; set; }
 
 		public event Action simulationUpdated;
@@ -46,8 +47,6 @@ namespace Prototype.Business.Simulation
 				return;
 			}
 
-			SyncFromState();
-
 			float scaledDelta = deltaSeconds * (TimeScale < 0f ? 0f : TimeScale);
 			if (scaledDelta <= 0f)
 			{
@@ -63,7 +62,7 @@ namespace Prototype.Business.Simulation
 					continue;
 				}
 
-				BusinessSimulationCalculator.SimulateTick(simulationState, m_definitions, scaledDelta);
+				BusinessSimulationCalculator.SimulateTick(simulationState, m_definitions, scaledDelta, SecondsPerGameDay);
 				simulationState.profit = simulationState.accumulatedIncome - simulationState.accumulatedExpenses;
 			}
 
@@ -177,6 +176,10 @@ namespace Prototype.Business.Simulation
 
 				if (state is BusinessSimulationState typedState)
 				{
+					TraderItemDefinitionData cashDeskItem =
+						!string.IsNullOrWhiteSpace(business.cashDeskItemId)
+							? m_definitions?.GetTraderItem(business.cashDeskItemId)
+							: null;
 					typedState.instanceId = business.instanceId;
 					typedState.businessTypeId = business.businessTypeId;
 					typedState.rentPerDay = business.rentPerDay;
@@ -187,12 +190,20 @@ namespace Prototype.Business.Simulation
 					typedState.storageItemId = business.storageItemId;
 					typedState.cashDeskItemId = business.cashDeskItemId;
 					typedState.shelfItemId = business.shelfItemId;
+					typedState.cashCapacity = cashDeskItem != null ? Mathf.Max(0, cashDeskItem.cashCapacity) : 0;
+					typedState.baseProfit = Mathf.Max(0, business.totalProfit);
+					if (typedState.cashCapacity > 0 && typedState.baseProfit > typedState.cashCapacity)
+					{
+						typedState.baseProfit = typedState.cashCapacity;
+					}
 					typedState.selectedSupplierId = business.selectedSupplierId;
 					typedState.autoDeliveryPerDay = business.autoDeliveryPerDay;
 					typedState.markupPercent = business.markupPercent;
 					typedState.hiredCashierContactId = business.hiredCashierContactId;
 					typedState.hiredMerchContactId = business.hiredMerchContactId;
 					typedState.isOpen = business.isOpen;
+					typedState.accumulatedIncome = 0f;
+					typedState.accumulatedExpenses = 0f;
 					typedState.profit = typedState.accumulatedIncome - typedState.accumulatedExpenses;
 				}
 			}

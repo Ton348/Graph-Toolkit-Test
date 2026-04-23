@@ -24,6 +24,10 @@ namespace Prototype.Business.UI
 		public float secondsPerBusinessDay = 60f;
 		public bool autoSimulateServerBusinessDay;
 
+		[Header("UI Refresh")]
+		[Min(0.1f)]
+		public float uiRefreshIntervalSeconds = 1f;
+
 		private BusinessManagementController m_managementController;
 		private BusinessActionFacade m_actionFacade;
 		private BusinessDefinitionsRepository m_definitions;
@@ -35,6 +39,7 @@ namespace Prototype.Business.UI
 		private string m_selectedLotId;
 		private ProfileSyncService m_profileSync;
 		private float m_businessDayTimer;
+		private float m_uiRefreshTimer;
 		private bool m_daySimulationInProgress;
 
 		private void OnEnable()
@@ -42,8 +47,13 @@ namespace Prototype.Business.UI
 			EnsureDependencies();
 			Subscribe();
 			m_businessDayTimer = 0f;
+			m_uiRefreshTimer = 0f;
 			m_daySimulationInProgress = false;
 			m_playerStateSync?.Refresh();
+			if (m_simulationService != null)
+			{
+				m_simulationService.SecondsPerGameDay = Mathf.Max(1f, secondsPerBusinessDay);
+			}
 			Refresh();
 			LogPanelSnapshot("OnEnable");
 		}
@@ -52,11 +62,24 @@ namespace Prototype.Business.UI
 		{
 			Unsubscribe();
 			m_businessDayTimer = 0f;
+			m_uiRefreshTimer = 0f;
 			m_daySimulationInProgress = false;
 		}
 
 		private void Update()
 		{
+			if (m_simulationService != null)
+			{
+				m_simulationService.SecondsPerGameDay = Mathf.Max(1f, secondsPerBusinessDay);
+			}
+
+			m_uiRefreshTimer += Time.deltaTime;
+			if (m_uiRefreshTimer >= Mathf.Max(0.1f, uiRefreshIntervalSeconds))
+			{
+				m_uiRefreshTimer = 0f;
+				RefreshSelected();
+			}
+
 			if (!autoSimulateServerBusinessDay || m_daySimulationInProgress || m_actionFacade == null || m_runtimeService == null)
 			{
 				return;
@@ -508,7 +531,7 @@ namespace Prototype.Business.UI
 			if (!string.IsNullOrWhiteSpace(equippedItemId))
 			{
 				TraderItemDefinitionData equippedItem = m_definitions.GetTraderItem(equippedItemId);
-				if (equippedItem != null && string.Equals(equippedItem.category, category, System.StringComparison.OrdinalIgnoreCase))
+				if (equippedItem != null && IsEquipmentCategoryMatch(equippedItem.category, category))
 				{
 					options.Add(new BusinessDetailsView.IdOption
 					{
@@ -526,7 +549,7 @@ namespace Prototype.Business.UI
 				}
 
 				TraderItemDefinitionData item = m_definitions.GetTraderItem(itemId);
-				if (item == null || !string.Equals(item.category, category, System.StringComparison.OrdinalIgnoreCase))
+				if (item == null || !IsEquipmentCategoryMatch(item.category, category))
 				{
 					continue;
 				}
@@ -614,6 +637,40 @@ namespace Prototype.Business.UI
 			}
 
 			return null;
+		}
+
+		private static bool IsEquipmentCategoryMatch(string itemCategory, string slotCategory)
+		{
+			string normalizedItem = NormalizeEquipmentCategory(itemCategory);
+			string normalizedSlot = NormalizeEquipmentCategory(slotCategory);
+			return !string.IsNullOrWhiteSpace(normalizedItem) &&
+			       !string.IsNullOrWhiteSpace(normalizedSlot) &&
+			       string.Equals(normalizedItem, normalizedSlot, System.StringComparison.OrdinalIgnoreCase);
+		}
+
+		private static string NormalizeEquipmentCategory(string category)
+		{
+			if (string.IsNullOrWhiteSpace(category))
+			{
+				return null;
+			}
+
+			if (category.StartsWith("storage", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return "storage";
+			}
+
+			if (category.StartsWith("cashdesk", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return "cashdesk";
+			}
+
+			if (category.StartsWith("shelf", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return "shelf";
+			}
+
+			return category.Trim();
 		}
 
 		private static void AddIfNotEmpty(HashSet<string> set, string value)

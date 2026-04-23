@@ -146,6 +146,20 @@ namespace Prototype.Business.Data
 	}
 
 	[Serializable]
+	public class PriceDemandRangeDefinitionData
+	{
+		public int minPrice;
+		public int maxPrice;
+		public int dailyDemand;
+	}
+
+	[Serializable]
+	public class PriceDemandDatabaseData
+	{
+		public List<PriceDemandRangeDefinitionData> ranges = new();
+	}
+
+	[Serializable]
 	public class TraderDatabaseData
 	{
 		public List<TraderDefinitionData> traders = new();

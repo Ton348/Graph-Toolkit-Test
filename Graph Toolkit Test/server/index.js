@@ -746,6 +746,14 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
+    case 'collect_business_profit': {
+      console.log('[BusinessServer] action=collect_business_profit');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.collectBusinessProfit(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     case 'unlock_contact': {
       console.log('[BusinessServer] action=unlock_contact');
       const profile = loadPlayerProfile(payload.playerId || 'player');
