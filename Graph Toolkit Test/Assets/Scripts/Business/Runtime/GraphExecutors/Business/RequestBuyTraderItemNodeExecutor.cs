@@ -14,7 +14,7 @@ namespace Prototype.Business.Runtime.GraphExecutors.Business
 	[GameGraphNodeExecutor]
 	public sealed class RequestBuyTraderItemNodeExecutor : GameGraphServerRequestExecutor<RequestBuyTraderItemNode>
 	{
-		protected override UniTask<ServerActionResult> ExecuteRequestAsync(
+		protected override async UniTask<ServerActionResult> ExecuteRequestAsync(
 			RequestBuyTraderItemNode node,
 			GameBootstrap bootstrap,
 			GraphExecutionContext context,
@@ -22,21 +22,21 @@ namespace Prototype.Business.Runtime.GraphExecutors.Business
 		{
 			if (node == null || string.IsNullOrWhiteSpace(node.itemId))
 			{
-				return UniTask.FromResult(ServerActionResult.FailResult("item_id_required", "itemId is required."));
+				return ServerActionResult.FailResult("item_id_required", "itemId is required.");
 			}
 
 			string traderId = ResolveTraderIdByItem(bootstrap, node.itemId);
 			if (string.IsNullOrWhiteSpace(traderId))
 			{
-				return UniTask.FromResult(ServerActionResult.FailResult("trader_not_found", "Trader for item was not found."));
+				return ServerActionResult.FailResult("trader_not_found", "Trader for item was not found.");
 			}
 
 			if (bootstrap.BusinessActionFacade != null)
 			{
-				return bootstrap.BusinessActionFacade.BuyItem(traderId, node.itemId).AsUniTask();
+				return await bootstrap.BusinessActionFacade.BuyItem(traderId, node.itemId).AsUniTask();
 			}
 
-			return bootstrap.GameServer.TryBuyItemAsync(traderId, node.itemId).AsUniTask();
+			return await bootstrap.GameServer.TryBuyItemAsync(traderId, node.itemId).AsUniTask();
 		}
 
 		private static string ResolveTraderIdByItem(GameBootstrap bootstrap, string itemId)

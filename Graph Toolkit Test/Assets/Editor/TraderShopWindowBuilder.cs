@@ -19,13 +19,19 @@ public static class TraderShopWindowBuilder
         GameObject window = FindOrCreateChild(canvas.transform, WindowName);
         ConfigureWindow(window);
 
-        GameObject header = FindOrCreateChild(window.transform, "Header");
+        GameObject dimmer = FindOrCreateChild(window.transform, "Dimmer");
+        ConfigureDimmer(dimmer);
+
+        GameObject panel = FindOrCreateChild(window.transform, "Panel");
+        ConfigurePanel(panel);
+
+        GameObject header = FindOrCreateChild(panel.transform, "Header");
         ConfigureHeader(header);
 
-        GameObject body = FindOrCreateChild(window.transform, "Body");
+        GameObject body = FindOrCreateChild(panel.transform, "Body");
         ConfigureBody(body);
 
-        GameObject footer = FindOrCreateChild(window.transform, "Footer");
+        GameObject footer = FindOrCreateChild(panel.transform, "Footer");
         ConfigureFooter(footer);
 
         Selection.activeGameObject = window;
@@ -39,33 +45,67 @@ public static class TraderShopWindowBuilder
     private static void ConfigureWindow(GameObject window)
     {
         RectTransform rect = EnsureRectTransform(window);
-        rect.anchorMin = new Vector2(0.5f, 0.5f);
-        rect.anchorMax = new Vector2(0.5f, 0.5f);
-        rect.pivot = new Vector2(0.5f, 0.5f);
-        rect.sizeDelta = new Vector2(980f, 700f);
-        rect.anchoredPosition = Vector2.zero;
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
         rect.localScale = Vector3.one;
 
         Image image = EnsureComponent<Image>(window);
-        image.color = new Color(0.11f, 0.13f, 0.18f, 0.95f);
+        image.color = new Color(0f, 0f, 0f, 0f);
+        image.raycastTarget = false;
 
-        VerticalLayoutGroup layout = EnsureComponent<VerticalLayoutGroup>(window);
-        layout.padding = new RectOffset(20, 20, 20, 20);
-        layout.spacing = 14f;
+        CanvasGroup canvasGroup = EnsureComponent<CanvasGroup>(window);
+        canvasGroup.alpha = 1f;
+        canvasGroup.interactable = true;
+        canvasGroup.blocksRaycasts = true;
+    }
+
+    private static void ConfigureDimmer(GameObject dimmer)
+    {
+        RectTransform rect = EnsureRectTransform(dimmer);
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
+        rect.localScale = Vector3.one;
+
+        Image image = EnsureComponent<Image>(dimmer);
+        image.color = new Color(0f, 0f, 0f, 0.55f);
+        image.raycastTarget = true;
+    }
+
+    private static void ConfigurePanel(GameObject panel)
+    {
+        RectTransform rect = EnsureRectTransform(panel);
+        rect.anchorMin = new Vector2(0.5f, 0.5f);
+        rect.anchorMax = new Vector2(0.5f, 0.5f);
+        rect.pivot = new Vector2(0.5f, 0.5f);
+        rect.sizeDelta = new Vector2(980f, 720f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.localScale = Vector3.one;
+
+        Image image = EnsureComponent<Image>(panel);
+        image.color = new Color(0.11f, 0.13f, 0.18f, 0.98f);
+        image.raycastTarget = true;
+
+        VerticalLayoutGroup layout = EnsureComponent<VerticalLayoutGroup>(panel);
+        layout.padding = new RectOffset(24, 24, 24, 24);
+        layout.spacing = 16f;
         layout.childAlignment = TextAnchor.UpperLeft;
         layout.childControlWidth = true;
         layout.childControlHeight = false;
         layout.childForceExpandWidth = true;
         layout.childForceExpandHeight = false;
 
-        ContentSizeFitter fitter = EnsureComponent<ContentSizeFitter>(window);
+        ContentSizeFitter fitter = EnsureComponent<ContentSizeFitter>(panel);
         fitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
         fitter.verticalFit = ContentSizeFitter.FitMode.Unconstrained;
     }
 
     private static void ConfigureHeader(GameObject header)
     {
-        ConfigureRowContainer(header, 72f, 12f);
+        ConfigureRowContainer(header, 86f, 12f);
 
         GameObject left = FindOrCreateChild(header.transform, "Left");
         RectTransform leftRect = EnsureRectTransform(left);
@@ -73,7 +113,7 @@ public static class TraderShopWindowBuilder
 
         LayoutElement leftLayout = EnsureComponent<LayoutElement>(left);
         leftLayout.flexibleWidth = 1f;
-        leftLayout.minHeight = 72f;
+        leftLayout.minHeight = 86f;
 
         VerticalLayoutGroup leftGroup = EnsureComponent<VerticalLayoutGroup>(left);
         leftGroup.padding = new RectOffset(0, 0, 0, 0);
@@ -85,9 +125,9 @@ public static class TraderShopWindowBuilder
         leftGroup.childForceExpandHeight = false;
 
         CreateText(left.transform, "TitleText", "Магазин торговца", 30, FontStyles.Bold, TextAlignmentOptions.Left, Color.white, true);
-        CreateText(left.transform, "TraderNameText", "Торговец", 22, FontStyles.Normal, TextAlignmentOptions.Left, new Color(0.82f, 0.86f, 0.95f), true);
+        CreateText(left.transform, "TraderNameText", "Торговец", 20, FontStyles.Normal, TextAlignmentOptions.Left, new Color(0.82f, 0.86f, 0.95f), true);
 
-        CreateButton(header.transform, "CloseButton", "X", 60f, 48f, new Color(0.65f, 0.65f, 0.65f, 1f));
+        CreateButton(header.transform, "CloseButton", "X", 60f, 48f, new Color(0.42f, 0.42f, 0.42f, 1f));
     }
 
     private static void ConfigureBody(GameObject body)
@@ -97,15 +137,16 @@ public static class TraderShopWindowBuilder
 
         LayoutElement layout = EnsureComponent<LayoutElement>(body);
         layout.flexibleHeight = 1f;
-        layout.minHeight = 520f;
+        layout.minHeight = 540f;
         layout.flexibleWidth = 1f;
 
         Image image = EnsureComponent<Image>(body);
-        image.color = new Color(1f, 1f, 1f, 0.04f);
+        image.color = new Color(1f, 1f, 1f, 0.03f);
+        image.raycastTarget = false;
 
         VerticalLayoutGroup group = EnsureComponent<VerticalLayoutGroup>(body);
         group.padding = new RectOffset(0, 0, 0, 0);
-        group.spacing = 8f;
+        group.spacing = 10f;
         group.childAlignment = TextAnchor.UpperLeft;
         group.childControlWidth = true;
         group.childControlHeight = false;
@@ -118,7 +159,7 @@ public static class TraderShopWindowBuilder
 
     private static void ConfigureFooter(GameObject footer)
     {
-        ConfigureRowContainer(footer, 40f, 12f);
+        ConfigureRowContainer(footer, 42f, 12f);
         CreateText(
             footer.transform,
             "StatusText",
@@ -137,27 +178,31 @@ public static class TraderShopWindowBuilder
 
         LayoutElement layout = EnsureComponent<LayoutElement>(scrollView);
         layout.flexibleHeight = 1f;
-        layout.minHeight = 500f;
+        layout.minHeight = 520f;
         layout.flexibleWidth = 1f;
 
         Image image = EnsureComponent<Image>(scrollView);
-        image.color = new Color(1f, 1f, 1f, 0.02f);
+        image.color = new Color(1f, 1f, 1f, 0.015f);
+        image.raycastTarget = false;
 
         ScrollRect scrollRect = EnsureComponent<ScrollRect>(scrollView);
         scrollRect.horizontal = false;
         scrollRect.vertical = true;
         scrollRect.movementType = ScrollRect.MovementType.Clamped;
-        scrollRect.scrollSensitivity = 24f;
+        scrollRect.scrollSensitivity = 28f;
+        scrollRect.inertia = true;
 
         GameObject viewport = FindOrCreateChild(scrollView.transform, "Viewport");
         RectTransform viewportRect = EnsureRectTransform(viewport);
         viewportRect.anchorMin = Vector2.zero;
         viewportRect.anchorMax = Vector2.one;
         viewportRect.offsetMin = Vector2.zero;
-        viewportRect.offsetMax = Vector2.zero;
+        viewportRect.offsetMax = new Vector2(-18f, 0f);
+        viewportRect.localScale = Vector3.one;
 
         Image viewportImage = EnsureComponent<Image>(viewport);
         viewportImage.color = new Color(1f, 1f, 1f, 0.01f);
+        viewportImage.raycastTarget = true;
 
         Mask mask = EnsureComponent<Mask>(viewport);
         mask.showMaskGraphic = false;
@@ -169,6 +214,11 @@ public static class TraderShopWindowBuilder
         contentRect.pivot = new Vector2(0.5f, 1f);
         contentRect.anchoredPosition = Vector2.zero;
         contentRect.sizeDelta = new Vector2(0f, 0f);
+        contentRect.localScale = Vector3.one;
+
+        Image contentImage = EnsureComponent<Image>(content);
+        contentImage.color = new Color(0f, 0f, 0f, 0f);
+        contentImage.raycastTarget = false;
 
         VerticalLayoutGroup contentGroup = EnsureComponent<VerticalLayoutGroup>(content);
         contentGroup.padding = new RectOffset(0, 0, 0, 0);
@@ -183,12 +233,67 @@ public static class TraderShopWindowBuilder
         contentFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
         contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
+        GameObject scrollbar = FindOrCreateChild(scrollView.transform, "Scrollbar Vertical");
+        ConfigureVerticalScrollbar(scrollbar);
+
         scrollRect.viewport = viewportRect;
         scrollRect.content = contentRect;
+        scrollRect.verticalScrollbar = scrollbar.GetComponent<Scrollbar>();
+        scrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.AutoHideAndExpandViewport;
+        scrollRect.verticalScrollbarSpacing = 8f;
 
         GameObject template = FindOrCreateChild(content.transform, "ItemCardTemplate");
         ConfigureItemCardTemplate(template);
         template.SetActive(false);
+    }
+
+    private static void ConfigureVerticalScrollbar(GameObject scrollbar)
+    {
+        RectTransform rect = EnsureRectTransform(scrollbar);
+        rect.anchorMin = new Vector2(1f, 0f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.sizeDelta = new Vector2(18f, 0f);
+        rect.anchoredPosition = Vector2.zero;
+        rect.offsetMin = new Vector2(-18f, 0f);
+        rect.offsetMax = Vector2.zero;
+        rect.localScale = Vector3.one;
+
+        Image background = EnsureComponent<Image>(scrollbar);
+        background.color = new Color(1f, 1f, 1f, 0.08f);
+        background.raycastTarget = true;
+
+        Scrollbar bar = EnsureComponent<Scrollbar>(scrollbar);
+        bar.direction = Scrollbar.Direction.BottomToTop;
+        bar.numberOfSteps = 0;
+        bar.size = 0.2f;
+
+        GameObject slidingArea = FindOrCreateChild(scrollbar.transform, "Sliding Area");
+        RectTransform slidingRect = EnsureRectTransform(slidingArea);
+        slidingRect.anchorMin = Vector2.zero;
+        slidingRect.anchorMax = Vector2.one;
+        slidingRect.offsetMin = new Vector2(3f, 3f);
+        slidingRect.offsetMax = new Vector2(-3f, -3f);
+        slidingRect.localScale = Vector3.one;
+
+        Image slidingImage = EnsureComponent<Image>(slidingArea);
+        slidingImage.color = new Color(0f, 0f, 0f, 0f);
+        slidingImage.raycastTarget = false;
+
+        GameObject handle = FindOrCreateChild(slidingArea.transform, "Handle");
+        RectTransform handleRect = EnsureRectTransform(handle);
+        handleRect.anchorMin = new Vector2(0f, 0.5f);
+        handleRect.anchorMax = new Vector2(1f, 0.5f);
+        handleRect.pivot = new Vector2(0.5f, 0.5f);
+        handleRect.sizeDelta = new Vector2(0f, 80f);
+        handleRect.localScale = Vector3.one;
+
+        Image handleImage = EnsureComponent<Image>(handle);
+        handleImage.color = new Color(0.72f, 0.72f, 0.72f, 1f);
+        handleImage.raycastTarget = true;
+
+        bar.targetGraphic = handleImage;
+        bar.handleRect = handleRect;
     }
 
     private static void ConfigureItemCardTemplate(GameObject card)
@@ -198,11 +303,12 @@ public static class TraderShopWindowBuilder
 
         LayoutElement layout = EnsureComponent<LayoutElement>(card);
         layout.flexibleWidth = 1f;
-        layout.minHeight = 150f;
-        layout.preferredHeight = 150f;
+        layout.minHeight = 176f;
+        layout.preferredHeight = 176f;
 
         Image image = EnsureComponent<Image>(card);
         image.color = new Color(1f, 1f, 1f, 0.08f);
+        image.raycastTarget = false;
 
         VerticalLayoutGroup group = EnsureComponent<VerticalLayoutGroup>(card);
         group.padding = new RectOffset(16, 16, 14, 14);
@@ -218,7 +324,7 @@ public static class TraderShopWindowBuilder
         CreateText(card.transform, "ItemStatsText", "Характеристики", 18, FontStyles.Normal, TextAlignmentOptions.TopLeft, new Color(0.75f, 0.92f, 0.78f), true);
 
         GameObject bottom = FindOrCreateChild(card.transform, "BottomRow");
-        ConfigureRowContainer(bottom, 40f, 12f);
+        ConfigureRowContainer(bottom, 44f, 12f);
 
         CreateText(bottom.transform, "PriceText", "Цена: 0", 22, FontStyles.Bold, TextAlignmentOptions.Left, new Color(1f, 0.95f, 0.55f), true);
         CreateButton(bottom.transform, "BuyButton", "Купить", 150f, 40f, new Color(0.17f, 0.8f, 0.25f, 1f));
@@ -317,6 +423,7 @@ public static class TraderShopWindowBuilder
         tmp.alignment = alignment;
         tmp.color = color;
         tmp.enableWordWrapping = true;
+        tmp.raycastTarget = false;
 
         LayoutElement layout = EnsureComponent<LayoutElement>(go);
         layout.minHeight = 24f;
@@ -339,6 +446,7 @@ public static class TraderShopWindowBuilder
 
         Image image = EnsureComponent<Image>(go);
         image.color = backgroundColor;
+        image.raycastTarget = true;
 
         Button button = EnsureComponent<Button>(go);
         ColorBlock colors = button.colors;
@@ -347,6 +455,7 @@ public static class TraderShopWindowBuilder
         colors.pressedColor = backgroundColor * 0.9f;
         colors.selectedColor = colors.highlightedColor;
         button.colors = colors;
+        button.targetGraphic = image;
 
         LayoutElement layout = EnsureComponent<LayoutElement>(go);
         layout.preferredWidth = width;
@@ -362,12 +471,14 @@ public static class TraderShopWindowBuilder
         tmp.fontStyle = FontStyles.Bold;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.color = Color.white;
+        tmp.raycastTarget = false;
 
         RectTransform labelRect = EnsureRectTransform(labelObject);
         labelRect.anchorMin = Vector2.zero;
         labelRect.anchorMax = Vector2.one;
         labelRect.offsetMin = Vector2.zero;
         labelRect.offsetMax = Vector2.zero;
+        labelRect.localScale = Vector3.one;
 
         return button;
     }
