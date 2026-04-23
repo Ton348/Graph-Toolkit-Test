@@ -523,7 +523,9 @@ namespace Prototype.Business.Services
 			{
 				instanceId = $"local_{Guid.NewGuid():N}",
 				lotId = lotId,
-				businessTypeId = null,
+				businessTypeId = lotDef.allowedBusinessTypes != null && lotDef.allowedBusinessTypes.Count > 0
+					? lotDef.allowedBusinessTypes[0]
+					: null,
 				isOpen = false,
 				rentPerDay = lotDef.rentPerDay < 0 ? 0 : lotDef.rentPerDay,
 				storageCapacity = 0,

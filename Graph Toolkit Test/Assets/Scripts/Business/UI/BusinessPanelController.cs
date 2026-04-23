@@ -277,6 +277,13 @@ namespace Prototype.Business.UI
 					business => ResolveLotDisplayName(business != null ? business.lotId : null));
 			}
 
+			if (businesses.Count == 0)
+			{
+				m_selectedLotId = null;
+				OnBusinessSelected(null);
+				return;
+			}
+
 			if (string.IsNullOrWhiteSpace(m_selectedLotId) && businesses.Count > 0)
 			{
 				m_selectedLotId = businesses[0].lotId;

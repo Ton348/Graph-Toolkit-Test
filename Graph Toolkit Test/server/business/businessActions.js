@@ -24,37 +24,20 @@ function normalizeOptionalId(value) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function createBusinessInstance(lotId, rentPerDay) {
+function createBusinessInstance(template, lotId, rentPerDay, businessTypeId) {
   const instanceId = `biz_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+  const source = template && typeof template === 'object' ? template : {};
   return {
+    ...JSON.parse(JSON.stringify(source)),
     instanceId,
     lotId,
-    businessTypeId: null,
+    businessTypeId: businessTypeId || source.businessTypeId || '',
     isOpen: false,
-    rentPerDay: Number.isFinite(rentPerDay) && rentPerDay >= 0 ? rentPerDay : 0,
-    storageCapacity: 0,
-    shelfCapacity: 0,
-    storageStock: 0,
-    shelfStock: 0,
-    storageItemId: null,
-    cashDeskItemId: null,
-    shelfItemId: null,
-    selectedSupplierId: null,
-    autoDeliveryPerDay: 0,
-    markupPercent: 0,
-    hiredCashierContactId: null,
-    hiredMerchContactId: null,
-    hiredLogistContactId: null,
-    lastDayRevenue: 0,
-    lastDayExpenses: 0,
-    lastDayProfit: 0,
-    totalRevenue: 0,
-    totalExpenses: 0,
-    totalProfit: 0
+    rentPerDay: Number.isFinite(rentPerDay) && rentPerDay >= 0 ? rentPerDay : 0
   };
 }
 
-function rentBusiness(profile, data, lotDefs) {
+function rentBusiness(profile, data, lotDefs, businessDefs) {
   const lotId = data && data.lotId;
   const lotCheck = requireLotId(lotId);
   if (lotCheck) return lotCheck;
@@ -68,7 +51,14 @@ function rentBusiness(profile, data, lotDefs) {
     return fail('LotNotFound', 'Lot not found.');
   }
 
-  const business = createBusinessInstance(lotId, lot.rentPerDay);
+  const businessTypeId = Array.isArray(lot.allowedBusinessTypes) && lot.allowedBusinessTypes.length > 0
+    ? String(lot.allowedBusinessTypes[0] || '').trim()
+    : '';
+  const business = createBusinessInstance(
+    businessDefs?.businessInstanceTemplate,
+    lotId,
+    lot.rentPerDay,
+    businessTypeId);
   profile.businesses.push(business);
   return ok('Rent business success.');
 }
@@ -90,13 +80,7 @@ function assignBusinessType(profile, data, businessDefs, lotDefs) {
     return fail('BusinessTypeNotAllowedForLot', 'Business type not allowed for this lot.');
   }
 
-  const typeDef = businessDefs && businessDefs.businessTypeById && businessDefs.businessTypeById.get(businessTypeId);
-  if (!typeDef) return fail('BusinessTypeNotFound', 'Business type not found.');
-
   business.businessTypeId = businessTypeId;
-  business.storageCapacity = Number.isFinite(typeDef.defaultStorageCapacity) ? typeDef.defaultStorageCapacity : 0;
-  business.shelfCapacity = Number.isFinite(typeDef.defaultShelfCapacity) ? typeDef.defaultShelfCapacity : 0;
-
   return ok('Assign business type success.');
 }
 
@@ -200,9 +184,6 @@ function openBusiness(profile, data, businessDefs) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
   if (!business.businessTypeId) return fail('BusinessTypeMissing', 'Business type not assigned.');
-
-  const typeDef = businessDefs && businessDefs.businessTypeById && businessDefs.businessTypeById.get(business.businessTypeId);
-  if (!typeDef) return fail('BusinessTypeNotFound', 'Business type not found.');
 
   const hasRequiredEquipment =
     !!(business.storageItemId && String(business.storageItemId).trim()) &&

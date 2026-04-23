@@ -630,7 +630,7 @@ function handleAction(req, res, payload) {
     case 'rent_business': {
       console.log('[BusinessServer] action=rent_business');
       const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.rentBusiness(profile, payload.data, lotDefs);
+      const result = businessActions.rentBusiness(profile, payload.data, lotDefs, businessDefs);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);

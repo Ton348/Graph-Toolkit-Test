@@ -283,6 +283,7 @@ function loadBusinessDefinitions() {
   fs.mkdirSync(BUSINESS_DIR, { recursive: true });
 
   const businessTypes = readJson(path.join(BUSINESS_DIR, 'business_types.json'));
+  const businessInstanceTemplate = readJson(path.join(BUSINESS_DIR, 'business_instance_template.json'));
   const modules = readJson(path.join(BUSINESS_DIR, 'business_modules.json'));
   const peopleData = readJson(path.join(BUSINESS_DIR, 'people.json'));
   const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
@@ -383,6 +384,7 @@ function loadBusinessDefinitions() {
 
   return {
     businessTypes,
+    businessInstanceTemplate,
     modules,
     suppliers,
     staffRoles,

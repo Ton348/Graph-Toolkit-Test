@@ -54,6 +54,12 @@ namespace Prototype.Business.UI
 		[SerializeField]
 		private GameObject staffTabRoot;
 
+		[SerializeField]
+		private GameObject tabsRoot;
+
+		[SerializeField]
+		private GameObject tabContentRoot;
+
 		[Header("Overview")]
 		[SerializeField]
 		private TMP_Text incomeValueText;
@@ -127,6 +133,7 @@ namespace Prototype.Business.UI
 		{
 			TryResolveWarehouseRowBindings();
 			TryResolveProfitRowBindings();
+			TryResolveTabRoots();
 
 			HookButton(closeButton, () => closeClicked?.Invoke());
 			HookButton(openCloseButton, () => openCloseClicked?.Invoke());
@@ -193,6 +200,56 @@ namespace Prototype.Business.UI
 			tabChanged?.Invoke(tab);
 		}
 
+		public void SetBusinessTypeSelectedState(bool hasBusinessType)
+		{
+			if (tabsRoot != null)
+			{
+				tabsRoot.SetActive(hasBusinessType);
+			}
+
+			if (tabContentRoot != null)
+			{
+				tabContentRoot.SetActive(hasBusinessType);
+			}
+
+			if (overviewTabButton != null)
+			{
+				overviewTabButton.gameObject.SetActive(hasBusinessType);
+			}
+
+			if (setupTabButton != null)
+			{
+				setupTabButton.gameObject.SetActive(hasBusinessType);
+			}
+
+			if (staffTabButton != null)
+			{
+				staffTabButton.gameObject.SetActive(hasBusinessType);
+			}
+
+			if (!hasBusinessType)
+			{
+				if (overviewTabRoot != null)
+				{
+					overviewTabRoot.SetActive(false);
+				}
+
+				if (setupTabRoot != null)
+				{
+					setupTabRoot.SetActive(false);
+				}
+
+				if (staffTabRoot != null)
+				{
+					staffTabRoot.SetActive(false);
+				}
+			}
+			else
+			{
+				SetTab(TabType.Overview);
+			}
+		}
+
 		public void SetBusinessOpenState(bool isOpen)
 		{
 			m_isBusinessOpen = isOpen;
@@ -243,6 +300,7 @@ namespace Prototype.Business.UI
 			m_currentLotId = nextLotId;
 			m_currentBusiness = business;
 			SetBusinessOpenState(business != null && business.isOpen);
+			SetBusinessTypeSelectedState(business != null && !string.IsNullOrWhiteSpace(business.businessTypeId));
 
 			if (titleText != null)
 			{
@@ -729,6 +787,27 @@ namespace Prototype.Business.UI
 				if (valueTransform != null)
 				{
 					warehouseDailyValueText = valueTransform.GetComponent<TMP_Text>();
+				}
+			}
+		}
+
+		private void TryResolveTabRoots()
+		{
+			if (tabsRoot == null)
+			{
+				Transform tabs = transform.Find("Tabs");
+				if (tabs != null)
+				{
+					tabsRoot = tabs.gameObject;
+				}
+			}
+
+			if (tabContentRoot == null)
+			{
+				Transform content = transform.Find("TabContentRoot");
+				if (content != null)
+				{
+					tabContentRoot = content.gameObject;
 				}
 			}
 		}

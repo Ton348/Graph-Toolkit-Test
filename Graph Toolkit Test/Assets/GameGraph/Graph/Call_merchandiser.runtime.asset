@@ -12,89 +12,89 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: Call_merchandiser.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: 59ae5d75-1255-400c-8b98-412f34d6a88a
+  startNodeId: 30e6517f-6bb2-4a74-8034-60b89710823b
   nodes:
-  - rid: 7634389146110787850
-  - rid: 7634389146110787851
-  - rid: 7634389146110787852
-  - rid: 7634389146110787853
-  - rid: 7634389146110787854
-  - rid: 7634389146110787855
-  - rid: 7634389146110787856
-  - rid: 7634389146110787857
-  - rid: 7634389146110787858
-  - rid: 7634389146110787859
-  - rid: 7634389146110787860
-  - rid: 7634389146110787861
-  - rid: 7634389146110787862
-  - rid: 7634389146110787863
-  - rid: 7634389146110787864
-  - rid: 7634389146110787865
-  - rid: 7634389146110787866
-  - rid: 7634389146110787867
-  - rid: 7634389146110787868
-  - rid: 7634389146110787869
-  - rid: 7634389146110787870
+  - rid: 7634389151303860850
+  - rid: 7634389151303860851
+  - rid: 7634389151303860852
+  - rid: 7634389151303860853
+  - rid: 7634389151303860854
+  - rid: 7634389151303860855
+  - rid: 7634389151303860856
+  - rid: 7634389151303860857
+  - rid: 7634389151303860858
+  - rid: 7634389151303860859
+  - rid: 7634389151303860860
+  - rid: 7634389151303860861
+  - rid: 7634389151303860862
+  - rid: 7634389151303860863
+  - rid: 7634389151303860864
+  - rid: 7634389151303860865
+  - rid: 7634389151303860866
+  - rid: 7634389151303860867
+  - rid: 7634389151303860868
+  - rid: 7634389151303860869
+  - rid: 7634389151303860870
   references:
     version: 2
     RefIds:
-    - rid: 7634389146110787850
+    - rid: 7634389151303860850
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 59ae5d75-1255-400c-8b98-412f34d6a88a
+        nodeId: 30e6517f-6bb2-4a74-8034-60b89710823b
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: 4d173ddb-cbfe-4868-b019-d307f84c3b87
-    - rid: 7634389146110787851
+        nextNodeId: 81f135f1-a1a1-47b1-b101-1f7232231c0e
+    - rid: 7634389151303860851
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9364ae02-a661-4f46-b2bb-85187e990722
+        nodeId: 44463c68-9129-43fa-b428-6fcf57799f2a
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: fa1c27ae-103a-4ae4-84fd-474e50011f46
+        nextNodeId: 820f4a48-ad10-42b7-a0af-97c07a7fd740
         dialogueTitle: "\u0414\u043E\u0441\u043A\u0430 \u043E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u0439"
         body: "\u0418\u0449\u0443 \u0440\u0430\u0431\u043E\u0442\u0443 \u0440\u0430\u0437\u043D\u043E\u0440\u0430\u0431\u043E\u0447\u0438\u043C,
           \u0437\u0432\u043E\u043D\u0438!"
-    - rid: 7634389146110787852
+    - rid: 7634389151303860852
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: fa1c27ae-103a-4ae4-84fd-474e50011f46
+        nodeId: 820f4a48-ad10-42b7-a0af-97c07a7fd740
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
           \u0438\u0433\u0440\u043E\u043A\u0430"
         options:
         - label: "\u041F\u043E\u0437\u0432\u043E\u043D\u0438\u0442\u044C"
-          nextNodeId: 1498004c-0df3-44f7-8a9d-704572ebada3
+          nextNodeId: 721c9cda-292e-4f0d-b127-4ad7a15ef1d3
         - label: "\u0423\u0439\u0442\u0438"
-          nextNodeId: c61af435-5d4e-4a11-8499-d3027a867d20
+          nextNodeId: cdaeb615-edd7-4a51-9bbe-29f1baeaa63e
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 7634389146110787853
+    - rid: 7634389151303860853
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 1498004c-0df3-44f7-8a9d-704572ebada3
+        nodeId: 721c9cda-292e-4f0d-b127-4ad7a15ef1d3
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 2bc180ce-9019-469c-be11-6518f4551fb6
+        nextNodeId: 2120be76-1b3e-40bc-bab4-2377926dca86
         dialogueTitle: "\u0420\u0430\u0437\u043D\u043E\u0440\u0430\u0431\u043E\u0447\u0438\u0439"
         body: "\u0410\u043B\u043B\u043E, \u0441\u043B\u0443\u0448\u0430\u044E \u0432\u0430\u0441!"
-    - rid: 7634389146110787854
+    - rid: 7634389151303860854
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: c61af435-5d4e-4a11-8499-d3027a867d20
+        nodeId: cdaeb615-edd7-4a51-9bbe-29f1baeaa63e
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-    - rid: 7634389146110787855
+    - rid: 7634389151303860855
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 2bc180ce-9019-469c-be11-6518f4551fb6
+        nodeId: 2120be76-1b3e-40bc-bab4-2377926dca86
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
@@ -102,28 +102,28 @@ MonoBehaviour:
         options:
         - label: "\u042F \u043F\u043E \u043E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u044E,
             \u0440\u0430\u0431\u043E\u0442\u0443 \u0435\u0449\u0435 \u0438\u0449\u0438\u0442\u0435?"
-          nextNodeId: ba326da1-f306-497f-9b9d-bb02f7037201
+          nextNodeId: bf046498-2770-499b-8c81-fec43f7a96a2
         - label: "\u0420\u0430\u0431\u043E\u0442\u0443 \u0438\u0449\u0435\u0448\u044C?"
-          nextNodeId: ba326da1-f306-497f-9b9d-bb02f7037201
+          nextNodeId: bf046498-2770-499b-8c81-fec43f7a96a2
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 7634389146110787856
+    - rid: 7634389151303860856
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: ba326da1-f306-497f-9b9d-bb02f7037201
+        nodeId: bf046498-2770-499b-8c81-fec43f7a96a2
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 21870873-5a24-4804-9450-d60a30d9c392
+        nextNodeId: 891e1fcf-deab-4ce8-a4ce-d60892355c85
         dialogueTitle: "\u0420\u0430\u0437\u043D\u043E\u0440\u0430\u0431\u043E\u0447\u0438\u0439"
         body: "\u0414\u0430 \u0434\u0430, \u0433\u043E\u0442\u043E\u0432 \u043D\u0430
           \u043B\u044E\u0431\u0443\u044E \u0440\u0430\u0431\u043E\u0442\u0443!"
-    - rid: 7634389146110787857
+    - rid: 7634389151303860857
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 21870873-5a24-4804-9450-d60a30d9c392
+        nodeId: 891e1fcf-deab-4ce8-a4ce-d60892355c85
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
@@ -133,79 +133,79 @@ MonoBehaviour:
             \u0442\u0432\u043E\u0439 \u043D\u043E\u043C\u0435\u0440, \u0435\u0441\u043B\u0438
             \u0447\u0442\u043E\u0442\u043E \u043F\u043E\u044F\u0432\u0438\u0442\u0441\u044F
             \u043D\u0430\u0431\u0435\u0440\u0443."
-          nextNodeId: 38ac01ca-f341-4a03-951a-6410b5ecb28d
+          nextNodeId: 3129b126-f52f-4130-a11a-d6961048de48
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 7634389146110787858
+    - rid: 7634389151303860858
       type: {class: RequestUnlockContactNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 38ac01ca-f341-4a03-951a-6410b5ecb28d
+        nodeId: 3129b126-f52f-4130-a11a-d6961048de48
         title: RequestUnlockContactNode
         description: 
-        successNodeId: 6e8145a5-26f6-42f7-8989-63468fa01649
-        failNodeId: 6e8145a5-26f6-42f7-8989-63468fa01649
+        successNodeId: 20da60e3-b5ae-404c-bdbb-ee0fd3eb94cd
+        failNodeId: 20da60e3-b5ae-404c-bdbb-ee0fd3eb94cd
         contactId: merch_1
-    - rid: 7634389146110787859
+    - rid: 7634389151303860859
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 6e8145a5-26f6-42f7-8989-63468fa01649
+        nodeId: 20da60e3-b5ae-404c-bdbb-ee0fd3eb94cd
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-    - rid: 7634389146110787860
+    - rid: 7634389151303860860
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9f7ed6b9-195d-411f-aa4b-394940ce1dd0
+        nodeId: 343c4410-390c-466b-bcbd-11d44155f9e0
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 108cec68-629e-413c-ba9e-db7f7cd6929b
+        nextNodeId: 1df80bf6-3e6a-440d-a7d0-5a3a774156ed
         dialogueTitle: "\u041A\u0430\u0441\u0441\u0438\u0440"
         body: "\u0410\u043B\u043B\u0435, \u0430\u043B\u043B\u0435!"
-    - rid: 7634389146110787861
+    - rid: 7634389151303860861
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 108cec68-629e-413c-ba9e-db7f7cd6929b
+        nodeId: 1df80bf6-3e6a-440d-a7d0-5a3a774156ed
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
           \u0438\u0433\u0440\u043E\u043A\u0430"
         options:
         - label: "\u0420\u0430\u0431\u043E\u0442\u0443 \u0438\u0449\u0438\u0442\u0435? "
-          nextNodeId: 9f74cd3f-5e50-4957-8cbd-1478202148d5
+          nextNodeId: 77476356-0407-49f2-9595-abf94a622975
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 7634389146110787862
+    - rid: 7634389151303860862
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9f74cd3f-5e50-4957-8cbd-1478202148d5
+        nodeId: 77476356-0407-49f2-9595-abf94a622975
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 8ed001ef-8014-43cd-9cec-2a8d6b4e2827
+        nextNodeId: b0ef631e-70ec-42c4-a9fd-8b11f4d85dbf
         dialogueTitle: "\u041A\u0430\u0441\u0441\u0438\u0440"
         body: "\u0414\u0430, \u0434\u0430!"
-    - rid: 7634389146110787863
+    - rid: 7634389151303860863
       type: {class: RequestUnlockContactNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 8ed001ef-8014-43cd-9cec-2a8d6b4e2827
+        nodeId: b0ef631e-70ec-42c4-a9fd-8b11f4d85dbf
         title: RequestUnlockContactNode
         description: 
-        successNodeId: ef273088-8dc2-4a1a-9b0a-47a7421c1339
-        failNodeId: 6e8145a5-26f6-42f7-8989-63468fa01649
+        successNodeId: 0dffe5da-4308-4fe8-834e-4caece92a7c1
+        failNodeId: 20da60e3-b5ae-404c-bdbb-ee0fd3eb94cd
         contactId: cashier_1
-    - rid: 7634389146110787864
+    - rid: 7634389151303860864
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: ef273088-8dc2-4a1a-9b0a-47a7421c1339
+        nodeId: 0dffe5da-4308-4fe8-834e-4caece92a7c1
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
@@ -213,73 +213,73 @@ MonoBehaviour:
         options:
         - label: "\u0417\u0430\u043F\u0438\u0441\u0430\u043B \u0432\u0430\u0448 \u043A\u043E\u043D\u0442\u0430\u043A\u0442,
             \u0434\u043E \u0441\u0432\u0438\u0434\u0430\u043D\u0438\u044F!"
-          nextNodeId: 6e8145a5-26f6-42f7-8989-63468fa01649
+          nextNodeId: 20da60e3-b5ae-404c-bdbb-ee0fd3eb94cd
         - label: 
-          nextNodeId: 6e8145a5-26f6-42f7-8989-63468fa01649
-        - label: 
-          nextNodeId: 
+          nextNodeId: 20da60e3-b5ae-404c-bdbb-ee0fd3eb94cd
         - label: 
           nextNodeId: 
-    - rid: 7634389146110787865
+        - label: 
+          nextNodeId: 
+    - rid: 7634389151303860865
       type: {class: CheckContactKnownNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 4d173ddb-cbfe-4868-b019-d307f84c3b87
+        nodeId: 81f135f1-a1a1-47b1-b101-1f7232231c0e
         title: CheckContactKnownNode
         description: 
-        trueNodeId: 4d006aca-be2d-4f79-ae9a-9b8d51276c5b
-        falseNodeId: 9364ae02-a661-4f46-b2bb-85187e990722
+        trueNodeId: 03849774-aeac-43ff-a1a5-8775c619f008
+        falseNodeId: 44463c68-9129-43fa-b428-6fcf57799f2a
         contactId: merch_1
-    - rid: 7634389146110787866
+    - rid: 7634389151303860866
       type: {class: CheckContactKnownNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: 4d006aca-be2d-4f79-ae9a-9b8d51276c5b
+        nodeId: 03849774-aeac-43ff-a1a5-8775c619f008
         title: CheckContactKnownNode
         description: 
-        trueNodeId: 31585b4e-cec5-4aa5-bc5f-de341cb05d6d
-        falseNodeId: 1dc7f7ac-66e2-4063-8a05-f26c28ff5d23
+        trueNodeId: f610f592-0899-4d1a-93d9-662ddfe3fb06
+        falseNodeId: 91def6b5-4861-4d34-99ab-c24b614903b5
         contactId: cashier_1
-    - rid: 7634389146110787867
+    - rid: 7634389151303860867
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 1dc7f7ac-66e2-4063-8a05-f26c28ff5d23
+        nodeId: 91def6b5-4861-4d34-99ab-c24b614903b5
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 2bd699bd-3a32-438d-a6d2-3524232cf506
+        nextNodeId: 3b1a56c7-298a-4a93-a1cf-be8375913f91
         dialogueTitle: "\u0414\u043E\u0441\u043A\u0430 \u043E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u0439"
         body: "\u0418\u0449\u0443 \u0440\u0430\u0431\u043E\u0442\u0443 \u043A\u0430\u0441\u0441\u0438\u0440\u0430,
           \u0437\u0432\u043E\u043D\u0438!"
-    - rid: 7634389146110787868
+    - rid: 7634389151303860868
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 2bd699bd-3a32-438d-a6d2-3524232cf506
+        nodeId: 3b1a56c7-298a-4a93-a1cf-be8375913f91
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
           \u0438\u0433\u0440\u043E\u043A\u0430"
         options:
         - label: "\u041F\u043E\u0437\u0432\u043E\u043D\u0438\u0442\u044C"
-          nextNodeId: 9f7ed6b9-195d-411f-aa4b-394940ce1dd0
+          nextNodeId: 343c4410-390c-466b-bcbd-11d44155f9e0
         - label: "\u0423\u0439\u0442\u0438"
-          nextNodeId: 2ea29c04-f452-4a40-a58a-e80977ee7d12
+          nextNodeId: 8471ad70-9401-4215-b93a-2608ca5be4ea
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 7634389146110787869
+    - rid: 7634389151303860869
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 31585b4e-cec5-4aa5-bc5f-de341cb05d6d
+        nodeId: f610f592-0899-4d1a-93d9-662ddfe3fb06
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 2ea29c04-f452-4a40-a58a-e80977ee7d12
+        nextNodeId: 8471ad70-9401-4215-b93a-2608ca5be4ea
         dialogueTitle: "\u0414\u043E\u0441\u043A\u0430 \u043E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u0439"
         body: "\u041E\u0431\u044A\u044F\u0432\u043B\u0435\u043D\u0438\u0439 \u043D\u0435\u0442."
-    - rid: 7634389146110787870
+    - rid: 7634389151303860870
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 2ea29c04-f452-4a40-a58a-e80977ee7d12
+        nodeId: 8471ad70-9401-4215-b93a-2608ca5be4ea
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
