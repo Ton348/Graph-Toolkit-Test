@@ -471,7 +471,9 @@ function validateEquipmentItem(profile, businessDefs, itemId, requiredCategory) 
     return fail('ItemNotFound', `Item '${itemId}' not found.`);
   }
 
-  if (normalizeEquipmentCategory(item.category) !== normalizeEquipmentCategory(requiredCategory)) {
+  const itemCategory = resolveEquipmentSlotKey(itemId, item.category);
+  const requiredSlot = resolveEquipmentSlotKey(requiredCategory, requiredCategory);
+  if (itemCategory !== requiredSlot) {
     return fail('InvalidItemCategory', `Item '${itemId}' is not category '${requiredCategory}'.`);
   }
 
@@ -485,6 +487,15 @@ function normalizeEquipmentCategory(category) {
   if (trimmed.startsWith('cashdesk')) return 'cashdesk';
   if (trimmed.startsWith('shelf')) return 'shelf';
   return trimmed;
+}
+
+function resolveEquipmentSlotKey(itemId, category) {
+  const normalizedCategory = normalizeEquipmentCategory(category);
+  if (normalizedCategory) {
+    return normalizedCategory;
+  }
+
+  return normalizeEquipmentCategory(itemId);
 }
 
 function setBusinessEquipment(profile, data, businessDefs) {
