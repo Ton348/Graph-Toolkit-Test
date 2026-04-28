@@ -4,16 +4,12 @@
       "id": "lot_market_01",
       "displayName": "Помещение 100кв/м",
       "rentPerDay": 1000,
-      "locationId": "city_center",
-      "size": 100,
       "allowedBusinessTypes": ["pizza_shop", "grocery_store"]
     },
     {
       "id": "lot_road_01",
       "displayName": "Помещение 50кв/м",
       "rentPerDay": 500,
-      "locationId": "roadside",
-      "size": 80,
       "allowedBusinessTypes": ["pizza_shop", "grocery_store"]
     }
   ]

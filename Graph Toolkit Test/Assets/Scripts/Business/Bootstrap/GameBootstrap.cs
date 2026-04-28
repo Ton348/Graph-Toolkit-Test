@@ -126,7 +126,6 @@ namespace Prototype.Business.Bootstrap
 			SupplierDatabaseData suppliers = null;
 			StaffRoleDatabaseData staffRoles = null;
 			StaffContactDatabaseData staffContacts = null;
-			CustomerBehaviorDatabaseData customerBehaviors = null;
 			PriceDemandDatabaseData pizzeriaDemand = null;
 			TraderDatabaseData traders = null;
 
@@ -136,7 +135,6 @@ namespace Prototype.Business.Bootstrap
 			suppliers = businessLoader.LoadSuppliers();
 			staffRoles = businessLoader.LoadStaffRoles();
 			staffContacts = businessLoader.LoadStaffContacts();
-			customerBehaviors = businessLoader.LoadCustomerBehaviors();
 			pizzeriaDemand = businessLoader.LoadPizzeriaDemand();
 			traders = businessLoader.LoadTraders();
 
@@ -160,11 +158,6 @@ namespace Prototype.Business.Bootstrap
 				staffContacts = new StaffContactDatabaseData();
 			}
 
-			if (customerBehaviors == null)
-			{
-				customerBehaviors = new CustomerBehaviorDatabaseData();
-			}
-
 			if (pizzeriaDemand == null)
 			{
 				pizzeriaDemand = new PriceDemandDatabaseData();
@@ -175,10 +168,9 @@ namespace Prototype.Business.Bootstrap
 				traders = new TraderDatabaseData();
 			}
 
-			BusinessDefinitionsValidator.Validate(businessTypes, suppliers, staffRoles, staffContacts,
-				customerBehaviors, traders);
+			BusinessDefinitionsValidator.Validate(businessTypes, suppliers, staffRoles, staffContacts, traders);
 			BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, suppliers,
-				staffRoles, staffContacts, customerBehaviors, pizzeriaDemand, traders);
+				staffRoles, staffContacts, pizzeriaDemand, traders);
 			Debug.Log(
 				$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}");
 

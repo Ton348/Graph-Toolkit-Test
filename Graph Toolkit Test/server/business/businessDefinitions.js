@@ -19,7 +19,6 @@ function validateBusinessDefinitions(
   suppliers,
   staffRoles,
   staffContacts,
-  behaviors,
   traders,
   pizzeriaDemand) {
   let errors = 0;
@@ -90,33 +89,6 @@ function validateBusinessDefinitions(
       if ((Number.isFinite(c.salaryPerDay) && c.salaryPerDay < 0) ||
           (Number.isFinite(c.throughputPerHour) && c.throughputPerHour < 0)) {
         console.warn(`[server][business] staff contact ${c.id} has negative values`);
-        warnings++;
-      }
-    });
-  }
-
-  if (!behaviors || !Array.isArray(behaviors.behaviors)) {
-    console.error('[server][business] customer_behavior missing "behaviors" array');
-    errors++;
-  } else {
-    const ids = new Set();
-    behaviors.behaviors.forEach((b, i) => {
-      if (!b || !b.businessTypeId || !String(b.businessTypeId).trim()) {
-        console.error(`[server][business] customer behavior at index ${i} missing businessTypeId`);
-        errors++;
-        return;
-      }
-      if (ids.has(b.businessTypeId)) {
-        console.error(`[server][business] duplicate customer behavior for ${b.businessTypeId}`);
-        errors++;
-      }
-      ids.add(b.businessTypeId);
-      if (!businessTypeIds.has(b.businessTypeId)) {
-        console.error(`[server][business] customer behavior references unknown businessTypeId ${b.businessTypeId}`);
-        errors++;
-      }
-      if (Number.isFinite(b.arrivalRatePerHour) && b.arrivalRatePerHour < 0) {
-        console.warn(`[server][business] customer behavior ${b.businessTypeId} arrivalRatePerHour < 0`);
         warnings++;
       }
     });
@@ -240,7 +212,6 @@ function loadBusinessDefinitions() {
   const businessInstanceTemplate = readJson(path.join(BUSINESS_DIR, 'business_instance_template.json'));
   const peopleData = readJson(path.join(BUSINESS_DIR, 'people.json'));
   const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
-  const behaviors = readJson(path.join(BUSINESS_DIR, 'customer_behavior.json'));
   const traders = readJson(path.join(BUSINESS_DIR, 'traders.json'));
   const pizzeriaDemand = readJson(path.join(BUSINESS_DIR, 'pizzeria_demand.json'));
 
@@ -249,7 +220,6 @@ function loadBusinessDefinitions() {
     suppliers,
     staffRoles,
     staffContacts,
-    behaviors,
     traders,
     pizzeriaDemand);
 
@@ -271,13 +241,6 @@ function loadBusinessDefinitions() {
   const staffContactById = new Map();
   (staffContacts.contacts || []).forEach(item => {
     if (item && item.id && !staffContactById.has(item.id)) staffContactById.set(item.id, item);
-  });
-
-  const behaviorByBusinessTypeId = new Map();
-  (behaviors.behaviors || []).forEach(item => {
-    if (item && item.businessTypeId && !behaviorByBusinessTypeId.has(item.businessTypeId)) {
-      behaviorByBusinessTypeId.set(item.businessTypeId, item);
-    }
   });
 
   const traderById = new Map();
@@ -336,13 +299,11 @@ function loadBusinessDefinitions() {
     suppliers,
     staffRoles,
     staffContacts,
-    behaviors,
     traders,
     businessTypeById,
     supplierById,
     staffRoleById,
     staffContactById,
-    behaviorByBusinessTypeId,
     traderById,
     traderItemById,
     demandByBusinessTypeId

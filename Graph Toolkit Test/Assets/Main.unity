@@ -1492,7 +1492,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.12, g: 0.14, b: 0.19, a: 0.92}
+  m_Color: {r: 0.12, g: 0.14, b: 0.19, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -24590,7 +24590,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCManager
   interactionDistance: 4
-  baseDialogueGraph: {fileID: 11400000, guid: f0f3f83fccdc04acaa71b522aef123ca, type: 2}
+  baseDialogueGraph: {fileID: 11400000, guid: 2c09d7b5bc4534cb9af62fb586fa2817, type: 2}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 0}

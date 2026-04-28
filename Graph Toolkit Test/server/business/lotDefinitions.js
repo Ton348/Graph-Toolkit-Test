@@ -52,10 +52,6 @@ function validateLots(lotsData, businessDefs) {
           }
         });
       }
-      if (Number.isFinite(lot.size) && lot.size < 0) {
-        console.warn(`[server][lots] lot ${lot.id} size < 0`);
-        warnings++;
-      }
     });
   }
 

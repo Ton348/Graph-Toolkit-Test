@@ -4,7 +4,6 @@ namespace Prototype.Business.Data
 {
 	public sealed class BusinessDefinitionsRepository
 	{
-		private readonly Dictionary<string, CustomerBehaviorDefinitionData> m_behaviors = new();
 		private readonly Dictionary<string, BusinessTypeDefinitionData> m_businessTypes = new();
 		private readonly List<PriceDemandRangeDefinitionData> m_pizzeriaDemandRanges = new();
 		private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new();
@@ -18,7 +17,6 @@ namespace Prototype.Business.Data
 			SupplierDatabaseData supplierDb,
 			StaffRoleDatabaseData staffRoleDb,
 			StaffContactDatabaseData staffContactDb,
-			CustomerBehaviorDatabaseData behaviorDb,
 			PriceDemandDatabaseData pizzeriaDemandDb,
 			TraderDatabaseData traderDb)
 		{
@@ -62,18 +60,6 @@ namespace Prototype.Business.Data
 					if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_staffContacts.ContainsKey(item.id))
 					{
 						m_staffContacts[item.id] = item;
-					}
-				}
-			}
-
-			if (behaviorDb?.behaviors != null)
-			{
-				foreach (CustomerBehaviorDefinitionData item in behaviorDb.behaviors)
-				{
-					if (item != null && !string.IsNullOrWhiteSpace(item.businessTypeId) &&
-					    !m_behaviors.ContainsKey(item.businessTypeId))
-					{
-						m_behaviors[item.businessTypeId] = item;
 					}
 				}
 			}
@@ -150,17 +136,6 @@ namespace Prototype.Business.Data
 			return value;
 		}
 
-		public CustomerBehaviorDefinitionData GetCustomerBehavior(string businessTypeId)
-		{
-			if (string.IsNullOrWhiteSpace(businessTypeId))
-			{
-				return null;
-			}
-
-			m_behaviors.TryGetValue(businessTypeId, out CustomerBehaviorDefinitionData value);
-			return value;
-		}
-
 		public int GetDailyDemandForPrice(string businessTypeId, int price)
 		{
 			if (string.IsNullOrWhiteSpace(businessTypeId))
@@ -223,7 +198,9 @@ namespace Prototype.Business.Data
 		public bool RequiresMerchandiser(string businessTypeId)
 		{
 			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);
-			return type == null || type.requiresMerchandiser;
+			return type == null ||
+			       (type.instanceTemplate != null &&
+			        type.instanceTemplate.hiredMerchContactId != null);
 		}
 
 		public bool HasSupplier(string id)
@@ -241,11 +218,6 @@ namespace Prototype.Business.Data
 			return GetStaffContact(id) != null;
 		}
 
-		public bool HasCustomerBehavior(string businessTypeId)
-		{
-			return GetCustomerBehavior(businessTypeId) != null;
-		}
-
 		public IEnumerable<BusinessTypeDefinitionData> GetAllBusinessTypes()
 		{
 			return m_businessTypes.Values;
@@ -259,11 +231,6 @@ namespace Prototype.Business.Data
 		public IEnumerable<StaffRoleDefinitionData> GetAllStaffRoles()
 		{
 			return m_staffRoles.Values;
-		}
-
-		public IEnumerable<CustomerBehaviorDefinitionData> GetAllCustomerBehaviors()
-		{
-			return m_behaviors.Values;
 		}
 
 		public TraderDefinitionData GetTrader(string traderId)

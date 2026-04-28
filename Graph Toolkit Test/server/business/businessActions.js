@@ -260,7 +260,8 @@ function simulateBusinessDay(profile, data, businessDefs) {
   const businessType = businessDefs?.businessTypeById && business.businessTypeId
     ? businessDefs.businessTypeById.get(business.businessTypeId)
     : null;
-  const requiresMerch = businessType?.requiresMerchandiser !== false;
+  const requiresMerch = businessType?.instanceTemplate?.hiredMerchContactId !== undefined &&
+    businessType?.instanceTemplate?.hiredMerchContactId !== null;
   const cashier = staffById && business.hiredCashierContactId ? staffById.get(business.hiredCashierContactId) : null;
   const merch = staffById && business.hiredMerchContactId ? staffById.get(business.hiredMerchContactId) : null;
   const logist = staffById && business.hiredLogistContactId ? staffById.get(business.hiredLogistContactId) : null;

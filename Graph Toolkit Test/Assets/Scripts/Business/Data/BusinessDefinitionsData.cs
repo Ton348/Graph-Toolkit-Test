@@ -31,7 +31,6 @@ namespace Prototype.Business.Data
 		public string id;
 		public string displayName;
 		public string productType;
-		public bool requiresMerchandiser = true;
 		public BusinessInstanceTemplateData instanceTemplate;
 	}
 
@@ -84,24 +83,6 @@ namespace Prototype.Business.Data
 	}
 
 	[Serializable]
-	public class MarkupRuleDefinitionData
-	{
-		public int minMarkup;
-		public int maxMarkup;
-		public int buyChance;
-		public int buyMin;
-		public int buyMax;
-	}
-
-	[Serializable]
-	public class CustomerBehaviorDefinitionData
-	{
-		public string businessTypeId;
-		public int arrivalRatePerHour;
-		public List<MarkupRuleDefinitionData> markupRules = new();
-	}
-
-	[Serializable]
 	public class TraderItemDefinitionData
 	{
 		public string id;
@@ -145,12 +126,6 @@ namespace Prototype.Business.Data
 	public class StaffContactDatabaseData
 	{
 		public List<StaffContactDefinitionData> contacts = new();
-	}
-
-	[Serializable]
-	public class CustomerBehaviorDatabaseData
-	{
-		public List<CustomerBehaviorDefinitionData> behaviors = new();
 	}
 
 	[Serializable]

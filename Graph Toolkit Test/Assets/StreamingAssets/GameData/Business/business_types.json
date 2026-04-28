@@ -4,7 +4,6 @@
       "id": "pizza_shop",
       "displayName": "Пиццерия",
       "productType": "grocery",
-      "requiresMerchandiser": false,
       "instanceTemplate": {
         "storageItemId": null,
         "cashDeskItemId": null,
@@ -17,13 +16,12 @@
       "id": "grocery_store",
       "displayName": "Магазин продуктов",
       "productType": "grocery",
-      "requiresMerchandiser": true,
       "instanceTemplate": {
         "storageItemId": null,
         "cashDeskItemId": null,
         "shelfItemId": null,
         "hiredCashierContactId": null,
-        "hiredMerchContactId": null,
+        "hiredMerchContactId": "",
         "hiredLogistContactId": null
       }
     }

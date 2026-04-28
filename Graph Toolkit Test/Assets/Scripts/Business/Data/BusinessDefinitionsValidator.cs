@@ -10,7 +10,6 @@ namespace Prototype.Business.Data
 			SupplierDatabaseData suppliers,
 			StaffRoleDatabaseData staffRoles,
 			StaffContactDatabaseData staffContacts,
-			CustomerBehaviorDatabaseData behaviors,
 			TraderDatabaseData traders)
 		{
 			var ok = true;
@@ -106,46 +105,6 @@ namespace Prototype.Business.Data
 					if (contact.salaryPerDay < 0 || contact.throughputPerHour < 0)
 					{
 						Debug.LogError($"[BusinessDefinitions] staff contact {contact.id} has negative values.");
-						ok = false;
-					}
-				}
-			}
-
-			if (behaviors?.behaviors == null)
-			{
-				Debug.LogError("[BusinessDefinitions] customer behaviors list is missing.");
-				ok = false;
-			}
-			else
-			{
-				var ids = new HashSet<string>();
-				foreach (CustomerBehaviorDefinitionData behavior in behaviors.behaviors)
-				{
-					if (behavior == null || string.IsNullOrWhiteSpace(behavior.businessTypeId))
-					{
-						Debug.LogError("[BusinessDefinitions] customer behavior missing businessTypeId.");
-						ok = false;
-						continue;
-					}
-
-					if (!ids.Add(behavior.businessTypeId))
-					{
-						Debug.LogError(
-							$"[BusinessDefinitions] duplicate customer behavior for businessTypeId: {behavior.businessTypeId}");
-						ok = false;
-					}
-
-					if (!businessTypeIds.Contains(behavior.businessTypeId))
-					{
-						Debug.LogError(
-							$"[BusinessDefinitions] customer behavior references unknown businessTypeId: {behavior.businessTypeId}");
-						ok = false;
-					}
-
-					if (behavior.arrivalRatePerHour < 0)
-					{
-						Debug.LogError(
-							$"[BusinessDefinitions] customer behavior {behavior.businessTypeId} has negative arrivalRatePerHour.");
 						ok = false;
 					}
 				}
