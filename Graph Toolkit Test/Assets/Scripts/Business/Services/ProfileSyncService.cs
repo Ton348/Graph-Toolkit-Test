@@ -41,7 +41,22 @@ namespace Prototype.Business.Services
 			Debug.Log(
 				$"[ProfileSync] Applied snapshot: money={snapshot.money}, active={snapshot.activeQuestIds?.Count ?? 0}, completed={snapshot.completedQuestIds?.Count ?? 0}, businesses={snapshot.businesses?.Count ?? 0}");
 
-			synced?.Invoke(snapshot);
+			if (synced == null)
+			{
+				return;
+			}
+
+			foreach (Delegate handler in synced.GetInvocationList())
+			{
+				try
+				{
+					((Action<ProfileSnapshot>)handler).Invoke(snapshot);
+				}
+				catch (Exception ex)
+				{
+					Debug.LogException(ex);
+				}
+			}
 		}
 
 		private void ApplyQuests(ProfileSnapshot snapshot)

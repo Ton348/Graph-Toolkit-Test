@@ -5,8 +5,10 @@ using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Game1.Graph.Runtime.Infrastructure;
 using Graph.Core.Runtime;
+using Graph.Core.Runtime.Nodes.Server;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.Runtime;
+using Prototype.Business.Services;
 using Sample.Runtime;
 using Sample.Runtime.Services;
 using Sample.Runtime.UI;
@@ -105,6 +107,9 @@ namespace Prototype.Business.NPC
 			IGraphQuestService questService = bootstrap != null && bootstrap.GameServer != null
 				? new GraphQuestServiceAdapter(bootstrap.GameServer, this)
 				: null;
+			IGraphCheckpointService checkpointService = bootstrap != null && bootstrap.GameServer != null
+				? new GraphCheckpointServiceAdapter(bootstrap.GameServer, this)
+				: null;
 
 			var context = new GraphExecutionContext(
 				new GraphRuntimeServices(
@@ -112,19 +117,51 @@ namespace Prototype.Business.NPC
 					choiceUiservice,
 					null,
 					null,
-					null,
+					checkpointService,
 					questService));
 			context.Set(GraphContextKeys.runtimeBootstrap, bootstrap);
 			context.Set(GraphContextKeys.runtimeMapMarkerService, mapMarkerService);
 			context.Set(GraphContextKeys.runtimePlayerTransform, playerTransform);
 			context.ImmediateChoiceAfterDialogue = true;
 
-			_ = m_baseRunner.RunAsync(graph, context);
+			string startNodeId = ResolveStartNodeId(graph);
+			_ = m_baseRunner.RunAsync(graph, context, startNodeId);
 		}
 
 		private static bool HasGraphContent(CommonGraph graph)
 		{
 			return graph != null && graph.nodes != null && graph.nodes.Count > 0;
+		}
+
+		private string ResolveStartNodeId(CommonGraph graph)
+		{
+			if (graph == null || bootstrap?.PlayerStateSync == null)
+			{
+				return null;
+			}
+
+			if (!bootstrap.PlayerStateSync.TryGetGraphCheckpoint(graph.name, out string checkpointId) ||
+			    string.IsNullOrWhiteSpace(checkpointId))
+			{
+				return null;
+			}
+
+			for (var i = 0; i < graph.nodes.Count; i++)
+			{
+				if (graph.nodes[i] is not CheckpointNode checkpointNode)
+				{
+					continue;
+				}
+
+				if (!string.Equals(checkpointNode.checkpointId, checkpointId, StringComparison.Ordinal))
+				{
+					continue;
+				}
+
+				return checkpointNode.Id;
+			}
+
+			return null;
 		}
 
 
@@ -716,6 +753,44 @@ namespace Prototype.Business.NPC
 					this.success = success;
 					this.profileSnapshot = profileSnapshot;
 				}
+			}
+		}
+
+		private sealed class GraphCheckpointServiceAdapter : IGraphCheckpointService
+		{
+			private readonly IGameServer m_gameServer;
+			private readonly Npcmanager m_npcManager;
+
+			public GraphCheckpointServiceAdapter(IGameServer gameServer, Npcmanager npcManager)
+			{
+				m_gameServer = gameServer;
+				m_npcManager = npcManager;
+			}
+
+			public async UniTask<bool> SaveAsync(string graphId, string checkpointId, CancellationToken cancellationToken)
+			{
+				return await ExecuteAsync(graphId, checkpointId);
+			}
+
+			public async UniTask<bool> ClearAsync(string graphId, string checkpointId, CancellationToken cancellationToken)
+			{
+				return await ExecuteAsync(graphId, string.Empty);
+			}
+
+			private async UniTask<bool> ExecuteAsync(string graphId, string checkpointId)
+			{
+				if (m_gameServer == null || string.IsNullOrWhiteSpace(graphId))
+				{
+					return false;
+				}
+
+				ServerActionResult result = await m_gameServer.TrySaveCheckpointAsync(graphId, checkpointId);
+				if (result?.ProfileSnapshot != null)
+				{
+					m_npcManager?.bootstrap?.ProfileSyncService?.ApplySnapshot(result.ProfileSnapshot);
+				}
+
+				return result != null && result.Success;
 			}
 		}
 	}

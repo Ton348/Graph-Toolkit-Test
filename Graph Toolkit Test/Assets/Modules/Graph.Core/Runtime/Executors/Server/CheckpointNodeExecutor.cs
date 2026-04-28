@@ -17,17 +17,19 @@ namespace Graph.Core.Runtime.Executors.Server
 				return UniTask.FromResult(false);
 			}
 
-			return ExecuteWithServiceAsync(node, context.CheckpointService, cancellationToken);
+			return ExecuteWithServiceAsync(node, context, context.CheckpointService, cancellationToken);
 		}
 
 		private static async UniTask<bool> ExecuteWithServiceAsync(
 			CheckpointNode node,
+			GraphExecutionContext context,
 			IGraphCheckpointService checkpointService,
 			CancellationToken cancellationToken)
 		{
+			string graphId = context?.CurrentGraph != null ? context.CurrentGraph.name : null;
 			return node.action == CheckpointAction.Clear
-				? await checkpointService.ClearAsync(node.checkpointId, cancellationToken)
-				: await checkpointService.SaveAsync(node.checkpointId, cancellationToken);
+				? await checkpointService.ClearAsync(graphId, node.checkpointId, cancellationToken)
+				: await checkpointService.SaveAsync(graphId, node.checkpointId, cancellationToken);
 		}
 	}
 }

@@ -5,7 +5,7 @@ namespace Graph.Core.Runtime
 {
 	public interface IGraphCheckpointService
 	{
-		UniTask<bool> SaveAsync(string checkpointId, CancellationToken cancellationToken);
-		UniTask<bool> ClearAsync(string checkpointId, CancellationToken cancellationToken);
+		UniTask<bool> SaveAsync(string graphId, string checkpointId, CancellationToken cancellationToken);
+		UniTask<bool> ClearAsync(string graphId, string checkpointId, CancellationToken cancellationToken);
 	}
 }

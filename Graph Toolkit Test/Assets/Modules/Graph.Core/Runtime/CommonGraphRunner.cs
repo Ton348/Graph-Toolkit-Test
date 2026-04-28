@@ -30,7 +30,17 @@ namespace Graph.Core.Runtime
 			CancellationToken cancellationToken = default,
 			int maxSteps = s_defaultMaxSteps)
 		{
-			return RunInternalAsync(graph, context, cancellationToken, maxSteps);
+			return RunInternalAsync(graph, context, null, cancellationToken, maxSteps);
+		}
+
+		public UniTask RunAsync(
+			CommonGraph graph,
+			GraphExecutionContext context,
+			string startNodeId,
+			CancellationToken cancellationToken = default,
+			int maxSteps = s_defaultMaxSteps)
+		{
+			return RunInternalAsync(graph, context, startNodeId, cancellationToken, maxSteps);
 		}
 
 		public void Stop()
@@ -45,6 +55,7 @@ namespace Graph.Core.Runtime
 		private async UniTask RunInternalAsync(
 			CommonGraph graph,
 			GraphExecutionContext context,
+			string startNodeId,
 			CancellationToken cancellationToken,
 			int maxSteps)
 		{
@@ -79,9 +90,19 @@ namespace Graph.Core.Runtime
 				return;
 			}
 
-			if (!m_graph.TryGetStartNode(out BaseGraphNode startNode))
+			BaseGraphNode startNode;
+			if (string.IsNullOrWhiteSpace(startNodeId))
 			{
-				Debug.LogError($"{s_logPrefix} Start node '{m_graph.startNodeId}' not found.", m_graph);
+				if (!m_graph.TryGetStartNode(out startNode))
+				{
+					Debug.LogError($"{s_logPrefix} Start node '{m_graph.startNodeId}' not found.", m_graph);
+					Cleanup();
+					return;
+				}
+			}
+			else if (!m_graph.TryGetNodeById(startNodeId, out startNode))
+			{
+				Debug.LogError($"{s_logPrefix} Start node override '{startNodeId}' not found.", m_graph);
 				Cleanup();
 				return;
 			}
