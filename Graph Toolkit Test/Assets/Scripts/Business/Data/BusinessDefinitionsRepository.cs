@@ -6,7 +6,6 @@ namespace Prototype.Business.Data
 	{
 		private readonly Dictionary<string, CustomerBehaviorDefinitionData> m_behaviors = new();
 		private readonly Dictionary<string, BusinessTypeDefinitionData> m_businessTypes = new();
-		private readonly Dictionary<string, BusinessModuleDefinitionData> m_modules = new();
 		private readonly List<PriceDemandRangeDefinitionData> m_pizzeriaDemandRanges = new();
 		private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new();
 		private readonly Dictionary<string, StaffRoleDefinitionData> m_staffRoles = new();
@@ -16,7 +15,6 @@ namespace Prototype.Business.Data
 
 		public BusinessDefinitionsRepository(
 			BusinessTypeDatabaseData businessTypeDb,
-			BusinessModuleDatabaseData moduleDb,
 			SupplierDatabaseData supplierDb,
 			StaffRoleDatabaseData staffRoleDb,
 			StaffContactDatabaseData staffContactDb,
@@ -31,17 +29,6 @@ namespace Prototype.Business.Data
 					if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_businessTypes.ContainsKey(item.id))
 					{
 						m_businessTypes[item.id] = item;
-					}
-				}
-			}
-
-			if (moduleDb?.modules != null)
-			{
-				foreach (BusinessModuleDefinitionData item in moduleDb.modules)
-				{
-					if (item != null && !string.IsNullOrWhiteSpace(item.id) && !m_modules.ContainsKey(item.id))
-					{
-						m_modules[item.id] = item;
 					}
 				}
 			}
@@ -141,27 +128,6 @@ namespace Prototype.Business.Data
 			return value;
 		}
 
-		public IReadOnlyList<string> GetRequiredModules(string businessTypeId)
-		{
-			return new List<string>();
-		}
-
-		public bool IsModuleRequired(string businessTypeId, string moduleId)
-		{
-			return false;
-		}
-
-		public BusinessModuleDefinitionData GetModule(string id)
-		{
-			if (string.IsNullOrWhiteSpace(id))
-			{
-				return null;
-			}
-
-			m_modules.TryGetValue(id, out BusinessModuleDefinitionData value);
-			return value;
-		}
-
 		public SupplierDefinitionData GetSupplier(string id)
 		{
 			if (string.IsNullOrWhiteSpace(id))
@@ -202,7 +168,7 @@ namespace Prototype.Business.Data
 				return 0;
 			}
 
-			if (businessTypeId == "grocery_store")
+			if (businessTypeId == "grocery_store" || businessTypeId == "pizza_shop")
 			{
 				for (int i = 0; i < m_pizzeriaDemandRanges.Count; i++)
 				{
@@ -254,9 +220,10 @@ namespace Prototype.Business.Data
 			return GetBusinessType(id) != null;
 		}
 
-		public bool HasModule(string id)
+		public bool RequiresMerchandiser(string businessTypeId)
 		{
-			return GetModule(id) != null;
+			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);
+			return type == null || type.requiresMerchandiser;
 		}
 
 		public bool HasSupplier(string id)
@@ -282,11 +249,6 @@ namespace Prototype.Business.Data
 		public IEnumerable<BusinessTypeDefinitionData> GetAllBusinessTypes()
 		{
 			return m_businessTypes.Values;
-		}
-
-		public IEnumerable<BusinessModuleDefinitionData> GetAllModules()
-		{
-			return m_modules.Values;
 		}
 
 		public IEnumerable<SupplierDefinitionData> GetAllSuppliers()

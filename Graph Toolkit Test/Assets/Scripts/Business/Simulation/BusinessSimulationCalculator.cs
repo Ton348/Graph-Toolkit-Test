@@ -25,6 +25,7 @@ namespace Prototype.Business.Simulation
 			bool hasStorageItem = !string.IsNullOrWhiteSpace(state.storageItemId);
 			bool hasCashDeskItem = !string.IsNullOrWhiteSpace(state.cashDeskItemId);
 			bool hasShelfItem = !string.IsNullOrWhiteSpace(state.shelfItemId);
+			bool requiresMerch = definitions.RequiresMerchandiser(state.businessTypeId);
 
 			var tickIncome = 0f;
 			var tickExpenses = 0f;
@@ -34,7 +35,7 @@ namespace Prototype.Business.Simulation
 			    && hasCashDeskItem
 			    && hasShelfItem
 			    && !string.IsNullOrWhiteSpace(state.hiredCashierContactId)
-			    && !string.IsNullOrWhiteSpace(state.hiredMerchContactId)
+			    && (!requiresMerch || !string.IsNullOrWhiteSpace(state.hiredMerchContactId))
 			    && state.storageStock > 0f)
 			{
 				float demand = CalculateDemand(state, definitions, deltaSeconds, safeDaySeconds);

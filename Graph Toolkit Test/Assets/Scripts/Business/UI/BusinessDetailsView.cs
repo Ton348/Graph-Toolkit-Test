@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Prototype.Business.Runtime;
 using Prototype.Business.Simulation;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 namespace Prototype.Business.UI
@@ -27,7 +27,10 @@ namespace Prototype.Business.UI
 
 		[Header("Top Bar")]
 		[SerializeField]
-		private TMP_Dropdown businessDropdown;
+		private ContactSelectView businessSelectView;
+
+		[SerializeField]
+		private ContactSelectView businessTypeSelectView;
 
 		[SerializeField]
 		private Button openCloseButton;
@@ -108,13 +111,17 @@ namespace Prototype.Business.UI
 		[SerializeField]
 		private ContactSelectView merchandiserSelectView;
 
-		private readonly List<IdOption> m_businessOptions = new();
 		private BusinessInstanceSnapshot m_currentBusiness;
 		private string m_currentLotId;
 		private bool m_isBusinessOpen;
-		private bool m_updatingBusinessDropdown;
+		private GameObject m_merchandiserRowRoot;
+		private GameObject m_storageRowRoot;
+		private GameObject m_cashDeskRowRoot;
+		private GameObject m_shelfRowRoot;
+		private TabType m_currentTab = TabType.Overview;
 
 		private int m_pendingPrice;
+		private string m_pendingBusinessTypeId;
 		private string m_pendingStorageId;
 		private string m_pendingCashDeskId;
 		private string m_pendingShelfId;
@@ -125,15 +132,20 @@ namespace Prototype.Business.UI
 
 		public event Action closeClicked;
 		public event Action<string> businessChanged;
+		public event Action<string> businessTypeChanged;
 		public event Action openCloseClicked;
 		public event Action collectProfitClicked;
 		public event Action<TabType> tabChanged;
 
 		private void Awake()
 		{
+			TryUpdatePremisesLabel();
+			TryResolveBusinessSelectViews();
 			TryResolveWarehouseRowBindings();
 			TryResolveProfitRowBindings();
 			TryResolveTabRoots();
+			TryResolveSetupRows();
+			TryResolveStaffRows();
 
 			HookButton(closeButton, () => closeClicked?.Invoke());
 			HookButton(openCloseButton, () => openCloseClicked?.Invoke());
@@ -142,9 +154,18 @@ namespace Prototype.Business.UI
 			HookButton(setupTabButton, () => SetTab(TabType.Setup));
 			HookButton(staffTabButton, () => SetTab(TabType.Staff));
 
-			if (businessDropdown != null)
+			if (businessSelectView != null)
 			{
-				businessDropdown.onValueChanged.AddListener(OnBusinessDropdownChanged);
+				businessSelectView.selectionChanged += value => businessChanged?.Invoke(NormalizeId(value));
+			}
+
+			if (businessTypeSelectView != null)
+			{
+				businessTypeSelectView.selectionChanged += value =>
+				{
+					m_pendingBusinessTypeId = NormalizeId(value);
+					businessTypeChanged?.Invoke(m_pendingBusinessTypeId);
+				};
 			}
 
 			if (priceSlider != null)
@@ -169,6 +190,9 @@ namespace Prototype.Business.UI
 			HookContactSelectView(merchandiserSelectView, value => m_pendingMerchandiserId = value);
 
 			SetTab(TabType.Overview);
+			SetBusinessTypeSelectedState(false);
+			SetBusinessTypeSelectionVisible(false);
+			SetMerchandiserVisible(false);
 			SetBusinessOpenState(false);
 			UpdatePriceText(0);
 			UpdateWarehouseDailyAmountText(0);
@@ -182,6 +206,8 @@ namespace Prototype.Business.UI
 
 		public void SetTab(TabType tab)
 		{
+			m_currentTab = tab;
+
 			if (overviewTabRoot != null)
 			{
 				overviewTabRoot.SetActive(tab == TabType.Overview);
@@ -246,7 +272,30 @@ namespace Prototype.Business.UI
 			}
 			else
 			{
-				SetTab(TabType.Overview);
+				SetTab(m_currentTab);
+			}
+		}
+
+		public void SetBusinessTypeSelectionVisible(bool visible)
+		{
+			GameObject businessTypeRowRoot = ResolveBusinessTypeRowRoot();
+			if (businessTypeRowRoot != null)
+			{
+				businessTypeRowRoot.SetActive(visible);
+			}
+
+			if (businessTypeSelectView != null)
+			{
+				businessTypeSelectView.gameObject.SetActive(visible);
+			}
+
+			if (!visible)
+			{
+				m_pendingBusinessTypeId = null;
+				if (businessTypeSelectView != null)
+				{
+					businessTypeSelectView.Setup(new List<ContactSelectOption>(), null, true, "Нет доступных бизнесов");
+				}
 			}
 		}
 
@@ -286,8 +335,6 @@ namespace Prototype.Business.UI
 			BusinessRuntimeSimulationState simulation,
 			float expensesPerDay,
 			int dailyOrderAmount,
-			IEnumerable<string> requiredModules,
-			IEnumerable<string> missingModules,
 			string lotDisplayName,
 			string businessTypeDisplayName,
 			IEnumerable<string> knownContactDisplayNames,
@@ -300,7 +347,22 @@ namespace Prototype.Business.UI
 			m_currentLotId = nextLotId;
 			m_currentBusiness = business;
 			SetBusinessOpenState(business != null && business.isOpen);
+			if (business == null)
+			{
+				if (tabsRoot != null)
+				{
+					tabsRoot.SetActive(false);
+				}
+
+				if (tabContentRoot != null)
+				{
+					tabContentRoot.SetActive(false);
+				}
+			}
 			SetBusinessTypeSelectedState(business != null && !string.IsNullOrWhiteSpace(business.businessTypeId));
+			SetBusinessTypeSelectionVisible(business != null && string.IsNullOrWhiteSpace(business.businessTypeId));
+			SetSetupVisible(business != null && !string.IsNullOrWhiteSpace(business.businessTypeId));
+			SetMerchandiserVisible(business != null && business.businessTypeId == "grocery_store");
 
 			if (titleText != null)
 			{
@@ -309,7 +371,7 @@ namespace Prototype.Business.UI
 					: business != null
 						? business.lotId
 						: string.Empty;
-				titleText.text = string.IsNullOrWhiteSpace(lotTitle) ? "Управление бизнесом" : $"Ваш бизнес: {lotTitle}";
+				titleText.text = string.IsNullOrWhiteSpace(lotTitle) ? "Управление бизнесом" : $"Ваше помещение: {lotTitle}";
 			}
 
 			float income = business != null ? Mathf.Max(0, business.lastDayRevenue) : 0f;
@@ -343,11 +405,13 @@ namespace Prototype.Business.UI
 
 			if (isNewSelection && business != null)
 			{
+				m_pendingBusinessTypeId = NormalizeId(business.businessTypeId);
 				m_pendingPrice = business.markupPercent;
 				m_pendingAutoDeliveryPerDay = Mathf.Max(0, dailyOrderAmount);
 			}
 			else if (isNewSelection)
 			{
+				m_pendingBusinessTypeId = null;
 				m_pendingPrice = 0;
 				m_pendingAutoDeliveryPerDay = 0;
 			}
@@ -382,15 +446,33 @@ namespace Prototype.Business.UI
 
 		public void SetBusinessOptions(IEnumerable<IdOption> options, string selectedId)
 		{
-			SetOptions(businessDropdown, m_businessOptions, options, selectedId, "Нет доступных бизнесов");
+			SetContactOptions(businessSelectView, options, selectedId, false, "Нет помещений");
+		}
+
+		public void SetBusinessTypeOptions(IEnumerable<IdOption> options, string selectedId)
+		{
+			string normalizedSelectedId = NormalizeId(selectedId);
+			string effectiveSelectedId = !string.IsNullOrWhiteSpace(normalizedSelectedId)
+				? normalizedSelectedId
+				: NormalizeId(m_pendingBusinessTypeId);
+
+			if (!string.IsNullOrWhiteSpace(normalizedSelectedId))
+			{
+				m_pendingBusinessTypeId = normalizedSelectedId;
+			}
+
+			SetContactOptions(businessTypeSelectView, options, effectiveSelectedId, true, "Выберите тип бизнеса");
 		}
 
 		public string GetSelectedBusinessId()
 		{
-			string selected = GetSelectedId(businessDropdown, m_businessOptions);
-			if (!string.IsNullOrWhiteSpace(selected))
+			if (businessSelectView != null)
 			{
-				return selected;
+				string selectedFromView = businessSelectView.GetSelectedId();
+				if (!string.IsNullOrWhiteSpace(selectedFromView))
+				{
+					return selectedFromView;
+				}
 			}
 
 			if (m_currentBusiness != null && !string.IsNullOrWhiteSpace(m_currentBusiness.lotId))
@@ -399,6 +481,18 @@ namespace Prototype.Business.UI
 			}
 
 			return null;
+		}
+
+		public string GetSelectedBusinessTypeId()
+		{
+			if (!string.IsNullOrWhiteSpace(m_pendingBusinessTypeId))
+			{
+				return NormalizeId(m_pendingBusinessTypeId);
+			}
+
+			return businessTypeSelectView != null
+				? NormalizeId(businessTypeSelectView.GetSelectedId())
+				: null;
 		}
 
 		public void SetStorageOptions(IEnumerable<IdOption> options, string selectedId)
@@ -506,16 +600,6 @@ namespace Prototype.Business.UI
 			return m_pendingAutoDeliveryPerDay;
 		}
 
-		private void OnBusinessDropdownChanged(int value)
-		{
-			if (m_updatingBusinessDropdown)
-			{
-				return;
-			}
-
-			businessChanged?.Invoke(GetSelectedBusinessId());
-		}
-
 		private void OnPriceChanged(float value)
 		{
 			m_pendingPrice = Mathf.Clamp(Mathf.RoundToInt(value), 0, 100);
@@ -536,16 +620,6 @@ namespace Prototype.Business.UI
 			}
 
 			button.onClick.AddListener(() => handler());
-		}
-
-		private static void HookPendingDropdown(TMP_Dropdown dropdown, List<IdOption> options, Action<string> setValue)
-		{
-			if (dropdown == null || options == null || setValue == null)
-			{
-				return;
-			}
-
-			dropdown.onValueChanged.AddListener(_ => setValue(NormalizeId(GetSelectedId(dropdown, options))));
 		}
 
 		private static void HookContactSelectView(ContactSelectView view, Action<string> setValue)
@@ -590,43 +664,19 @@ namespace Prototype.Business.UI
 			view.Setup(list, selectedId, true, noneLabel);
 		}
 
-		private void SetOptionsWithNone(
-			TMP_Dropdown dropdown,
-			List<IdOption> buffer,
+		private static void SetContactOptions(
+			ContactSelectView view,
 			IEnumerable<IdOption> options,
 			string selectedId,
+			bool includeNone,
 			string noneLabel)
 		{
-			var merged = new List<IdOption>
-			{
-				new IdOption
-				{
-					id = string.Empty,
-					displayName = noneLabel
-				}
-			};
-
-			if (options != null)
-			{
-				merged.AddRange(options.Where(o => o != null));
-			}
-
-			SetOptions(dropdown, buffer, merged, selectedId, noneLabel);
-		}
-
-		private void SetOptions(
-			TMP_Dropdown dropdown,
-			List<IdOption> buffer,
-			IEnumerable<IdOption> options,
-			string selectedId,
-			string emptyLabel)
-		{
-			if (buffer == null)
+			if (view == null)
 			{
 				return;
 			}
 
-			buffer.Clear();
+			var list = new List<ContactSelectOption>();
 			if (options != null)
 			{
 				foreach (IdOption option in options)
@@ -636,7 +686,7 @@ namespace Prototype.Business.UI
 						continue;
 					}
 
-					buffer.Add(new IdOption
+					list.Add(new ContactSelectOption
 					{
 						id = option.id,
 						displayName = option.displayName
@@ -644,62 +694,7 @@ namespace Prototype.Business.UI
 				}
 			}
 
-			if (dropdown == null)
-			{
-				return;
-			}
-
-			dropdown.ClearOptions();
-			if (buffer.Count == 0)
-			{
-				dropdown.AddOptions(new List<string> { emptyLabel });
-				dropdown.value = 0;
-				dropdown.RefreshShownValue();
-				return;
-			}
-
-			int selectedIndex = 0;
-			string normalizedSelectedId = NormalizeId(selectedId);
-			var labels = new List<string>(buffer.Count);
-			for (int i = 0; i < buffer.Count; i++)
-			{
-				IdOption option = buffer[i];
-				labels.Add(string.IsNullOrWhiteSpace(option.displayName) ? option.id : option.displayName);
-				if (normalizedSelectedId == NormalizeId(option.id))
-				{
-					selectedIndex = i;
-				}
-			}
-
-			if (dropdown == businessDropdown)
-			{
-				m_updatingBusinessDropdown = true;
-			}
-
-			dropdown.AddOptions(labels);
-			dropdown.value = Mathf.Clamp(selectedIndex, 0, labels.Count - 1);
-			dropdown.RefreshShownValue();
-
-			if (dropdown == businessDropdown)
-			{
-				m_updatingBusinessDropdown = false;
-			}
-		}
-
-		private static string GetSelectedId(TMP_Dropdown dropdown, IReadOnlyList<IdOption> options)
-		{
-			if (dropdown == null || options == null || options.Count == 0)
-			{
-				return null;
-			}
-
-			int index = dropdown.value;
-			if (index < 0 || index >= options.Count)
-			{
-				return null;
-			}
-
-			return options[index].id;
+			view.Setup(list, selectedId, includeNone, noneLabel);
 		}
 
 		private static string NormalizeId(string value)
@@ -810,6 +805,175 @@ namespace Prototype.Business.UI
 					tabContentRoot = content.gameObject;
 				}
 			}
+		}
+
+		private void TryUpdatePremisesLabel()
+		{
+			Transform anchor = businessSelectView != null ? businessSelectView.transform : null;
+			Transform topBar = anchor != null ? anchor.parent : null;
+			Transform labelTransform = topBar != null ? topBar.Find("BusinessLabel") : null;
+			TMP_Text label = labelTransform != null ? labelTransform.GetComponent<TMP_Text>() : null;
+			if (label != null)
+			{
+				label.text = "Помещение:";
+			}
+		}
+
+		private void TryResolveBusinessSelectViews()
+		{
+			if (businessSelectView == null)
+			{
+				Transform topBar = transform.Find("TopBar");
+				Transform businessView = topBar != null ? topBar.Find("BusinessSelectView") : null;
+				if (businessView != null)
+				{
+					businessSelectView = businessView.GetComponent<ContactSelectView>();
+				}
+			}
+
+			GameObject businessTypeRowRoot = ResolveBusinessTypeRowRoot();
+			if (businessTypeSelectView == null && businessTypeRowRoot != null)
+			{
+				Transform typeView = businessTypeRowRoot.transform.Find("BusinessTypeSelectView");
+				if (typeView != null)
+				{
+					businessTypeSelectView = typeView.GetComponent<ContactSelectView>();
+				}
+			}
+
+			Transform setupTab = transform.Find("TabContentRoot/SetupTab");
+			if (storageSelectView == null && setupTab != null)
+			{
+				Transform view = setupTab.Find("StorageRow/StorageSelectView");
+				if (view != null)
+				{
+					storageSelectView = view.GetComponent<ContactSelectView>();
+				}
+			}
+
+			if (cashDeskSelectView == null && setupTab != null)
+			{
+				Transform view = setupTab.Find("CashDeskRow/CashSelectView");
+				if (view == null)
+				{
+					view = setupTab.Find("CashDeskRow/CashDeskSelectView");
+				}
+				if (view != null)
+				{
+					cashDeskSelectView = view.GetComponent<ContactSelectView>();
+				}
+			}
+
+			if (shelfSelectView == null && setupTab != null)
+			{
+				Transform view = setupTab.Find("ShelfRow/ShelfSelectView");
+				if (view != null)
+				{
+					shelfSelectView = view.GetComponent<ContactSelectView>();
+				}
+			}
+
+			Transform staffTab = transform.Find("TabContentRoot/StaffTab");
+			if (supplierSelectView == null && staffTab != null)
+			{
+				Transform view = staffTab.Find("SupplierRow/SupplierSelectView");
+				if (view != null)
+				{
+					supplierSelectView = view.GetComponent<ContactSelectView>();
+				}
+			}
+
+			if (cashierSelectView == null && staffTab != null)
+			{
+				Transform view = staffTab.Find("CashierRow/CashierSelectView");
+				if (view != null)
+				{
+					cashierSelectView = view.GetComponent<ContactSelectView>();
+				}
+			}
+
+			if (merchandiserSelectView == null && staffTab != null)
+			{
+				Transform view = staffTab.Find("MerchandiserRow/MerchandiserSelectView");
+				if (view != null)
+				{
+					merchandiserSelectView = view.GetComponent<ContactSelectView>();
+				}
+			}
+		}
+
+		private void TryResolveSetupRows()
+		{
+			if (m_storageRowRoot == null)
+			{
+				Transform row = transform.Find("TabContentRoot/SetupTab/StorageRow");
+				if (row != null)
+				{
+					m_storageRowRoot = row.gameObject;
+				}
+			}
+
+			if (m_cashDeskRowRoot == null)
+			{
+				Transform row = transform.Find("TabContentRoot/SetupTab/CashDeskRow");
+				if (row != null)
+				{
+					m_cashDeskRowRoot = row.gameObject;
+				}
+			}
+
+			if (m_shelfRowRoot == null)
+			{
+				Transform row = transform.Find("TabContentRoot/SetupTab/ShelfRow");
+				if (row != null)
+				{
+					m_shelfRowRoot = row.gameObject;
+				}
+			}
+		}
+
+		private void TryResolveStaffRows()
+		{
+			if (m_merchandiserRowRoot == null)
+			{
+				Transform merchRow = transform.Find("TabContentRoot/StaffTab/MerchandiserRow");
+				if (merchRow != null)
+				{
+					m_merchandiserRowRoot = merchRow.gameObject;
+				}
+			}
+		}
+
+		private void SetMerchandiserVisible(bool visible)
+		{
+			if (m_merchandiserRowRoot != null)
+			{
+				m_merchandiserRowRoot.SetActive(visible);
+			}
+		}
+
+		private void SetSetupVisible(bool visible)
+		{
+			if (m_storageRowRoot != null)
+			{
+				m_storageRowRoot.SetActive(visible);
+			}
+
+			if (m_cashDeskRowRoot != null)
+			{
+				m_cashDeskRowRoot.SetActive(visible);
+			}
+
+			if (m_shelfRowRoot != null)
+			{
+				m_shelfRowRoot.SetActive(visible);
+			}
+		}
+
+		private GameObject ResolveBusinessTypeRowRoot()
+		{
+			Transform row = transform.Find("BusinessTypeRow");
+			return row != null ? row.gameObject : null;
 		}
 
 		private void TryResolveProfitRowBindings()

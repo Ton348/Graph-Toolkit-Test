@@ -123,7 +123,6 @@ namespace Prototype.Business.Bootstrap
 				$"[GameBootstrap] GameDataRepository ready. Quests: {questDb.quests.Count}, Buildings: {buildingDb.buildings.Count}, Lots: {lotDb.lots.Count}");
 
 			BusinessTypeDatabaseData businessTypes = null;
-			BusinessModuleDatabaseData businessModules = null;
 			SupplierDatabaseData suppliers = null;
 			StaffRoleDatabaseData staffRoles = null;
 			StaffContactDatabaseData staffContacts = null;
@@ -134,7 +133,6 @@ namespace Prototype.Business.Bootstrap
 			string businessRootPath = Path.Combine(rootPath, "Business");
 			var businessLoader = new JsonBusinessDataLoader(businessRootPath);
 			businessTypes = businessLoader.LoadBusinessTypes();
-			businessModules = businessLoader.LoadBusinessModules();
 			suppliers = businessLoader.LoadSuppliers();
 			staffRoles = businessLoader.LoadStaffRoles();
 			staffContacts = businessLoader.LoadStaffContacts();
@@ -145,11 +143,6 @@ namespace Prototype.Business.Bootstrap
 			if (businessTypes == null)
 			{
 				businessTypes = new BusinessTypeDatabaseData();
-			}
-
-			if (businessModules == null)
-			{
-				businessModules = new BusinessModuleDatabaseData();
 			}
 
 			if (suppliers == null)
@@ -182,12 +175,12 @@ namespace Prototype.Business.Bootstrap
 				traders = new TraderDatabaseData();
 			}
 
-			BusinessDefinitionsValidator.Validate(businessTypes, businessModules, suppliers, staffRoles, staffContacts,
+			BusinessDefinitionsValidator.Validate(businessTypes, suppliers, staffRoles, staffContacts,
 				customerBehaviors, traders);
-			BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, businessModules, suppliers,
+			BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, suppliers,
 				staffRoles, staffContacts, customerBehaviors, pizzeriaDemand, traders);
 			Debug.Log(
-				$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}, Modules: {businessModules.modules.Count}");
+				$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}");
 
 			LotDefinitionsValidator.Validate(lotDb, BusinessDefinitionsRepository);
 

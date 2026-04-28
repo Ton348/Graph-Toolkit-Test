@@ -343,27 +343,6 @@ namespace Prototype.Business.UI
 				m_selectedLotId = business.lotId;
 			}
 
-			var requiredModules = new List<string>();
-			var missingModules = new List<string>();
-			if (business != null && m_definitions != null)
-			{
-				requiredModules.AddRange(new[] { "Складское оборудование", "Касса", "Полки" });
-				if (string.IsNullOrWhiteSpace(business.storageItemId))
-				{
-					missingModules.Add("Складское оборудование");
-				}
-
-				if (string.IsNullOrWhiteSpace(business.cashDeskItemId))
-				{
-					missingModules.Add("Касса");
-				}
-
-				if (string.IsNullOrWhiteSpace(business.shelfItemId))
-				{
-					missingModules.Add("Полки");
-				}
-			}
-
 			IReadOnlyCollection<string> knownContactIds =
 				m_stateSync != null ? m_stateSync.GetKnownContacts() : new List<string>();
 
@@ -380,8 +359,6 @@ namespace Prototype.Business.UI
 				simulation,
 				expensesPerDay,
 				business != null ? Mathf.Max(0, business.autoDeliveryPerDay) : 0,
-				requiredModules,
-				missingModules,
 				business != null ? ResolveLotDisplayName(business.lotId) : null,
 				business != null ? ResolveBusinessTypeDisplayName(business.businessTypeId) : null,
 				knownContactIds.Select(ResolveContactDisplayName),
@@ -466,6 +443,10 @@ namespace Prototype.Business.UI
 
 			string selectedLot = !string.IsNullOrWhiteSpace(lotId) ? lotId : detailsView.GetSelectedBusinessId();
 			detailsView.SetBusinessOptions(BuildBusinessOptions(), selectedLot);
+			detailsView.SetBusinessTypeSelectionVisible(business != null && !string.IsNullOrWhiteSpace(selectedLot));
+			detailsView.SetBusinessTypeOptions(
+				business != null ? BuildBusinessTypeOptions(selectedLot) : new List<BusinessDetailsView.IdOption>(),
+				business != null ? business.businessTypeId : null);
 
 			List<BusinessDetailsView.IdOption> storageOptions = BuildEquipmentOptions(business, "storage").ToList();
 			List<BusinessDetailsView.IdOption> cashDeskOptions = BuildEquipmentOptions(business, "cashdesk").ToList();
@@ -480,7 +461,42 @@ namespace Prototype.Business.UI
 
 			detailsView.SetSupplierOptions(BuildSupplierContactOptions(business), detailsView.GetPendingSupplierId());
 			detailsView.SetCashierOptions(BuildCashierContactOptions(), detailsView.GetPendingCashierId());
-			detailsView.SetMerchandiserOptions(BuildMerchandiserContactOptions(), detailsView.GetPendingMerchandiserId());
+			bool requiresMerch = business != null && m_definitions != null && m_definitions.RequiresMerchandiser(business.businessTypeId);
+			detailsView.SetMerchandiserOptions(
+				requiresMerch ? BuildMerchandiserContactOptions() : new List<BusinessDetailsView.IdOption>(),
+				requiresMerch ? detailsView.GetPendingMerchandiserId() : null);
+		}
+
+		private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessTypeOptions(string lotId)
+		{
+			var options = new List<BusinessDetailsView.IdOption>();
+			if (m_gameData == null || m_definitions == null || string.IsNullOrWhiteSpace(lotId))
+			{
+				return options;
+			}
+
+			LotDefinitionData lot = m_gameData.GetLotById(lotId);
+			if (lot == null || lot.allowedBusinessTypes == null)
+			{
+				return options;
+			}
+
+			foreach (string typeId in lot.allowedBusinessTypes)
+			{
+				BusinessTypeDefinitionData type = m_definitions.GetBusinessType(typeId);
+				if (type == null || string.IsNullOrWhiteSpace(type.id))
+				{
+					continue;
+				}
+
+				options.Add(new BusinessDetailsView.IdOption
+				{
+					id = type.id,
+					displayName = !string.IsNullOrWhiteSpace(type.displayName) ? type.displayName : type.id
+				});
+			}
+
+			return options;
 		}
 
 		private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessOptions()
@@ -501,7 +517,7 @@ namespace Prototype.Business.UI
 				options.Add(new BusinessDetailsView.IdOption
 				{
 					id = business.lotId,
-					displayName = ResolveLotDisplayName(business.lotId)
+					displayName = ResolveBusinessSelectionDisplayName(business)
 				});
 			}
 
@@ -809,17 +825,6 @@ namespace Prototype.Business.UI
 			return options;
 		}
 
-		private string ResolveModuleDisplayName(string moduleId)
-		{
-			if (string.IsNullOrWhiteSpace(moduleId))
-			{
-				return "-";
-			}
-
-			BusinessModuleDefinitionData module = m_definitions != null ? m_definitions.GetModule(moduleId) : null;
-			return module != null && !string.IsNullOrWhiteSpace(module.displayName) ? module.displayName : moduleId;
-		}
-
 		private string ResolveLotDisplayName(string lotId)
 		{
 			if (string.IsNullOrWhiteSpace(lotId))
@@ -829,6 +834,21 @@ namespace Prototype.Business.UI
 
 			LotDefinitionData lot = m_gameData != null ? m_gameData.GetLotById(lotId) : null;
 			return lot != null && !string.IsNullOrWhiteSpace(lot.displayName) ? lot.displayName : lotId;
+		}
+
+		private string ResolveBusinessSelectionDisplayName(BusinessInstanceSnapshot business)
+		{
+			if (business == null)
+			{
+				return "-";
+			}
+
+			if (!string.IsNullOrWhiteSpace(business.businessTypeId))
+			{
+				return ResolveBusinessTypeDisplayName(business.businessTypeId);
+			}
+
+			return ResolveLotDisplayName(business.lotId);
 		}
 
 		private string ResolveBusinessTypeDisplayName(string businessTypeId)
@@ -881,10 +901,13 @@ namespace Prototype.Business.UI
 					expenses += Mathf.Max(0, cashier.salaryPerDay);
 				}
 
-				StaffContactDefinitionData merch = m_definitions.GetStaffContact(business.hiredMerchContactId);
-				if (merch != null)
+				if (m_definitions.RequiresMerchandiser(business.businessTypeId))
 				{
-					expenses += Mathf.Max(0, merch.salaryPerDay);
+					StaffContactDefinitionData merch = m_definitions.GetStaffContact(business.hiredMerchContactId);
+					if (merch != null)
+					{
+						expenses += Mathf.Max(0, merch.salaryPerDay);
+					}
 				}
 
 				SupplierDefinitionData supplier = m_definitions.GetSupplier(business.selectedSupplierId);

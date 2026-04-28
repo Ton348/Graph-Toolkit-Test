@@ -44,6 +44,7 @@ namespace Prototype.Business.UI
 				m_view.openCloseClicked += OnOpenCloseClicked;
 				m_view.collectProfitClicked += OnCollectProfitClicked;
 				m_view.businessChanged += OnBusinessChanged;
+				m_view.businessTypeChanged += OnBusinessTypeChanged;
 			}
 		}
 
@@ -54,6 +55,7 @@ namespace Prototype.Business.UI
 				m_view.openCloseClicked -= OnOpenCloseClicked;
 				m_view.collectProfitClicked -= OnCollectProfitClicked;
 				m_view.businessChanged -= OnBusinessChanged;
+				m_view.businessTypeChanged -= OnBusinessTypeChanged;
 			}
 
 			m_view = null;
@@ -69,6 +71,16 @@ namespace Prototype.Business.UI
 		private void OnBusinessChanged(string lotId)
 		{
 			m_onBusinessChanged?.Invoke(lotId);
+		}
+
+		private async void OnBusinessTypeChanged(string businessTypeId)
+		{
+			if (string.IsNullOrWhiteSpace(businessTypeId))
+			{
+				return;
+			}
+
+			SetStatus("Тип бизнеса выбран. Нажмите Открыть для применения.");
 		}
 
 		private async void OnOpenCloseClicked()
@@ -182,11 +194,25 @@ namespace Prototype.Business.UI
 		{
 			BusinessInstanceSnapshot business = m_runtimeService.GetBusinessView(lotId);
 			string currentTypeId = business != null ? business.businessTypeId : null;
-			string businessTypeId = ResolveBusinessTypeId(lotId, currentTypeId);
-			if (!string.IsNullOrWhiteSpace(businessTypeId) && businessTypeId != currentTypeId)
+			if (string.IsNullOrWhiteSpace(currentTypeId))
 			{
-				if (!await RunActionCheckedAsync(m_actionFacade.AssignBusinessType(lotId, businessTypeId), "Назначение типа бизнеса"))
+				string pendingTypeId = NormalizeId(m_view.GetSelectedBusinessTypeId());
+				if (string.IsNullOrWhiteSpace(pendingTypeId))
 				{
+					SetStatus("Сначала выберите тип бизнеса");
+					return false;
+				}
+
+				if (!await RunActionCheckedAsync(m_actionFacade.AssignBusinessType(lotId, pendingTypeId), "Назначение типа бизнеса"))
+				{
+					return false;
+				}
+
+				business = m_runtimeService.GetBusinessView(lotId);
+				currentTypeId = business != null ? business.businessTypeId : null;
+				if (string.IsNullOrWhiteSpace(currentTypeId))
+				{
+					SetStatus("Не удалось применить тип бизнеса");
 					return false;
 				}
 			}
@@ -271,62 +297,38 @@ namespace Prototype.Business.UI
 				}
 			}
 
+			bool requiresMerch = m_definitions == null || m_definitions.RequiresMerchandiser(currentTypeId);
 			business = m_runtimeService.GetBusinessView(lotId);
-			string merchandiserId = NormalizeId(m_view.GetPendingMerchandiserId());
-			if (string.IsNullOrWhiteSpace(merchandiserId))
+			if (requiresMerch)
 			{
-				if (business != null && !string.IsNullOrWhiteSpace(business.hiredMerchContactId))
+				string merchandiserId = NormalizeId(m_view.GetPendingMerchandiserId());
+				if (string.IsNullOrWhiteSpace(merchandiserId))
 				{
-					if (!await RunActionCheckedAsync(m_actionFacade.ClearWorker(lotId, "merchandiser"), "Снятие мерчендайзера"))
+					if (business != null && !string.IsNullOrWhiteSpace(business.hiredMerchContactId))
+					{
+						if (!await RunActionCheckedAsync(m_actionFacade.ClearWorker(lotId, "merchandiser"), "Снятие мерчендайзера"))
+						{
+							return false;
+						}
+					}
+				}
+				else if (business == null || business.hiredMerchContactId != merchandiserId)
+				{
+					if (!await RunActionCheckedAsync(m_actionFacade.HireWorker(lotId, "merchandiser", merchandiserId), "Назначение мерчендайзера"))
 					{
 						return false;
 					}
 				}
 			}
-			else if (business == null || business.hiredMerchContactId != merchandiserId)
+			else if (business != null && !string.IsNullOrWhiteSpace(business.hiredMerchContactId))
 			{
-				if (!await RunActionCheckedAsync(m_actionFacade.HireWorker(lotId, "merchandiser", merchandiserId), "Назначение мерчендайзера"))
+				if (!await RunActionCheckedAsync(m_actionFacade.ClearWorker(lotId, "merchandiser"), "Снятие мерчендайзера"))
 				{
 					return false;
 				}
 			}
 
 			return true;
-		}
-
-		private string ResolveBusinessTypeId(string lotId, string currentTypeId)
-		{
-			if (!string.IsNullOrWhiteSpace(currentTypeId))
-			{
-				return currentTypeId;
-			}
-
-			if (m_gameData == null || m_definitions == null || string.IsNullOrWhiteSpace(lotId))
-			{
-				return null;
-			}
-
-			LotDefinitionData lot = m_gameData.GetLotById(lotId);
-			if (lot == null || lot.allowedBusinessTypes == null || lot.allowedBusinessTypes.Count == 0)
-			{
-				return null;
-			}
-
-			foreach (string typeId in lot.allowedBusinessTypes)
-			{
-				if (string.IsNullOrWhiteSpace(typeId))
-				{
-					continue;
-				}
-
-				BusinessTypeDefinitionData type = m_definitions.GetBusinessType(typeId);
-				if (type != null)
-				{
-					return type.id;
-				}
-			}
-
-			return null;
 		}
 
 		private async Task<bool> RunActionCheckedAsync(Task<ServerActionResult> actionTask, string stepName)

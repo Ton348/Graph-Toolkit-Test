@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using Dreamteck.Splines;
+using Prototype.Business.Data;
 using Prototype.Business.Runtime;
 using Prototype.Business.World;
 using UnityEngine;
@@ -47,7 +48,9 @@ namespace Prototype.Business.Simulation
 			}
 
 			BusinessInstanceSnapshot business = worldRuntime.GetBusiness();
-			bool hasMerch = business != null && !string.IsNullOrWhiteSpace(business.hiredMerchContactId);
+			BusinessDefinitionsRepository definitions = m_simulation != null ? m_simulation.GetDefinitions() : null;
+			bool requiresMerch = business != null && (definitions == null || definitions.RequiresMerchandiser(business.businessTypeId));
+			bool hasMerch = business != null && (!requiresMerch || !string.IsNullOrWhiteSpace(business.hiredMerchContactId));
 			bool hasStorage = business != null && !string.IsNullOrWhiteSpace(business.storageItemId);
 			bool hasShelves = business != null && !string.IsNullOrWhiteSpace(business.shelfItemId);
 			bool ready = hasMerch && hasStorage && hasShelves && worldRuntime.merchRoute != null &&

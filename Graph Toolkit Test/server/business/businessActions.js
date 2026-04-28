@@ -1,4 +1,5 @@
 const { findBusinessByLotId } = require('./businessState');
+const { createBusinessInstance, applyBusinessTypeTemplate } = require('./businessInstanceFactory');
 
 function ok(message) {
   return { ok: true, message: message || '' };
@@ -24,19 +25,6 @@ function normalizeOptionalId(value) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
-function createBusinessInstance(template, lotId, rentPerDay, businessTypeId) {
-  const instanceId = `biz_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-  const source = template && typeof template === 'object' ? template : {};
-  return {
-    ...JSON.parse(JSON.stringify(source)),
-    instanceId,
-    lotId,
-    businessTypeId: businessTypeId || source.businessTypeId || '',
-    isOpen: false,
-    rentPerDay: Number.isFinite(rentPerDay) && rentPerDay >= 0 ? rentPerDay : 0
-  };
-}
-
 function rentBusiness(profile, data, lotDefs, businessDefs) {
   const lotId = data && data.lotId;
   const lotCheck = requireLotId(lotId);
@@ -51,14 +39,12 @@ function rentBusiness(profile, data, lotDefs, businessDefs) {
     return fail('LotNotFound', 'Lot not found.');
   }
 
-  const businessTypeId = Array.isArray(lot.allowedBusinessTypes) && lot.allowedBusinessTypes.length > 0
-    ? String(lot.allowedBusinessTypes[0] || '').trim()
-    : '';
   const business = createBusinessInstance(
     businessDefs?.businessInstanceTemplate,
     lotId,
     lot.rentPerDay,
-    businessTypeId);
+    '',
+    businessDefs);
   profile.businesses.push(business);
   return ok('Rent business success.');
 }
@@ -80,26 +66,12 @@ function assignBusinessType(profile, data, businessDefs, lotDefs) {
     return fail('BusinessTypeNotAllowedForLot', 'Business type not allowed for this lot.');
   }
 
-  business.businessTypeId = businessTypeId;
+  applyBusinessTypeTemplate(business, businessDefs?.businessInstanceTemplate, businessTypeId, businessDefs);
   return ok('Assign business type success.');
 }
 
 function installBusinessModule(profile, data, businessDefs) {
-  const lotId = data && data.lotId;
-  const moduleId = data && data.moduleId;
-  const lotCheck = requireLotId(lotId);
-  if (lotCheck) return lotCheck;
-  if (!moduleId) return fail('ModuleIdEmpty', 'moduleId is required.');
-
-  const business = findBusinessByLotId(profile, lotId);
-  if (!business) return fail('BusinessNotFound', 'Business not found.');
-
-  const moduleDef = businessDefs && businessDefs.moduleById && businessDefs.moduleById.get(moduleId);
-  if (!moduleDef) return fail('ModuleNotFound', 'Module not found.');
-
-  const cost = Number.isFinite(moduleDef.installCost) ? moduleDef.installCost : 0;
-  business.totalProfit = (Number.isFinite(business.totalProfit) ? business.totalProfit : 0) - cost;
-  return ok('Install module success.');
+  return fail('BusinessModulesRemoved', 'Business modules are no longer supported. Use business equipment items instead.');
 }
 
 function assignSupplier(profile, data, businessDefs) {
@@ -285,6 +257,10 @@ function simulateBusinessDay(profile, data, businessDefs) {
   const unitCost = supplier && Number.isFinite(supplier.unitBuyPrice) ? Math.max(0, supplier.unitBuyPrice) : 0;
   const rentPerDay = Number.isFinite(business.rentPerDay) ? Math.max(0, business.rentPerDay) : 0;
   const staffById = businessDefs?.staffContactById || null;
+  const businessType = businessDefs?.businessTypeById && business.businessTypeId
+    ? businessDefs.businessTypeById.get(business.businessTypeId)
+    : null;
+  const requiresMerch = businessType?.requiresMerchandiser !== false;
   const cashier = staffById && business.hiredCashierContactId ? staffById.get(business.hiredCashierContactId) : null;
   const merch = staffById && business.hiredMerchContactId ? staffById.get(business.hiredMerchContactId) : null;
   const logist = staffById && business.hiredLogistContactId ? staffById.get(business.hiredLogistContactId) : null;
@@ -299,7 +275,8 @@ function simulateBusinessDay(profile, data, businessDefs) {
     : null;
   const cashCapacity = cashDeskItem && Number.isFinite(cashDeskItem.cashCapacity) ? Math.max(0, cashDeskItem.cashCapacity) : 0;
   const canDeliver = hasStorageItem && supplier && dailyOrderAmount > 0;
-  const canSell = business.isOpen && hasCashDeskItem && hasShelfItem && cashier && merch;
+  const hasRequiredStaff = cashier && (!requiresMerch || merch);
+  const canSell = business.isOpen && hasCashDeskItem && hasShelfItem && hasRequiredStaff;
 
   const storageFreeSpace = Math.max(0, storageCapacity - stock);
   const delivered = canDeliver ? Math.min(dailyOrderAmount, storageFreeSpace) : 0;
@@ -308,7 +285,7 @@ function simulateBusinessDay(profile, data, businessDefs) {
   const sold = canSell ? Math.min(dailyDemand, stockAfterDelivery) : 0;
   const revenue = sold * currentPrice;
   const deliveryCost = canDeliver ? delivered * unitCost : 0;
-  const totalExpenses = deliveryCost + rentPerDay + cashierSalary + merchSalary + logistSalary;
+  const totalExpenses = deliveryCost + rentPerDay + cashierSalary + (requiresMerch ? merchSalary : 0) + logistSalary;
   const profit = revenue - totalExpenses;
   const stockEnd = Math.max(0, stockAfterDelivery - sold);
 
@@ -610,27 +587,6 @@ function buyItem(profile, data, businessDefs) {
 
   profile.money -= price;
   profile.items.push(itemId);
-
-  if (lotId && String(lotId).trim()) {
-    const business = findBusinessByLotId(profile, lotId);
-    if (business) {
-      if (item.category === 'storage') {
-        business.storageItemId = item.id;
-        business.storageCapacity = Number.isFinite(item.storageCapacity) ? item.storageCapacity : 0;
-        if (business.storageStock > business.storageCapacity) {
-          business.storageStock = business.storageCapacity;
-        }
-      } else if (item.category === 'cashdesk') {
-        business.cashDeskItemId = item.id;
-      } else if (item.category === 'shelf') {
-        business.shelfItemId = item.id;
-        business.shelfCapacity = Number.isFinite(item.shelfCapacity) ? item.shelfCapacity : 0;
-        if (business.shelfStock > business.shelfCapacity) {
-          business.shelfStock = business.shelfCapacity;
-        }
-      }
-    }
-  }
 
   return ok('Buy item success.');
 }

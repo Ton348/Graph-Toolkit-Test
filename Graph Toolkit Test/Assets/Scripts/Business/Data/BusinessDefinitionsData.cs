@@ -4,22 +4,35 @@ using System.Collections.Generic;
 namespace Prototype.Business.Data
 {
 	[Serializable]
+	public class BusinessInstanceTemplateData
+	{
+		public int storageStock;
+		public int shelfStock;
+		public string selectedSupplierId;
+		public int autoDeliveryPerDay;
+		public int markupPercent;
+		public string storageItemId;
+		public string cashDeskItemId;
+		public string shelfItemId;
+		public string hiredCashierContactId;
+		public string hiredMerchContactId;
+		public string hiredLogistContactId;
+		public int lastDayRevenue;
+		public int lastDayExpenses;
+		public int lastDayProfit;
+		public int totalRevenue;
+		public int totalExpenses;
+		public int totalProfit;
+	}
+
+	[Serializable]
 	public class BusinessTypeDefinitionData
 	{
 		public string id;
 		public string displayName;
-		public List<string> requiredModules = new();
-		public int defaultStorageCapacity;
-		public int defaultShelfCapacity;
 		public string productType;
-	}
-
-	[Serializable]
-	public class BusinessModuleDefinitionData
-	{
-		public string id;
-		public string displayName;
-		public int installCost;
+		public bool requiresMerchandiser = true;
+		public BusinessInstanceTemplateData instanceTemplate;
 	}
 
 	[Serializable]
@@ -115,11 +128,6 @@ namespace Prototype.Business.Data
 		public List<BusinessTypeDefinitionData> businessTypes = new();
 	}
 
-	[Serializable]
-	public class BusinessModuleDatabaseData
-	{
-		public List<BusinessModuleDefinitionData> modules = new();
-	}
 
 	[Serializable]
 	public class SupplierDatabaseData

@@ -16,7 +16,6 @@ function readJson(filePath) {
 
 function validateBusinessDefinitions(
   businessTypes,
-  modules,
   suppliers,
   staffRoles,
   staffContacts,
@@ -25,29 +24,6 @@ function validateBusinessDefinitions(
   pizzeriaDemand) {
   let errors = 0;
   let warnings = 0;
-
-  const moduleIds = new Set();
-  if (!modules || !Array.isArray(modules.modules)) {
-    console.error('[server][business] modules missing "modules" array');
-    errors++;
-  } else {
-    modules.modules.forEach((m, i) => {
-      if (!m || !m.id || !String(m.id).trim()) {
-        console.error(`[server][business] module at index ${i} missing id`);
-        errors++;
-        return;
-      }
-      if (moduleIds.has(m.id)) {
-        console.error(`[server][business] duplicate module id: ${m.id}`);
-        errors++;
-      }
-      moduleIds.add(m.id);
-      if (Number.isFinite(m.installCost) && m.installCost < 0) {
-        console.warn(`[server][business] module ${m.id} installCost < 0`);
-        warnings++;
-      }
-    });
-  }
 
   const businessTypeIds = new Set();
   if (!businessTypes || !Array.isArray(businessTypes.businessTypes)) {
@@ -65,28 +41,6 @@ function validateBusinessDefinitions(
         errors++;
       }
       businessTypeIds.add(b.id);
-      if (!Array.isArray(b.requiredModules) || b.requiredModules.length === 0) {
-        console.error(`[server][business] business type ${b.id} requiredModules missing or empty`);
-        errors++;
-      } else {
-        b.requiredModules.forEach(moduleId => {
-          if (!moduleId || !String(moduleId).trim()) {
-            console.error(`[server][business] business type ${b.id} has empty module reference`);
-            errors++;
-          } else if (!moduleIds.has(moduleId)) {
-            console.error(`[server][business] business type ${b.id} references unknown module ${moduleId}`);
-            errors++;
-          }
-        });
-      }
-      if (Number.isFinite(b.defaultStorageCapacity) && b.defaultStorageCapacity < 0) {
-        console.warn(`[server][business] business type ${b.id} defaultStorageCapacity < 0`);
-        warnings++;
-      }
-      if (Number.isFinite(b.defaultShelfCapacity) && b.defaultShelfCapacity < 0) {
-        console.warn(`[server][business] business type ${b.id} defaultShelfCapacity < 0`);
-        warnings++;
-      }
     });
   }
 
@@ -284,7 +238,6 @@ function loadBusinessDefinitions() {
 
   const businessTypes = readJson(path.join(BUSINESS_DIR, 'business_types.json'));
   const businessInstanceTemplate = readJson(path.join(BUSINESS_DIR, 'business_instance_template.json'));
-  const modules = readJson(path.join(BUSINESS_DIR, 'business_modules.json'));
   const peopleData = readJson(path.join(BUSINESS_DIR, 'people.json'));
   const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
   const behaviors = readJson(path.join(BUSINESS_DIR, 'customer_behavior.json'));
@@ -293,7 +246,6 @@ function loadBusinessDefinitions() {
 
   validateBusinessDefinitions(
     businessTypes,
-    modules,
     suppliers,
     staffRoles,
     staffContacts,
@@ -304,11 +256,6 @@ function loadBusinessDefinitions() {
   const businessTypeById = new Map();
   (businessTypes.businessTypes || []).forEach(item => {
     if (item && item.id && !businessTypeById.has(item.id)) businessTypeById.set(item.id, item);
-  });
-
-  const moduleById = new Map();
-  (modules.modules || []).forEach(item => {
-    if (item && item.id && !moduleById.has(item.id)) moduleById.set(item.id, item);
   });
 
   const supplierById = new Map();
@@ -381,18 +328,17 @@ function loadBusinessDefinitions() {
       .sort((a, b) => a.minPrice - b.minPrice)
     : [];
   demandByBusinessTypeId.set('grocery_store', pizzeriaRanges);
+  demandByBusinessTypeId.set('pizza_shop', pizzeriaRanges);
 
   return {
     businessTypes,
     businessInstanceTemplate,
-    modules,
     suppliers,
     staffRoles,
     staffContacts,
     behaviors,
     traders,
     businessTypeById,
-    moduleById,
     supplierById,
     staffRoleById,
     staffContactById,

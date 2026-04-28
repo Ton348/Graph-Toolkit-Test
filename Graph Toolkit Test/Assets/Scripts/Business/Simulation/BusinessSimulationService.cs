@@ -30,6 +30,11 @@ namespace Prototype.Business.Simulation
 
 		public event Action simulationUpdated;
 
+		public BusinessDefinitionsRepository GetDefinitions()
+		{
+			return m_definitions;
+		}
+
 		public void SimulateSeconds(float seconds)
 		{
 			RunTick(seconds);

@@ -2,19 +2,19 @@
   "lots": [
     {
       "id": "lot_market_01",
-      "displayName": "Пиццерия",
+      "displayName": "Помещение 100кв/м",
       "rentPerDay": 1000,
       "locationId": "city_center",
       "size": 100,
-      "allowedBusinessTypes": ["grocery_store"]
+      "allowedBusinessTypes": ["pizza_shop", "grocery_store"]
     },
     {
       "id": "lot_road_01",
-      "displayName": "Помещение у дороги",
-      "rentPerDay": 80,
+      "displayName": "Помещение 50кв/м",
+      "rentPerDay": 500,
       "locationId": "roadside",
       "size": 80,
-      "allowedBusinessTypes": ["grocery_store"]
+      "allowedBusinessTypes": ["pizza_shop", "grocery_store"]
     }
   ]
 }

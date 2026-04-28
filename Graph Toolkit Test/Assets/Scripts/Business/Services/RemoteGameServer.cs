@@ -261,17 +261,13 @@ namespace Prototype.Business.Services
 		{
 			if (m_debugLog)
 			{
-				Debug.Log($"[RemoteGameServer] action=install_business_module lotId='{lotId}' moduleId='{moduleId}'");
+				Debug.Log($"[RemoteGameServer] install_business_module disabled lotId='{lotId}' moduleId='{moduleId}'");
 			}
 
-			var request = new RemoteInstallBusinessModuleRequest
-			{
-				action = "install_business_module",
-				playerId = m_playerId,
-				data = new RemoteInstallBusinessModuleData { lotId = lotId, moduleId = moduleId }
-			};
-
-			return SendRequestAsync(request);
+			return Task.FromResult(ServerActionResult.FailResult(
+				ServerActionResult.ErrorType.GameLogicError,
+				"BusinessModulesRemoved",
+				"Business modules are no longer supported. Use business equipment items instead."));
 		}
 
 		public Task<ServerActionResult> TrySetBusinessEquipmentAsync(

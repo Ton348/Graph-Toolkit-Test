@@ -519,26 +519,7 @@ namespace Prototype.Business.Services
 					"Lot not found.");
 			}
 
-			var business = new BusinessInstanceSnapshot
-			{
-				instanceId = $"local_{Guid.NewGuid():N}",
-				lotId = lotId,
-				businessTypeId = lotDef.allowedBusinessTypes != null && lotDef.allowedBusinessTypes.Count > 0
-					? lotDef.allowedBusinessTypes[0]
-					: null,
-				isOpen = false,
-				rentPerDay = lotDef.rentPerDay < 0 ? 0 : lotDef.rentPerDay,
-				storageCapacity = 0,
-				shelfCapacity = 0,
-				storageStock = 0,
-				shelfStock = 0,
-				selectedSupplierId = null,
-				autoDeliveryPerDay = 0,
-				markupPercent = 0,
-				hiredCashierContactId = null,
-				hiredMerchContactId = null,
-				hiredLogistContactId = null
-			};
+			BusinessInstanceSnapshot business = BusinessInstanceFactory.CreateBusinessInstance(lotDef, null);
 
 			m_businesses.Add(business);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Rent business success.");
@@ -662,52 +643,17 @@ namespace Prototype.Business.Services
 					"Business type not found.");
 			}
 
-			business.businessTypeId = businessTypeId;
-			business.storageCapacity = typeDef.defaultStorageCapacity;
-			business.shelfCapacity = typeDef.defaultShelfCapacity;
+			business.ApplyBusinessTypeTemplate(businessTypeId, m_businessRepository);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign business type success.");
 		}
 
 		public async Task<ServerActionResult> TryInstallBusinessModuleAsync(string lotId, string moduleId)
 		{
-			int delayMs = NextDelayMs();
-			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
-			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
-			await Task.Delay(delayMs);
-
-			if (networkIssue != ServerActionResult.ErrorType.None)
-			{
-				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
-			}
-
-			if (string.IsNullOrWhiteSpace(lotId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
-					"lotId is required.");
-			}
-
-			if (string.IsNullOrWhiteSpace(moduleId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleIdEmpty",
-					"moduleId is required.");
-			}
-
-			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
-			if (business == null)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
-					"Business not found.");
-			}
-
-			BusinessModuleDefinitionData moduleDef = m_businessRepository?.GetModule(moduleId);
-			if (moduleDef == null)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ModuleNotFound",
-					"Module not found.");
-			}
-
-			business.totalProfit -= moduleDef.installCost;
-			return ServerActionResult.SuccessResult(BuildSnapshot(), "Install module success.");
+			await Task.Yield();
+			return ServerActionResult.FailResult(
+				ServerActionResult.ErrorType.GameLogicError,
+				"BusinessModulesRemoved",
+				"Business modules are no longer supported. Use business equipment items instead.");
 		}
 
 		public async Task<ServerActionResult> TryAssignSupplierAsync(string lotId, string supplierId)

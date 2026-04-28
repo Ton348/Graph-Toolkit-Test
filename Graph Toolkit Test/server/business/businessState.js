@@ -12,12 +12,6 @@ function normalizeBusinessInstance(business) {
     selectedSupplierId: typeof business?.selectedSupplierId === 'string' ? business.selectedSupplierId : null,
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
-    storageItemId: typeof business?.storageItemId === 'string' ? business.storageItemId : null,
-    cashDeskItemId: typeof business?.cashDeskItemId === 'string' ? business.cashDeskItemId : null,
-    shelfItemId: typeof business?.shelfItemId === 'string' ? business.shelfItemId : null,
-    hiredCashierContactId: typeof business?.hiredCashierContactId === 'string' ? business.hiredCashierContactId : null,
-    hiredMerchContactId: typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null,
-    hiredLogistContactId: typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null,
     lastDayRevenue: Number.isFinite(business?.lastDayRevenue) ? business.lastDayRevenue : 0,
     lastDayExpenses: Number.isFinite(business?.lastDayExpenses) ? business.lastDayExpenses : 0,
     lastDayProfit: Number.isFinite(business?.lastDayProfit) ? business.lastDayProfit : 0,
@@ -35,6 +29,25 @@ function normalizeBusinessInstance(business) {
   if (normalized.markupPercent < 0) normalized.markupPercent = 0;
   if (normalized.lastDayRevenue < 0) normalized.lastDayRevenue = 0;
   if (normalized.lastDayExpenses < 0) normalized.lastDayExpenses = 0;
+
+  if (Object.prototype.hasOwnProperty.call(business || {}, 'storageItemId')) {
+    normalized.storageItemId = typeof business?.storageItemId === 'string' ? business.storageItemId : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(business || {}, 'cashDeskItemId')) {
+    normalized.cashDeskItemId = typeof business?.cashDeskItemId === 'string' ? business.cashDeskItemId : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(business || {}, 'shelfItemId')) {
+    normalized.shelfItemId = typeof business?.shelfItemId === 'string' ? business.shelfItemId : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(business || {}, 'hiredCashierContactId')) {
+    normalized.hiredCashierContactId = typeof business?.hiredCashierContactId === 'string' ? business.hiredCashierContactId : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(business || {}, 'hiredMerchContactId')) {
+    normalized.hiredMerchContactId = typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null;
+  }
+  if (Object.prototype.hasOwnProperty.call(business || {}, 'hiredLogistContactId')) {
+    normalized.hiredLogistContactId = typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null;
+  }
 
   return normalized;
 }
@@ -69,6 +82,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
   const seenLots = new Set();
   const seenInstances = new Set();
   const sanitized = [];
+  const equippedItems = new Set();
 
   for (const business of profile.businesses || []) {
     if (!business || !business.instanceId || !business.lotId) continue;
@@ -121,10 +135,21 @@ function sanitizeBusinessProfile(profile, businessDefs) {
       }
     }
 
+    if (business.storageItemId) equippedItems.add(business.storageItemId);
+    if (business.cashDeskItemId) equippedItems.add(business.cashDeskItemId);
+    if (business.shelfItemId) equippedItems.add(business.shelfItemId);
+
     sanitized.push(business);
   }
 
   profile.businesses = sanitized;
+  if (!Array.isArray(profile.items)) {
+    profile.items = [];
+  }
+  profile.items = profile.items.filter(itemId =>
+    typeof itemId === 'string' &&
+    itemId.trim().length > 0 &&
+    !equippedItems.has(itemId));
   return profile;
 }
 

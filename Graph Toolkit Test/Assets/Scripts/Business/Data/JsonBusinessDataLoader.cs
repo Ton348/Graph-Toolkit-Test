@@ -19,11 +19,6 @@ namespace Prototype.Business.Data
 			return Load<BusinessTypeDatabaseData>("business_types.json", "business types");
 		}
 
-		public BusinessModuleDatabaseData LoadBusinessModules()
-		{
-			return Load<BusinessModuleDatabaseData>("business_modules.json", "business modules");
-		}
-
 		public SupplierDatabaseData LoadSuppliers()
 		{
 			BusinessPeopleDatabaseData peopleData = LoadPeople();

@@ -230,11 +230,7 @@ namespace Prototype.Business.Runtime
 				business.hiredLogistContactId = null;
 			}
 
-			if (string.IsNullOrWhiteSpace(business.businessTypeId))
-			{
-				BusinessDebugLog.Warn($"[Business] Missing businessTypeId on lotId='{business.lotId}'.");
-			}
-			else if (m_definitions != null && !m_definitions.HasBusinessType(business.businessTypeId))
+			if (!string.IsNullOrWhiteSpace(business.businessTypeId) && m_definitions != null && !m_definitions.HasBusinessType(business.businessTypeId))
 			{
 				BusinessDebugLog.Warn(
 					$"[Business] Unknown businessTypeId '{business.businessTypeId}' on lotId='{business.lotId}'.");

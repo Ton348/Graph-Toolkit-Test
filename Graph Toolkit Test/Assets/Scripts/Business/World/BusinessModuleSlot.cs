@@ -74,6 +74,8 @@ namespace Prototype.Business.World
 
 		private async void TryInstallAsync(PlayerCarryItem carrier)
 		{
+			await System.Threading.Tasks.Task.Yield();
+
 			if (m_isInstalled)
 			{
 				BusinessDebugLog.Log(
@@ -92,32 +94,7 @@ namespace Prototype.Business.World
 				return;
 			}
 
-			if (!carrier.HasItem(moduleId))
-			{
-				BusinessDebugLog.Log($"[BusinessWorld] Player missing item '{moduleId}' for lotId='{worldRuntime.lotId}'.");
-				return;
-			}
-
-			BusinessActionFacade facade = worldRuntime.GetActionFacade();
-			if (facade == null)
-			{
-				BusinessDebugLog.Warn("[BusinessWorld] BusinessActionFacade missing.");
-				return;
-			}
-
-			BusinessDebugLog.Log($"[BusinessWorld] Install module '{moduleId}' lotId='{worldRuntime.lotId}'");
-			ServerActionResult result = await facade.InstallModule(worldRuntime.lotId, moduleId);
-			if (result != null && result.Success)
-			{
-				carrier.TryConsume(moduleId);
-				m_isInstalled = true;
-				SetVisual(true);
-				BusinessDebugLog.Log($"[BusinessWorld] Module installed '{moduleId}' lotId='{worldRuntime.lotId}'");
-			}
-			else
-			{
-				BusinessDebugLog.Warn($"[BusinessWorld] Module install failed '{moduleId}' lotId='{worldRuntime.lotId}'");
-			}
+			BusinessDebugLog.Log($"[BusinessWorld] Module slot '{moduleId}' is legacy and disabled for lotId='{worldRuntime.lotId}'.");
 		}
 
 		public void RefreshFromState()

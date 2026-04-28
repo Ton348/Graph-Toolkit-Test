@@ -1,12 +1,31 @@
 {
   "businessTypes": [
     {
+      "id": "pizza_shop",
+      "displayName": "Пиццерия",
+      "productType": "grocery",
+      "requiresMerchandiser": false,
+      "instanceTemplate": {
+        "storageItemId": null,
+        "cashDeskItemId": null,
+        "shelfItemId": null,
+        "hiredCashierContactId": null,
+        "hiredLogistContactId": null
+      }
+    },
+    {
       "id": "grocery_store",
       "displayName": "Магазин продуктов",
-      "requiredModules": ["storage", "shelves", "cash_register"],
-      "defaultStorageCapacity": 1000,
-      "defaultShelfCapacity": 200,
-      "productType": "grocery"
+      "productType": "grocery",
+      "requiresMerchandiser": true,
+      "instanceTemplate": {
+        "storageItemId": null,
+        "cashDeskItemId": null,
+        "shelfItemId": null,
+        "hiredCashierContactId": null,
+        "hiredMerchContactId": null,
+        "hiredLogistContactId": null
+      }
     }
   ]
 }

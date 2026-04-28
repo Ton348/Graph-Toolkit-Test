@@ -7,7 +7,6 @@ namespace Prototype.Business.Data
 	{
 		public static bool Validate(
 			BusinessTypeDatabaseData businessTypes,
-			BusinessModuleDatabaseData modules,
 			SupplierDatabaseData suppliers,
 			StaffRoleDatabaseData staffRoles,
 			StaffContactDatabaseData staffContacts,
@@ -15,38 +14,7 @@ namespace Prototype.Business.Data
 			TraderDatabaseData traders)
 		{
 			var ok = true;
-			var moduleIds = new HashSet<string>();
 			var businessTypeIds = new HashSet<string>();
-
-			if (modules?.modules == null)
-			{
-				Debug.LogError("[BusinessDefinitions] modules list is missing.");
-				ok = false;
-			}
-			else
-			{
-				foreach (BusinessModuleDefinitionData module in modules.modules)
-				{
-					if (module == null || string.IsNullOrWhiteSpace(module.id))
-					{
-						Debug.LogError("[BusinessDefinitions] module has empty id.");
-						ok = false;
-						continue;
-					}
-
-					if (!moduleIds.Add(module.id))
-					{
-						Debug.LogError($"[BusinessDefinitions] duplicate module id: {module.id}");
-						ok = false;
-					}
-
-					if (module.installCost < 0)
-					{
-						Debug.LogError($"[BusinessDefinitions] module {module.id} has negative installCost.");
-						ok = false;
-					}
-				}
-			}
 
 			if (businessTypes?.businessTypes == null)
 			{
@@ -70,11 +38,6 @@ namespace Prototype.Business.Data
 						ok = false;
 					}
 
-					if (type.defaultShelfCapacity < 0 || type.defaultStorageCapacity < 0)
-					{
-						Debug.LogError($"[BusinessDefinitions] business type {type.id} has negative capacity values.");
-						ok = false;
-					}
 				}
 			}
 
