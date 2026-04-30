@@ -425,7 +425,7 @@ namespace Prototype.Business.UI
 				m_pendingStorageId = NormalizeId(business.storageItemId);
 				m_pendingCashDeskId = NormalizeId(business.cashDeskItemId);
 				m_pendingShelfId = NormalizeId(business.shelfItemId);
-				m_pendingSupplierId = NormalizeId(business.selectedSupplierId);
+				m_pendingSupplierId = NormalizeId(business.hiredLogistContactId);
 				m_pendingCashierId = NormalizeId(business.hiredCashierContactId);
 				m_pendingMerchandiserId = NormalizeId(business.hiredMerchContactId);
 			}

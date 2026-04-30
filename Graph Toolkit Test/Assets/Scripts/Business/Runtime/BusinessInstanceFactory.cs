@@ -5,7 +5,10 @@ namespace Prototype.Business.Runtime
 {
 	public static class BusinessInstanceFactory
 	{
-		public static BusinessInstanceSnapshot CreateBusinessInstance(LotDefinitionData lot, string businessTypeId)
+		public static BusinessInstanceSnapshot CreateBusinessInstance(
+			LotDefinitionData lot,
+			string businessTypeId,
+			BusinessDefinitionsRepository definitions)
 		{
 			var business = new BusinessInstanceSnapshot
 			{
@@ -20,7 +23,7 @@ namespace Prototype.Business.Runtime
 				return business;
 			}
 
-			return business.ApplyBusinessTypeTemplate(businessTypeId, null);
+			return business.ApplyBusinessTypeTemplate(businessTypeId, definitions);
 		}
 
 		public static BusinessInstanceSnapshot ApplyBusinessTypeTemplate(

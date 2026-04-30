@@ -8,8 +8,6 @@ namespace Prototype.Business.Data
 	{
 		public int storageStock;
 		public int shelfStock;
-		public string selectedSupplierId;
-		public int autoDeliveryPerDay;
 		public int markupPercent;
 		public string storageItemId;
 		public string cashDeskItemId;

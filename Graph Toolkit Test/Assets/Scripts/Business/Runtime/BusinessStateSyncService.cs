@@ -12,6 +12,7 @@ namespace Prototype.Business.Runtime
 		private readonly Dictionary<string, BusinessInstanceSnapshot> m_businessesByLotId = new();
 		private readonly BusinessDefinitionsRepository m_definitions;
 		private readonly GameDataRepository m_gameData;
+		private readonly BusinessCalculationService m_calculation;
 		private readonly HashSet<string> m_knownContacts = new();
 
 		public BusinessStateSyncService()
@@ -22,6 +23,7 @@ namespace Prototype.Business.Runtime
 		{
 			m_definitions = definitions;
 			m_gameData = gameData;
+			m_calculation = new BusinessCalculationService(definitions, gameData);
 		}
 
 		public IReadOnlyCollection<BusinessInstanceSnapshot> Businesses => m_businessesByInstanceId.Values;
@@ -169,33 +171,18 @@ namespace Prototype.Business.Runtime
 				business.shelfStock = 0;
 			}
 
-			BusinessRuntimeStats stats = BusinessRuntimeStatsCalculator.Calculate(business, m_gameData, m_definitions);
-			if (stats.StorageCapacity > 0 && business.storageStock > stats.StorageCapacity)
+			int storageCapacity = m_calculation != null ? m_calculation.GetStorageCapacity(business) : 0;
+			int shelfCapacity = m_calculation != null ? m_calculation.GetShelfCapacity(business) : 0;
+			if (storageCapacity > 0 && business.storageStock > storageCapacity)
 			{
 				BusinessDebugLog.Warn($"[Business] storageStock exceeds capacity for lotId='{business.lotId}'. Clamped.");
-				business.storageStock = stats.StorageCapacity;
+				business.storageStock = storageCapacity;
 			}
 
-			if (stats.ShelfCapacity > 0 && business.shelfStock > stats.ShelfCapacity)
+			if (shelfCapacity > 0 && business.shelfStock > shelfCapacity)
 			{
 				BusinessDebugLog.Warn($"[Business] shelfStock exceeds capacity for lotId='{business.lotId}'. Clamped.");
-				business.shelfStock = stats.ShelfCapacity;
-			}
-
-			if (!string.IsNullOrWhiteSpace(business.selectedSupplierId))
-			{
-				if (m_definitions != null && !m_definitions.HasSupplier(business.selectedSupplierId))
-				{
-					BusinessDebugLog.Warn(
-						$"[Business] Unknown supplierId '{business.selectedSupplierId}' on lotId='{business.lotId}'. Cleared.");
-					business.selectedSupplierId = null;
-				}
-				else if (contacts != null && !contacts.Contains(business.selectedSupplierId))
-				{
-					BusinessDebugLog.Warn(
-						$"[Business] Supplier '{business.selectedSupplierId}' not in knownContacts for lotId='{business.lotId}'. Cleared.");
-					business.selectedSupplierId = null;
-				}
+				business.shelfStock = shelfCapacity;
 			}
 
 			if (!string.IsNullOrWhiteSpace(business.hiredCashierContactId) && contacts != null &&

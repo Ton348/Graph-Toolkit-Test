@@ -6,8 +6,6 @@
   "shelfCapacity": 0,
   "storageStock": 0,
   "shelfStock": 0,
-  "selectedSupplierId": null,
-  "autoDeliveryPerDay": 0,
   "markupPercent": 0,
   "lastDayRevenue": 0,
   "lastDayExpenses": 0,

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using GameGraph.Runtime.Quest;
 using Prototype.Business.Data;
 using Prototype.Business.Runtime;
+using Prototype.Business.Simulation;
 using Sample.Runtime.GameData;
 using Sample.Runtime.Runtime;
 using UnityEngine;
@@ -26,6 +27,8 @@ namespace Prototype.Business.Services
 		private readonly float m_networkErrorChance;
 		private readonly GameRuntimeState m_runtime;
 		private readonly float m_timeoutChance;
+		private readonly BusinessTickService m_tickService;
+		private readonly BusinessCalculationService m_calculationService;
 
 		public LocalGameServer(
 			GameRuntimeState runtime,
@@ -43,6 +46,8 @@ namespace Prototype.Business.Services
 			m_maxDelayMs = Mathf.Max(m_minDelayMs, Mathf.Clamp(maxDelayMs, 0, 60000));
 			m_networkErrorChance = Mathf.Clamp01(networkErrorChance);
 			m_timeoutChance = Mathf.Clamp01(timeoutChance);
+			m_tickService = new BusinessTickService(m_businessRepository, m_dataRepository);
+			m_calculationService = new BusinessCalculationService(m_businessRepository, m_dataRepository);
 		}
 
 		public async Task<ServerActionResult> TryGetProfileAsync()
@@ -519,7 +524,8 @@ namespace Prototype.Business.Services
 					"Lot not found.");
 			}
 
-			BusinessInstanceSnapshot business = BusinessInstanceFactory.CreateBusinessInstance(lotDef, null);
+			BusinessInstanceSnapshot business =
+				BusinessInstanceFactory.CreateBusinessInstance(lotDef, null, m_businessRepository);
 
 			m_businesses.Add(business);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Rent business success.");
@@ -683,7 +689,7 @@ namespace Prototype.Business.Services
 
 			if (string.IsNullOrWhiteSpace(supplierId))
 			{
-				business.selectedSupplierId = null;
+				business.hiredLogistContactId = null;
 				business.autoDeliveryPerDay = 0;
 				return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear supplier success.");
 			}
@@ -701,7 +707,7 @@ namespace Prototype.Business.Services
 					"Supplier contact not unlocked.");
 			}
 
-			business.selectedSupplierId = supplierId;
+			business.hiredLogistContactId = supplierId;
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign supplier success.");
 		}
 
@@ -777,17 +783,17 @@ namespace Prototype.Business.Services
 			business.cashDeskItemId = normalizedCashDeskItemId;
 			business.shelfItemId = normalizedShelfItemId;
 
-			BusinessRuntimeStats stats =
-				BusinessRuntimeStatsCalculator.Calculate(business, m_dataRepository, m_businessRepository);
+			int storageCapacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
+			int shelfCapacity = m_calculationService != null ? m_calculationService.GetShelfCapacity(business) : 0;
 
-			if (business.storageStock > stats.StorageCapacity)
+			if (business.storageStock > storageCapacity)
 			{
-				business.storageStock = stats.StorageCapacity;
+				business.storageStock = storageCapacity;
 			}
 
-			if (business.shelfStock > stats.ShelfCapacity)
+			if (business.shelfStock > shelfCapacity)
 			{
-				business.shelfStock = stats.ShelfCapacity;
+				business.shelfStock = shelfCapacity;
 			}
 
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set business equipment success.");
@@ -851,7 +857,6 @@ namespace Prototype.Business.Services
 				if (roleId == "logist")
 				{
 					business.hiredLogistContactId = null;
-					business.selectedSupplierId = null;
 					business.autoDeliveryPerDay = 0;
 					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear logist success.");
 				}
@@ -877,7 +882,6 @@ namespace Prototype.Business.Services
 			else if (roleId == "logist")
 			{
 				business.hiredLogistContactId = contactId;
-				business.selectedSupplierId = contactId;
 			}
 			else
 			{
@@ -1192,6 +1196,7 @@ namespace Prototype.Business.Services
 					"Business not found.");
 			}
 
+			m_tickService?.RunDay(business);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Simulate business day success.");
 		}
 
@@ -1303,7 +1308,7 @@ namespace Prototype.Business.Services
 					"Storage equipment not installed.");
 			}
 
-			int capacity = BusinessRuntimeStatsCalculator.ResolveStorageCapacity(business, m_businessRepository);
+			int capacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
 			int space = capacity > 0 ? capacity - business.storageStock : 0;
 			if (space <= 0)
 			{
@@ -1364,7 +1369,7 @@ namespace Prototype.Business.Services
 					"Shelves equipment not installed.");
 			}
 
-			int capacity = BusinessRuntimeStatsCalculator.ResolveShelfCapacity(business, m_businessRepository);
+			int capacity = m_calculationService != null ? m_calculationService.GetShelfCapacity(business) : 0;
 			int space = capacity > 0 ? capacity - business.shelfStock : 0;
 			if (space <= 0)
 			{
@@ -1591,7 +1596,9 @@ namespace Prototype.Business.Services
 						isOpen = business.isOpen,
 						storageStock = business.storageStock,
 						shelfStock = business.shelfStock,
-						selectedSupplierId = business.selectedSupplierId,
+						storageItemId = business.storageItemId,
+						cashDeskItemId = business.cashDeskItemId,
+						shelfItemId = business.shelfItemId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
 						lastDayRevenue = business.lastDayRevenue,

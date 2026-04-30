@@ -36,6 +36,7 @@ namespace Prototype.Business.UI
 		private BusinessSimulationService m_simulationService;
 		private BusinessStateSyncService m_stateSync;
 		private PlayerStateSync m_playerStateSync;
+		private BusinessCalculationService m_businessCalculation;
 		private string m_selectedLotId;
 		private ProfileSyncService m_profileSync;
 		private float m_businessDayTimer;
@@ -115,6 +116,7 @@ namespace Prototype.Business.UI
 				m_playerStateSync = bootstrap.PlayerStateSync;
 				m_definitions = bootstrap.BusinessDefinitionsRepository;
 				m_gameData = bootstrap.GameDataRepository;
+				m_businessCalculation = new BusinessCalculationService(m_definitions, m_gameData);
 				m_simulationService = bootstrap.BusinessSimulationService;
 				m_profileSync = bootstrap.ProfileSyncService;
 			}
@@ -352,20 +354,19 @@ namespace Prototype.Business.UI
 				m_simulationService != null && !string.IsNullOrWhiteSpace(m_selectedLotId)
 					? m_simulationService.GetStateByLotId(m_selectedLotId)
 					: null;
-			BusinessRuntimeStats stats =
-				BusinessRuntimeStatsCalculator.Calculate(business, m_gameData, m_definitions);
+			int storageCapacity = m_businessCalculation != null ? m_businessCalculation.GetStorageCapacity(business) : 0;
 			float expensesPerDay = CalculateExpensesPerDay(business);
 
 			detailsView.SetBusiness(
 				business,
 				simulation,
-				stats.StorageCapacity,
+				storageCapacity,
 				expensesPerDay,
 				business != null ? Mathf.Max(0, business.autoDeliveryPerDay) : 0,
 				business != null ? ResolveLotDisplayName(business.lotId) : null,
 				business != null ? ResolveBusinessTypeDisplayName(business.businessTypeId) : null,
 				knownContactIds.Select(ResolveContactDisplayName),
-				business != null ? ResolveContactDisplayName(business.selectedSupplierId) : null,
+				business != null ? ResolveContactDisplayName(business.hiredLogistContactId) : null,
 				business != null ? ResolveContactDisplayName(business.hiredCashierContactId) : null,
 				business != null ? ResolveContactDisplayName(business.hiredMerchContactId) : null);
 		}
@@ -893,34 +894,7 @@ namespace Prototype.Business.UI
 			{
 				return 0f;
 			}
-
-			float expenses = BusinessRuntimeStatsCalculator.ResolveRentPerDay(business, m_gameData);
-
-			if (m_definitions != null)
-			{
-				StaffContactDefinitionData cashier = m_definitions.GetStaffContact(business.hiredCashierContactId);
-				if (cashier != null)
-				{
-					expenses += Mathf.Max(0, cashier.salaryPerDay);
-				}
-
-				if (m_definitions.RequiresMerchandiser(business.businessTypeId))
-				{
-					StaffContactDefinitionData merch = m_definitions.GetStaffContact(business.hiredMerchContactId);
-					if (merch != null)
-					{
-						expenses += Mathf.Max(0, merch.salaryPerDay);
-					}
-				}
-
-				SupplierDefinitionData supplier = m_definitions.GetSupplier(business.selectedSupplierId);
-				if (supplier != null && business.autoDeliveryPerDay > 0)
-				{
-					expenses += Mathf.Max(0, business.autoDeliveryPerDay) * Mathf.Max(0f, supplier.unitBuyPrice);
-				}
-			}
-
-			return expenses;
+			return m_businessCalculation != null ? m_businessCalculation.GetExpensesPerDay(business) : 0f;
 		}
 	}
 }

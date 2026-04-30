@@ -229,7 +229,9 @@ namespace Prototype.Business.UI
 
 			business = m_runtimeService.GetBusinessView(lotId);
 			int pendingAutoDelivery = m_view.GetPendingAutoDeliveryPerDay();
-			if (business == null || business.autoDeliveryPerDay != pendingAutoDelivery)
+			int currentAutoDelivery = business != null ? Math.Max(0, business.autoDeliveryPerDay) : 0;
+
+			if (business == null || currentAutoDelivery != pendingAutoDelivery)
 			{
 				if (!await RunActionCheckedAsync(
 					    m_actionFacade.SetAutoDelivery(lotId, pendingAutoDelivery),

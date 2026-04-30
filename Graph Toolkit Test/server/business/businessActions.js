@@ -52,6 +52,24 @@ function resolveShelfCapacity(business, businessDefs) {
   return item && Number.isFinite(item.shelfCapacity) ? Math.max(0, item.shelfCapacity) : 0;
 }
 
+function resolveDeliveryPerDay(business, businessDefs) {
+  const configuredLimit = Number.isFinite(business?.autoDeliveryPerDay)
+    ? Math.max(0, Math.floor(business.autoDeliveryPerDay))
+    : 0;
+  if (configuredLimit <= 0) {
+    return 0;
+  }
+  if (!business?.hiredLogistContactId || !businessDefs?.staffContactById) {
+    return 0;
+  }
+
+  const logist = businessDefs.staffContactById.get(business.hiredLogistContactId);
+  const throughputPerDay = logist && Number.isFinite(logist.throughputPerHour)
+    ? Math.max(0, Math.floor(logist.throughputPerHour)) * 24
+    : 0;
+  return Math.min(configuredLimit, throughputPerDay);
+}
+
 function rentBusiness(profile, data, lotDefs, businessDefs) {
   const lotId = data && data.lotId;
   const lotCheck = requireLotId(lotId);
@@ -109,7 +127,7 @@ function assignSupplier(profile, data, businessDefs) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
   if (!supplierId) {
-    business.selectedSupplierId = null;
+    business.hiredLogistContactId = null;
     business.autoDeliveryPerDay = 0;
     return ok('Clear supplier success.');
   }
@@ -121,7 +139,7 @@ function assignSupplier(profile, data, businessDefs) {
     return fail('ContactNotKnown', 'Supplier contact not unlocked.');
   }
 
-  business.selectedSupplierId = supplierId;
+  business.hiredLogistContactId = supplierId;
   return ok('Assign supplier success.');
 }
 
@@ -148,7 +166,6 @@ function hireBusinessWorker(profile, data, businessDefs) {
     }
     if (roleId === 'logist') {
       business.hiredLogistContactId = null;
-      business.selectedSupplierId = null;
       business.autoDeliveryPerDay = 0;
       return ok('Clear logist success.');
     }
@@ -166,7 +183,6 @@ function hireBusinessWorker(profile, data, businessDefs) {
     business.hiredMerchContactId = contactId;
   } else if (roleId === 'logist') {
     business.hiredLogistContactId = contactId;
-    business.selectedSupplierId = contactId;
   } else {
     return fail('InvalidWorkerRole', 'Unsupported worker role.');
   }
@@ -236,7 +252,7 @@ function setBusinessAutoDelivery(profile, data) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
-  business.autoDeliveryPerDay = Math.floor(dailyAmount);
+  business.autoDeliveryPerDay = Math.max(0, Math.floor(dailyAmount));
   return ok('Set auto delivery success.');
 }
 
@@ -273,12 +289,10 @@ function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
   const currentPrice = Number.isFinite(business.markupPercent) ? Math.max(0, Math.floor(business.markupPercent)) : 0;
   const stock = Number.isFinite(business.storageStock) ? Math.max(0, Math.floor(business.storageStock)) : 0;
   const storageCapacity = resolveStorageCapacity(business, businessDefs);
-  const dailyOrderAmount = Number.isFinite(business.autoDeliveryPerDay)
-    ? Math.max(0, Math.floor(business.autoDeliveryPerDay))
-    : 0;
+  const dailyOrderAmount = resolveDeliveryPerDay(business, businessDefs);
 
-  const supplier = businessDefs?.supplierById && business.selectedSupplierId
-    ? businessDefs.supplierById.get(business.selectedSupplierId)
+  const supplier = businessDefs?.supplierById && business.hiredLogistContactId
+    ? businessDefs.supplierById.get(business.hiredLogistContactId)
     : null;
   const unitCost = supplier && Number.isFinite(supplier.unitBuyPrice) ? Math.max(0, supplier.unitBuyPrice) : 0;
   const rentPerDay = resolveRentPerDay(business, lotDefs);

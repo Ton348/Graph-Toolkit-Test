@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 50,
+  "money": 137,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -21,21 +21,20 @@
   ],
   "businesses": [
     {
-      "instanceId": "biz_1777539261613_4247",
+      "instanceId": "biz_1777545476801_2907",
       "lotId": "lot_market_01",
       "businessTypeId": "pizza_shop",
       "isOpen": true,
-      "storageStock": 166,
+      "storageStock": 164,
       "shelfStock": 0,
-      "selectedSupplierId": "logist_1",
-      "autoDeliveryPerDay": 268,
+      "autoDeliveryPerDay": 201,
       "markupPercent": 19,
       "lastDayRevenue": 3040,
-      "lastDayExpenses": 2292,
-      "lastDayProfit": 748,
-      "totalRevenue": 9101,
-      "totalExpenses": 8460,
-      "totalProfit": 641,
+      "lastDayExpenses": 2024,
+      "lastDayProfit": 1016,
+      "totalRevenue": 12160,
+      "totalExpenses": 10316,
+      "totalProfit": 1844,
       "storageItemId": "storage_basic",
       "cashDeskItemId": "cashdesk_basic",
       "shelfItemId": "shelf_basic",
@@ -45,8 +44,8 @@
   ],
   "knownContacts": [
     "merch_1",
-    "cashier_1",
-    "logist_1"
+    "logist_1",
+    "cashier_1"
   ],
   "items": []
 }

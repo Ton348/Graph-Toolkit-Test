@@ -973,7 +973,6 @@ namespace Prototype.Business.Services
 						storageItemId = business.storageItemId,
 						cashDeskItemId = business.cashDeskItemId,
 						shelfItemId = business.shelfItemId,
-						selectedSupplierId = business.selectedSupplierId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
 						lastDayRevenue = business.lastDayRevenue,
@@ -1439,7 +1438,6 @@ namespace Prototype.Business.Services
 			public string storageItemId;
 			public string cashDeskItemId;
 			public string shelfItemId;
-			public string selectedSupplierId;
 			public int autoDeliveryPerDay;
 			public int markupPercent;
 			public int lastDayRevenue;

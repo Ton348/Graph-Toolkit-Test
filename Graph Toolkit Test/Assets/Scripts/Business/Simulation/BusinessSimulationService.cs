@@ -13,6 +13,7 @@ namespace Prototype.Business.Simulation
 		private readonly BusinessDefinitionsRepository m_definitions;
 		private readonly GameDataRepository m_gameData;
 		private readonly BusinessStateSyncService m_stateSync;
+		private readonly BusinessCalculationService m_calculationService;
 
 		public BusinessSimulationService(
 			BusinessDefinitionsRepository definitions,
@@ -22,6 +23,7 @@ namespace Prototype.Business.Simulation
 			m_definitions = definitions;
 			m_gameData = gameData;
 			m_stateSync = stateSync;
+			m_calculationService = new BusinessCalculationService(definitions, gameData);
 			if (m_stateSync != null)
 			{
 				m_stateSync.stateChanged += SyncFromState;
@@ -187,17 +189,18 @@ namespace Prototype.Business.Simulation
 
 				if (state is BusinessSimulationState typedState)
 				{
-					BusinessRuntimeStats stats =
-						BusinessRuntimeStatsCalculator.Calculate(business, m_gameData, m_definitions);
+					int rentPerDay = m_calculationService != null ? m_calculationService.GetRentPerDay(business) : 0;
+					int storageCapacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
+					int shelfCapacity = m_calculationService != null ? m_calculationService.GetShelfCapacity(business) : 0;
 					TraderItemDefinitionData cashDeskItem =
 						!string.IsNullOrWhiteSpace(business.cashDeskItemId)
 							? m_definitions?.GetTraderItem(business.cashDeskItemId)
 							: null;
 					typedState.instanceId = business.instanceId;
 					typedState.businessTypeId = business.businessTypeId;
-					typedState.rentPerDay = stats.RentPerDay;
-					typedState.storageCapacity = stats.StorageCapacity;
-					typedState.shelfCapacity = stats.ShelfCapacity;
+					typedState.rentPerDay = rentPerDay;
+					typedState.storageCapacity = storageCapacity;
+					typedState.shelfCapacity = shelfCapacity;
 					typedState.storageStock = business.storageStock;
 					typedState.shelfStock = business.shelfStock;
 					typedState.storageItemId = business.storageItemId;
@@ -209,8 +212,9 @@ namespace Prototype.Business.Simulation
 					{
 						typedState.baseProfit = typedState.cashCapacity;
 					}
-					typedState.selectedSupplierId = business.selectedSupplierId;
-					typedState.autoDeliveryPerDay = business.autoDeliveryPerDay;
+					typedState.autoDeliveryPerDay = m_calculationService != null
+						? m_calculationService.GetDeliveryPerDay(business)
+						: 0;
 					typedState.markupPercent = business.markupPercent;
 					typedState.hiredCashierContactId = business.hiredCashierContactId;
 					typedState.hiredMerchContactId = business.hiredMerchContactId;

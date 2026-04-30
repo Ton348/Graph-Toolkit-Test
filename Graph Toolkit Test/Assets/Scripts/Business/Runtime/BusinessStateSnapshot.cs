@@ -13,7 +13,6 @@ namespace Prototype.Business.Runtime
 		public string storageItemId;
 		public string cashDeskItemId;
 		public string shelfItemId;
-		public string selectedSupplierId;
 		public int autoDeliveryPerDay;
 		public int markupPercent;
 		public int lastDayRevenue;

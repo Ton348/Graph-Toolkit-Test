@@ -15,7 +15,6 @@ namespace Prototype.Business.Simulation
 		public float lastShelved;
 		public float lastSold;
 		public int markupPercent;
-		public string selectedSupplierId;
 
 		public void ResetTick()
 		{

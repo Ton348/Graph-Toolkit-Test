@@ -15,7 +15,6 @@ function normalizeBusinessInstance(business) {
     isOpen: Boolean(business?.isOpen),
     storageStock: Number.isFinite(business?.storageStock) ? business.storageStock : 0,
     shelfStock: Number.isFinite(business?.shelfStock) ? business.shelfStock : 0,
-    selectedSupplierId: normalizeOptionalId(business?.selectedSupplierId),
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
     lastDayRevenue: Number.isFinite(business?.lastDayRevenue) ? business.lastDayRevenue : 0,
@@ -78,7 +77,6 @@ function normalizeBusinessProfile(profile) {
 function sanitizeBusinessProfile(profile, businessDefs) {
   if (!profile || !businessDefs) return profile;
 
-  const supplierById = businessDefs.supplierById;
   const businessTypeById = businessDefs.businessTypeById;
   const staffContactById = businessDefs.staffContactById;
   const traderItemById = businessDefs.traderItemById;
@@ -137,15 +135,6 @@ function sanitizeBusinessProfile(profile, businessDefs) {
     }
     if (business.shelfItemId && traderItemById && !traderItemById.has(business.shelfItemId)) {
       business.shelfItemId = null;
-    }
-
-    if (business.selectedSupplierId) {
-      const validSupplier = supplierById && supplierById.has(business.selectedSupplierId);
-      if (!validSupplier) {
-        business.selectedSupplierId = null;
-      } else {
-        knownContactsSet.add(business.selectedSupplierId);
-      }
     }
 
     if (business.hiredCashierContactId) {
