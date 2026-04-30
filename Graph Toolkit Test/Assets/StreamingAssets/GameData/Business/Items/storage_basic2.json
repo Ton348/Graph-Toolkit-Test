@@ -1,0 +1,10 @@
+{
+  "id": "storage_basic2",
+  "category": "storage2",
+  "name": "Складское оборудование 2",
+  "description": "Улучшенный склад",
+  "price": 500,
+  "storageCapacity": 1000,
+  "cashCapacity": 0,
+  "shelfCapacity": 0
+}

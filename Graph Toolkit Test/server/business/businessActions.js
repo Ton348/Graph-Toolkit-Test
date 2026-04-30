@@ -25,6 +25,33 @@ function normalizeOptionalId(value) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function resolveRentPerDay(business, lotDefs) {
+  if (!business?.lotId || !lotDefs?.lotById) {
+    return 0;
+  }
+
+  const lot = lotDefs.lotById.get(business.lotId);
+  return lot && Number.isFinite(lot.rentPerDay) ? Math.max(0, lot.rentPerDay) : 0;
+}
+
+function resolveStorageCapacity(business, businessDefs) {
+  if (!business?.storageItemId || !businessDefs?.traderItemById) {
+    return 0;
+  }
+
+  const item = businessDefs.traderItemById.get(business.storageItemId);
+  return item && Number.isFinite(item.storageCapacity) ? Math.max(0, item.storageCapacity) : 0;
+}
+
+function resolveShelfCapacity(business, businessDefs) {
+  if (!business?.shelfItemId || !businessDefs?.traderItemById) {
+    return 0;
+  }
+
+  const item = businessDefs.traderItemById.get(business.shelfItemId);
+  return item && Number.isFinite(item.shelfCapacity) ? Math.max(0, item.shelfCapacity) : 0;
+}
+
 function rentBusiness(profile, data, lotDefs, businessDefs) {
   const lotId = data && data.lotId;
   const lotCheck = requireLotId(lotId);
@@ -42,7 +69,6 @@ function rentBusiness(profile, data, lotDefs, businessDefs) {
   const business = createBusinessInstance(
     businessDefs?.businessInstanceTemplate,
     lotId,
-    lot.rentPerDay,
     '',
     businessDefs);
   profile.businesses.push(business);
@@ -232,7 +258,7 @@ function resolveDailyDemand(ranges, currentPrice) {
   return 0;
 }
 
-function simulateBusinessDay(profile, data, businessDefs) {
+function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
   const lotId = data && data.lotId;
   const lotCheck = requireLotId(lotId);
   if (lotCheck) return lotCheck;
@@ -246,7 +272,7 @@ function simulateBusinessDay(profile, data, businessDefs) {
 
   const currentPrice = Number.isFinite(business.markupPercent) ? Math.max(0, Math.floor(business.markupPercent)) : 0;
   const stock = Number.isFinite(business.storageStock) ? Math.max(0, Math.floor(business.storageStock)) : 0;
-  const storageCapacity = Number.isFinite(business.storageCapacity) ? Math.max(0, Math.floor(business.storageCapacity)) : 0;
+  const storageCapacity = resolveStorageCapacity(business, businessDefs);
   const dailyOrderAmount = Number.isFinite(business.autoDeliveryPerDay)
     ? Math.max(0, Math.floor(business.autoDeliveryPerDay))
     : 0;
@@ -255,7 +281,7 @@ function simulateBusinessDay(profile, data, businessDefs) {
     ? businessDefs.supplierById.get(business.selectedSupplierId)
     : null;
   const unitCost = supplier && Number.isFinite(supplier.unitBuyPrice) ? Math.max(0, supplier.unitBuyPrice) : 0;
-  const rentPerDay = Number.isFinite(business.rentPerDay) ? Math.max(0, business.rentPerDay) : 0;
+  const rentPerDay = resolveRentPerDay(business, lotDefs);
   const staffById = businessDefs?.staffContactById || null;
   const businessType = businessDefs?.businessTypeById && business.businessTypeId
     ? businessDefs.businessTypeById.get(business.businessTypeId)
@@ -344,7 +370,7 @@ function unlockContact(profile, data) {
   return ok('Unlock contact success.');
 }
 
-function addBusinessStock(profile, data) {
+function addBusinessStock(profile, data, businessDefs) {
   const lotId = data && data.lotId;
   const amount = data && data.amount;
   const lotCheck = requireLotId(lotId);
@@ -361,7 +387,7 @@ function addBusinessStock(profile, data) {
     return fail('StorageMissing', 'Storage equipment not installed.');
   }
 
-  const capacity = Number.isFinite(business.storageCapacity) ? business.storageCapacity : 0;
+  const capacity = resolveStorageCapacity(business, businessDefs);
   const current = Number.isFinite(business.storageStock) ? business.storageStock : 0;
   const space = capacity - current;
   if (space <= 0) {
@@ -373,7 +399,7 @@ function addBusinessStock(profile, data) {
   return ok(`Added stock: ${added}.`);
 }
 
-function addBusinessShelfStock(profile, data) {
+function addBusinessShelfStock(profile, data, businessDefs) {
   const lotId = data && data.lotId;
   const amount = data && data.amount;
   const lotCheck = requireLotId(lotId);
@@ -390,7 +416,7 @@ function addBusinessShelfStock(profile, data) {
     return fail('ShelvesMissing', 'Shelves equipment not installed.');
   }
 
-  const capacity = Number.isFinite(business.shelfCapacity) ? business.shelfCapacity : 0;
+  const capacity = resolveShelfCapacity(business, businessDefs);
   const current = Number.isFinite(business.shelfStock) ? business.shelfStock : 0;
   const space = capacity - current;
   if (space <= 0) {
@@ -523,26 +549,15 @@ function setBusinessEquipment(profile, data, businessDefs) {
   business.cashDeskItemId = cashDeskItemId;
   business.shelfItemId = shelfItemId;
 
-  const storageItem = storageItemId && businessDefs?.traderItemById
-    ? businessDefs.traderItemById.get(storageItemId)
-    : null;
-  const shelfItem = shelfItemId && businessDefs?.traderItemById
-    ? businessDefs.traderItemById.get(shelfItemId)
-    : null;
+  const storageCapacity = resolveStorageCapacity(business, businessDefs);
+  const shelfCapacity = resolveShelfCapacity(business, businessDefs);
 
-  business.storageCapacity = storageItem && Number.isFinite(storageItem.storageCapacity)
-    ? storageItem.storageCapacity
-    : 0;
-  business.shelfCapacity = shelfItem && Number.isFinite(shelfItem.shelfCapacity)
-    ? shelfItem.shelfCapacity
-    : 0;
-
-  if (business.storageStock > business.storageCapacity) {
-    business.storageStock = business.storageCapacity;
+  if (business.storageStock > storageCapacity) {
+    business.storageStock = storageCapacity;
   }
 
-  if (business.shelfStock > business.shelfCapacity) {
-    business.shelfStock = business.shelfCapacity;
+  if (business.shelfStock > shelfCapacity) {
+    business.shelfStock = shelfCapacity;
   }
 
   return ok('Set business equipment success.');
@@ -571,7 +586,7 @@ function buyItem(profile, data, businessDefs) {
     return fail('ItemNotFound', 'Item not found.');
   }
 
-  const soldByTrader = Array.isArray(trader.items) && trader.items.some(t => t && t.id === itemId);
+  const soldByTrader = Array.isArray(trader.itemIds) && trader.itemIds.some(id => id === itemId);
   if (!soldByTrader) {
     return fail('ItemNotSoldByTrader', 'Item is not sold by this trader.');
   }
@@ -608,7 +623,11 @@ function getTraderItems(data, businessDefs) {
     message: 'Get trader items success.',
     traderId: trader.id,
     traderName: trader.name,
-    items: Array.isArray(trader.items) ? trader.items : []
+    items: Array.isArray(trader.itemIds)
+      ? trader.itemIds
+        .map(itemId => businessDefs?.traderItemById ? businessDefs.traderItemById.get(itemId) : null)
+        .filter(Boolean)
+      : []
   };
 }
 

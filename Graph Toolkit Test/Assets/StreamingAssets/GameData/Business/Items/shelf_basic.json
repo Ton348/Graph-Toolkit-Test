@@ -1,0 +1,10 @@
+{
+  "id": "shelf_basic",
+  "category": "shelf",
+  "name": "Полки",
+  "description": "Базовые торговые полки",
+  "price": 50,
+  "storageCapacity": 0,
+  "cashCapacity": 0,
+  "shelfCapacity": 300
+}

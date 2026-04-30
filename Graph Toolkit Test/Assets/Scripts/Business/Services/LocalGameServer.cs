@@ -777,20 +777,17 @@ namespace Prototype.Business.Services
 			business.cashDeskItemId = normalizedCashDeskItemId;
 			business.shelfItemId = normalizedShelfItemId;
 
-			TraderItemDefinitionData storageItem = m_businessRepository?.GetTraderItem(normalizedStorageItemId);
-			TraderItemDefinitionData shelfItem = m_businessRepository?.GetTraderItem(normalizedShelfItemId);
+			BusinessRuntimeStats stats =
+				BusinessRuntimeStatsCalculator.Calculate(business, m_dataRepository, m_businessRepository);
 
-			business.storageCapacity = storageItem != null ? storageItem.storageCapacity : 0;
-			business.shelfCapacity = shelfItem != null ? shelfItem.shelfCapacity : 0;
-
-			if (business.storageStock > business.storageCapacity)
+			if (business.storageStock > stats.StorageCapacity)
 			{
-				business.storageStock = business.storageCapacity;
+				business.storageStock = stats.StorageCapacity;
 			}
 
-			if (business.shelfStock > business.shelfCapacity)
+			if (business.shelfStock > stats.ShelfCapacity)
 			{
-				business.shelfStock = business.shelfCapacity;
+				business.shelfStock = stats.ShelfCapacity;
 			}
 
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Set business equipment success.");
@@ -929,19 +926,7 @@ namespace Prototype.Business.Services
 					"Item not found.");
 			}
 
-			bool soldByTrader = false;
-			if (trader.items != null)
-			{
-				for (int i = 0; i < trader.items.Count; i++)
-				{
-					TraderItemDefinitionData traderItem = trader.items[i];
-					if (traderItem != null && traderItem.id == itemId)
-					{
-						soldByTrader = true;
-						break;
-					}
-				}
-			}
+			bool soldByTrader = m_businessRepository != null && m_businessRepository.TraderSellsItem(traderId, itemId);
 
 			if (!soldByTrader)
 			{
@@ -1018,11 +1003,11 @@ namespace Prototype.Business.Services
 				Message = "Get trader items success."
 			};
 
-			if (trader.items != null)
+			if (trader.itemIds != null)
 			{
-				for (int i = 0; i < trader.items.Count; i++)
+				for (int i = 0; i < trader.itemIds.Count; i++)
 				{
-					TraderItemDefinitionData item = trader.items[i];
+					TraderItemDefinitionData item = m_businessRepository?.GetTraderItem(trader.itemIds[i]);
 					if (item != null)
 					{
 						response.Items.Add(item);
@@ -1318,7 +1303,7 @@ namespace Prototype.Business.Services
 					"Storage equipment not installed.");
 			}
 
-			int capacity = business.storageCapacity;
+			int capacity = BusinessRuntimeStatsCalculator.ResolveStorageCapacity(business, m_businessRepository);
 			int space = capacity > 0 ? capacity - business.storageStock : 0;
 			if (space <= 0)
 			{
@@ -1379,7 +1364,7 @@ namespace Prototype.Business.Services
 					"Shelves equipment not installed.");
 			}
 
-			int capacity = business.shelfCapacity;
+			int capacity = BusinessRuntimeStatsCalculator.ResolveShelfCapacity(business, m_businessRepository);
 			int space = capacity > 0 ? capacity - business.shelfStock : 0;
 			if (space <= 0)
 			{
@@ -1604,9 +1589,6 @@ namespace Prototype.Business.Services
 						lotId = business.lotId,
 						businessTypeId = business.businessTypeId,
 						isOpen = business.isOpen,
-						rentPerDay = business.rentPerDay,
-						storageCapacity = business.storageCapacity,
-						shelfCapacity = business.shelfCapacity,
 						storageStock = business.storageStock,
 						shelfStock = business.shelfStock,
 						selectedSupplierId = business.selectedSupplierId,

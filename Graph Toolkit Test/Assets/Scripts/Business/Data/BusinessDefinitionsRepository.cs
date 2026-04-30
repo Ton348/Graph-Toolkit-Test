@@ -9,6 +9,7 @@ namespace Prototype.Business.Data
 		private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new();
 		private readonly Dictionary<string, StaffRoleDefinitionData> m_staffRoles = new();
 		private readonly Dictionary<string, SupplierDefinitionData> m_suppliers = new();
+		private readonly Dictionary<string, BusinessPersonDefinitionData> m_people = new();
 		private readonly Dictionary<string, TraderDefinitionData> m_traders = new();
 		private readonly Dictionary<string, TraderItemDefinitionData> m_traderItems = new();
 
@@ -17,8 +18,10 @@ namespace Prototype.Business.Data
 			SupplierDatabaseData supplierDb,
 			StaffRoleDatabaseData staffRoleDb,
 			StaffContactDatabaseData staffContactDb,
+			BusinessPeopleDatabaseData peopleDb,
 			PriceDemandDatabaseData pizzeriaDemandDb,
-			TraderDatabaseData traderDb)
+			TraderDatabaseData traderDb,
+			TraderItemDatabaseData traderItemDb)
 		{
 			if (businessTypeDb?.businessTypes != null)
 			{
@@ -64,6 +67,17 @@ namespace Prototype.Business.Data
 				}
 			}
 
+			if (peopleDb?.people != null)
+			{
+				foreach (BusinessPersonDefinitionData item in peopleDb.people)
+				{
+					if (item != null && !string.IsNullOrWhiteSpace(item.contactId) && !m_people.ContainsKey(item.contactId))
+					{
+						m_people[item.contactId] = item;
+					}
+				}
+			}
+
 			if (pizzeriaDemandDb?.ranges != null)
 			{
 				foreach (PriceDemandRangeDefinitionData item in pizzeriaDemandDb.ranges)
@@ -72,6 +86,19 @@ namespace Prototype.Business.Data
 					{
 						m_pizzeriaDemandRanges.Add(item);
 					}
+				}
+			}
+
+			if (traderItemDb?.items != null)
+			{
+				foreach (TraderItemDefinitionData item in traderItemDb.items)
+				{
+					if (item == null || string.IsNullOrWhiteSpace(item.id) || m_traderItems.ContainsKey(item.id))
+					{
+						continue;
+					}
+
+					m_traderItems[item.id] = item;
 				}
 			}
 
@@ -85,20 +112,6 @@ namespace Prototype.Business.Data
 					}
 
 					m_traders[trader.id] = trader;
-					if (trader.items == null)
-					{
-						continue;
-					}
-
-					foreach (TraderItemDefinitionData item in trader.items)
-					{
-						if (item == null || string.IsNullOrWhiteSpace(item.id) || m_traderItems.ContainsKey(item.id))
-						{
-							continue;
-						}
-
-						m_traderItems[item.id] = item;
-					}
 				}
 			}
 		}
@@ -247,6 +260,25 @@ namespace Prototype.Business.Data
 		public IEnumerable<TraderDefinitionData> GetAllTraders()
 		{
 			return m_traders.Values;
+		}
+
+		public bool TraderSellsItem(string traderId, string itemId)
+		{
+			TraderDefinitionData trader = GetTrader(traderId);
+			if (trader?.itemIds == null || string.IsNullOrWhiteSpace(itemId))
+			{
+				return false;
+			}
+
+			for (int i = 0; i < trader.itemIds.Count; i++)
+			{
+				if (trader.itemIds[i] == itemId)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		public TraderItemDefinitionData GetTraderItem(string itemId)

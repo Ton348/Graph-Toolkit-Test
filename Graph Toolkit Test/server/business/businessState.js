@@ -1,15 +1,21 @@
 function normalizeBusinessInstance(business) {
+  function normalizeOptionalId(value) {
+    if (typeof value !== 'string') {
+      return null;
+    }
+
+    const trimmed = value.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+
   const normalized = {
     instanceId: typeof business?.instanceId === 'string' ? business.instanceId : '',
     lotId: typeof business?.lotId === 'string' ? business.lotId : '',
     businessTypeId: typeof business?.businessTypeId === 'string' ? business.businessTypeId : '',
     isOpen: Boolean(business?.isOpen),
-    rentPerDay: Number.isFinite(business?.rentPerDay) ? business.rentPerDay : 0,
-    storageCapacity: Number.isFinite(business?.storageCapacity) ? business.storageCapacity : 0,
-    shelfCapacity: Number.isFinite(business?.shelfCapacity) ? business.shelfCapacity : 0,
     storageStock: Number.isFinite(business?.storageStock) ? business.storageStock : 0,
     shelfStock: Number.isFinite(business?.shelfStock) ? business.shelfStock : 0,
-    selectedSupplierId: typeof business?.selectedSupplierId === 'string' ? business.selectedSupplierId : null,
+    selectedSupplierId: normalizeOptionalId(business?.selectedSupplierId),
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
     lastDayRevenue: Number.isFinite(business?.lastDayRevenue) ? business.lastDayRevenue : 0,
@@ -20,9 +26,6 @@ function normalizeBusinessInstance(business) {
     totalProfit: Number.isFinite(business?.totalProfit) ? business.totalProfit : 0
   };
 
-  if (normalized.rentPerDay < 0) normalized.rentPerDay = 0;
-  if (normalized.storageCapacity < 0) normalized.storageCapacity = 0;
-  if (normalized.shelfCapacity < 0) normalized.shelfCapacity = 0;
   if (normalized.storageStock < 0) normalized.storageStock = 0;
   if (normalized.shelfStock < 0) normalized.shelfStock = 0;
   if (normalized.autoDeliveryPerDay < 0) normalized.autoDeliveryPerDay = 0;
@@ -31,22 +34,22 @@ function normalizeBusinessInstance(business) {
   if (normalized.lastDayExpenses < 0) normalized.lastDayExpenses = 0;
 
   if (Object.prototype.hasOwnProperty.call(business || {}, 'storageItemId')) {
-    normalized.storageItemId = typeof business?.storageItemId === 'string' ? business.storageItemId : null;
+    normalized.storageItemId = normalizeOptionalId(business?.storageItemId);
   }
   if (Object.prototype.hasOwnProperty.call(business || {}, 'cashDeskItemId')) {
-    normalized.cashDeskItemId = typeof business?.cashDeskItemId === 'string' ? business.cashDeskItemId : null;
+    normalized.cashDeskItemId = normalizeOptionalId(business?.cashDeskItemId);
   }
   if (Object.prototype.hasOwnProperty.call(business || {}, 'shelfItemId')) {
-    normalized.shelfItemId = typeof business?.shelfItemId === 'string' ? business.shelfItemId : null;
+    normalized.shelfItemId = normalizeOptionalId(business?.shelfItemId);
   }
   if (Object.prototype.hasOwnProperty.call(business || {}, 'hiredCashierContactId')) {
-    normalized.hiredCashierContactId = typeof business?.hiredCashierContactId === 'string' ? business.hiredCashierContactId : null;
+    normalized.hiredCashierContactId = normalizeOptionalId(business?.hiredCashierContactId);
   }
   if (Object.prototype.hasOwnProperty.call(business || {}, 'hiredMerchContactId')) {
-    normalized.hiredMerchContactId = typeof business?.hiredMerchContactId === 'string' ? business.hiredMerchContactId : null;
+    normalized.hiredMerchContactId = normalizeOptionalId(business?.hiredMerchContactId);
   }
   if (Object.prototype.hasOwnProperty.call(business || {}, 'hiredLogistContactId')) {
-    normalized.hiredLogistContactId = typeof business?.hiredLogistContactId === 'string' ? business.hiredLogistContactId : null;
+    normalized.hiredLogistContactId = normalizeOptionalId(business?.hiredLogistContactId);
   }
 
   return normalized;
@@ -77,12 +80,33 @@ function sanitizeBusinessProfile(profile, businessDefs) {
 
   const supplierById = businessDefs.supplierById;
   const businessTypeById = businessDefs.businessTypeById;
+  const staffContactById = businessDefs.staffContactById;
+  const traderItemById = businessDefs.traderItemById;
   const knownContacts = Array.isArray(profile.knownContacts) ? profile.knownContacts : [];
+  const knownContactsSet = new Set(knownContacts);
 
   const seenLots = new Set();
   const seenInstances = new Set();
   const sanitized = [];
   const equippedItems = new Set();
+
+  function resolveStorageCapacity(business) {
+    if (!business?.storageItemId || !traderItemById) {
+      return 0;
+    }
+
+    const item = traderItemById.get(business.storageItemId);
+    return item && Number.isFinite(item.storageCapacity) ? Math.max(0, item.storageCapacity) : 0;
+  }
+
+  function resolveShelfCapacity(business) {
+    if (!business?.shelfItemId || !traderItemById) {
+      return 0;
+    }
+
+    const item = traderItemById.get(business.shelfItemId);
+    return item && Number.isFinite(item.shelfCapacity) ? Math.max(0, item.shelfCapacity) : 0;
+  }
 
   for (const business of profile.businesses || []) {
     if (!business || !business.instanceId || !business.lotId) continue;
@@ -94,31 +118,59 @@ function sanitizeBusinessProfile(profile, businessDefs) {
     if (business.markupPercent < 0) business.markupPercent = 0;
     if (business.markupPercent > 100) business.markupPercent = 100;
 
-    if (business.storageCapacity < 0) business.storageCapacity = 0;
-    if (business.shelfCapacity < 0) business.shelfCapacity = 0;
     if (business.storageStock < 0) business.storageStock = 0;
     if (business.shelfStock < 0) business.shelfStock = 0;
-    if (business.storageCapacity > 0 && business.storageStock > business.storageCapacity) {
-      business.storageStock = business.storageCapacity;
+    const storageCapacity = resolveStorageCapacity(business);
+    const shelfCapacity = resolveShelfCapacity(business);
+    if (storageCapacity > 0 && business.storageStock > storageCapacity) {
+      business.storageStock = storageCapacity;
     }
-    if (business.shelfCapacity > 0 && business.shelfStock > business.shelfCapacity) {
-      business.shelfStock = business.shelfCapacity;
+    if (shelfCapacity > 0 && business.shelfStock > shelfCapacity) {
+      business.shelfStock = shelfCapacity;
+    }
+
+    if (business.storageItemId && traderItemById && !traderItemById.has(business.storageItemId)) {
+      business.storageItemId = null;
+    }
+    if (business.cashDeskItemId && traderItemById && !traderItemById.has(business.cashDeskItemId)) {
+      business.cashDeskItemId = null;
+    }
+    if (business.shelfItemId && traderItemById && !traderItemById.has(business.shelfItemId)) {
+      business.shelfItemId = null;
     }
 
     if (business.selectedSupplierId) {
-      if ((supplierById && !supplierById.has(business.selectedSupplierId)) || !knownContacts.includes(business.selectedSupplierId)) {
+      const validSupplier = supplierById && supplierById.has(business.selectedSupplierId);
+      if (!validSupplier) {
         business.selectedSupplierId = null;
+      } else {
+        knownContactsSet.add(business.selectedSupplierId);
       }
     }
 
-    if (business.hiredCashierContactId && !knownContacts.includes(business.hiredCashierContactId)) {
-      business.hiredCashierContactId = null;
+    if (business.hiredCashierContactId) {
+      const valid = staffContactById && staffContactById.has(business.hiredCashierContactId);
+      if (!valid) {
+        business.hiredCashierContactId = null;
+      } else {
+        knownContactsSet.add(business.hiredCashierContactId);
+      }
     }
-    if (business.hiredMerchContactId && !knownContacts.includes(business.hiredMerchContactId)) {
-      business.hiredMerchContactId = null;
+    if (business.hiredMerchContactId) {
+      const valid = staffContactById && staffContactById.has(business.hiredMerchContactId);
+      if (!valid) {
+        business.hiredMerchContactId = null;
+      } else {
+        knownContactsSet.add(business.hiredMerchContactId);
+      }
     }
-    if (business.hiredLogistContactId && !knownContacts.includes(business.hiredLogistContactId)) {
-      business.hiredLogistContactId = null;
+    if (business.hiredLogistContactId) {
+      const valid = staffContactById && staffContactById.has(business.hiredLogistContactId);
+      if (!valid) {
+        business.hiredLogistContactId = null;
+      } else {
+        knownContactsSet.add(business.hiredLogistContactId);
+      }
     }
 
     if (business.isOpen) {
@@ -143,6 +195,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
   }
 
   profile.businesses = sanitized;
+  profile.knownContacts = Array.from(knownContactsSet);
   if (!Array.isArray(profile.items)) {
     profile.items = [];
   }

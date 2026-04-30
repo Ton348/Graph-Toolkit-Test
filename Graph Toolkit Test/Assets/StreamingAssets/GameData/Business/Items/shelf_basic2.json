@@ -1,0 +1,10 @@
+{
+  "id": "shelf_basic2",
+  "category": "shelf2",
+  "name": "Полки 2",
+  "description": "Улучшенные торговые полки",
+  "price": 500,
+  "storageCapacity": 0,
+  "cashCapacity": 0,
+  "shelfCapacity": 500
+}

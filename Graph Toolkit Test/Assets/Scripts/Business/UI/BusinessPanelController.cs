@@ -352,11 +352,14 @@ namespace Prototype.Business.UI
 				m_simulationService != null && !string.IsNullOrWhiteSpace(m_selectedLotId)
 					? m_simulationService.GetStateByLotId(m_selectedLotId)
 					: null;
+			BusinessRuntimeStats stats =
+				BusinessRuntimeStatsCalculator.Calculate(business, m_gameData, m_definitions);
 			float expensesPerDay = CalculateExpensesPerDay(business);
 
 			detailsView.SetBusiness(
 				business,
 				simulation,
+				stats.StorageCapacity,
 				expensesPerDay,
 				business != null ? Mathf.Max(0, business.autoDeliveryPerDay) : 0,
 				business != null ? ResolveLotDisplayName(business.lotId) : null,
@@ -891,7 +894,7 @@ namespace Prototype.Business.UI
 				return 0f;
 			}
 
-			float expenses = Mathf.Max(0, business.rentPerDay);
+			float expenses = BusinessRuntimeStatsCalculator.ResolveRentPerDay(business, m_gameData);
 
 			if (m_definitions != null)
 			{

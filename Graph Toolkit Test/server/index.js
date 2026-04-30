@@ -45,6 +45,11 @@ function safePlayerId(value) {
   return cleaned.length > 0 ? cleaned : 'player';
 }
 
+function normalizeId(value) {
+  if (typeof value !== 'string') return '';
+  return value.trim();
+}
+
 function loadDefinitions() {
   const quests = readJson(path.join(DATA_DIR, 'quests.json'));
   const buildings = readJson(path.join(DATA_DIR, 'buildings.json'));
@@ -224,6 +229,10 @@ function loadPlayerProfile(playerId) {
 function savePlayerProfile(profile) {
   const id = safePlayerId(profile.playerId);
   const filePath = path.join(PLAYER_DIR, `${id}.json`);
+  if (!Array.isArray(profile.activeQuests)) profile.activeQuests = [];
+  if (!Array.isArray(profile.completedQuests)) profile.completedQuests = [];
+  profile.activeQuests = profile.activeQuests.filter(q => typeof q === 'string' && q.trim().length > 0);
+  profile.completedQuests = profile.completedQuests.filter(q => typeof q === 'string' && q.trim().length > 0);
   if (!profile.graphCheckpoints || typeof profile.graphCheckpoints !== 'object') profile.graphCheckpoints = {};
   normalizeBusinessProfile(profile);
   sanitizeBusinessProfile(profile, businessDefs);
@@ -379,7 +388,7 @@ function findConstructedSite(profile, siteId) {
 
 function handleStartQuest(req, res, payload) {
   const playerId = payload.playerId || 'player';
-  const questId = payload.data && payload.data.questId;
+  const questId = normalizeId(payload.data && payload.data.questId);
   console.log(`[server] action=start_quest playerId=${playerId} questId=${questId}`);
   if (!questId) return fail(res, 'QuestIdEmpty', 'questId is required.');
 
@@ -403,7 +412,7 @@ function handleStartQuest(req, res, payload) {
 
 function handleCompleteQuest(req, res, payload) {
   const playerId = payload.playerId || 'player';
-  const questId = payload.data && payload.data.questId;
+  const questId = normalizeId(payload.data && payload.data.questId);
   console.log(`[server] action=complete_quest playerId=${playerId} questId=${questId}`);
   if (!questId) return fail(res, 'QuestIdEmpty', 'questId is required.');
 
@@ -431,7 +440,7 @@ function handleCompleteQuest(req, res, payload) {
 
 function handleFailQuest(req, res, payload) {
   const playerId = payload.playerId || 'player';
-  const questId = payload.data && payload.data.questId;
+  const questId = normalizeId(payload.data && payload.data.questId);
   console.log(`[server] action=fail_quest playerId=${playerId} questId=${questId}`);
   if (!questId) return fail(res, 'QuestIdEmpty', 'questId is required.');
 
@@ -741,7 +750,7 @@ function handleAction(req, res, payload) {
     case 'simulate_business_day': {
       console.log('[BusinessServer] action=simulate_business_day');
       const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.simulateBusinessDay(profile, payload.data, businessDefs);
+      const result = businessActions.simulateBusinessDay(profile, payload.data, businessDefs, lotDefs);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);
@@ -765,7 +774,7 @@ function handleAction(req, res, payload) {
     case 'add_business_stock': {
       console.log('[BusinessServer] action=add_business_stock');
       const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.addBusinessStock(profile, payload.data);
+      const result = businessActions.addBusinessStock(profile, payload.data, businessDefs);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);
@@ -773,7 +782,7 @@ function handleAction(req, res, payload) {
     case 'add_business_shelf_stock': {
       console.log('[BusinessServer] action=add_business_shelf_stock');
       const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.addBusinessShelfStock(profile, payload.data);
+      const result = businessActions.addBusinessShelfStock(profile, payload.data, businessDefs);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);

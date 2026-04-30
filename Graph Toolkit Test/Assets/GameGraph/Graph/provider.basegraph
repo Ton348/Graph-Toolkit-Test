@@ -52,9 +52,9 @@ MonoBehaviour:
         m_LastKnownBounds:
           serializedVersion: 2
           x: -358.5
-          y: 158
+          y: 132
           width: 1269
-          height: 193.5
+          height: 219.5
         m_GraphElementMetaData:
         - m_Guid:
             m_Value0: 13558203628072908385
@@ -223,7 +223,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: ad911194a3abc81b3c569ebabfc609ad
         m_Version: 2
-        m_Position: {x: 147.5, y: 166}
+        m_Position: {x: 151.02863, y: 131.88991}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Prototype.Business.Data;
 using Prototype.Business.Runtime;
+using Sample.Runtime.GameData;
 using UnityEngine;
 
 namespace Prototype.Business.Simulation
@@ -10,11 +11,16 @@ namespace Prototype.Business.Simulation
 	{
 		private readonly Dictionary<string, BusinessRuntimeSimulationState> m_statesByLotId = new();
 		private readonly BusinessDefinitionsRepository m_definitions;
+		private readonly GameDataRepository m_gameData;
 		private readonly BusinessStateSyncService m_stateSync;
 
-		public BusinessSimulationService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
+		public BusinessSimulationService(
+			BusinessDefinitionsRepository definitions,
+			GameDataRepository gameData,
+			BusinessStateSyncService stateSync)
 		{
 			m_definitions = definitions;
+			m_gameData = gameData;
 			m_stateSync = stateSync;
 			if (m_stateSync != null)
 			{
@@ -181,15 +187,17 @@ namespace Prototype.Business.Simulation
 
 				if (state is BusinessSimulationState typedState)
 				{
+					BusinessRuntimeStats stats =
+						BusinessRuntimeStatsCalculator.Calculate(business, m_gameData, m_definitions);
 					TraderItemDefinitionData cashDeskItem =
 						!string.IsNullOrWhiteSpace(business.cashDeskItemId)
 							? m_definitions?.GetTraderItem(business.cashDeskItemId)
 							: null;
 					typedState.instanceId = business.instanceId;
 					typedState.businessTypeId = business.businessTypeId;
-					typedState.rentPerDay = business.rentPerDay;
-					typedState.storageCapacity = business.storageCapacity;
-					typedState.shelfCapacity = business.shelfCapacity;
+					typedState.rentPerDay = stats.RentPerDay;
+					typedState.storageCapacity = stats.StorageCapacity;
+					typedState.shelfCapacity = stats.ShelfCapacity;
 					typedState.storageStock = business.storageStock;
 					typedState.shelfStock = business.shelfStock;
 					typedState.storageItemId = business.storageItemId;

@@ -1,0 +1,10 @@
+{
+  "id": "cashdesk_basic2",
+  "category": "cashdesk2",
+  "name": "Касса 2",
+  "description": "Улучшеная касса",
+  "price": 1000,
+  "storageCapacity": 0,
+  "cashCapacity": 10000,
+  "shelfCapacity": 0
+}

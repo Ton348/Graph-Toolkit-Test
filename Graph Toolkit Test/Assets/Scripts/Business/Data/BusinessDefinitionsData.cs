@@ -100,7 +100,7 @@ namespace Prototype.Business.Data
 	{
 		public string id;
 		public string name;
-		public List<TraderItemDefinitionData> items = new();
+		public List<string> itemIds = new();
 	}
 
 	[Serializable]
@@ -146,6 +146,12 @@ namespace Prototype.Business.Data
 	public class TraderDatabaseData
 	{
 		public List<TraderDefinitionData> traders = new();
+	}
+
+	[Serializable]
+	public class TraderItemDatabaseData
+	{
+		public List<TraderItemDefinitionData> items = new();
 	}
 
 	[Serializable]

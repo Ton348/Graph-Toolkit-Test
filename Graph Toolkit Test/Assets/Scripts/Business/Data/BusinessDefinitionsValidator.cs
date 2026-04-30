@@ -10,7 +10,9 @@ namespace Prototype.Business.Data
 			SupplierDatabaseData suppliers,
 			StaffRoleDatabaseData staffRoles,
 			StaffContactDatabaseData staffContacts,
-			TraderDatabaseData traders)
+			BusinessPeopleDatabaseData people,
+			TraderDatabaseData traders,
+			TraderItemDatabaseData items)
 		{
 			var ok = true;
 			var businessTypeIds = new HashSet<string>();
@@ -110,6 +112,49 @@ namespace Prototype.Business.Data
 				}
 			}
 
+			if (people?.people == null)
+			{
+				Debug.LogError("[BusinessDefinitions] people list is missing.");
+				ok = false;
+			}
+
+			if (items?.items == null)
+			{
+				Debug.LogError("[BusinessDefinitions] trader items list is missing.");
+				ok = false;
+			}
+			else
+			{
+				var itemIds = new HashSet<string>();
+				foreach (TraderItemDefinitionData item in items.items)
+				{
+					if (item == null || string.IsNullOrWhiteSpace(item.id))
+					{
+						Debug.LogError("[BusinessDefinitions] trader item has empty id.");
+						ok = false;
+						continue;
+					}
+
+					if (!itemIds.Add(item.id))
+					{
+						Debug.LogError($"[BusinessDefinitions] duplicate trader item id: {item.id}");
+						ok = false;
+					}
+
+					if (string.IsNullOrWhiteSpace(item.category))
+					{
+						Debug.LogError($"[BusinessDefinitions] trader item {item.id} has empty category.");
+						ok = false;
+					}
+
+					if (item.price < 0)
+					{
+						Debug.LogError($"[BusinessDefinitions] trader item {item.id} has negative price.");
+						ok = false;
+					}
+				}
+			}
+
 			if (traders?.traders == null)
 			{
 				Debug.LogError("[BusinessDefinitions] traders list is missing.");
@@ -117,8 +162,16 @@ namespace Prototype.Business.Data
 			}
 			else
 			{
+				var knownItemIds = new HashSet<string>();
+				foreach (TraderItemDefinitionData item in items.items)
+				{
+					if (item != null && !string.IsNullOrWhiteSpace(item.id))
+					{
+						knownItemIds.Add(item.id);
+					}
+				}
+
 				var traderIds = new HashSet<string>();
-				var itemIds = new HashSet<string>();
 				foreach (TraderDefinitionData trader in traders.traders)
 				{
 					if (trader == null || string.IsNullOrWhiteSpace(trader.id))
@@ -134,35 +187,23 @@ namespace Prototype.Business.Data
 						ok = false;
 					}
 
-					if (trader.items == null)
+					if (trader.itemIds == null)
 					{
 						continue;
 					}
 
-					foreach (TraderItemDefinitionData item in trader.items)
+					foreach (string itemId in trader.itemIds)
 					{
-						if (item == null || string.IsNullOrWhiteSpace(item.id))
+						if (string.IsNullOrWhiteSpace(itemId))
 						{
 							Debug.LogError($"[BusinessDefinitions] trader {trader.id} has item with empty id.");
 							ok = false;
 							continue;
 						}
 
-						if (!itemIds.Add(item.id))
+						if (!knownItemIds.Contains(itemId))
 						{
-							Debug.LogError($"[BusinessDefinitions] duplicate trader item id: {item.id}");
-							ok = false;
-						}
-
-						if (string.IsNullOrWhiteSpace(item.category))
-						{
-							Debug.LogError($"[BusinessDefinitions] trader item {item.id} has empty category.");
-							ok = false;
-						}
-
-						if (item.price < 0)
-						{
-							Debug.LogError($"[BusinessDefinitions] trader item {item.id} has negative price.");
+							Debug.LogError($"[BusinessDefinitions] trader {trader.id} references unknown item id: {itemId}");
 							ok = false;
 						}
 					}

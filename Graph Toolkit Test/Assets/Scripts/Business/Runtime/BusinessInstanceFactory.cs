@@ -12,8 +12,7 @@ namespace Prototype.Business.Runtime
 				instanceId = $"local_{System.Guid.NewGuid():N}",
 				lotId = lot != null ? lot.id : null,
 				businessTypeId = string.IsNullOrWhiteSpace(businessTypeId) ? string.Empty : businessTypeId.Trim(),
-				isOpen = false,
-				rentPerDay = lot != null && lot.rentPerDay > 0 ? lot.rentPerDay : 0
+				isOpen = false
 			};
 
 			if (string.IsNullOrWhiteSpace(businessTypeId))

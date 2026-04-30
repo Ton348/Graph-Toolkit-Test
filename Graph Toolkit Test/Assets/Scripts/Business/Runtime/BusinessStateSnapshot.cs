@@ -8,9 +8,6 @@ namespace Prototype.Business.Runtime
 		public string lotId;
 		public string businessTypeId;
 		public bool isOpen;
-		public int rentPerDay;
-		public int storageCapacity;
-		public int shelfCapacity;
 		public int storageStock;
 		public int shelfStock;
 		public string storageItemId;

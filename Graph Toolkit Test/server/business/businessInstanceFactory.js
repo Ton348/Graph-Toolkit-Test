@@ -13,7 +13,7 @@ function getTypeDefaults(businessTypeId, businessDefs) {
   };
 }
 
-function createBusinessInstance(template, lotId, rentPerDay, businessTypeId, businessDefs) {
+function createBusinessInstance(template, lotId, businessTypeId, businessDefs) {
   const instanceId = `biz_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
   const source = cloneTemplate(template);
   const hasBusinessType = typeof businessTypeId === 'string' && businessTypeId.trim().length > 0;
@@ -25,8 +25,7 @@ function createBusinessInstance(template, lotId, rentPerDay, businessTypeId, bus
     instanceId,
     lotId,
     isOpen: false,
-    businessTypeId: hasBusinessType ? businessTypeId.trim() : '',
-    rentPerDay: Number.isFinite(rentPerDay) && rentPerDay >= 0 ? rentPerDay : 0
+    businessTypeId: hasBusinessType ? businessTypeId.trim() : ''
   };
 }
 
@@ -39,8 +38,7 @@ function applyBusinessTypeTemplate(business, template, businessTypeId, businessD
   const typeDefaults = getTypeDefaults(businessTypeId, businessDefs);
   const preserved = {
     instanceId: business.instanceId,
-    lotId: business.lotId,
-    rentPerDay: business.rentPerDay
+    lotId: business.lotId
   };
 
   Object.assign(business, source, typeDefaults, preserved);
@@ -51,4 +49,4 @@ function applyBusinessTypeTemplate(business, template, businessTypeId, businessD
 module.exports = {
   createBusinessInstance,
   applyBusinessTypeTemplate
-};
+}

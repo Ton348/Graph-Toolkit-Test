@@ -1,0 +1,10 @@
+{
+  "id": "storage_basic",
+  "category": "storage",
+  "name": "Складское оборудование",
+  "description": "Базовый склад для хранения товара",
+  "price": 50,
+  "storageCapacity": 500,
+  "cashCapacity": 0,
+  "shelfCapacity": 0
+}

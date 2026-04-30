@@ -14,12 +14,156 @@ function readJson(filePath) {
   return JSON.parse(raw);
 }
 
+function readJsonFolder(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return [];
+  }
+
+  return fs.readdirSync(dirPath)
+    .filter(name => name.toLowerCase().endsWith('.json'))
+    .sort((a, b) => a.localeCompare(b))
+    .map(name => readJson(path.join(dirPath, name)));
+}
+
+function buildFromPeople(people) {
+  const peopleData = { people: [] };
+  const suppliers = { suppliers: [] };
+  const staffRoles = { roles: [] };
+  const staffContacts = { contacts: [] };
+
+  (Array.isArray(people) ? people : []).forEach(person => {
+    if (!person || !person.contactId) {
+      return;
+    }
+
+    const contactId = String(person.contactId).trim();
+    const displayName = person.displayName || contactId;
+    const normalizedPerson = {
+      contactId,
+      displayName,
+      salaryPerDay: Number.isFinite(person.salaryPerDay) ? person.salaryPerDay : 0,
+      throughputPerHour: Number.isFinite(person.throughputPerHour) ? person.throughputPerHour : 0
+    };
+
+    if (person.supplierConfig) {
+      normalizedPerson.supplierConfig = {
+        productType: person.supplierConfig.productType || '',
+        unitBuyPrice: Number.isFinite(person.supplierConfig.unitBuyPrice) ? person.supplierConfig.unitBuyPrice : 0,
+        minDeliveryAmount: Number.isFinite(person.supplierConfig.minDeliveryAmount) ? person.supplierConfig.minDeliveryAmount : 0,
+        maxDeliveryAmount: Number.isFinite(person.supplierConfig.maxDeliveryAmount) ? person.supplierConfig.maxDeliveryAmount : 0
+      };
+
+      suppliers.suppliers.push({
+        id: contactId,
+        displayName,
+        productType: normalizedPerson.supplierConfig.productType,
+        unitBuyPrice: normalizedPerson.supplierConfig.unitBuyPrice,
+        minDeliveryAmount: normalizedPerson.supplierConfig.minDeliveryAmount,
+        maxDeliveryAmount: normalizedPerson.supplierConfig.maxDeliveryAmount
+      });
+    }
+
+    peopleData.people.push(normalizedPerson);
+    staffContacts.contacts.push({
+      id: contactId,
+      displayName,
+      salaryPerDay: normalizedPerson.salaryPerDay,
+      throughputPerHour: normalizedPerson.throughputPerHour
+    });
+  });
+
+  return { peopleData, suppliers, staffRoles, staffContacts };
+}
+
+function buildTraderData(traders, items) {
+  const itemById = new Map();
+  const traderItems = { items: [] };
+  const tradersData = { traders: [] };
+
+  (Array.isArray(items) ? items : []).forEach(item => {
+    if (!item || !item.id || itemById.has(item.id)) {
+      return;
+    }
+
+    const normalizedItem = {
+      id: String(item.id).trim(),
+      category: item.category || '',
+      name: item.name || String(item.id).trim(),
+      description: item.description || '',
+      price: Number.isFinite(item.price) ? item.price : 0,
+      storageCapacity: Number.isFinite(item.storageCapacity) ? item.storageCapacity : 0,
+      cashCapacity: Number.isFinite(item.cashCapacity) ? item.cashCapacity : 0,
+      shelfCapacity: Number.isFinite(item.shelfCapacity) ? item.shelfCapacity : 0
+    };
+
+    itemById.set(normalizedItem.id, normalizedItem);
+    traderItems.items.push(normalizedItem);
+  });
+
+  (Array.isArray(traders) ? traders : []).forEach(trader => {
+    if (!trader || !trader.id) {
+      return;
+    }
+
+    if (Array.isArray(trader.items)) {
+      trader.items.forEach(item => {
+        if (!item || !item.id || itemById.has(item.id)) {
+          return;
+        }
+
+        const normalizedItem = {
+          id: String(item.id).trim(),
+          category: item.category || '',
+          name: item.name || String(item.id).trim(),
+          description: item.description || '',
+          price: Number.isFinite(item.price) ? item.price : 0,
+          storageCapacity: Number.isFinite(item.storageCapacity) ? item.storageCapacity : 0,
+          cashCapacity: Number.isFinite(item.cashCapacity) ? item.cashCapacity : 0,
+          shelfCapacity: Number.isFinite(item.shelfCapacity) ? item.shelfCapacity : 0
+        };
+
+        itemById.set(normalizedItem.id, normalizedItem);
+        traderItems.items.push(normalizedItem);
+      });
+    }
+
+    const normalizedTrader = {
+      id: String(trader.id).trim(),
+      name: trader.name || String(trader.id).trim(),
+      itemIds: []
+    };
+
+    const sourceItemIds = Array.isArray(trader.itemIds)
+      ? trader.itemIds
+      : Array.isArray(trader.items)
+        ? trader.items.map(item => item && item.id).filter(Boolean)
+        : [];
+
+    sourceItemIds.forEach(itemId => {
+      if (typeof itemId !== 'string') {
+        return;
+      }
+
+      const trimmed = itemId.trim();
+      if (trimmed.length > 0) {
+        normalizedTrader.itemIds.push(trimmed);
+      }
+    });
+
+    tradersData.traders.push(normalizedTrader);
+  });
+
+  return { tradersData, traderItems };
+}
+
 function validateBusinessDefinitions(
   businessTypes,
   suppliers,
   staffRoles,
   staffContacts,
+  peopleData,
   traders,
+  traderItems,
   pizzeriaDemand) {
   let errors = 0;
   let warnings = 0;
@@ -41,6 +185,11 @@ function validateBusinessDefinitions(
       }
       businessTypeIds.add(b.id);
     });
+  }
+
+  if (!peopleData || !Array.isArray(peopleData.people)) {
+    console.error('[server][business] people missing "people" array');
+    errors++;
   }
 
   if (!suppliers || !Array.isArray(suppliers.suppliers)) {
@@ -79,16 +228,39 @@ function validateBusinessDefinitions(
         errors++;
         return;
       }
-
       if (ids.has(c.id)) {
         console.error(`[server][business] duplicate staff contact id: ${c.id}`);
         errors++;
       }
       ids.add(c.id);
-
       if ((Number.isFinite(c.salaryPerDay) && c.salaryPerDay < 0) ||
           (Number.isFinite(c.throughputPerHour) && c.throughputPerHour < 0)) {
         console.warn(`[server][business] staff contact ${c.id} has negative values`);
+        warnings++;
+      }
+    });
+  }
+
+  const itemIds = new Set();
+  if (!traderItems || !Array.isArray(traderItems.items)) {
+    console.error('[server][business] items missing "items" array');
+    errors++;
+  } else {
+    traderItems.items.forEach((item, i) => {
+      if (!item || !item.id || !String(item.id).trim()) {
+        console.error(`[server][business] item at index ${i} missing id`);
+        errors++;
+        return;
+      }
+
+      if (itemIds.has(item.id)) {
+        console.error(`[server][business] duplicate trader item id: ${item.id}`);
+        errors++;
+      }
+      itemIds.add(item.id);
+
+      if (Number.isFinite(item.price) && item.price < 0) {
+        console.warn(`[server][business] trader item ${item.id} price < 0`);
         warnings++;
       }
     });
@@ -99,7 +271,6 @@ function validateBusinessDefinitions(
     errors++;
   } else {
     const traderIds = new Set();
-    const itemIds = new Set();
     traders.traders.forEach((trader, traderIndex) => {
       if (!trader || !trader.id || !String(trader.id).trim()) {
         console.error(`[server][business] trader at index ${traderIndex} missing id`);
@@ -113,28 +284,22 @@ function validateBusinessDefinitions(
       }
       traderIds.add(trader.id);
 
-      if (!Array.isArray(trader.items)) {
-        console.error(`[server][business] trader ${trader.id} missing "items" array`);
+      if (!Array.isArray(trader.itemIds)) {
+        console.error(`[server][business] trader ${trader.id} missing "itemIds" array`);
         errors++;
         return;
       }
 
-      trader.items.forEach((item, itemIndex) => {
-        if (!item || !item.id || !String(item.id).trim()) {
-          console.error(`[server][business] trader ${trader.id} item at index ${itemIndex} missing id`);
+      trader.itemIds.forEach((itemId, itemIndex) => {
+        if (!itemId || !String(itemId).trim()) {
+          console.error(`[server][business] trader ${trader.id} itemId at index ${itemIndex} missing id`);
           errors++;
           return;
         }
 
-        if (itemIds.has(item.id)) {
-          console.error(`[server][business] duplicate trader item id: ${item.id}`);
+        if (!itemIds.has(itemId)) {
+          console.error(`[server][business] trader ${trader.id} references unknown item id: ${itemId}`);
           errors++;
-        }
-        itemIds.add(item.id);
-
-        if (Number.isFinite(item.price) && item.price < 0) {
-          console.warn(`[server][business] trader item ${item.id} price < 0`);
-          warnings++;
         }
       });
     });
@@ -172,47 +337,25 @@ function validateBusinessDefinitions(
   console.log(`[server][business] validated with ${warnings} warning(s)`);
 }
 
-function buildFromPeople(peopleData) {
-  const suppliers = { suppliers: [] };
-  const staffRoles = { roles: [] };
-  const staffContacts = { contacts: [] };
-
-  const people = peopleData && Array.isArray(peopleData.people) ? peopleData.people : [];
-  people.forEach(person => {
-    if (!person || !person.contactId) {
-      return;
-    }
-
-    staffContacts.contacts.push({
-      id: String(person.contactId).trim(),
-      displayName: person.displayName || String(person.contactId).trim(),
-      salaryPerDay: Number.isFinite(person.salaryPerDay) ? person.salaryPerDay : 0,
-      throughputPerHour: Number.isFinite(person.throughputPerHour) ? person.throughputPerHour : 0
-    });
-
-    if (person.supplierConfig) {
-      suppliers.suppliers.push({
-        id: String(person.contactId).trim(),
-        displayName: person.displayName || String(person.contactId).trim(),
-        productType: person.supplierConfig.productType || '',
-        unitBuyPrice: Number.isFinite(person.supplierConfig.unitBuyPrice) ? person.supplierConfig.unitBuyPrice : 0,
-        minDeliveryAmount: Number.isFinite(person.supplierConfig.minDeliveryAmount) ? person.supplierConfig.minDeliveryAmount : 0,
-        maxDeliveryAmount: Number.isFinite(person.supplierConfig.maxDeliveryAmount) ? person.supplierConfig.maxDeliveryAmount : 0
-      });
-    }
-  });
-
-  return { suppliers, staffRoles, staffContacts };
-}
-
 function loadBusinessDefinitions() {
   fs.mkdirSync(BUSINESS_DIR, { recursive: true });
 
   const businessTypes = readJson(path.join(BUSINESS_DIR, 'business_types.json'));
   const businessInstanceTemplate = readJson(path.join(BUSINESS_DIR, 'business_instance_template.json'));
-  const peopleData = readJson(path.join(BUSINESS_DIR, 'people.json'));
-  const { suppliers, staffRoles, staffContacts } = buildFromPeople(peopleData);
-  const traders = readJson(path.join(BUSINESS_DIR, 'traders.json'));
+  const peopleRows = readJsonFolder(path.join(BUSINESS_DIR, 'People'));
+  const itemRows = readJsonFolder(path.join(BUSINESS_DIR, 'Items'));
+  const traderRows = readJsonFolder(path.join(BUSINESS_DIR, 'Traders'));
+
+  const legacyPeople = peopleRows.length === 0 ? readJson(path.join(BUSINESS_DIR, 'people.json')) : null;
+  const legacyTraders = traderRows.length === 0 ? readJson(path.join(BUSINESS_DIR, 'traders.json')) : null;
+
+  const { peopleData, suppliers, staffRoles, staffContacts } = buildFromPeople(
+    peopleRows.length > 0 ? peopleRows : legacyPeople?.people
+  );
+  const { tradersData, traderItems } = buildTraderData(
+    traderRows.length > 0 ? traderRows : legacyTraders?.traders,
+    itemRows.length > 0 ? itemRows : []
+  );
   const pizzeriaDemand = readJson(path.join(BUSINESS_DIR, 'pizzeria_demand.json'));
 
   validateBusinessDefinitions(
@@ -220,7 +363,9 @@ function loadBusinessDefinitions() {
     suppliers,
     staffRoles,
     staffContacts,
-    traders,
+    peopleData,
+    tradersData,
+    traderItems,
     pizzeriaDemand);
 
   const businessTypeById = new Map();
@@ -243,41 +388,18 @@ function loadBusinessDefinitions() {
     if (item && item.id && !staffContactById.has(item.id)) staffContactById.set(item.id, item);
   });
 
-  const traderById = new Map();
   const traderItemById = new Map();
-  (traders.traders || []).forEach(trader => {
-    if (!trader || !trader.id || traderById.has(trader.id)) {
-      return;
+  (traderItems.items || []).forEach(item => {
+    if (item && item.id && !traderItemById.has(item.id)) {
+      traderItemById.set(item.id, item);
     }
+  });
 
-    const normalizedItems = [];
-    if (Array.isArray(trader.items)) {
-      trader.items.forEach(item => {
-        if (!item || !item.id || traderItemById.has(item.id)) {
-          return;
-        }
-
-        const normalizedItem = {
-          id: item.id,
-          category: item.category || '',
-          name: item.name || item.id,
-          description: item.description || '',
-          price: Number.isFinite(item.price) ? item.price : 0,
-          storageCapacity: Number.isFinite(item.storageCapacity) ? item.storageCapacity : 0,
-          cashCapacity: Number.isFinite(item.cashCapacity) ? item.cashCapacity : 0,
-          shelfCapacity: Number.isFinite(item.shelfCapacity) ? item.shelfCapacity : 0
-        };
-
-        normalizedItems.push(normalizedItem);
-        traderItemById.set(normalizedItem.id, normalizedItem);
-      });
+  const traderById = new Map();
+  (tradersData.traders || []).forEach(trader => {
+    if (trader && trader.id && !traderById.has(trader.id)) {
+      traderById.set(trader.id, trader);
     }
-
-    traderById.set(trader.id, {
-      id: trader.id,
-      name: trader.name || trader.id,
-      items: normalizedItems
-    });
   });
 
   const demandByBusinessTypeId = new Map();
@@ -296,10 +418,12 @@ function loadBusinessDefinitions() {
   return {
     businessTypes,
     businessInstanceTemplate,
+    peopleData,
     suppliers,
     staffRoles,
     staffContacts,
-    traders,
+    traders: tradersData,
+    traderItems,
     businessTypeById,
     supplierById,
     staffRoleById,

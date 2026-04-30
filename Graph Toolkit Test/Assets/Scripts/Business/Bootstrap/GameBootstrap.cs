@@ -126,8 +126,10 @@ namespace Prototype.Business.Bootstrap
 			SupplierDatabaseData suppliers = null;
 			StaffRoleDatabaseData staffRoles = null;
 			StaffContactDatabaseData staffContacts = null;
+			BusinessPeopleDatabaseData people = null;
 			PriceDemandDatabaseData pizzeriaDemand = null;
 			TraderDatabaseData traders = null;
+			TraderItemDatabaseData traderItems = null;
 
 			string businessRootPath = Path.Combine(rootPath, "Business");
 			var businessLoader = new JsonBusinessDataLoader(businessRootPath);
@@ -135,8 +137,10 @@ namespace Prototype.Business.Bootstrap
 			suppliers = businessLoader.LoadSuppliers();
 			staffRoles = businessLoader.LoadStaffRoles();
 			staffContacts = businessLoader.LoadStaffContacts();
+			people = businessLoader.LoadPeopleData();
 			pizzeriaDemand = businessLoader.LoadPizzeriaDemand();
 			traders = businessLoader.LoadTraders();
+			traderItems = businessLoader.LoadTraderItems();
 
 			if (businessTypes == null)
 			{
@@ -158,6 +162,11 @@ namespace Prototype.Business.Bootstrap
 				staffContacts = new StaffContactDatabaseData();
 			}
 
+			if (people == null)
+			{
+				people = new BusinessPeopleDatabaseData();
+			}
+
 			if (pizzeriaDemand == null)
 			{
 				pizzeriaDemand = new PriceDemandDatabaseData();
@@ -168,9 +177,9 @@ namespace Prototype.Business.Bootstrap
 				traders = new TraderDatabaseData();
 			}
 
-			BusinessDefinitionsValidator.Validate(businessTypes, suppliers, staffRoles, staffContacts, traders);
+			BusinessDefinitionsValidator.Validate(businessTypes, suppliers, staffRoles, staffContacts, people, traders, traderItems);
 			BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, suppliers,
-				staffRoles, staffContacts, pizzeriaDemand, traders);
+				staffRoles, staffContacts, people, pizzeriaDemand, traders, traderItems);
 			Debug.Log(
 				$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}");
 
@@ -192,7 +201,7 @@ namespace Prototype.Business.Bootstrap
 					localMaxDelayMs, localNetworkErrorChance, localTimeoutChance);
 			PlayerStateSync = new PlayerStateSync();
 			QuestCompassSync = new QuestCompassSync(GameDataRepository, PlayerStateSync);
-			BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository);
+			BusinessStateSyncService = new BusinessStateSyncService(BusinessDefinitionsRepository, GameDataRepository);
 			ProfileSyncService =
 				new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
 			PlayerStateSync.refreshRequested += HandlePlayerStateRefreshRequested;
@@ -200,7 +209,7 @@ namespace Prototype.Business.Bootstrap
 			BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
 			BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
 			BusinessSimulationService =
-				new BusinessSimulationService(BusinessDefinitionsRepository, BusinessStateSyncService);
+				new BusinessSimulationService(BusinessDefinitionsRepository, GameDataRepository, BusinessStateSyncService);
 			BusinessVisualRegistry = GetComponent<BusinessVisualRegistry>();
 			if (BusinessVisualRegistry == null)
 			{

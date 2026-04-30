@@ -48,15 +48,14 @@ namespace Prototype.Business.Runtime.GraphExecutors.Business
 
 			foreach (TraderDefinitionData trader in bootstrap.BusinessDefinitionsRepository.GetAllTraders())
 			{
-				if (trader?.items == null || string.IsNullOrWhiteSpace(trader.id))
+				if (trader?.itemIds == null || string.IsNullOrWhiteSpace(trader.id))
 				{
 					continue;
 				}
 
-				for (int i = 0; i < trader.items.Count; i++)
+				for (int i = 0; i < trader.itemIds.Count; i++)
 				{
-					TraderItemDefinitionData item = trader.items[i];
-					if (item != null && string.Equals(item.id, itemId, StringComparison.Ordinal))
+					if (string.Equals(trader.itemIds[i], itemId, StringComparison.Ordinal))
 					{
 						return trader.id;
 					}

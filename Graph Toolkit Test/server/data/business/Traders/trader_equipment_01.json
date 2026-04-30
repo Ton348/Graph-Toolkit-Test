@@ -1,0 +1,12 @@
+{
+  "id": "trader_equipment_01",
+  "name": "Торговец оборудованием",
+  "itemIds": [
+    "storage_basic",
+    "storage_basic2",
+    "cashdesk_basic",
+    "cashdesk_basic2",
+    "shelf_basic",
+    "shelf_basic2"
+  ]
+}

@@ -333,6 +333,7 @@ namespace Prototype.Business.UI
 		public void SetBusiness(
 			BusinessInstanceSnapshot business,
 			BusinessRuntimeSimulationState simulation,
+			int storageCapacity,
 			float expensesPerDay,
 			int dailyOrderAmount,
 			string lotDisplayName,
@@ -386,7 +387,7 @@ namespace Prototype.Business.UI
 				: business != null
 					? Mathf.Max(0, business.storageStock)
 					: 0;
-			int safeCapacity = business != null ? Mathf.Max(0, business.storageCapacity) : 0;
+			int safeCapacity = Mathf.Max(0, storageCapacity);
 			SetWarehouseStock(safeStock, safeCapacity);
 
 			if (isNewSelection && business != null)
@@ -409,7 +410,7 @@ namespace Prototype.Business.UI
 			}
 
 			UpdatePriceText(m_pendingPrice);
-			RefreshWarehouseSliderRange(business);
+			RefreshWarehouseSliderRange(storageCapacity);
 			if (warehouseSlider != null)
 			{
 				float clampedDaily = Mathf.Clamp(m_pendingAutoDeliveryPerDay, warehouseSlider.minValue, warehouseSlider.maxValue);
@@ -717,14 +718,14 @@ namespace Prototype.Business.UI
 			}
 		}
 
-		private void RefreshWarehouseSliderRange(BusinessInstanceSnapshot business)
+		private void RefreshWarehouseSliderRange(int storageCapacity)
 		{
 			if (warehouseSlider == null)
 			{
 				return;
 			}
 
-			int capacity = business != null ? Mathf.Max(0, business.storageCapacity) : 0;
+			int capacity = Mathf.Max(0, storageCapacity);
 			warehouseSlider.wholeNumbers = true;
 			warehouseSlider.minValue = 0f;
 			warehouseSlider.maxValue = Mathf.Max(1, capacity);

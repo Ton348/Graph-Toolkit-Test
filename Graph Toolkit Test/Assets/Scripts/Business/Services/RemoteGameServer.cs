@@ -968,9 +968,6 @@ namespace Prototype.Business.Services
 						lotId = business.lotId,
 						businessTypeId = business.businessTypeId,
 						isOpen = business.isOpen,
-						rentPerDay = business.rentPerDay,
-						storageCapacity = business.storageCapacity,
-						shelfCapacity = business.shelfCapacity,
 						storageStock = business.storageStock,
 						shelfStock = business.shelfStock,
 						storageItemId = business.storageItemId,
@@ -1437,9 +1434,6 @@ namespace Prototype.Business.Services
 			public string lotId;
 			public string businessTypeId;
 			public bool isOpen;
-			public int rentPerDay;
-			public int storageCapacity;
-			public int shelfCapacity;
 			public int storageStock;
 			public int shelfStock;
 			public string storageItemId;

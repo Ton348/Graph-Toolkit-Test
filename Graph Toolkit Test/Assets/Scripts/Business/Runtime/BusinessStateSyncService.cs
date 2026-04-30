@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Prototype.Business.Data;
+using Sample.Runtime.GameData;
 using UnityEngine;
 
 namespace Prototype.Business.Runtime
@@ -10,15 +11,17 @@ namespace Prototype.Business.Runtime
 		private readonly Dictionary<string, BusinessInstanceSnapshot> m_businessesByInstanceId = new();
 		private readonly Dictionary<string, BusinessInstanceSnapshot> m_businessesByLotId = new();
 		private readonly BusinessDefinitionsRepository m_definitions;
+		private readonly GameDataRepository m_gameData;
 		private readonly HashSet<string> m_knownContacts = new();
 
 		public BusinessStateSyncService()
 		{
 		}
 
-		public BusinessStateSyncService(BusinessDefinitionsRepository definitions)
+		public BusinessStateSyncService(BusinessDefinitionsRepository definitions, GameDataRepository gameData)
 		{
 			m_definitions = definitions;
+			m_gameData = gameData;
 		}
 
 		public IReadOnlyCollection<BusinessInstanceSnapshot> Businesses => m_businessesByInstanceId.Values;
@@ -154,18 +157,6 @@ namespace Prototype.Business.Runtime
 				business.markupPercent = Mathf.Clamp(business.markupPercent, 0, 100);
 			}
 
-			if (business.storageCapacity < 0)
-			{
-				BusinessDebugLog.Warn($"[Business] Negative storageCapacity for lotId='{business.lotId}'. Set to 0.");
-				business.storageCapacity = 0;
-			}
-
-			if (business.shelfCapacity < 0)
-			{
-				BusinessDebugLog.Warn($"[Business] Negative shelfCapacity for lotId='{business.lotId}'. Set to 0.");
-				business.shelfCapacity = 0;
-			}
-
 			if (business.storageStock < 0)
 			{
 				BusinessDebugLog.Warn($"[Business] Negative storageStock for lotId='{business.lotId}'. Set to 0.");
@@ -178,16 +169,17 @@ namespace Prototype.Business.Runtime
 				business.shelfStock = 0;
 			}
 
-			if (business.storageCapacity > 0 && business.storageStock > business.storageCapacity)
+			BusinessRuntimeStats stats = BusinessRuntimeStatsCalculator.Calculate(business, m_gameData, m_definitions);
+			if (stats.StorageCapacity > 0 && business.storageStock > stats.StorageCapacity)
 			{
 				BusinessDebugLog.Warn($"[Business] storageStock exceeds capacity for lotId='{business.lotId}'. Clamped.");
-				business.storageStock = business.storageCapacity;
+				business.storageStock = stats.StorageCapacity;
 			}
 
-			if (business.shelfCapacity > 0 && business.shelfStock > business.shelfCapacity)
+			if (stats.ShelfCapacity > 0 && business.shelfStock > stats.ShelfCapacity)
 			{
 				BusinessDebugLog.Warn($"[Business] shelfStock exceeds capacity for lotId='{business.lotId}'. Clamped.");
-				business.shelfStock = business.shelfCapacity;
+				business.shelfStock = stats.ShelfCapacity;
 			}
 
 			if (!string.IsNullOrWhiteSpace(business.selectedSupplierId))
