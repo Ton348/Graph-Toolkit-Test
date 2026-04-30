@@ -87,6 +87,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
   const seenInstances = new Set();
   const sanitized = [];
   const equippedItems = new Set();
+  const assignedContacts = new Set();
 
   function resolveStorageCapacity(business) {
     if (!business?.storageItemId || !traderItemById) {
@@ -142,7 +143,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
       if (!valid) {
         business.hiredCashierContactId = null;
       } else {
-        knownContactsSet.add(business.hiredCashierContactId);
+        assignedContacts.add(business.hiredCashierContactId);
       }
     }
     if (business.hiredMerchContactId) {
@@ -150,7 +151,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
       if (!valid) {
         business.hiredMerchContactId = null;
       } else {
-        knownContactsSet.add(business.hiredMerchContactId);
+        assignedContacts.add(business.hiredMerchContactId);
       }
     }
     if (business.hiredLogistContactId) {
@@ -158,7 +159,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
       if (!valid) {
         business.hiredLogistContactId = null;
       } else {
-        knownContactsSet.add(business.hiredLogistContactId);
+        assignedContacts.add(business.hiredLogistContactId);
       }
     }
 
@@ -184,7 +185,7 @@ function sanitizeBusinessProfile(profile, businessDefs) {
   }
 
   profile.businesses = sanitized;
-  profile.knownContacts = Array.from(knownContactsSet);
+  profile.knownContacts = Array.from(knownContactsSet).filter(contactId => !assignedContacts.has(contactId));
   if (!Array.isArray(profile.items)) {
     profile.items = [];
   }

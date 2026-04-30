@@ -192,6 +192,17 @@ namespace Prototype.Business.Simulation
 					int rentPerDay = m_calculationService != null ? m_calculationService.GetRentPerDay(business) : 0;
 					int storageCapacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
 					int shelfCapacity = m_calculationService != null ? m_calculationService.GetShelfCapacity(business) : 0;
+					int unitSellPrice = m_calculationService != null ? m_calculationService.GetUnitSellPrice(business) : 0;
+					int soldLastDay = 0;
+					if (unitSellPrice > 0 && business.lastDayRevenue > 0)
+					{
+						soldLastDay = Mathf.Max(0, Mathf.RoundToInt((float)business.lastDayRevenue / unitSellPrice));
+					}
+					int simulatedStartStorage = Mathf.Max(0, business.storageStock) + soldLastDay;
+					if (storageCapacity > 0)
+					{
+						simulatedStartStorage = Mathf.Min(simulatedStartStorage, storageCapacity);
+					}
 					TraderItemDefinitionData cashDeskItem =
 						!string.IsNullOrWhiteSpace(business.cashDeskItemId)
 							? m_definitions?.GetTraderItem(business.cashDeskItemId)
@@ -201,7 +212,7 @@ namespace Prototype.Business.Simulation
 					typedState.rentPerDay = rentPerDay;
 					typedState.storageCapacity = storageCapacity;
 					typedState.shelfCapacity = shelfCapacity;
-					typedState.storageStock = business.storageStock;
+					typedState.storageStock = simulatedStartStorage;
 					typedState.shelfStock = business.shelfStock;
 					typedState.storageItemId = business.storageItemId;
 					typedState.cashDeskItemId = business.cashDeskItemId;

@@ -84,6 +84,7 @@ namespace Prototype.Business.UI
 		public void Setup(IEnumerable<ContactSelectOption> options, string selectedId, bool includeNone = true, string noneLabel = "Нет")
 		{
 			m_options.Clear();
+			string normalizedSelectedId = NormalizeId(selectedId);
 
 			if (includeNone)
 			{
@@ -111,8 +112,31 @@ namespace Prototype.Business.UI
 				}
 			}
 
+			if (!string.IsNullOrWhiteSpace(normalizedSelectedId))
+			{
+				bool hasSelected = false;
+				for (int i = 0; i < m_options.Count; i++)
+				{
+					ContactSelectOption candidate = m_options[i];
+					if (candidate != null && NormalizeId(candidate.id) == normalizedSelectedId)
+					{
+						hasSelected = true;
+						break;
+					}
+				}
+
+				if (!hasSelected)
+				{
+					m_options.Add(new ContactSelectOption
+					{
+						id = normalizedSelectedId,
+						displayName = normalizedSelectedId
+					});
+				}
+			}
+
 			RebuildItems();
-			SetSelected(selectedId, false);
+			SetSelected(normalizedSelectedId, false);
 		}
 
 		public string GetSelectedId()

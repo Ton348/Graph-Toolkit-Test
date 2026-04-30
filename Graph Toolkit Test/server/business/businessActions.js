@@ -25,6 +25,20 @@ function normalizeOptionalId(value) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function removeKnownContact(profile, contactId) {
+  if (!contactId) return;
+  profile.knownContacts = Array.isArray(profile.knownContacts) ? profile.knownContacts : [];
+  profile.knownContacts = profile.knownContacts.filter(id => id !== contactId);
+}
+
+function addKnownContact(profile, contactId) {
+  if (!contactId) return;
+  profile.knownContacts = Array.isArray(profile.knownContacts) ? profile.knownContacts : [];
+  if (!profile.knownContacts.includes(contactId)) {
+    profile.knownContacts.push(contactId);
+  }
+}
+
 function resolveRentPerDay(business, lotDefs) {
   if (!business?.lotId || !lotDefs?.lotById) {
     return 0;
@@ -127,6 +141,7 @@ function assignSupplier(profile, data, businessDefs) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
   if (!supplierId) {
+    addKnownContact(profile, business.hiredLogistContactId);
     business.hiredLogistContactId = null;
     business.autoDeliveryPerDay = 0;
     return ok('Clear supplier success.');
@@ -139,7 +154,11 @@ function assignSupplier(profile, data, businessDefs) {
     return fail('ContactNotKnown', 'Supplier contact not unlocked.');
   }
 
+  if (business.hiredLogistContactId && business.hiredLogistContactId !== supplierId) {
+    addKnownContact(profile, business.hiredLogistContactId);
+  }
   business.hiredLogistContactId = supplierId;
+  removeKnownContact(profile, supplierId);
   return ok('Assign supplier success.');
 }
 
@@ -156,15 +175,18 @@ function hireBusinessWorker(profile, data, businessDefs) {
 
   if (!contactId) {
     if (roleId === 'cashier') {
+      addKnownContact(profile, business.hiredCashierContactId);
       business.hiredCashierContactId = null;
       return ok('Clear cashier success.');
     }
 
     if (roleId === 'merchandiser') {
+      addKnownContact(profile, business.hiredMerchContactId);
       business.hiredMerchContactId = null;
       return ok('Clear merchandiser success.');
     }
     if (roleId === 'logist') {
+      addKnownContact(profile, business.hiredLogistContactId);
       business.hiredLogistContactId = null;
       business.autoDeliveryPerDay = 0;
       return ok('Clear logist success.');
@@ -178,15 +200,25 @@ function hireBusinessWorker(profile, data, businessDefs) {
   }
 
   if (roleId === 'cashier') {
+    if (business.hiredCashierContactId && business.hiredCashierContactId !== contactId) {
+      addKnownContact(profile, business.hiredCashierContactId);
+    }
     business.hiredCashierContactId = contactId;
   } else if (roleId === 'merchandiser') {
+    if (business.hiredMerchContactId && business.hiredMerchContactId !== contactId) {
+      addKnownContact(profile, business.hiredMerchContactId);
+    }
     business.hiredMerchContactId = contactId;
   } else if (roleId === 'logist') {
+    if (business.hiredLogistContactId && business.hiredLogistContactId !== contactId) {
+      addKnownContact(profile, business.hiredLogistContactId);
+    }
     business.hiredLogistContactId = contactId;
   } else {
     return fail('InvalidWorkerRole', 'Unsupported worker role.');
   }
 
+  removeKnownContact(profile, contactId);
   return ok('Hire worker success.');
 }
 

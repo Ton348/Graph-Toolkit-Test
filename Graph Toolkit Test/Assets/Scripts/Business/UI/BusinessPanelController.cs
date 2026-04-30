@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.Data;
 using Prototype.Business.Runtime;
@@ -308,12 +309,12 @@ namespace Prototype.Business.UI
 				? m_stateSync.GetKnownContacts().Where(id => !string.IsNullOrWhiteSpace(id)).ToList()
 				: new List<string>();
 
-			List<string> cashierOptions = BuildCashierContactOptions()
+			List<string> cashierOptions = BuildCashierContactOptions(null)
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
 
-			List<string> merchOptions = BuildMerchandiserContactOptions()
+			List<string> merchOptions = BuildMerchandiserContactOptions(null)
 				.Where(o => o != null && !string.IsNullOrWhiteSpace(o.id))
 				.Select(o => $"{o.id}:{o.displayName}")
 				.ToList();
@@ -463,12 +464,24 @@ namespace Prototype.Business.UI
 			detailsView.SetShelfOptions(shelfOptions,
 				ResolveSelectedOptionId(shelfOptions, detailsView.GetPendingShelfId(), business != null ? business.shelfItemId : null));
 
-			detailsView.SetSupplierOptions(BuildSupplierContactOptions(business), detailsView.GetPendingSupplierId());
-			detailsView.SetCashierOptions(BuildCashierContactOptions(), detailsView.GetPendingCashierId());
 			bool requiresMerch = business != null && m_definitions != null && m_definitions.RequiresMerchandiser(business.businessTypeId);
+			List<BusinessDetailsView.IdOption> supplierOptions = BuildSupplierContactOptions(business).ToList();
+			List<BusinessDetailsView.IdOption> cashierOptions = BuildCashierContactOptions(business).ToList();
+			List<BusinessDetailsView.IdOption> merchOptions = requiresMerch
+				? BuildMerchandiserContactOptions(business).ToList()
+				: new List<BusinessDetailsView.IdOption>();
+
+			detailsView.SetSupplierOptions(
+				supplierOptions,
+				ResolveSelectedOptionId(supplierOptions, detailsView.GetPendingSupplierId(), business != null ? business.hiredLogistContactId : null));
+			detailsView.SetCashierOptions(
+				cashierOptions,
+				ResolveSelectedOptionId(cashierOptions, detailsView.GetPendingCashierId(), business != null ? business.hiredCashierContactId : null));
 			detailsView.SetMerchandiserOptions(
-				requiresMerch ? BuildMerchandiserContactOptions() : new List<BusinessDetailsView.IdOption>(),
-				requiresMerch ? detailsView.GetPendingMerchandiserId() : null);
+				merchOptions,
+				requiresMerch
+					? ResolveSelectedOptionId(merchOptions, detailsView.GetPendingMerchandiserId(), business != null ? business.hiredMerchContactId : null)
+					: null);
 		}
 
 		private IEnumerable<BusinessDetailsView.IdOption> BuildBusinessTypeOptions(string lotId)
@@ -765,7 +778,7 @@ namespace Prototype.Business.UI
 
 			foreach (StaffContactDefinitionData contact in m_definitions.GetAllStaffContacts())
 			{
-				if (contact == null || string.IsNullOrWhiteSpace(contact.id) || !known.Contains(contact.id))
+				if (contact == null || string.IsNullOrWhiteSpace(contact.id))
 				{
 					continue;
 				}
@@ -773,6 +786,13 @@ namespace Prototype.Business.UI
 				string id = contact.id.Trim().ToLowerInvariant();
 				bool isSupplier = knownSuppliers.Contains(contact.id) || id.Contains("supplier") || id.Contains("logist");
 				if (!isSupplier)
+				{
+					continue;
+				}
+
+				bool isCurrentAssigned = business != null &&
+				                         string.Equals(contact.id, business.hiredLogistContactId, StringComparison.Ordinal);
+				if (!known.Contains(contact.id) && !isCurrentAssigned)
 				{
 					continue;
 				}
@@ -787,17 +807,17 @@ namespace Prototype.Business.UI
 			return options;
 		}
 
-		private IEnumerable<BusinessDetailsView.IdOption> BuildCashierContactOptions()
+		private IEnumerable<BusinessDetailsView.IdOption> BuildCashierContactOptions(BusinessInstanceSnapshot business)
 		{
-			return BuildWorkerContactOptionsByKeyword("cashier");
+			return BuildWorkerContactOptionsByKeyword("cashier", business != null ? business.hiredCashierContactId : null);
 		}
 
-		private IEnumerable<BusinessDetailsView.IdOption> BuildMerchandiserContactOptions()
+		private IEnumerable<BusinessDetailsView.IdOption> BuildMerchandiserContactOptions(BusinessInstanceSnapshot business)
 		{
-			return BuildWorkerContactOptionsByKeyword("merch");
+			return BuildWorkerContactOptionsByKeyword("merch", business != null ? business.hiredMerchContactId : null);
 		}
 
-		private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptionsByKeyword(string keyword)
+		private IEnumerable<BusinessDetailsView.IdOption> BuildWorkerContactOptionsByKeyword(string keyword, string forceIncludeContactId)
 		{
 			var options = new List<BusinessDetailsView.IdOption>();
 			if (m_definitions == null || m_stateSync == null || string.IsNullOrWhiteSpace(keyword))
@@ -809,12 +829,17 @@ namespace Prototype.Business.UI
 			string normalizedKeyword = keyword.Trim().ToLowerInvariant();
 			foreach (StaffContactDefinitionData contact in m_definitions.GetAllStaffContacts())
 			{
-				if (contact == null || string.IsNullOrWhiteSpace(contact.id) || !known.Contains(contact.id))
+				if (contact == null || string.IsNullOrWhiteSpace(contact.id))
 				{
 					continue;
 				}
 
 				if (!contact.id.Trim().ToLowerInvariant().Contains(normalizedKeyword))
+				{
+					continue;
+				}
+
+				if (!known.Contains(contact.id) && !string.Equals(contact.id, forceIncludeContactId, StringComparison.Ordinal))
 				{
 					continue;
 				}

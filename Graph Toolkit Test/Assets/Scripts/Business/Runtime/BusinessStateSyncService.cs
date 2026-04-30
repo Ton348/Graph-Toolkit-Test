@@ -185,27 +185,30 @@ namespace Prototype.Business.Runtime
 				business.shelfStock = shelfCapacity;
 			}
 
-			if (!string.IsNullOrWhiteSpace(business.hiredCashierContactId) && contacts != null &&
-			    !contacts.Contains(business.hiredCashierContactId))
+			if (!string.IsNullOrWhiteSpace(business.hiredCashierContactId) &&
+			    m_definitions != null &&
+			    m_definitions.GetStaffContact(business.hiredCashierContactId) == null)
 			{
 				BusinessDebugLog.Warn(
-					$"[Business] Cashier '{business.hiredCashierContactId}' not in knownContacts for lotId='{business.lotId}'. Cleared.");
+					$"[Business] Unknown cashier '{business.hiredCashierContactId}' for lotId='{business.lotId}'. Cleared.");
 				business.hiredCashierContactId = null;
 			}
 
-			if (!string.IsNullOrWhiteSpace(business.hiredMerchContactId) && contacts != null &&
-			    !contacts.Contains(business.hiredMerchContactId))
+			if (!string.IsNullOrWhiteSpace(business.hiredMerchContactId) &&
+			    m_definitions != null &&
+			    m_definitions.GetStaffContact(business.hiredMerchContactId) == null)
 			{
 				BusinessDebugLog.Warn(
-					$"[Business] Merchandiser '{business.hiredMerchContactId}' not in knownContacts for lotId='{business.lotId}'. Cleared.");
+					$"[Business] Unknown merchandiser '{business.hiredMerchContactId}' for lotId='{business.lotId}'. Cleared.");
 				business.hiredMerchContactId = null;
 			}
 
-			if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId) && contacts != null &&
-			    !contacts.Contains(business.hiredLogistContactId))
+			if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId) &&
+			    m_definitions != null &&
+			    m_definitions.GetStaffContact(business.hiredLogistContactId) == null)
 			{
 				BusinessDebugLog.Warn(
-					$"[Business] Logistician '{business.hiredLogistContactId}' not in knownContacts for lotId='{business.lotId}'. Cleared.");
+					$"[Business] Unknown logistician '{business.hiredLogistContactId}' for lotId='{business.lotId}'. Cleared.");
 				business.hiredLogistContactId = null;
 			}
 

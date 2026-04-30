@@ -689,6 +689,10 @@ namespace Prototype.Business.Services
 
 			if (string.IsNullOrWhiteSpace(supplierId))
 			{
+				if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId))
+				{
+					m_knownContacts.Add(business.hiredLogistContactId);
+				}
 				business.hiredLogistContactId = null;
 				business.autoDeliveryPerDay = 0;
 				return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear supplier success.");
@@ -707,7 +711,14 @@ namespace Prototype.Business.Services
 					"Supplier contact not unlocked.");
 			}
 
+			if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId) &&
+			    !string.Equals(business.hiredLogistContactId, supplierId, StringComparison.Ordinal))
+			{
+				m_knownContacts.Add(business.hiredLogistContactId);
+			}
+
 			business.hiredLogistContactId = supplierId;
+			m_knownContacts.Remove(supplierId);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign supplier success.");
 		}
 
@@ -844,18 +855,30 @@ namespace Prototype.Business.Services
 			{
 				if (roleId == "cashier")
 				{
+					if (!string.IsNullOrWhiteSpace(business.hiredCashierContactId))
+					{
+						m_knownContacts.Add(business.hiredCashierContactId);
+					}
 					business.hiredCashierContactId = null;
 					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear cashier success.");
 				}
 
 				if (roleId == "merchandiser")
 				{
+					if (!string.IsNullOrWhiteSpace(business.hiredMerchContactId))
+					{
+						m_knownContacts.Add(business.hiredMerchContactId);
+					}
 					business.hiredMerchContactId = null;
 					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear merchandiser success.");
 				}
 
 				if (roleId == "logist")
 				{
+					if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId))
+					{
+						m_knownContacts.Add(business.hiredLogistContactId);
+					}
 					business.hiredLogistContactId = null;
 					business.autoDeliveryPerDay = 0;
 					return ServerActionResult.SuccessResult(BuildSnapshot(), "Clear logist success.");
@@ -873,14 +896,29 @@ namespace Prototype.Business.Services
 
 			if (roleId == "cashier")
 			{
+				if (!string.IsNullOrWhiteSpace(business.hiredCashierContactId) &&
+				    !string.Equals(business.hiredCashierContactId, contactId, StringComparison.Ordinal))
+				{
+					m_knownContacts.Add(business.hiredCashierContactId);
+				}
 				business.hiredCashierContactId = contactId;
 			}
 			else if (roleId == "merchandiser")
 			{
+				if (!string.IsNullOrWhiteSpace(business.hiredMerchContactId) &&
+				    !string.Equals(business.hiredMerchContactId, contactId, StringComparison.Ordinal))
+				{
+					m_knownContacts.Add(business.hiredMerchContactId);
+				}
 				business.hiredMerchContactId = contactId;
 			}
 			else if (roleId == "logist")
 			{
+				if (!string.IsNullOrWhiteSpace(business.hiredLogistContactId) &&
+				    !string.Equals(business.hiredLogistContactId, contactId, StringComparison.Ordinal))
+				{
+					m_knownContacts.Add(business.hiredLogistContactId);
+				}
 				business.hiredLogistContactId = contactId;
 			}
 			else
@@ -889,6 +927,7 @@ namespace Prototype.Business.Services
 					"Unsupported worker role.");
 			}
 
+			m_knownContacts.Remove(contactId);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Hire worker success.");
 		}
 
