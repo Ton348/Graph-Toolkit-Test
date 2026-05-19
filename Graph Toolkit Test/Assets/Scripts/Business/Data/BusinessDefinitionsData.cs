@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Prototype.Business.NPC.Registry;
 
 namespace Prototype.Business.Data
 {
@@ -29,6 +30,7 @@ namespace Prototype.Business.Data
 		public string id;
 		public string displayName;
 		public string productType;
+		public List<NPCServiceType> services = new();
 		public BusinessInstanceTemplateData instanceTemplate;
 	}
 

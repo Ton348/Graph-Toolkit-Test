@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Prototype.Business.Compass;
 using Prototype.Business.Data;
+using Prototype.Business.NPC.Registry;
 using Prototype.Business.GameData;
 using Prototype.Business.Runtime;
 using Prototype.Business.Services;
@@ -57,6 +58,7 @@ namespace Prototype.Business.Bootstrap
 		public BusinessLiveSimulationService BusinessLiveSimulationService { get; private set; }
 		public BusinessVisualRegistry BusinessVisualRegistry { get; private set; }
 		public BusinessVisualSpawner BusinessVisualSpawner { get; private set; }
+		public BusinessRegistry BusinessRegistry { get; private set; }
 
 
 		private void Awake()
@@ -249,6 +251,12 @@ namespace Prototype.Business.Bootstrap
 			}
 
 			BusinessLiveSimulationService.Initialize(this);
+
+			BusinessRegistry = GetComponent<BusinessRegistry>();
+			if (BusinessRegistry == null)
+			{
+				BusinessRegistry = gameObject.AddComponent<BusinessRegistry>();
+			}
 
 			SeedInitialSnapshot();
 		}

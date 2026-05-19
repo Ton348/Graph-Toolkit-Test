@@ -768,11 +768,13 @@ namespace Prototype.Business.UI
 
 			HashSet<string> known = new HashSet<string>(m_stateSync.GetKnownContacts());
 			HashSet<string> knownSuppliers = new HashSet<string>();
+			var supplierDisplayById = new Dictionary<string, string>(StringComparer.Ordinal);
 			foreach (BusinessDetailsView.IdOption option in BuildSupplierOptions(business))
 			{
 				if (option != null && !string.IsNullOrWhiteSpace(option.id))
 				{
 					knownSuppliers.Add(option.id);
+					supplierDisplayById[option.id] = option.displayName;
 				}
 			}
 
@@ -800,8 +802,49 @@ namespace Prototype.Business.UI
 				options.Add(new BusinessDetailsView.IdOption
 				{
 					id = contact.id,
-					displayName = !string.IsNullOrWhiteSpace(contact.displayName) ? contact.displayName : contact.id
+					displayName = supplierDisplayById.TryGetValue(contact.id, out string supplierDisplayName) &&
+					              !string.IsNullOrWhiteSpace(supplierDisplayName)
+						? supplierDisplayName
+						: (!string.IsNullOrWhiteSpace(contact.displayName) ? contact.displayName : contact.id)
 				});
+			}
+
+			if (business != null && !string.IsNullOrWhiteSpace(business.hiredLogistContactId))
+			{
+				bool exists = false;
+				for (int i = 0; i < options.Count; i++)
+				{
+					BusinessDetailsView.IdOption option = options[i];
+					if (option != null && string.Equals(option.id, business.hiredLogistContactId, StringComparison.Ordinal))
+					{
+						exists = true;
+						break;
+					}
+				}
+
+				if (!exists)
+				{
+					string fallbackDisplay = business.hiredLogistContactId;
+					if (supplierDisplayById.TryGetValue(business.hiredLogistContactId, out string supplierDisplayName) &&
+					    !string.IsNullOrWhiteSpace(supplierDisplayName))
+					{
+						fallbackDisplay = supplierDisplayName;
+					}
+					else
+					{
+						StaffContactDefinitionData staff = m_definitions.GetStaffContact(business.hiredLogistContactId);
+						if (staff != null && !string.IsNullOrWhiteSpace(staff.displayName))
+						{
+							fallbackDisplay = staff.displayName;
+						}
+					}
+
+					options.Add(new BusinessDetailsView.IdOption
+					{
+						id = business.hiredLogistContactId,
+						displayName = fallbackDisplay
+					});
+				}
 			}
 
 			return options;

@@ -208,6 +208,14 @@ namespace Prototype.Business.Data
 			return GetBusinessType(id) != null;
 		}
 
+		public IReadOnlyList<Prototype.Business.NPC.Registry.NPCServiceType> GetServicesForBusinessType(string businessTypeId)
+		{
+			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);
+			return type != null && type.services != null
+				? type.services
+				: System.Array.Empty<Prototype.Business.NPC.Registry.NPCServiceType>();
+		}
+
 		public bool RequiresMerchandiser(string businessTypeId)
 		{
 			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Dreamteck.Splines;
+using Prototype.Business.NPC.Registry;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.Runtime;
 using Prototype.Business.Simulation;
@@ -11,6 +12,7 @@ namespace Prototype.Business.World
 	{
 		public string siteId;
 		public string lotId;
+		[SerializeField] private Transform entrancePoint;
 		public Transform storagePoint;
 		public Transform shelvesPoint;
 		public Transform cashierPoint;
@@ -24,12 +26,38 @@ namespace Prototype.Business.World
 		public string shelvesTriggerName = "Shelves";
 
 		public GameBootstrap bootstrap;
+		public string BusinessTypeId => GetBusiness()?.businessTypeId;
+		public Transform EntrancePoint => entrancePoint;
+		public bool IsOpen => GetBusiness() != null && GetBusiness().isOpen;
 
 		private void Awake()
 		{
 			if (bootstrap == null)
 			{
 				bootstrap = FindObjectOfType<GameBootstrap>();
+			}
+
+			if (entrancePoint == null)
+			{
+				entrancePoint = transform;
+			}
+		}
+
+		private void OnEnable()
+		{
+			BusinessRegistry registry = FindAnyObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
+			if (registry != null)
+			{
+				registry.Register(this);
+			}
+		}
+
+		private void OnDisable()
+		{
+			BusinessRegistry registry = FindAnyObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
+			if (registry != null)
+			{
+				registry.Unregister(this);
 			}
 		}
 
@@ -46,11 +74,7 @@ namespace Prototype.Business.World
 			return business != null;
 		}
 
-		public bool IsOpen()
-		{
-			BusinessInstanceSnapshot business = GetBusiness();
-			return business != null && business.isOpen;
-		}
+		public bool IsOpenLegacy() => IsOpen;
 
 		public BusinessActionFacade GetActionFacade()
 		{

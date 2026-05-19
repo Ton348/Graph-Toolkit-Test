@@ -12,58 +12,58 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: provider.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: 2a156c76-d170-477a-90ec-97bd786a8665
+  startNodeId: 59e3fa37-b0ff-4dbf-a218-e194f17d1852
   nodes:
-  - rid: 8489120807830684320
-  - rid: 8489120807830684321
-  - rid: 8489120807830684322
-  - rid: 8489120807830684323
-  - rid: 8489120807830684324
+  - rid: 8489120811553391339
+  - rid: 8489120811553391340
+  - rid: 8489120811553391341
+  - rid: 8489120811553391342
+  - rid: 8489120811553391343
   references:
     version: 2
     RefIds:
-    - rid: 8489120807830684320
+    - rid: 8489120811553391339
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 2a156c76-d170-477a-90ec-97bd786a8665
+        nodeId: 59e3fa37-b0ff-4dbf-a218-e194f17d1852
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: aa56fcbb-db34-4235-bcd0-7842ff2a2bb8
-    - rid: 8489120807830684321
+        nextNodeId: 357a6fc2-0a77-467a-a853-ed3b0d457c06
+    - rid: 8489120811553391340
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 4835ab93-086a-43ad-9e63-abcfd84d5ad0
+        nodeId: 2af051c6-fc3c-4685-b79b-2c9d50a44fe7
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: d0489678-b493-43ef-9c7f-3334708fd7ad
+        nextNodeId: 7e604a42-ddd1-4072-9d01-134716f495b6
         dialogueTitle: "\u041B\u043E\u0433\u0438\u0441\u0442\u0438\u043A\u0430"
         body: "\u0412\u043E\u0437\u044C\u043C\u0438 \u0432\u0438\u0437\u0438\u0442\u043A\u0443,
           \u0432\u0434\u0440\u0443\u0433 \u0434\u043E\u0441\u0442\u0430\u0432\u043A\u0430
           \u0422\u043E\u0432\u0430\u0440\u0430 \u043F\u043E\u043D\u0430\u0434\u043E\u0431\u0438\u0442\u0441\u044F."
-    - rid: 8489120807830684322
+    - rid: 8489120811553391341
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 94ff92c3-f15f-48cc-9c54-6153efb696bf
+        nodeId: c8e02770-eb52-4654-a4f1-e4aefed6e98f
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-    - rid: 8489120807830684323
+    - rid: 8489120811553391342
       type: {class: RequestUnlockContactNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: d0489678-b493-43ef-9c7f-3334708fd7ad
+        nodeId: 7e604a42-ddd1-4072-9d01-134716f495b6
         title: RequestUnlockContactNode
         description: 
-        successNodeId: 94ff92c3-f15f-48cc-9c54-6153efb696bf
-        failNodeId: 94ff92c3-f15f-48cc-9c54-6153efb696bf
+        successNodeId: c8e02770-eb52-4654-a4f1-e4aefed6e98f
+        failNodeId: c8e02770-eb52-4654-a4f1-e4aefed6e98f
         contactId: logist_1
-    - rid: 8489120807830684324
+    - rid: 8489120811553391343
       type: {class: CheckContactKnownNode, ns: GameGraph.Runtime.Business, asm: GameGraph.Runtime}
       data:
-        nodeId: aa56fcbb-db34-4235-bcd0-7842ff2a2bb8
+        nodeId: 357a6fc2-0a77-467a-a853-ed3b0d457c06
         title: CheckContactKnownNode
         description: 
-        trueNodeId: 94ff92c3-f15f-48cc-9c54-6153efb696bf
-        falseNodeId: 4835ab93-086a-43ad-9e63-abcfd84d5ad0
+        trueNodeId: c8e02770-eb52-4654-a4f1-e4aefed6e98f
+        falseNodeId: 2af051c6-fc3c-4685-b79b-2c9d50a44fe7
         contactId: logist_1

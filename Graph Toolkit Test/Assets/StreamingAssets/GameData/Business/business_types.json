@@ -4,6 +4,7 @@
       "id": "pizza_shop",
       "displayName": "Пиццерия",
       "productType": "grocery",
+      "services": ["Food", "Drink", "Toilet"],
       "instanceTemplate": {
         "storageItemId": null,
         "cashDeskItemId": null,
@@ -16,6 +17,7 @@
       "id": "grocery_store",
       "displayName": "Магазин продуктов",
       "productType": "grocery",
+      "services": ["Food", "Drink"],
       "instanceTemplate": {
         "storageItemId": null,
         "cashDeskItemId": null,
