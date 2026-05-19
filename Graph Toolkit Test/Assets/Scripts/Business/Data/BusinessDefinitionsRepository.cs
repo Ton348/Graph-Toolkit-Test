@@ -211,9 +211,26 @@ namespace Prototype.Business.Data
 		public IReadOnlyList<Prototype.Business.NPC.Registry.NPCServiceType> GetServicesForBusinessType(string businessTypeId)
 		{
 			BusinessTypeDefinitionData type = GetBusinessType(businessTypeId);
-			return type != null && type.services != null
-				? type.services
-				: System.Array.Empty<Prototype.Business.NPC.Registry.NPCServiceType>();
+			if (type == null)
+			{
+				return System.Array.Empty<Prototype.Business.NPC.Registry.NPCServiceType>();
+			}
+
+			if (type.services != null && type.services.Count > 0)
+			{
+				return type.services;
+			}
+
+			if (string.Equals(type.productType, "grocery", System.StringComparison.OrdinalIgnoreCase))
+			{
+				return new[]
+				{
+					Prototype.Business.NPC.Registry.NPCServiceType.Food,
+					Prototype.Business.NPC.Registry.NPCServiceType.Drink
+				};
+			}
+
+			return System.Array.Empty<Prototype.Business.NPC.Registry.NPCServiceType>();
 		}
 
 		public bool RequiresMerchandiser(string businessTypeId)

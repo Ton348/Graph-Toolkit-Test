@@ -9,6 +9,16 @@ namespace Prototype.Business.NPC.Registry
 		private readonly List<BusinessWorldRuntime> m_runtimes = new();
 		private readonly List<BusinessWorldRuntime> m_resultBuffer = new();
 
+		private void Awake()
+		{
+			RebuildFromScene();
+		}
+
+		private void OnEnable()
+		{
+			RebuildFromScene();
+		}
+
 		public void Register(BusinessWorldRuntime runtime)
 		{
 			if (runtime == null || m_runtimes.Contains(runtime))
@@ -17,6 +27,20 @@ namespace Prototype.Business.NPC.Registry
 			}
 
 			m_runtimes.Add(runtime);
+		}
+
+		public void RebuildFromScene()
+		{
+			m_runtimes.Clear();
+			BusinessWorldRuntime[] worlds = FindObjectsByType<BusinessWorldRuntime>(FindObjectsSortMode.None);
+			for (int i = 0; i < worlds.Length; i++)
+			{
+				BusinessWorldRuntime world = worlds[i];
+				if (world != null && !m_runtimes.Contains(world))
+				{
+					m_runtimes.Add(world);
+				}
+			}
 		}
 
 		public void Unregister(BusinessWorldRuntime runtime)

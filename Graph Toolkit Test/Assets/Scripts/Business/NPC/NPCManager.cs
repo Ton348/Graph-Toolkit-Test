@@ -88,7 +88,7 @@ namespace Prototype.Business.NPC
 
 			if (!HasGraphContent(graph))
 			{
-				Debug.LogError($"[NPCManager] CommonGraph '{graph.name}' does not contain runtime nodes on '{name}'.",
+				UnityEngine.Debug.LogError($"[NPCManager] CommonGraph '{graph.name}' does not contain runtime nodes on '{name}'.",
 					this);
 				return;
 			}
@@ -183,7 +183,7 @@ namespace Prototype.Business.NPC
 			{
 				if (string.IsNullOrWhiteSpace(questId))
 				{
-					Debug.LogError("[NPCManager] StartQuestAsync failed because questId is empty.", m_logContext);
+					UnityEngine.Debug.LogError("[NPCManager] StartQuestAsync failed because questId is empty.", m_logContext);
 					return false;
 				}
 
@@ -191,7 +191,7 @@ namespace Prototype.Business.NPC
 					cancellationToken);
 				if (invocationResult == null)
 				{
-					Debug.LogError($"[NPCManager] GameServer does not provide a start quest method for quest '{questId}'.",
+					UnityEngine.Debug.LogError($"[NPCManager] GameServer does not provide a start quest method for quest '{questId}'.",
 						m_logContext);
 					return false;
 				}
@@ -213,7 +213,7 @@ namespace Prototype.Business.NPC
 			{
 				if (string.IsNullOrWhiteSpace(questId))
 				{
-					Debug.LogError("[NPCManager] CompleteQuestAsync failed because questId is empty.", m_logContext);
+					UnityEngine.Debug.LogError("[NPCManager] CompleteQuestAsync failed because questId is empty.", m_logContext);
 					return false;
 				}
 
@@ -221,7 +221,7 @@ namespace Prototype.Business.NPC
 					questId, cancellationToken);
 				if (invocationResult == null)
 				{
-					Debug.LogError(
+					UnityEngine.Debug.LogError(
 						$"[NPCManager] GameServer does not provide a complete quest method for quest '{questId}'.",
 						m_logContext);
 					return false;
@@ -253,7 +253,7 @@ namespace Prototype.Business.NPC
 			{
 				if (string.IsNullOrWhiteSpace(questId))
 				{
-					Debug.LogError("[NPCManager] GetQuestStateAsync failed because questId is empty.", m_logContext);
+					UnityEngine.Debug.LogError("[NPCManager] GetQuestStateAsync failed because questId is empty.", m_logContext);
 					return default;
 				}
 

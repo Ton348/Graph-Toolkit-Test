@@ -6,7 +6,17 @@ namespace Prototype.Business.NPC.Movement
 	[RequireComponent(typeof(NavMeshAgent))]
 	public sealed class NPCMovementController : MonoBehaviour
 	{
+		public enum MovementState
+		{
+			Idle,
+			Moving,
+			Stopped
+		}
+
 		private NavMeshAgent m_agent;
+		private MovementState m_state = MovementState.Idle;
+
+		public MovementState CurrentState => m_state;
 
 		private void Awake()
 		{
@@ -22,6 +32,7 @@ namespace Prototype.Business.NPC.Movement
 
 			m_agent.isStopped = false;
 			m_agent.SetDestination(point);
+			m_state = MovementState.Moving;
 		}
 
 		public void Stop()
@@ -32,6 +43,7 @@ namespace Prototype.Business.NPC.Movement
 			}
 
 			m_agent.isStopped = true;
+			m_state = MovementState.Stopped;
 		}
 
 		public bool HasReachedDestination(float tolerance = 0.35f)
@@ -43,10 +55,20 @@ namespace Prototype.Business.NPC.Movement
 
 			if (!m_agent.hasPath)
 			{
+				if (m_state == MovementState.Moving)
+				{
+					m_state = MovementState.Idle;
+				}
 				return true;
 			}
 
-			return m_agent.remainingDistance <= Mathf.Max(0.05f, tolerance);
+			bool reached = m_agent.remainingDistance <= Mathf.Max(0.05f, tolerance);
+			if (reached && m_state == MovementState.Moving)
+			{
+				m_state = MovementState.Idle;
+			}
+
+			return reached;
 		}
 
 		public bool TryGetRandomNavMeshPoint(Vector3 origin, float radius, out Vector3 point)

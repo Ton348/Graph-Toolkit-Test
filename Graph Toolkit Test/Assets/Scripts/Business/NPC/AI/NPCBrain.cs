@@ -1,173 +1,274 @@
-using Prototype.Business.NPC.Movement;
-using Prototype.Business.NPC.Needs;
-using Prototype.Business.NPC.Registry;
-using Prototype.Business.NPC.Spawning;
-using Prototype.Business.World;
-using UnityEngine;
+	using Prototype.Business.NPC.Movement;
+	using Prototype.Business.NPC.Needs;
+	using Prototype.Business.NPC.Registry;
+	using Prototype.Business.NPC.Spawning;
+	using Prototype.Business.World;
+	using UnityEngine;
 
-namespace Prototype.Business.NPC.AI
-{
-	[RequireComponent(typeof(NPCNeedsComponent))]
-	[RequireComponent(typeof(NPCMovementController))]
-	public sealed class NPCBrain : MonoBehaviour
+	namespace Prototype.Business.NPC.AI
 	{
-		[SerializeField] private float decisionTickSeconds = 1f;
-		[SerializeField] private float wanderRadius = 25f;
-		[SerializeField] private float idleAtTargetSeconds = 2f;
-
-		private NPCNeedsComponent m_needs;
-		private NPCMovementController m_movement;
-		private NPCGoalResolver m_resolver;
-		private BusinessRegistry m_registry;
-		private NPCGoalType m_currentGoal;
-		private float m_decisionTimer;
-		private float m_idleTimer;
-		private bool m_waitingAtTarget;
-		private bool m_despawning;
-
-		public NPCGoalType CurrentGoal => m_currentGoal;
-
-		private void Awake()
+		[RequireComponent(typeof(NPCNeedsComponent))]
+		[RequireComponent(typeof(NPCMovementController))]
+		public sealed class NPCBrain : MonoBehaviour
 		{
-			m_needs = GetComponent<NPCNeedsComponent>();
-			m_movement = GetComponent<NPCMovementController>();
-			m_resolver = new NPCGoalResolver();
-			m_registry = FindAnyObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
-		}
+			[SerializeField] private float decisionTickSeconds = 1f;
+			[SerializeField] private float wanderRadius = 25f;
+			[SerializeField] private float idleAtTargetSeconds = 2f;
+			[SerializeField] private float minimumGoalDurationSeconds = 5f;
 
-		private void Update()
-		{
-			if (m_despawning)
+			private NPCNeedsComponent m_needs;
+			private NPCMovementController m_movement;
+			private NPCGoalResolver m_resolver;
+			private BusinessRegistry m_registry;
+
+			private NPCGoalType m_currentGoal;
+			private NPCGoalType m_previousGoal;
+
+			private float m_decisionTimer;
+			private float m_goalTimer;
+			private float m_idleTimer;
+
+			private bool m_waitingAtTarget;
+			private bool m_despawning;
+			private bool m_hasTarget;
+
+			private BusinessWorldRuntime m_currentTargetBusiness;
+			private string m_currentTargetBusinessName;
+
+			private Vector3 m_currentDestination;
+
+			public NPCGoalType CurrentGoal => m_currentGoal;
+			public string CurrentTargetBusinessName => m_currentTargetBusinessName;
+
+			private void Awake()
 			{
-				return;
+				m_needs = GetComponent<NPCNeedsComponent>();
+				m_movement = GetComponent<NPCMovementController>();
+				m_resolver = new NPCGoalResolver();
+				m_registry = FindFirstObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
 			}
 
-			m_decisionTimer += Time.deltaTime;
-			if (m_decisionTimer >= Mathf.Max(0.2f, decisionTickSeconds))
+			private void Update()
 			{
-				m_decisionTimer = 0f;
-				ResolveAndExecuteGoal();
-			}
-
-			if (m_waitingAtTarget)
-			{
-				m_idleTimer += Time.deltaTime;
-				if (m_idleTimer >= Mathf.Max(0.1f, idleAtTargetSeconds))
+				if (m_despawning)
 				{
-					m_waitingAtTarget = false;
-					m_idleTimer = 0f;
-				}
-			}
-		}
-
-		public void BeginDespawn(NPCDespawnPoint[] despawnPoints)
-		{
-			m_despawning = true;
-			if (despawnPoints == null || despawnPoints.Length == 0)
-			{
-				return;
-			}
-
-			float best = float.MaxValue;
-			Transform bestPoint = null;
-			for (int i = 0; i < despawnPoints.Length; i++)
-			{
-				NPCDespawnPoint point = despawnPoints[i];
-				if (point == null)
-				{
-					continue;
+					return;
 				}
 
-				float sqr = (point.transform.position - transform.position).sqrMagnitude;
-				if (sqr < best)
+				m_decisionTimer += Time.deltaTime;
+				m_goalTimer += Time.deltaTime;
+
+				if (m_waitingAtTarget)
 				{
-					best = sqr;
-					bestPoint = point.transform;
+					m_idleTimer += Time.deltaTime;
+					if (m_idleTimer >= Mathf.Max(0.1f, idleAtTargetSeconds))
+					{
+						CompleteCurrentInteraction();
+					}
+					return;
+				}
+
+				if (m_decisionTimer >= Mathf.Max(0.2f, decisionTickSeconds))
+				{
+					m_decisionTimer = 0f;
+					TickBrain();
+				}
+
+				if (m_hasTarget && m_movement.HasReachedDestination())
+				{
+					BeginInteraction();
 				}
 			}
 
-			if (bestPoint != null)
+			public void BeginDespawn(NPCDespawnPoint[] despawnPoints)
 			{
-				m_movement.MoveTo(bestPoint.position);
-			}
-		}
+				m_despawning = true;
 
-		private void ResolveAndExecuteGoal()
-		{
-			m_currentGoal = m_resolver.ResolveGoal(m_needs);
-			switch (m_currentGoal)
-			{
-				case NPCGoalType.GoEat:
-					TryMoveToService(NPCServiceType.Food);
-					break;
-				case NPCGoalType.GoDrink:
-					TryMoveToService(NPCServiceType.Drink);
-					break;
-				case NPCGoalType.GoToilet:
-					TryMoveToService(NPCServiceType.Toilet);
-					break;
-				case NPCGoalType.GoWork:
-					TryMoveToService(NPCServiceType.Work);
-					break;
-				case NPCGoalType.GoHome:
-					TryMoveToService(NPCServiceType.Sleep);
-					break;
-				case NPCGoalType.Flee:
-				case NPCGoalType.Wander:
-				default:
-					DoWander();
-					break;
-			}
-		}
+				if (despawnPoints == null || despawnPoints.Length == 0)
+				{
+					return;
+				}
 
-		private void TryMoveToService(NPCServiceType service)
-		{
-			if (m_registry == null)
-			{
-				DoWander();
-				return;
+				float bestDistance = float.MaxValue;
+				Transform bestPoint = null;
+
+				for (int i = 0; i < despawnPoints.Length; i++)
+				{
+					NPCDespawnPoint point = despawnPoints[i];
+					if (point == null)
+					{
+						continue;
+					}
+
+					float sqrDistance = (point.transform.position - transform.position).sqrMagnitude;
+					if (sqrDistance < bestDistance)
+					{
+						bestDistance = sqrDistance;
+						bestPoint = point.transform;
+					}
+				}
+
+				if (bestPoint != null)
+				{
+					m_hasTarget = true;
+					m_currentDestination = bestPoint.position;
+					m_movement.MoveTo(bestPoint.position);
+				}
 			}
 
-			BusinessWorldRuntime business = m_registry.FindNearestBusiness(transform.position, service);
-			if (business == null || business.EntrancePoint == null)
+			private void TickBrain()
 			{
-				DoWander();
-				return;
+				NPCGoalType resolvedGoal = m_resolver.ResolveGoal(m_needs);
+
+				if (CanSwitchGoal(resolvedGoal))
+				{
+					SetGoal(resolvedGoal);
+				}
+
+				ExecuteCurrentGoal();
 			}
 
-			m_movement.MoveTo(business.EntrancePoint.position);
-			if (m_movement.HasReachedDestination())
+			private bool CanSwitchGoal(NPCGoalType newGoal)
+			{
+				if (newGoal == m_currentGoal)
+				{
+					return false;
+				}
+
+				if (newGoal == NPCGoalType.Flee)
+				{
+					return true;
+				}
+
+				return m_goalTimer >= Mathf.Max(1f, minimumGoalDurationSeconds);
+			}
+
+			private void SetGoal(NPCGoalType newGoal)
+			{
+				m_previousGoal = m_currentGoal;
+				m_currentGoal = newGoal;
+				m_goalTimer = 0f;
+
+				m_currentTargetBusiness = null;
+				m_currentTargetBusinessName = null;
+				m_hasTarget = false;
+			}
+
+			private void ExecuteCurrentGoal()
+			{
+				switch (m_currentGoal)
+				{
+					case NPCGoalType.GoEat:
+						TryMoveToService(NPCServiceType.Food);
+						break;
+
+					case NPCGoalType.GoDrink:
+						TryMoveToService(NPCServiceType.Drink);
+						break;
+
+					case NPCGoalType.GoToilet:
+						TryMoveToService(NPCServiceType.Toilet);
+						break;
+
+					case NPCGoalType.GoWork:
+						TryMoveToService(NPCServiceType.Work);
+						break;
+
+					case NPCGoalType.GoHome:
+						TryMoveToService(NPCServiceType.Sleep);
+						break;
+
+					case NPCGoalType.Flee:
+					case NPCGoalType.Wander:
+					default:
+						DoWander();
+						break;
+				}
+			}
+
+			private void TryMoveToService(NPCServiceType service)
+			{
+				if (m_registry == null)
+				{
+					return;
+				}
+
+				if (m_currentTargetBusiness == null)
+				{
+					m_currentTargetBusiness = m_registry.FindNearestBusiness(transform.position, service);
+
+					if (m_currentTargetBusiness == null || m_currentTargetBusiness.EntrancePoint == null)
+					{
+						DoWander();
+						return;
+					}
+
+					m_currentTargetBusinessName = m_currentTargetBusiness.BusinessTypeId;
+					m_currentDestination = m_currentTargetBusiness.EntrancePoint.position;
+					m_hasTarget = true;
+					m_movement.MoveTo(m_currentDestination);
+				}
+			}
+
+			private void BeginInteraction()
 			{
 				m_waitingAtTarget = true;
 				m_idleTimer = 0f;
-				switch (service)
+				m_movement.Stop();
+			}
+
+			private void CompleteCurrentInteraction()
+			{
+				m_waitingAtTarget = false;
+				m_idleTimer = 0f;
+				m_hasTarget = false;
+
+				switch (m_currentGoal)
 				{
-					case NPCServiceType.Food: m_needs.ConsumeNeed(NPCNeedType.Hunger, 20f); break;
-					case NPCServiceType.Drink: m_needs.ConsumeNeed(NPCNeedType.Thirst, 20f); break;
-					case NPCServiceType.Toilet: m_needs.ConsumeNeed(NPCNeedType.Toilet, 35f); break;
-					case NPCServiceType.Work: m_needs.ConsumeNeed(NPCNeedType.Work, 20f); break;
-					case NPCServiceType.Sleep: m_needs.ConsumeNeed(NPCNeedType.Energy, 15f); break;
-					case NPCServiceType.Fun: m_needs.ConsumeNeed(NPCNeedType.Fun, 20f); break;
+					case NPCGoalType.GoEat:
+						m_needs.ConsumeNeed(NPCNeedType.Hunger, 100f);
+						break;
+
+					case NPCGoalType.GoDrink:
+						m_needs.ConsumeNeed(NPCNeedType.Thirst, 20f);
+						break;
+
+					case NPCGoalType.GoToilet:
+						m_needs.ConsumeNeed(NPCNeedType.Toilet, 35f);
+						break;
+
+					case NPCGoalType.GoWork:
+						m_needs.ConsumeNeed(NPCNeedType.Work, 20f);
+						break;
+
+					case NPCGoalType.GoHome:
+						m_needs.ConsumeNeed(NPCNeedType.Energy, 15f);
+						break;
+				}
+
+				m_currentTargetBusiness = null;
+				m_currentTargetBusinessName = null;
+			}
+
+			private void DoWander()
+			{
+				if (m_hasTarget)
+				{
+					return;
+				}
+
+				if (!m_movement.HasReachedDestination())
+				{
+					return;
+				}
+
+				if (m_movement.TryGetRandomNavMeshPoint(transform.position, wanderRadius, out Vector3 point))
+				{
+					m_hasTarget = true;
+					m_currentDestination = point;
+					m_currentTargetBusinessName = null;
+					m_movement.MoveTo(point);
 				}
 			}
 		}
-
-		private void DoWander()
-		{
-			if (m_waitingAtTarget)
-			{
-				return;
-			}
-
-			if (!m_movement.HasReachedDestination())
-			{
-				return;
-			}
-
-			if (m_movement.TryGetRandomNavMeshPoint(transform.position, wanderRadius, out Vector3 point))
-			{
-				m_movement.MoveTo(point);
-			}
-		}
 	}
-}

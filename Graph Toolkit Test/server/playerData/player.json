@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 200,
+  "money": 50,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -24,22 +24,22 @@
       "instanceId": "biz_1779185601679_1131",
       "lotId": "lot_market_01",
       "businessTypeId": "pizza_shop",
-      "isOpen": false,
+      "isOpen": true,
       "storageStock": 0,
       "shelfStock": 0,
-      "autoDeliveryPerDay": 0,
-      "markupPercent": 0,
-      "lastDayRevenue": 0,
-      "lastDayExpenses": 0,
-      "lastDayProfit": 0,
-      "totalRevenue": 0,
-      "totalExpenses": 0,
-      "totalProfit": 0,
-      "storageItemId": null,
-      "cashDeskItemId": null,
-      "shelfItemId": null,
-      "hiredCashierContactId": null,
-      "hiredLogistContactId": null
+      "autoDeliveryPerDay": 91,
+      "markupPercent": 19,
+      "lastDayRevenue": 1729,
+      "lastDayExpenses": 1584,
+      "lastDayProfit": 145,
+      "totalRevenue": 5187,
+      "totalExpenses": 7972,
+      "totalProfit": -2785,
+      "storageItemId": "storage_basic",
+      "cashDeskItemId": "cashdesk_basic",
+      "shelfItemId": "shelf_basic",
+      "hiredCashierContactId": "cashier_1",
+      "hiredLogistContactId": "logist_1"
     },
     {
       "instanceId": "biz_1779185603775_1157",
@@ -51,13 +51,15 @@
       "autoDeliveryPerDay": 0,
       "markupPercent": 0,
       "lastDayRevenue": 0,
-      "lastDayExpenses": 0,
-      "lastDayProfit": 0,
+      "lastDayExpenses": 500,
+      "lastDayProfit": -500,
       "totalRevenue": 0,
-      "totalExpenses": 0,
-      "totalProfit": 0
+      "totalExpenses": 3000,
+      "totalProfit": -3000
     }
   ],
-  "knownContacts": [],
+  "knownContacts": [
+    "merch_1"
+  ],
   "items": []
 }
