@@ -11,10 +11,13 @@ namespace Prototype.Business.NPC.Workers
 	{
 		[SerializeField] private GameObject merchandiserPrefab;
 		[SerializeField] private GameObject cashierPrefab;
+		[SerializeField] private GameObject logistPrefab;
 		[SerializeField] private float refreshSeconds = 1f;
 
 		private readonly Dictionary<string, WorkerNPCBrain> m_merchByLotId = new();
 		private readonly Dictionary<string, WorkerNPCBrain> m_cashierByLotId = new();
+		private readonly Dictionary<string, WorkerNPCBrain> m_logistByLotId = new();
+		private readonly Dictionary<string, int> m_logistSpawnedDayByLotId = new();
 		private GameBootstrap m_bootstrap;
 		private float m_timer;
 
@@ -25,7 +28,7 @@ namespace Prototype.Business.NPC.Workers
 
 		private void Update()
 		{
-			m_timer += Time.deltaTime;
+			m_timer += UnityEngine.Time.deltaTime;
 			if (m_timer < Mathf.Max(0.2f, refreshSeconds))
 			{
 				return;
@@ -60,14 +63,25 @@ namespace Prototype.Business.NPC.Workers
 
 				bool needMerch = !string.IsNullOrWhiteSpace(business.hiredMerchContactId) && business.isOpen;
 				bool needCashier = !string.IsNullOrWhiteSpace(business.hiredCashierContactId) && business.isOpen;
+				int currentDay = Mathf.Max(0, business.dayIndex);
+				int lastSpawnedDay = -1;
+				m_logistSpawnedDayByLotId.TryGetValue(world.lotId, out lastSpawnedDay);
+				bool needLogist = !string.IsNullOrWhiteSpace(business.hiredLogistContactId) &&
+				                  business.isOpen &&
+				                  currentDay > lastSpawnedDay;
 				EnsureWorker(world, WorkerNPCType.Merchandiser, needMerch);
 				EnsureWorker(world, WorkerNPCType.Cashier, needCashier);
+				EnsureWorker(world, WorkerNPCType.Logist, needLogist);
 			}
 		}
 
 		private void EnsureWorker(BusinessWorldRuntime world, WorkerNPCType type, bool need)
 		{
-			Dictionary<string, WorkerNPCBrain> map = type == WorkerNPCType.Merchandiser ? m_merchByLotId : m_cashierByLotId;
+			Dictionary<string, WorkerNPCBrain> map = type == WorkerNPCType.Merchandiser
+				? m_merchByLotId
+				: type == WorkerNPCType.Cashier
+					? m_cashierByLotId
+					: m_logistByLotId;
 			map.TryGetValue(world.lotId, out WorkerNPCBrain existing);
 
 			if (!need)
@@ -85,7 +99,11 @@ namespace Prototype.Business.NPC.Workers
 				return;
 			}
 
-			GameObject prefab = type == WorkerNPCType.Merchandiser ? merchandiserPrefab : cashierPrefab;
+			GameObject prefab = type == WorkerNPCType.Merchandiser
+				? merchandiserPrefab
+				: type == WorkerNPCType.Cashier
+					? cashierPrefab
+					: logistPrefab;
 			if (prefab == null)
 			{
 				return;
@@ -115,6 +133,11 @@ namespace Prototype.Business.NPC.Workers
 
 			brain.Initialize(world, m_bootstrap, type);
 			map[world.lotId] = brain;
+			if (type == WorkerNPCType.Logist)
+			{
+				BusinessInstanceSnapshot business = world.GetBusiness();
+				m_logistSpawnedDayByLotId[world.lotId] = business != null ? Mathf.Max(0, business.dayIndex) : 0;
+			}
 		}
 
 		private Vector3 ResolveSpawnPosition(BusinessWorldRuntime world)
@@ -198,6 +221,13 @@ namespace Prototype.Business.NPC.Workers
 				Destroy(cashier.gameObject, 1.5f);
 			}
 			m_cashierByLotId.Remove(lotId);
+
+			if (m_logistByLotId.TryGetValue(lotId, out WorkerNPCBrain logist) && logist != null)
+			{
+				Destroy(logist.gameObject, 1.5f);
+			}
+			m_logistByLotId.Remove(lotId);
+			m_logistSpawnedDayByLotId.Remove(lotId);
 		}
 	}
 }

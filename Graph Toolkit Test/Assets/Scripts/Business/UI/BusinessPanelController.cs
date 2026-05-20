@@ -6,7 +6,7 @@ using Prototype.Business.Bootstrap;
 using Prototype.Business.Data;
 using Prototype.Business.Runtime;
 using Prototype.Business.Services;
-using Prototype.Business.Simulation;
+using Prototype.Business.Time;
 using Sample.Runtime.GameData;
 using TMPro;
 using UnityEngine;
@@ -20,11 +20,6 @@ namespace Prototype.Business.UI
 		public BusinessDetailsView detailsView;
 		public TMP_Text statusText;
 
-		[Header("Day Simulation")]
-		[Min(1f)]
-		public float secondsPerBusinessDay = 60f;
-		public bool autoSimulateServerBusinessDay;
-
 		[Header("UI Refresh")]
 		[Min(0.1f)]
 		public float uiRefreshIntervalSeconds = 1f;
@@ -34,28 +29,20 @@ namespace Prototype.Business.UI
 		private BusinessDefinitionsRepository m_definitions;
 		private GameDataRepository m_gameData;
 		private BusinessRuntimeService m_runtimeService;
-		private BusinessSimulationService m_simulationService;
 		private BusinessStateSyncService m_stateSync;
 		private PlayerStateSync m_playerStateSync;
 		private BusinessCalculationService m_businessCalculation;
 		private string m_selectedLotId;
 		private ProfileSyncService m_profileSync;
-		private float m_businessDayTimer;
+		private BusinessDaySystem m_daySystem;
 		private float m_uiRefreshTimer;
-		private bool m_daySimulationInProgress;
 
 		private void OnEnable()
 		{
 			EnsureDependencies();
 			Subscribe();
-			m_businessDayTimer = 0f;
 			m_uiRefreshTimer = 0f;
-			m_daySimulationInProgress = false;
 			m_playerStateSync?.Refresh();
-			if (m_simulationService != null)
-			{
-				m_simulationService.SecondsPerGameDay = Mathf.Max(1f, secondsPerBusinessDay);
-			}
 			Refresh();
 			LogPanelSnapshot("OnEnable");
 		}
@@ -63,46 +50,24 @@ namespace Prototype.Business.UI
 		private void OnDisable()
 		{
 			Unsubscribe();
-			m_businessDayTimer = 0f;
 			m_uiRefreshTimer = 0f;
-			m_daySimulationInProgress = false;
 		}
 
 		private void Update()
 		{
-			if (m_simulationService != null)
-			{
-				m_simulationService.SecondsPerGameDay = Mathf.Max(1f, secondsPerBusinessDay);
-			}
-
-			m_uiRefreshTimer += Time.deltaTime;
+			m_uiRefreshTimer += UnityEngine.Time.deltaTime;
 			if (m_uiRefreshTimer >= Mathf.Max(0.1f, uiRefreshIntervalSeconds))
 			{
 				m_uiRefreshTimer = 0f;
 				RefreshSelected();
 			}
 
-			if (!autoSimulateServerBusinessDay || m_daySimulationInProgress || m_actionFacade == null || m_runtimeService == null)
-			{
-				return;
-			}
-
-			float daySeconds = Mathf.Max(1f, secondsPerBusinessDay);
-			m_businessDayTimer += Time.deltaTime;
-			if (m_businessDayTimer < daySeconds)
-			{
-				return;
-			}
-
-			m_businessDayTimer = 0f;
-			_ = SimulateBusinessDayAsync();
 		}
 
 		private void EnsureDependencies()
 		{
 			ProfileSyncService previousProfileSync = m_profileSync;
 			BusinessStateSyncService previousStateSync = m_stateSync;
-			BusinessSimulationService previousSimulation = m_simulationService;
 
 			if (bootstrap == null)
 			{
@@ -117,14 +82,15 @@ namespace Prototype.Business.UI
 				m_playerStateSync = bootstrap.PlayerStateSync;
 				m_definitions = bootstrap.BusinessDefinitionsRepository;
 				m_gameData = bootstrap.GameDataRepository;
-				m_businessCalculation = new BusinessCalculationService(m_definitions, m_gameData);
-				m_simulationService = bootstrap.BusinessSimulationService;
-				m_profileSync = bootstrap.ProfileSyncService;
+					m_businessCalculation = new BusinessCalculationService(m_definitions, m_gameData);
+					m_profileSync = bootstrap.ProfileSyncService;
+					m_daySystem = bootstrap.BusinessDaySystem;
 			}
 			else
 			{
-				m_profileSync = null;
-				m_playerStateSync = null;
+					m_profileSync = null;
+					m_playerStateSync = null;
+					m_daySystem = null;
 			}
 
 			if (m_managementController == null)
@@ -169,19 +135,6 @@ namespace Prototype.Business.UI
 				}
 			}
 
-			if (previousSimulation != m_simulationService)
-			{
-				if (previousSimulation != null)
-				{
-					previousSimulation.simulationUpdated -= OnSimulationUpdated;
-				}
-
-				if (m_simulationService != null)
-				{
-					m_simulationService.simulationUpdated -= OnSimulationUpdated;
-					m_simulationService.simulationUpdated += OnSimulationUpdated;
-				}
-			}
 		}
 
 		private void Subscribe()
@@ -201,15 +154,16 @@ namespace Prototype.Business.UI
 				m_profileSync.synced += OnProfileSynced;
 			}
 
-			if (m_stateSync != null)
-			{
-				m_stateSync.stateChanged += OnStateChanged;
-			}
+				if (m_stateSync != null)
+				{
+					m_stateSync.stateChanged += OnStateChanged;
+				}
 
-			if (m_simulationService != null)
-			{
-				m_simulationService.simulationUpdated += OnSimulationUpdated;
-			}
+				if (m_daySystem != null)
+				{
+					m_daySystem.DayApplied += OnBusinessDayApplied;
+				}
+
 		}
 
 		private void Unsubscribe()
@@ -229,15 +183,15 @@ namespace Prototype.Business.UI
 				m_profileSync.synced -= OnProfileSynced;
 			}
 
-			if (m_stateSync != null)
-			{
-				m_stateSync.stateChanged -= OnStateChanged;
-			}
+				if (m_stateSync != null)
+				{
+					m_stateSync.stateChanged -= OnStateChanged;
+				}
 
-			if (m_simulationService != null)
-			{
-				m_simulationService.simulationUpdated -= OnSimulationUpdated;
-			}
+				if (m_daySystem != null)
+				{
+					m_daySystem.DayApplied -= OnBusinessDayApplied;
+				}
 
 			m_managementController?.Dispose();
 		}
@@ -256,7 +210,7 @@ namespace Prototype.Business.UI
 			LogPanelSnapshot("OnStateChanged");
 		}
 
-		private void OnSimulationUpdated()
+		private void OnBusinessDayApplied()
 		{
 			RefreshSelected();
 		}
@@ -351,16 +305,11 @@ namespace Prototype.Business.UI
 
 			PopulateDropdowns(business, business != null ? business.lotId : m_selectedLotId);
 
-			BusinessRuntimeSimulationState simulation =
-				m_simulationService != null && !string.IsNullOrWhiteSpace(m_selectedLotId)
-					? m_simulationService.GetStateByLotId(m_selectedLotId)
-					: null;
 			int storageCapacity = m_businessCalculation != null ? m_businessCalculation.GetStorageCapacity(business) : 0;
 			float expensesPerDay = CalculateExpensesPerDay(business);
 
 			detailsView.SetBusiness(
 				business,
-				simulation,
 				storageCapacity,
 				expensesPerDay,
 				business != null ? Mathf.Max(0, business.autoDeliveryPerDay) : 0,
@@ -410,32 +359,6 @@ namespace Prototype.Business.UI
 			if (statusText != null)
 			{
 				statusText.text = message;
-			}
-		}
-
-		private async Task SimulateBusinessDayAsync()
-		{
-			if (m_daySimulationInProgress || m_actionFacade == null || m_runtimeService == null)
-			{
-				return;
-			}
-
-			m_daySimulationInProgress = true;
-			try
-			{
-				List<BusinessInstanceSnapshot> businesses = m_runtimeService
-					.GetBusinesses()
-					.Where(b => b != null && !string.IsNullOrWhiteSpace(b.lotId))
-					.ToList();
-
-				foreach (BusinessInstanceSnapshot business in businesses)
-				{
-					await m_actionFacade.SimulateBusinessDay(business.lotId);
-				}
-			}
-			finally
-			{
-				m_daySimulationInProgress = false;
 			}
 		}
 

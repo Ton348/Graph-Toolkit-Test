@@ -26,6 +26,8 @@ namespace Prototype.Business.NPC.Workers
 		private float m_lastTransferTime;
 		private bool m_registeredCashier;
 		private bool m_stockSyncInProgress;
+		private bool m_deliveryApplied;
+		private Transform m_currentTargetTransform;
 
 		public WorkerNPCType WorkerType => workerType;
 		public WorkerNPCState CurrentState => m_state;
@@ -72,18 +74,36 @@ namespace Prototype.Business.NPC.Workers
 				case WorkerNPCType.Cashier:
 					UpdateCashier();
 					break;
+				case WorkerNPCType.Logist:
+					UpdateLogist();
+					break;
 			}
 		}
 
-		private void UpdateMerchandiser()
+		private void UpdateLogist()
 		{
-			if (m_state == WorkerNPCState.MovingToEntrance && m_movement.HasReached())
+			if (m_state == WorkerNPCState.MovingToEntrance && HasReachedTarget())
 			{
 				MoveToStorage();
 				return;
 			}
 
-			if (m_state == WorkerNPCState.MovingToStorage && m_movement.HasReached())
+			if (m_state == WorkerNPCState.MovingToStorage && HasReachedTarget())
+			{
+				ApplyDailyDelivery();
+				BeginDespawn();
+			}
+		}
+
+		private void UpdateMerchandiser()
+		{
+			if (m_state == WorkerNPCState.MovingToEntrance && HasReachedTarget())
+			{
+				MoveToStorage();
+				return;
+			}
+
+			if (m_state == WorkerNPCState.MovingToStorage && HasReachedTarget())
 			{
 				TakeFromStorage();
 				if (m_carrying > 0)
@@ -100,7 +120,7 @@ namespace Prototype.Business.NPC.Workers
 
 			if (m_state == WorkerNPCState.WaitingStock)
 			{
-				m_timer += Time.deltaTime;
+				m_timer += UnityEngine.Time.deltaTime;
 				if (m_timer >= Mathf.Max(0.1f, waitAtStockSeconds))
 				{
 					m_timer = 0f;
@@ -109,7 +129,7 @@ namespace Prototype.Business.NPC.Workers
 				return;
 			}
 
-			if (m_state == WorkerNPCState.MovingToShelves && m_movement.HasReached())
+			if (m_state == WorkerNPCState.MovingToShelves && HasReachedTarget())
 			{
 				RestockShelves();
 				MoveToStorage();
@@ -124,13 +144,13 @@ namespace Prototype.Business.NPC.Workers
 				m_registeredCashier = true;
 			}
 
-			if (m_state == WorkerNPCState.MovingToEntrance && m_movement.HasReached())
+			if (m_state == WorkerNPCState.MovingToEntrance && HasReachedTarget())
 			{
 				MoveToCashRegister();
 				return;
 			}
 
-			if (m_state == WorkerNPCState.MovingToCashRegister && m_movement.HasReached())
+			if (m_state == WorkerNPCState.MovingToCashRegister && HasReachedTarget())
 			{
 				m_state = WorkerNPCState.WaitingCustomer;
 				m_movement.Stop();
@@ -150,12 +170,12 @@ namespace Prototype.Business.NPC.Workers
 			}
 
 			float minInterval = Mathf.Max(0.1f, m_checkoutSecondsPerItem);
-			if (Time.time - m_lastTransferTime < minInterval)
+			if (UnityEngine.Time.time - m_lastTransferTime < minInterval)
 			{
 				return false;
 			}
 
-			m_lastTransferTime = Time.time;
+			m_lastTransferTime = UnityEngine.Time.time;
 			m_state = WorkerNPCState.ServingCustomer;
 			return true;
 		}
@@ -206,6 +226,16 @@ namespace Prototype.Business.NPC.Workers
 			if (add > 0)
 			{
 				business.shelfStock += add;
+			}
+
+			int notPlaced = Mathf.Max(0, m_carrying - add);
+			if (notPlaced > 0)
+			{
+				business.storageStock += notPlaced;
+			}
+
+			if (add > 0 || notPlaced > 0)
+			{
 				SyncBusinessStockAsync();
 			}
 
@@ -253,6 +283,7 @@ namespace Prototype.Business.NPC.Workers
 		{
 			Vector3 point = m_world.EntrancePoint != null ? m_world.EntrancePoint.position : m_world.transform.position;
 			m_movement.MoveTo(point);
+			m_currentTargetTransform = m_world.EntrancePoint;
 			m_state = WorkerNPCState.MovingToEntrance;
 		}
 
@@ -265,6 +296,7 @@ namespace Prototype.Business.NPC.Workers
 			}
 
 			m_movement.MoveTo(t.position);
+			m_currentTargetTransform = t;
 			m_state = WorkerNPCState.MovingToStorage;
 		}
 
@@ -277,6 +309,7 @@ namespace Prototype.Business.NPC.Workers
 			}
 
 			m_movement.MoveTo(t.position);
+			m_currentTargetTransform = t;
 			m_state = WorkerNPCState.MovingToShelves;
 		}
 
@@ -289,7 +322,26 @@ namespace Prototype.Business.NPC.Workers
 			}
 
 			m_movement.MoveTo(t.position);
+			m_currentTargetTransform = t;
 			m_state = WorkerNPCState.MovingToCashRegister;
+		}
+
+		private bool HasReachedTarget()
+		{
+			if (m_currentTargetTransform != null)
+			{
+				Collider c = m_currentTargetTransform.GetComponent<Collider>();
+				if (c != null)
+				{
+					Vector3 closest = c.ClosestPoint(transform.position);
+					if ((closest - transform.position).sqrMagnitude <= 0.01f)
+					{
+						return true;
+					}
+				}
+			}
+
+			return m_movement.HasReached();
 		}
 
 		private bool ShouldDespawn()
@@ -304,7 +356,10 @@ namespace Prototype.Business.NPC.Workers
 			{
 				return string.IsNullOrWhiteSpace(business.hiredMerchContactId) || m_world.storagePoint == null || m_world.shelvesPoint == null;
 			}
-
+			if (workerType == WorkerNPCType.Logist)
+			{
+				return string.IsNullOrWhiteSpace(business.hiredLogistContactId) || m_world.storagePoint == null || m_deliveryApplied;
+			}
 			return string.IsNullOrWhiteSpace(business.hiredCashierContactId) || m_world.cashierPoint == null;
 		}
 
@@ -378,6 +433,32 @@ namespace Prototype.Business.NPC.Workers
 					m_checkoutSecondsPerItem = staff.checkoutSecondsPerItem;
 				}
 			}
+		}
+
+		private async void ApplyDailyDelivery()
+		{
+			if (m_deliveryApplied || m_world == null || m_bootstrap == null || m_bootstrap.BusinessActionFacade == null)
+			{
+				return;
+			}
+
+			BusinessInstanceSnapshot business = m_world.GetBusiness();
+			if (business == null || string.IsNullOrWhiteSpace(business.lotId))
+			{
+				return;
+			}
+
+			int ordered = Mathf.Max(0, business.autoDeliveryPerDay);
+			int limit = m_throughputPerHour > 0 ? m_throughputPerHour * 24 : 0;
+			int amount = limit > 0 ? Mathf.Min(ordered, limit) : 0;
+			if (amount <= 0)
+			{
+				m_deliveryApplied = true;
+				return;
+			}
+
+			m_deliveryApplied = true;
+			await m_bootstrap.BusinessActionFacade.AddBusinessStock(business.lotId, amount);
 		}
 
 		private void OnDestroy()

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Prototype.Business.NPC.AI;
+using Prototype.Business.Time;
 using UnityEngine;
 
 namespace Prototype.Business.NPC.Spawning
@@ -18,6 +19,7 @@ namespace Prototype.Business.NPC.Spawning
 		private NPCDespawnPoint[] m_despawnPoints;
 		private Camera m_mainCamera;
 		private float m_timer;
+		private bool m_canSpawnByPhase = true;
 
 		private void Awake()
 		{
@@ -26,10 +28,32 @@ namespace Prototype.Business.NPC.Spawning
 			m_despawnPoints = FindObjectsByType<NPCDespawnPoint>(FindObjectsSortMode.None);
 		}
 
+		private void OnEnable()
+		{
+			if (WorldTimeSystem.Instance != null)
+			{
+				WorldTimeSystem.Instance.OnPhaseChanged += OnPhaseChanged;
+				m_canSpawnByPhase = !WorldTimeSystem.Instance.IsNight();
+			}
+		}
+
+		private void OnDisable()
+		{
+			if (WorldTimeSystem.Instance != null)
+			{
+				WorldTimeSystem.Instance.OnPhaseChanged -= OnPhaseChanged;
+			}
+		}
+
 		private void Update()
 		{
 			CleanupDead();
-			m_timer += Time.deltaTime;
+			if (!m_canSpawnByPhase)
+			{
+				return;
+			}
+
+			m_timer += UnityEngine.Time.deltaTime;
 			if (m_timer >= Mathf.Max(0.5f, spawnIntervalSeconds))
 			{
 				m_timer = 0f;
@@ -99,6 +123,11 @@ namespace Prototype.Business.NPC.Spawning
 					m_alive.RemoveAt(i);
 				}
 			}
+		}
+
+		private void OnPhaseChanged(DayPhase phase)
+		{
+			m_canSpawnByPhase = phase != DayPhase.Night;
 		}
 	}
 }

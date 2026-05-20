@@ -1,16 +1,10 @@
 {
   "businessTypeId": "",
   "isOpen": false,
-  "rentPerDay": 0,
-  "storageCapacity": 0,
-  "shelfCapacity": 0,
   "storageStock": 0,
   "shelfStock": 0,
   "markupPercent": 0,
-  "lastDayRevenue": 0,
-  "lastDayExpenses": 0,
-  "lastDayProfit": 0,
-  "totalRevenue": 0,
-  "totalExpenses": 0,
-  "totalProfit": 0
+  "dayRevenue": 0,
+  "dayExpenses": 0,
+  "profit": 0
 }

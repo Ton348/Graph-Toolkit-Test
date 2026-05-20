@@ -17,20 +17,17 @@ function normalizeBusinessInstance(business) {
     shelfStock: Number.isFinite(business?.shelfStock) ? business.shelfStock : 0,
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
-    lastDayRevenue: Number.isFinite(business?.lastDayRevenue) ? business.lastDayRevenue : 0,
-    lastDayExpenses: Number.isFinite(business?.lastDayExpenses) ? business.lastDayExpenses : 0,
-    lastDayProfit: Number.isFinite(business?.lastDayProfit) ? business.lastDayProfit : 0,
-    totalRevenue: Number.isFinite(business?.totalRevenue) ? business.totalRevenue : 0,
-    totalExpenses: Number.isFinite(business?.totalExpenses) ? business.totalExpenses : 0,
-    totalProfit: Number.isFinite(business?.totalProfit) ? business.totalProfit : 0
+    dayRevenue: Number.isFinite(business?.dayRevenue) ? business.dayRevenue : 0,
+    dayExpenses: Number.isFinite(business?.dayExpenses) ? business.dayExpenses : 0,
+    profit: Number.isFinite(business?.profit) ? business.profit : 0
   };
 
   if (normalized.storageStock < 0) normalized.storageStock = 0;
   if (normalized.shelfStock < 0) normalized.shelfStock = 0;
   if (normalized.autoDeliveryPerDay < 0) normalized.autoDeliveryPerDay = 0;
   if (normalized.markupPercent < 0) normalized.markupPercent = 0;
-  if (normalized.lastDayRevenue < 0) normalized.lastDayRevenue = 0;
-  if (normalized.lastDayExpenses < 0) normalized.lastDayExpenses = 0;
+  if (normalized.dayRevenue < 0) normalized.dayRevenue = 0;
+  if (normalized.dayExpenses < 0) normalized.dayExpenses = 0;
 
   if (Object.prototype.hasOwnProperty.call(business || {}, 'storageItemId')) {
     normalized.storageItemId = normalizeOptionalId(business?.storageItemId);

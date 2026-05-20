@@ -39,7 +39,7 @@ namespace Prototype.Business.NPC.Workers
 				}
 			}
 
-			m_timer += Time.deltaTime;
+			m_timer += UnityEngine.Time.deltaTime;
 			if (m_timer < Mathf.Max(0.05f, updateSeconds))
 			{
 				return;

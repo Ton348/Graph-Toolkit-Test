@@ -5,7 +5,6 @@ namespace Prototype.Business.Data
 	public sealed class BusinessDefinitionsRepository
 	{
 		private readonly Dictionary<string, BusinessTypeDefinitionData> m_businessTypes = new();
-		private readonly List<PriceDemandRangeDefinitionData> m_pizzeriaDemandRanges = new();
 		private readonly Dictionary<string, StaffContactDefinitionData> m_staffContacts = new();
 		private readonly Dictionary<string, StaffRoleDefinitionData> m_staffRoles = new();
 		private readonly Dictionary<string, SupplierDefinitionData> m_suppliers = new();
@@ -19,7 +18,6 @@ namespace Prototype.Business.Data
 			StaffRoleDatabaseData staffRoleDb,
 			StaffContactDatabaseData staffContactDb,
 			BusinessPeopleDatabaseData peopleDb,
-			PriceDemandDatabaseData pizzeriaDemandDb,
 			TraderDatabaseData traderDb,
 			TraderItemDatabaseData traderItemDb)
 		{
@@ -74,17 +72,6 @@ namespace Prototype.Business.Data
 					if (item != null && !string.IsNullOrWhiteSpace(item.contactId) && !m_people.ContainsKey(item.contactId))
 					{
 						m_people[item.contactId] = item;
-					}
-				}
-			}
-
-			if (pizzeriaDemandDb?.ranges != null)
-			{
-				foreach (PriceDemandRangeDefinitionData item in pizzeriaDemandDb.ranges)
-				{
-					if (item != null)
-					{
-						m_pizzeriaDemandRanges.Add(item);
 					}
 				}
 			}
@@ -147,33 +134,6 @@ namespace Prototype.Business.Data
 
 			m_staffRoles.TryGetValue(id, out StaffRoleDefinitionData value);
 			return value;
-		}
-
-		public int GetDailyDemandForPrice(string businessTypeId, int price)
-		{
-			if (string.IsNullOrWhiteSpace(businessTypeId))
-			{
-				return 0;
-			}
-
-			if (businessTypeId == "grocery_store" || businessTypeId == "pizza_shop")
-			{
-				for (int i = 0; i < m_pizzeriaDemandRanges.Count; i++)
-				{
-					PriceDemandRangeDefinitionData range = m_pizzeriaDemandRanges[i];
-					if (range == null)
-					{
-						continue;
-					}
-
-					if (price >= range.minPrice && price <= range.maxPrice)
-					{
-						return range.dailyDemand;
-					}
-				}
-			}
-
-			return 0;
 		}
 
 		public StaffContactDefinitionData GetStaffContact(string id)

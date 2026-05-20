@@ -479,6 +479,29 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TryConsumeNpcServiceAsync(string lotId, string serviceId, int requestedAmount)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log(
+					$"[RemoteGameServer] action=consume_npc_service lotId='{lotId}' serviceId='{serviceId}' requestedAmount={requestedAmount}");
+			}
+
+			var request = new RemoteConsumeNpcServiceRequest
+			{
+				action = "consume_npc_service",
+				playerId = m_playerId,
+				data = new RemoteConsumeNpcServiceData
+				{
+					lotId = lotId,
+					serviceId = serviceId,
+					requestedAmount = requestedAmount
+				}
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		Task<ServerActionResult> IGameServer.TryCollectBusinessProfitAsync(string lotId)
 		{
 			return TryCollectBusinessProfitAsync(lotId);
@@ -975,12 +998,9 @@ namespace Prototype.Business.Services
 						shelfItemId = business.shelfItemId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
-						lastDayRevenue = business.lastDayRevenue,
-						lastDayExpenses = business.lastDayExpenses,
-						lastDayProfit = business.lastDayProfit,
-						totalRevenue = business.totalRevenue,
-						totalExpenses = business.totalExpenses,
-						totalProfit = business.totalProfit,
+						dayRevenue = business.dayRevenue,
+						dayExpenses = business.dayExpenses,
+						profit = business.profit,
 						hiredCashierContactId = business.hiredCashierContactId,
 						hiredMerchContactId = business.hiredMerchContactId,
 						hiredLogistContactId = business.hiredLogistContactId
@@ -1334,6 +1354,22 @@ namespace Prototype.Business.Services
 		}
 
 		[Serializable]
+		private class RemoteConsumeNpcServiceRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteConsumeNpcServiceData data;
+		}
+
+		[Serializable]
+		private class RemoteConsumeNpcServiceData
+		{
+			public string lotId;
+			public string serviceId;
+			public int requestedAmount;
+		}
+
+		[Serializable]
 		private class RemoteResetBusinessesRequest
 		{
 			public string action;
@@ -1440,12 +1476,9 @@ namespace Prototype.Business.Services
 			public string shelfItemId;
 			public int autoDeliveryPerDay;
 			public int markupPercent;
-			public int lastDayRevenue;
-			public int lastDayExpenses;
-			public int lastDayProfit;
-			public int totalRevenue;
-			public int totalExpenses;
-			public int totalProfit;
+			public int dayRevenue;
+			public int dayExpenses;
+			public int profit;
 			public string hiredCashierContactId;
 			public string hiredMerchContactId;
 			public string hiredLogistContactId;

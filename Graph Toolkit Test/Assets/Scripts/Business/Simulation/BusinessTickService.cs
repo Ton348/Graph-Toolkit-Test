@@ -52,26 +52,26 @@ namespace Prototype.Business.Simulation
 				storageStock -= toShelf;
 			}
 
-			int revenue = 0;
-			int expenses = m_calculation.GetExpensesPerDay(instance);
+			int dayExpenses = 0;
 			SupplierDefinitionData supplier = m_definitions?.GetSupplier(instance.hiredLogistContactId);
 			if (supplier != null)
 			{
 				int unitBuyPrice = Mathf.Max(0, supplier.unitBuyPrice);
 				int baseDeliveryCost = m_calculation.GetOrderedDeliveryPerDay(instance) * unitBuyPrice;
 				int actualDeliveryCost = orderedByLogist * unitBuyPrice;
-				expenses += actualDeliveryCost - baseDeliveryCost;
+				dayExpenses = actualDeliveryCost - baseDeliveryCost;
 			}
-			int profit = revenue - expenses;
+			if (dayExpenses > 0)
+			{
+				instance.dayExpenses += dayExpenses;
+				instance.profit -= dayExpenses;
+			}
 
 			instance.storageStock = Mathf.Max(0, storageStock);
 			instance.shelfStock = Mathf.Max(0, shelfStock);
-			instance.lastDayRevenue = revenue;
-			instance.lastDayExpenses = expenses;
-			instance.lastDayProfit = profit;
-			instance.totalRevenue += revenue;
-			instance.totalExpenses += expenses;
-			instance.totalProfit += profit;
+			instance.dayRevenue = 0;
+			instance.dayExpenses = 0;
+			instance.dayIndex = Mathf.Max(0, instance.dayIndex) + 1;
 		}
 	}
 }

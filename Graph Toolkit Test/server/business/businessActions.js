@@ -288,23 +288,6 @@ function setBusinessAutoDelivery(profile, data) {
   return ok('Set auto delivery success.');
 }
 
-function resolveDailyDemand(ranges, currentPrice) {
-  if (!Array.isArray(ranges) || !Number.isFinite(currentPrice)) {
-    return 0;
-  }
-
-  for (const range of ranges) {
-    if (!range) {
-      continue;
-    }
-
-    if (currentPrice >= range.minPrice && currentPrice <= range.maxPrice) {
-      return Number.isFinite(range.dailyDemand) ? Math.max(0, Math.floor(range.dailyDemand)) : 0;
-    }
-  }
-
-  return 0;
-}
 
 function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
   const lotId = data && data.lotId;
@@ -313,10 +296,6 @@ function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
 
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
-
-  const demandRanges = businessDefs?.demandByBusinessTypeId
-    ? businessDefs.demandByBusinessTypeId.get(business.businessTypeId)
-    : null;
 
   const currentPrice = Number.isFinite(business.markupPercent) ? Math.max(0, Math.floor(business.markupPercent)) : 0;
   const stock = Number.isFinite(business.storageStock) ? Math.max(0, Math.floor(business.storageStock)) : 0;
@@ -354,23 +333,17 @@ function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
   const storageFreeSpace = Math.max(0, storageCapacity - stock);
   const delivered = canDeliver ? Math.min(dailyOrderAmount, storageFreeSpace) : 0;
   const stockAfterDelivery = stock + delivered;
-  const dailyDemand = resolveDailyDemand(demandRanges, currentPrice);
-  const sold = canSell ? Math.min(dailyDemand, stockAfterDelivery) : 0;
-  const revenue = sold * currentPrice;
+  const sold = 0;
+  const revenue = Number.isFinite(business.dayRevenue) ? Math.max(0, Math.floor(business.dayRevenue)) : 0;
   const deliveryCost = canDeliver ? delivered * unitCost : 0;
   const totalExpenses = deliveryCost + rentPerDay + cashierSalary + (requiresMerch ? merchSalary : 0) + logistSalary;
-  const profit = revenue - totalExpenses;
-  const stockEnd = Math.max(0, stockAfterDelivery - sold);
-
-  business.storageStock = stockEnd;
-  business.lastDayRevenue = revenue;
-  business.lastDayExpenses = totalExpenses;
-  business.lastDayProfit = profit;
-  business.totalRevenue = (Number.isFinite(business.totalRevenue) ? business.totalRevenue : 0) + revenue;
-  business.totalExpenses = (Number.isFinite(business.totalExpenses) ? business.totalExpenses : 0) + totalExpenses;
-  business.totalProfit = (Number.isFinite(business.totalProfit) ? business.totalProfit : 0) + profit;
-  if (cashCapacity > 0 && business.totalProfit > cashCapacity) {
-    business.totalProfit = cashCapacity;
+  const dayProfitDelta = revenue - totalExpenses;
+  business.storageStock = Math.max(0, stockAfterDelivery);
+  business.profit = (Number.isFinite(business.profit) ? business.profit : 0) + dayProfitDelta;
+  business.dayRevenue = 0;
+  business.dayExpenses = 0;
+  if (cashCapacity > 0 && business.profit > cashCapacity) {
+    business.profit = cashCapacity;
   }
 
   return ok('Simulate business day success.');
@@ -388,18 +361,57 @@ function collectBusinessProfit(profile, data, businessDefs) {
     ? businessDefs.traderItemById.get(business.cashDeskItemId)
     : null;
   const cashCapacity = cashDeskItem && Number.isFinite(cashDeskItem.cashCapacity) ? Math.max(0, cashDeskItem.cashCapacity) : 0;
-  if (cashCapacity > 0 && business.totalProfit > cashCapacity) {
-    business.totalProfit = cashCapacity;
+  if (cashCapacity > 0 && business.profit > cashCapacity) {
+    business.profit = cashCapacity;
   }
 
-  const amount = Number.isFinite(business.totalProfit) ? Math.max(0, business.totalProfit) : 0;
+  const amount = Number.isFinite(business.profit) ? Math.max(0, business.profit) : 0;
   if (amount <= 0) {
     return fail('NoProfitToCollect', 'No positive profit to collect.');
   }
 
   profile.money = (Number.isFinite(profile.money) ? profile.money : 0) + amount;
-  business.totalProfit = 0;
+  business.profit = 0;
   return ok('Collect business profit success.');
+}
+
+function consumeNpcService(profile, data, businessDefs) {
+  const lotId = data && data.lotId;
+  const serviceId = data && typeof data.serviceId === 'string' ? data.serviceId.trim() : '';
+  const requestedAmount = data && Number.isFinite(data.requestedAmount) ? Math.max(0, Math.floor(data.requestedAmount)) : 0;
+  const lotCheck = requireLotId(lotId);
+  if (lotCheck) return lotCheck;
+  if (!serviceId) return fail('ServiceIdEmpty', 'serviceId is required.');
+  if (requestedAmount <= 0) return fail('InvalidAmount', 'requestedAmount must be > 0.');
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) return fail('BusinessNotFound', 'Business not found.');
+  if (!business.isOpen) return fail('BusinessClosed', 'Business is closed.');
+
+  if (serviceId !== 'Food' && serviceId !== 'Drink') {
+    return ok('NPC service success.');
+  }
+
+  if (!business.hiredCashierContactId || !String(business.hiredCashierContactId).trim()) {
+    return fail('NoCashier', 'No active cashier.');
+  }
+
+  const shelfStock = Number.isFinite(business.shelfStock) ? Math.max(0, Math.floor(business.shelfStock)) : 0;
+  if (shelfStock <= 0) {
+    return fail('NoShelfStock', 'No shelf stock.');
+  }
+
+  const consumed = shelfStock < requestedAmount ? shelfStock : requestedAmount;
+  business.shelfStock = shelfStock - consumed;
+
+  const itemPrice = Number.isFinite(business.markupPercent) ? Math.max(0, Math.floor(business.markupPercent)) : 0;
+  const price = consumed * itemPrice;
+  if (price > 0) {
+    business.dayRevenue = (Number.isFinite(business.dayRevenue) ? business.dayRevenue : 0) + price;
+    business.profit = (Number.isFinite(business.profit) ? business.profit : 0) + price;
+  }
+
+  return ok('NPC consume success.');
 }
 
 function unlockContact(profile, data) {
@@ -701,5 +713,6 @@ module.exports = {
   addBusinessShelfStock,
   clearBusinessStock,
   collectBusinessProfit,
+  consumeNpcService,
   resetBusinesses,
 };

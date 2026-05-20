@@ -3,7 +3,6 @@ using Dreamteck.Splines;
 using Prototype.Business.NPC.Registry;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.Runtime;
-using Prototype.Business.Simulation;
 using UnityEngine;
 
 namespace Prototype.Business.World
@@ -81,14 +80,5 @@ namespace Prototype.Business.World
 			return bootstrap != null ? bootstrap.BusinessActionFacade : null;
 		}
 
-		public BusinessSimulationService GetSimulationService()
-		{
-			return bootstrap != null ? bootstrap.BusinessSimulationService : null;
-		}
-
-		public BusinessLiveSimulationService GetLiveSimulationService()
-		{
-			return bootstrap != null ? bootstrap.BusinessLiveSimulationService : null;
-		}
 	}
 }

@@ -9,7 +9,7 @@ using Prototype.Business.NPC.Workers;
 using Prototype.Business.GameData;
 using Prototype.Business.Runtime;
 using Prototype.Business.Services;
-using Prototype.Business.Simulation;
+using Prototype.Business.Time;
 using Prototype.Business.World;
 using Sample.Runtime.GameData;
 using Sample.Runtime.Runtime;
@@ -55,12 +55,12 @@ namespace Prototype.Business.Bootstrap
 		public BusinessStateSyncService BusinessStateSyncService { get; private set; }
 		public BusinessRuntimeService BusinessRuntimeService { get; private set; }
 		public BusinessActionFacade BusinessActionFacade { get; private set; }
-		public BusinessSimulationService BusinessSimulationService { get; private set; }
-		public BusinessLiveSimulationService BusinessLiveSimulationService { get; private set; }
 		public BusinessVisualRegistry BusinessVisualRegistry { get; private set; }
 		public BusinessVisualSpawner BusinessVisualSpawner { get; private set; }
 		public BusinessRegistry BusinessRegistry { get; private set; }
 		public WorkerNPCManager WorkerNPCManager { get; private set; }
+		public WorldTimeSystem WorldTimeSystem { get; private set; }
+		public BusinessDaySystem BusinessDaySystem { get; private set; }
 
 
 		private void Awake()
@@ -131,7 +131,6 @@ namespace Prototype.Business.Bootstrap
 			StaffRoleDatabaseData staffRoles = null;
 			StaffContactDatabaseData staffContacts = null;
 			BusinessPeopleDatabaseData people = null;
-			PriceDemandDatabaseData pizzeriaDemand = null;
 			TraderDatabaseData traders = null;
 			TraderItemDatabaseData traderItems = null;
 
@@ -142,7 +141,6 @@ namespace Prototype.Business.Bootstrap
 			staffRoles = businessLoader.LoadStaffRoles();
 			staffContacts = businessLoader.LoadStaffContacts();
 			people = businessLoader.LoadPeopleData();
-			pizzeriaDemand = businessLoader.LoadPizzeriaDemand();
 			traders = businessLoader.LoadTraders();
 			traderItems = businessLoader.LoadTraderItems();
 
@@ -171,11 +169,6 @@ namespace Prototype.Business.Bootstrap
 				people = new BusinessPeopleDatabaseData();
 			}
 
-			if (pizzeriaDemand == null)
-			{
-				pizzeriaDemand = new PriceDemandDatabaseData();
-			}
-
 			if (traders == null)
 			{
 				traders = new TraderDatabaseData();
@@ -183,7 +176,7 @@ namespace Prototype.Business.Bootstrap
 
 			BusinessDefinitionsValidator.Validate(businessTypes, suppliers, staffRoles, staffContacts, people, traders, traderItems);
 			BusinessDefinitionsRepository = new BusinessDefinitionsRepository(businessTypes, suppliers,
-				staffRoles, staffContacts, people, pizzeriaDemand, traders, traderItems);
+				staffRoles, staffContacts, people, traders, traderItems);
 			Debug.Log(
 				$"[GameBootstrap] BusinessDefinitionsRepository ready. Types: {businessTypes.businessTypes.Count}");
 
@@ -210,10 +203,12 @@ namespace Prototype.Business.Bootstrap
 				new ProfileSyncService(RuntimeState, GameDataRepository, PlayerStateSync, BusinessStateSyncService);
 			PlayerStateSync.refreshRequested += HandlePlayerStateRefreshRequested;
 			RequestManager = new RequestManager();
-			BusinessRuntimeService = new BusinessRuntimeService(BusinessDefinitionsRepository, BusinessStateSyncService);
+			BusinessRuntimeService = new BusinessRuntimeService(
+				BusinessDefinitionsRepository,
+				BusinessStateSyncService,
+				GameServer,
+				ProfileSyncService);
 			BusinessActionFacade = new BusinessActionFacade(GameServer, ProfileSyncService, RequestManager);
-			BusinessSimulationService =
-				new BusinessSimulationService(BusinessDefinitionsRepository, GameDataRepository, BusinessStateSyncService);
 			BusinessVisualRegistry = GetComponent<BusinessVisualRegistry>();
 			if (BusinessVisualRegistry == null)
 			{
@@ -238,21 +233,6 @@ namespace Prototype.Business.Bootstrap
 
 			BusinessVisualSpawner.Initialize(this, BusinessVisualRegistry);
 
-			var simulationRunner = GetComponent<BusinessSimulationTickRunner>();
-			if (simulationRunner == null)
-			{
-				simulationRunner = gameObject.AddComponent<BusinessSimulationTickRunner>();
-			}
-
-			simulationRunner.bootstrap = this;
-
-			BusinessLiveSimulationService = GetComponent<BusinessLiveSimulationService>();
-			if (BusinessLiveSimulationService == null)
-			{
-				BusinessLiveSimulationService = gameObject.AddComponent<BusinessLiveSimulationService>();
-			}
-
-			BusinessLiveSimulationService.Initialize(this);
 
 			BusinessRegistry = GetComponent<BusinessRegistry>();
 			if (BusinessRegistry == null)
@@ -264,6 +244,18 @@ namespace Prototype.Business.Bootstrap
 			if (WorkerNPCManager == null)
 			{
 				WorkerNPCManager = gameObject.AddComponent<WorkerNPCManager>();
+			}
+
+			WorldTimeSystem = GetComponent<WorldTimeSystem>();
+			if (WorldTimeSystem == null)
+			{
+				WorldTimeSystem = gameObject.AddComponent<WorldTimeSystem>();
+			}
+
+			BusinessDaySystem = GetComponent<BusinessDaySystem>();
+			if (BusinessDaySystem == null)
+			{
+				BusinessDaySystem = gameObject.AddComponent<BusinessDaySystem>();
 			}
 
 			SeedInitialSnapshot();

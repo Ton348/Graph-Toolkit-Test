@@ -1721,7 +1721,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Spawning.NPCSpawnPoint
   minDistanceToPlayer: 1
-  avoidMainCamera: 1
+  avoidMainCamera: 0
 --- !u!4 &49052463 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: b82e76f4092b7d24aaeecddf36fe8d3b, type: 3}
@@ -24951,7 +24951,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Spawning.NPCSpawnPoint
   minDistanceToPlayer: 1
-  avoidMainCamera: 1
+  avoidMainCamera: 0
 --- !u!1 &649933442 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: e0e851c58997b9c438fae494e3412749, type: 3}
@@ -62530,7 +62530,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Spawning.NPCSpawnManager
   npcPrefab: {fileID: 3443139078624027616, guid: 5cb2d8b57565a49bda94c9a1a484b968, type: 3}
   player: {fileID: 2899509048133226669, guid: 1fcb6ea0a03584c4aaec92162b798dc7, type: 3}
-  maxAlive: 10
+  maxAlive: 20
   spawnIntervalSeconds: 3
   despawnDelaySeconds: 2
 --- !u!4 &1540379169
@@ -66106,6 +66106,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Workers.WorkerNPCManager
   merchandiserPrefab: {fileID: 3443139078624027616, guid: 3c2b163abe54545b38d4e364c7ffc48b, type: 3}
   cashierPrefab: {fileID: 3443139078624027616, guid: 41896ff1391a646348f79f42f4f1beba, type: 3}
+  logistPrefab: {fileID: 3443139078624027616, guid: 8064968e992d343fc8d654b6df467d74, type: 3}
   refreshSeconds: 1
 --- !u!1 &1615760424 stripped
 GameObject:
@@ -66228,7 +66229,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 4.5, y: 1, z: 1.5}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 2, y: 1, z: 3}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1468242542}
@@ -66246,7 +66247,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BusinessCashierPoint
   worldRuntime: {fileID: 1468242541}
-  cashierMultiplier: 2
   playerTag: Player
 --- !u!65 &1619309501
 BoxCollider:

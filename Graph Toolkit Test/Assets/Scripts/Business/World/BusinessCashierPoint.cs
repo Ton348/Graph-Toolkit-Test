@@ -1,5 +1,3 @@
-using Prototype.Business.Runtime;
-using Prototype.Business.Simulation;
 using UnityEngine;
 
 namespace Prototype.Business.World
@@ -7,7 +5,6 @@ namespace Prototype.Business.World
 	public class BusinessCashierPoint : MonoBehaviour
 	{
 		public BusinessWorldRuntime worldRuntime;
-		public float cashierMultiplier = 2f;
 		public string playerTag = "Player";
 
 		private void OnTriggerEnter(Collider other)
@@ -17,7 +14,6 @@ namespace Prototype.Business.World
 				return;
 			}
 
-			ApplyMultiplier(true);
 		}
 
 		private void OnTriggerExit(Collider other)
@@ -27,30 +23,6 @@ namespace Prototype.Business.World
 				return;
 			}
 
-			ApplyMultiplier(false);
-		}
-
-		private void ApplyMultiplier(bool active)
-		{
-			if (worldRuntime == null)
-			{
-				worldRuntime = GetComponentInParent<BusinessWorldRuntime>();
-			}
-
-			if (worldRuntime == null)
-			{
-				return;
-			}
-
-			BusinessSimulationService simulation = worldRuntime.GetSimulationService();
-			if (simulation == null)
-			{
-				return;
-			}
-
-			simulation.SetCashierMultiplier(worldRuntime.lotId, active ? cashierMultiplier : 1f);
-			BusinessDebugLog.Log(
-				$"[BusinessWorld] Cashier point {(active ? "entered" : "exited")} lotId='{worldRuntime.lotId}' multiplier={(active ? cashierMultiplier : 1f)}");
 		}
 	}
 }

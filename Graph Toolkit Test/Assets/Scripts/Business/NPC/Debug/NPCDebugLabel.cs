@@ -53,7 +53,7 @@ namespace Prototype.Business.NPC.Debug
 				}
 			}
 
-			m_timer += Time.deltaTime;
+			m_timer += UnityEngine.Time.deltaTime;
 			if (m_timer < Mathf.Max(0.05f, updateInterval))
 			{
 				return;
@@ -78,7 +78,7 @@ namespace Prototype.Business.NPC.Debug
 				return;
 			}
 
-			string goal = m_brain != null ? m_brain.CurrentGoal.ToString().ToUpperInvariant() : "IDLE";
+			string goal = m_brain != null ? m_brain.CurrentActionLabel : "WANDERING";
 			string movement = m_movement != null ? m_movement.CurrentState.ToString().ToUpperInvariant() : "IDLE";
 			string target = m_brain != null && !string.IsNullOrWhiteSpace(m_brain.CurrentTargetBusinessName)
 				? m_brain.CurrentTargetBusinessName

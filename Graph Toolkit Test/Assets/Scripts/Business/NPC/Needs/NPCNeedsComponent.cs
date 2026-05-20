@@ -68,7 +68,7 @@ namespace Prototype.Business.NPC.Needs
 
 		private void Update()
 		{
-			m_timer += Time.deltaTime;
+			m_timer += UnityEngine.Time.deltaTime;
 			if (m_timer < Mathf.Max(0.1f, tickSeconds))
 			{
 				return;

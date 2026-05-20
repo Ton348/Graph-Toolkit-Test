@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using GameGraph.Runtime.Quest;
 using Prototype.Business.Data;
+using Prototype.Business.NPC.Registry;
+using Prototype.Business.NPC.Workers;
 using Prototype.Business.Runtime;
 using Prototype.Business.Simulation;
 using Sample.Runtime.GameData;
@@ -69,6 +71,93 @@ namespace Prototype.Business.Services
 			}
 
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Profile fetch success.");
+		}
+
+		public ServerActionResult TryConsumeNpcServiceSync(string lotId, NPCServiceType service, int requestedAmount)
+		{
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			if (!business.isOpen)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessClosed",
+					"Business is closed.");
+			}
+
+			int request = requestedAmount > 0 ? requestedAmount : 0;
+			if (request <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidAmount",
+					"requestedAmount must be > 0.");
+			}
+
+			switch (service)
+			{
+				case NPCServiceType.Food:
+				case NPCServiceType.Drink:
+				{
+					if (string.IsNullOrWhiteSpace(business.lotId) ||
+					    !WorkerNPCRegistry.TryGetActiveCashier(business.lotId, out WorkerNPCBrain cashier) ||
+					    cashier == null ||
+					    !cashier.CanServeNow())
+					{
+						return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoCashier",
+							"No active cashier.");
+					}
+
+					if (business.shelfStock <= 0)
+					{
+						return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoShelfStock",
+							"No shelf stock.");
+					}
+
+					int consumed = business.shelfStock < request ? business.shelfStock : request;
+					if (consumed <= 0)
+					{
+						return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoStock",
+							"Nothing to consume.");
+					}
+
+					business.shelfStock -= consumed;
+					int price = m_calculationService.GetRevenueForSoldAmount(business, consumed);
+					if (price > 0)
+					{
+						business.dayRevenue += price;
+						business.profit += price;
+					}
+
+					return ServerActionResult.SuccessResult(BuildSnapshot(), "NPC consume success.");
+				}
+				case NPCServiceType.Toilet:
+				case NPCServiceType.Sleep:
+				case NPCServiceType.Work:
+				case NPCServiceType.Fun:
+					return ServerActionResult.SuccessResult(BuildSnapshot(), "NPC service success.");
+				default:
+					return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ServiceUnsupported",
+						"Service is unsupported.");
+			}
+		}
+
+		public Task<ServerActionResult> TryConsumeNpcServiceAsync(string lotId, string serviceId, int requestedAmount)
+		{
+			if (!System.Enum.TryParse(serviceId, true, out NPCServiceType service))
+			{
+				return Task.FromResult(ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError,
+					"ServiceUnsupported", "Service is unsupported."));
+			}
+
+			return Task.FromResult(TryConsumeNpcServiceSync(lotId, service, requestedAmount));
 		}
 
 		public async Task<ServerActionResult> TryBuyBuildingAsync(
@@ -1271,12 +1360,13 @@ namespace Prototype.Business.Services
 			}
 
 			int cashCapacity = ResolveCashCapacity(business);
-			if (cashCapacity > 0 && business.totalProfit > cashCapacity)
+			int computedProfit = business.profit;
+			if (cashCapacity > 0 && computedProfit > cashCapacity)
 			{
-				business.totalProfit = cashCapacity;
+				computedProfit = cashCapacity;
 			}
 
-			int amount = Mathf.Max(0, business.totalProfit);
+			int amount = Mathf.Max(0, computedProfit);
 			if (amount <= 0)
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoProfitToCollect",
@@ -1284,7 +1374,7 @@ namespace Prototype.Business.Services
 			}
 
 			m_runtime.player.money += amount;
-			business.totalProfit = 0;
+			business.profit -= amount;
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Collect business profit success.");
 		}
 
@@ -1640,12 +1730,9 @@ namespace Prototype.Business.Services
 						shelfItemId = business.shelfItemId,
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
-						lastDayRevenue = business.lastDayRevenue,
-						lastDayExpenses = business.lastDayExpenses,
-						lastDayProfit = business.lastDayProfit,
-						totalRevenue = business.totalRevenue,
-						totalExpenses = business.totalExpenses,
-						totalProfit = business.totalProfit,
+						dayRevenue = business.dayRevenue,
+						dayExpenses = business.dayExpenses,
+						profit = business.profit,
 						hiredCashierContactId = business.hiredCashierContactId,
 						hiredMerchContactId = business.hiredMerchContactId,
 						hiredLogistContactId = business.hiredLogistContactId

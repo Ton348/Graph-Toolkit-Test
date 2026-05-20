@@ -305,31 +305,6 @@ function validateBusinessDefinitions(
     });
   }
 
-  if (!pizzeriaDemand || !Array.isArray(pizzeriaDemand.ranges)) {
-    console.error('[server][business] pizzeria_demand missing "ranges" array');
-    errors++;
-  } else {
-    pizzeriaDemand.ranges.forEach((range, i) => {
-      if (!range ||
-        !Number.isFinite(range.minPrice) ||
-        !Number.isFinite(range.maxPrice) ||
-        !Number.isFinite(range.dailyDemand)) {
-        console.error(`[server][business] pizzeria_demand range at index ${i} invalid`);
-        errors++;
-        return;
-      }
-
-      if (range.minPrice > range.maxPrice) {
-        console.error(`[server][business] pizzeria_demand range at index ${i} has minPrice > maxPrice`);
-        errors++;
-      }
-
-      if (range.dailyDemand < 0) {
-        console.warn(`[server][business] pizzeria_demand range at index ${i} has negative dailyDemand`);
-        warnings++;
-      }
-    });
-  }
 
   if (errors > 0) {
     throw new Error(`[server][business] validation failed with ${errors} error(s), ${warnings} warning(s)`);
@@ -356,7 +331,6 @@ function loadBusinessDefinitions() {
     traderRows.length > 0 ? traderRows : legacyTraders?.traders,
     itemRows.length > 0 ? itemRows : []
   );
-  const pizzeriaDemand = readJson(path.join(BUSINESS_DIR, 'pizzeria_demand.json'));
 
   validateBusinessDefinitions(
     businessTypes,
@@ -366,7 +340,7 @@ function loadBusinessDefinitions() {
     peopleData,
     tradersData,
     traderItems,
-    pizzeriaDemand);
+    null);
 
   const businessTypeById = new Map();
   (businessTypes.businessTypes || []).forEach(item => {
@@ -402,19 +376,6 @@ function loadBusinessDefinitions() {
     }
   });
 
-  const demandByBusinessTypeId = new Map();
-  const pizzeriaRanges = Array.isArray(pizzeriaDemand.ranges)
-    ? pizzeriaDemand.ranges
-      .map(range => ({
-        minPrice: range.minPrice,
-        maxPrice: range.maxPrice,
-        dailyDemand: range.dailyDemand
-      }))
-      .sort((a, b) => a.minPrice - b.minPrice)
-    : [];
-  demandByBusinessTypeId.set('grocery_store', pizzeriaRanges);
-  demandByBusinessTypeId.set('pizza_shop', pizzeriaRanges);
-
   return {
     businessTypes,
     businessInstanceTemplate,
@@ -430,7 +391,6 @@ function loadBusinessDefinitions() {
     staffContactById,
     traderById,
     traderItemById,
-    demandByBusinessTypeId
   };
 }
 

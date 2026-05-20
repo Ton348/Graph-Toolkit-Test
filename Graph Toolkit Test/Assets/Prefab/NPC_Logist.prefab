@@ -340,7 +340,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 5139570391112233068, guid: 747869c6557e3714c804c4355b044e9e, type: 3}
+  m_Mesh: {fileID: 626043638658649181, guid: 1fea9d91227e9814f869406681786d5a, type: 3}
   m_Bones:
   - {fileID: 5350054662293768736}
   - {fileID: 5380428710725545048}
@@ -668,33 +668,37 @@ GameObject:
   - component: {fileID: 1742200160349993343}
   - component: {fileID: 6452399246587631519}
   - component: {fileID: 4993906486630982506}
-  - component: {fileID: 2635139374816360494}
-  - component: {fileID: 7759409009521141902}
-  - component: {fileID: 2659683067189053587}
   - component: {fileID: -592007422357879419}
+  - component: {fileID: 1829962762805671006}
+  - component: {fileID: 4837143343790431185}
+  - component: {fileID: 7895170789103365782}
   m_Layer: 0
-  m_Name: NPC_nav
+  m_Name: NPC_Logist
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1742200160349993343
-Transform:
+--- !u!224 &1742200160349993343
+RectTransform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3443139078624027616}
-  serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.49, y: -0.166, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4951242419045312746}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -6.49, y: -0.166}
+  m_SizeDelta: {x: 20, y: 5}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!95 &6452399246587631519
 Animator:
   serializedVersion: 7
@@ -739,71 +743,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &2635139374816360494
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3443139078624027616}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ebad2b81e3fdd41049062042aa52055f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Needs.NPCNeedsComponent
-  hunger: 20
-  thirst: 20
-  energy: 80
-  work: 20
-  safety: 100
-  fun: 50
-  toilet: 10
-  tickSeconds: 1
-  decay:
-    hungerPerTick: 3
-    thirstPerTick: 1.2
-    toiletPerTick: 1
-    workPerTick: 0.7
-    funPerTick: 0.5
-    energyPerTick: 1
-  thresholds:
-    hungerCritical: 75
-    thirstCritical: 75
-    toiletCritical: 80
-    workCritical: 70
-    energyLow: 30
-    safetyCritical: 35
-    funLow: 30
---- !u!114 &7759409009521141902
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3443139078624027616}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 90d24f42bf2a14c598839ac56beda841, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Movement.NPCMovementController
---- !u!114 &2659683067189053587
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3443139078624027616}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e303a0ed2d364a96b2090aa1698667f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.AI.NPCBrain
-  decisionTickSeconds: 1
-  wanderRadius: 25
-  idleAtTargetSeconds: 2
-  minimumGoalDurationSeconds: 5
-  interactionDistance: 1.2
-  entranceSpreadRadius: 0.8
 --- !u!114 &-592007422357879419
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -817,6 +756,81 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Sample.Runtime::NPCAnimationController
   animator: {fileID: 6452399246587631519}
+--- !u!114 &1829962762805671006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3443139078624027616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76705fc61f2ae4d1387b17028ead2ca5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Workers.WorkerNPCMovement
+--- !u!114 &4837143343790431185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3443139078624027616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07290be381b534c32be2f5d222e36e58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Workers.WorkerNPCBrain
+  workerType: 2
+  waitAtStockSeconds: 2
+--- !u!23 &7895170789103365782
+MeshRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3443139078624027616}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
+  m_ForceMeshLod: -1
+  m_MeshLodSelectionBias: 0
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_GlobalIlluminationMeshLod: 0
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
+  m_MaskInteraction: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &4635895658037201885
 GameObject:
   m_ObjectHideFlags: 0

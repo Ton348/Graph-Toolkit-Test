@@ -91,11 +91,6 @@ namespace Prototype.Business.Data
 			return LoadPeople();
 		}
 
-		public PriceDemandDatabaseData LoadPizzeriaDemand()
-		{
-			return Load<PriceDemandDatabaseData>("pizzeria_demand.json", "pizzeria demand");
-		}
-
 		public TraderDatabaseData LoadTraders()
 		{
 			if (m_tradersCache != null)

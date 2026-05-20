@@ -105,13 +105,7 @@ namespace Prototype.Business.Runtime
 
 		public int GetIncomePerDay(BusinessInstanceSnapshot instance)
 		{
-			if (instance == null || m_definitions == null)
-			{
-				return 0;
-			}
-
-			int dailyDemand = m_definitions.GetDailyDemandForPrice(instance.businessTypeId, instance.markupPercent);
-			return GetRevenueForSoldAmount(instance, dailyDemand);
+			return 0;
 		}
 
 		public int GetProfitPerDay(BusinessInstanceSnapshot instance)

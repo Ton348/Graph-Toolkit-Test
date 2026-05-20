@@ -1,6 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Prototype.Business.Data;
+using Prototype.Business.NPC.Registry;
+using Prototype.Business.Services;
+using UnityEngine;
 
 namespace Prototype.Business.Runtime
 {
@@ -10,13 +14,21 @@ namespace Prototype.Business.Runtime
 		private readonly BusinessStateSyncService m_stateSync;
 		private readonly IBusinessDemandSource m_npcDemandSource;
 		private readonly BusinessCalculationService m_calculation;
+		private readonly IGameServer m_gameServer;
+		private readonly ProfileSyncService m_profileSync;
 
-		public BusinessRuntimeService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
+		public BusinessRuntimeService(
+			BusinessDefinitionsRepository definitions,
+			BusinessStateSyncService stateSync,
+			IGameServer gameServer = null,
+			ProfileSyncService profileSync = null)
 		{
 			m_definitions = definitions;
 			m_stateSync = stateSync;
 			m_calculation = new BusinessCalculationService(definitions, null);
 			m_npcDemandSource = new NpcBusinessDemandSource(m_calculation);
+			m_gameServer = gameServer;
+			m_profileSync = profileSync;
 		}
 
 		public IEnumerable<BusinessInstanceSnapshot> GetBusinesses()
@@ -103,6 +115,86 @@ namespace Prototype.Business.Runtime
 			}
 
 			return m_npcDemandSource.TryConsumeService(business, service, out price);
+		}
+
+		public bool TryConsumeService(string lotId, NPC.Registry.NPCServiceType service, int requestedAmount, out int consumedAmount, out int price)
+		{
+			consumedAmount = 0;
+			price = 0;
+			if (string.IsNullOrWhiteSpace(lotId) || m_stateSync == null)
+			{
+				return false;
+			}
+
+			BusinessInstanceSnapshot business = m_stateSync.GetBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return false;
+			}
+
+			if (m_gameServer != null)
+			{
+				return false;
+			}
+
+			if (m_npcDemandSource is NpcBusinessDemandSource npcSource)
+			{
+				return npcSource.TryConsumeService(business, service, requestedAmount, out consumedAmount, out price);
+			}
+
+			bool ok = m_npcDemandSource != null && m_npcDemandSource.TryConsumeService(business, service, out price);
+			consumedAmount = ok ? 1 : 0;
+			return ok;
+		}
+
+		public async Task<(bool success, int consumedAmount, int price)> TryConsumeServiceAsync(
+			string lotId,
+			NPCServiceType service,
+			int requestedAmount)
+		{
+			if (string.IsNullOrWhiteSpace(lotId) || m_stateSync == null)
+			{
+				return (false, 0, 0);
+			}
+
+			BusinessInstanceSnapshot business = m_stateSync.GetBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return (false, 0, 0);
+			}
+
+			if (m_gameServer != null)
+			{
+				int shelfBefore = business.shelfStock;
+				int dayRevenueBefore = business.dayRevenue;
+				ServerActionResult result =
+					await m_gameServer.TryConsumeNpcServiceAsync(lotId, service.ToString(), requestedAmount);
+				if (result != null && result.Success && result.ProfileSnapshot != null)
+				{
+					m_profileSync?.ApplySnapshot(result.ProfileSnapshot);
+					BusinessInstanceSnapshot updated = m_stateSync.GetBusinessByLotId(lotId);
+					if (updated != null)
+					{
+						int consumedAmount = Mathf.Max(0, shelfBefore - updated.shelfStock);
+						int price = Mathf.Max(0, updated.dayRevenue - dayRevenueBefore);
+						bool ok = consumedAmount > 0 || service == NPCServiceType.Toilet || service == NPCServiceType.Sleep ||
+						          service == NPCServiceType.Work || service == NPCServiceType.Fun;
+						return (ok, consumedAmount, price);
+					}
+				}
+
+				return (false, 0, 0);
+			}
+
+			if (m_npcDemandSource is NpcBusinessDemandSource npcSource)
+			{
+				bool ok = npcSource.TryConsumeService(business, service, requestedAmount, out int consumedAmount, out int price);
+				return (ok, consumedAmount, price);
+			}
+
+			int localPrice = 0;
+			bool localOk = m_npcDemandSource != null && m_npcDemandSource.TryConsumeService(business, service, out localPrice);
+			return (localOk, localOk ? 1 : 0, localPrice);
 		}
 	}
 }

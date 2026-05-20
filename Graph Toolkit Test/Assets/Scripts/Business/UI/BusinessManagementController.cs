@@ -143,7 +143,7 @@ namespace Prototype.Business.UI
 			}
 
 			BusinessInstanceSnapshot business = m_runtimeService.GetBusinessView(lotId);
-			if (business == null || business.totalProfit <= 0)
+			if (business == null || business.profit <= 0)
 			{
 				SetStatus("Нет прибыли для вывода");
 				return;

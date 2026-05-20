@@ -14,6 +14,12 @@ namespace Prototype.Business.Runtime
 
 		public bool TryConsumeService(BusinessInstanceSnapshot business, NPCServiceType service, out int price)
 		{
+			return TryConsumeService(business, service, 1, out _, out price);
+		}
+
+		public bool TryConsumeService(BusinessInstanceSnapshot business, NPCServiceType service, int requestedAmount, out int consumedAmount, out int price)
+		{
+			consumedAmount = 0;
 			price = 0;
 			if (business == null || !business.isOpen)
 			{
@@ -24,6 +30,12 @@ namespace Prototype.Business.Runtime
 			{
 				case NPCServiceType.Food:
 				case NPCServiceType.Drink:
+					int request = requestedAmount > 0 ? requestedAmount : 0;
+					if (request <= 0)
+					{
+						return false;
+					}
+
 					if (string.IsNullOrWhiteSpace(business.lotId) ||
 					    !WorkerNPCRegistry.TryGetActiveCashier(business.lotId, out WorkerNPCBrain cashier) ||
 					    cashier == null ||
@@ -37,14 +49,18 @@ namespace Prototype.Business.Runtime
 						return false;
 					}
 
-					business.shelfStock -= 1;
-					price = m_calculation != null ? m_calculation.GetRevenueForSoldAmount(business, 1) : 0;
+					consumedAmount = business.shelfStock < request ? business.shelfStock : request;
+					if (consumedAmount <= 0)
+					{
+						return false;
+					}
+
+					business.shelfStock -= consumedAmount;
+					price = m_calculation != null ? m_calculation.GetRevenueForSoldAmount(business, consumedAmount) : 0;
 					if (price > 0)
 					{
-						business.lastDayRevenue += price;
-						business.totalRevenue += price;
-						business.lastDayProfit += price;
-						business.totalProfit += price;
+						business.dayRevenue += price;
+						business.profit += price;
 					}
 
 					return true;

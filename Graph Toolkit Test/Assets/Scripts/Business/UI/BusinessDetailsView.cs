@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Prototype.Business.Runtime;
-using Prototype.Business.Simulation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -332,7 +331,6 @@ namespace Prototype.Business.UI
 
 		public void SetBusiness(
 			BusinessInstanceSnapshot business,
-			BusinessRuntimeSimulationState simulation,
 			int storageCapacity,
 			float expensesPerDay,
 			int dailyOrderAmount,
@@ -375,9 +373,9 @@ namespace Prototype.Business.UI
 				titleText.text = string.IsNullOrWhiteSpace(lotTitle) ? "Управление бизнесом" : $"Ваше помещение: {lotTitle}";
 			}
 
-			float income = business != null ? Mathf.Max(0, business.lastDayRevenue) : 0f;
-			float expenses = business != null ? Mathf.Max(0, business.lastDayExpenses) : expensesPerDay;
-			float profit = business != null ? business.totalProfit : income - expenses;
+			float income = business != null ? Mathf.Max(0, business.dayRevenue) : 0f;
+			float expenses = business != null ? Mathf.Max(0, business.dayExpenses) : expensesPerDay;
+			float profit = business != null ? business.profit : income - expenses;
 			SetIncome(income);
 			SetExpenses(expenses);
 			SetProfit(profit);

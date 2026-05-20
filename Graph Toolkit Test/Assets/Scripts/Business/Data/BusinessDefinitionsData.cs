@@ -16,12 +16,9 @@ namespace Prototype.Business.Data
 		public string hiredCashierContactId;
 		public string hiredMerchContactId;
 		public string hiredLogistContactId;
-		public int lastDayRevenue;
-		public int lastDayExpenses;
-		public int lastDayProfit;
-		public int totalRevenue;
-		public int totalExpenses;
-		public int totalProfit;
+		public int dayRevenue;
+		public int dayExpenses;
+		public int profit;
 	}
 
 	[Serializable]

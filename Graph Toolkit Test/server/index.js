@@ -763,6 +763,14 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
+    case 'consume_npc_service': {
+      console.log('[BusinessServer] action=consume_npc_service');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.consumeNpcService(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     case 'unlock_contact': {
       console.log('[BusinessServer] action=unlock_contact');
       const profile = loadPlayerProfile(payload.playerId || 'player');
