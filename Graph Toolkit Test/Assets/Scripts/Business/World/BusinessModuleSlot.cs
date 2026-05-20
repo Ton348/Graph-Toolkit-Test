@@ -105,11 +105,36 @@ namespace Prototype.Business.World
 			}
 
 			BusinessInstanceSnapshot business = worldRuntime != null ? worldRuntime.GetBusiness() : null;
-			m_isInstalled = business != null &&
-			                ((moduleId == "storage" && !string.IsNullOrWhiteSpace(business.storageItemId)) ||
-			                 (moduleId == "cash_register" && !string.IsNullOrWhiteSpace(business.cashDeskItemId)) ||
-			                 (moduleId == "shelves" && !string.IsNullOrWhiteSpace(business.shelfItemId)));
+			if (business == null)
+			{
+				return;
+			}
+
+			m_isInstalled = business != null && IsInstalledByModule(business);
 			SetVisual(m_isInstalled);
+		}
+
+		private bool IsInstalledByModule(BusinessInstanceSnapshot business)
+		{
+			string key = moduleId == null ? string.Empty : moduleId.Trim().ToLowerInvariant();
+			if (key.Contains("storage"))
+			{
+				return !string.IsNullOrWhiteSpace(business.storageItemId);
+			}
+
+			if (key.Contains("cash"))
+			{
+				return !string.IsNullOrWhiteSpace(business.cashDeskItemId);
+			}
+
+			if (key.Contains("shelf"))
+			{
+				return !string.IsNullOrWhiteSpace(business.shelfItemId);
+			}
+
+			return !string.IsNullOrWhiteSpace(business.storageItemId) ||
+			       !string.IsNullOrWhiteSpace(business.cashDeskItemId) ||
+			       !string.IsNullOrWhiteSpace(business.shelfItemId);
 		}
 
 		private void SetVisual(bool active)

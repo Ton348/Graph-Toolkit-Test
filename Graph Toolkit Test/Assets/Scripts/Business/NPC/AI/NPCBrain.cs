@@ -2,6 +2,7 @@
 	using Prototype.Business.NPC.Needs;
 	using Prototype.Business.NPC.Registry;
 	using Prototype.Business.NPC.Spawning;
+	using Prototype.Business.Runtime;
 	using Prototype.Business.World;
 	using UnityEngine;
 
@@ -15,11 +16,14 @@
 			[SerializeField] private float wanderRadius = 25f;
 			[SerializeField] private float idleAtTargetSeconds = 2f;
 			[SerializeField] private float minimumGoalDurationSeconds = 5f;
+			[SerializeField] private float interactionDistance = 1.2f;
+			[SerializeField] private float entranceSpreadRadius = 0.8f;
 
 			private NPCNeedsComponent m_needs;
 			private NPCMovementController m_movement;
 			private NPCGoalResolver m_resolver;
 			private BusinessRegistry m_registry;
+			private BusinessRuntimeService m_businessRuntime;
 
 			private NPCGoalType m_currentGoal;
 			private NPCGoalType m_previousGoal;
@@ -46,6 +50,8 @@
 				m_movement = GetComponent<NPCMovementController>();
 				m_resolver = new NPCGoalResolver();
 				m_registry = FindFirstObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
+				var bootstrap = FindFirstObjectByType<Bootstrap.GameBootstrap>(FindObjectsInactive.Include);
+				m_businessRuntime = bootstrap != null ? bootstrap.BusinessRuntimeService : null;
 			}
 
 			private void Update()
@@ -74,7 +80,9 @@
 					TickBrain();
 				}
 
-				if (m_hasTarget && m_movement.HasReachedDestination())
+				if (!m_waitingAtTarget &&
+				    m_hasTarget &&
+				    HasReachedCurrentTarget())
 				{
 					BeginInteraction();
 				}
@@ -190,6 +198,17 @@
 			{
 				if (m_registry == null)
 				{
+					m_registry = FindFirstObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
+				}
+
+				if (m_businessRuntime == null)
+				{
+					var bootstrap = FindFirstObjectByType<Bootstrap.GameBootstrap>(FindObjectsInactive.Include);
+					m_businessRuntime = bootstrap != null ? bootstrap.BusinessRuntimeService : null;
+				}
+
+				if (m_registry == null)
+				{
 					return;
 				}
 
@@ -204,7 +223,7 @@
 					}
 
 					m_currentTargetBusinessName = m_currentTargetBusiness.BusinessTypeId;
-					m_currentDestination = m_currentTargetBusiness.EntrancePoint.position;
+					m_currentDestination = GetEntranceDestination(m_currentTargetBusiness.EntrancePoint.position);
 					m_hasTarget = true;
 					m_movement.MoveTo(m_currentDestination);
 				}
@@ -212,8 +231,12 @@
 
 			private void BeginInteraction()
 			{
+				m_hasTarget = false;
+				m_currentDestination = Vector3.zero;
+
 				m_waitingAtTarget = true;
 				m_idleTimer = 0f;
+
 				m_movement.Stop();
 			}
 
@@ -223,31 +246,65 @@
 				m_idleTimer = 0f;
 				m_hasTarget = false;
 
-				switch (m_currentGoal)
+				NPCServiceType service = MapGoalToService(m_currentGoal);
+				bool transactionSuccess = true;
+				if (m_currentTargetBusiness != null)
 				{
-					case NPCGoalType.GoEat:
-						m_needs.ConsumeNeed(NPCNeedType.Hunger, 100f);
-						break;
+					transactionSuccess = m_businessRuntime != null &&
+					                     m_businessRuntime.TryConsumeService(m_currentTargetBusiness.lotId, service, out _);
+				}
 
-					case NPCGoalType.GoDrink:
-						m_needs.ConsumeNeed(NPCNeedType.Thirst, 20f);
-						break;
+				if (!transactionSuccess)
+				{
+					m_currentTargetBusiness = null;
+					m_currentTargetBusinessName = null;
+					SetGoal(NPCGoalType.Wander);
+					return;
+				}
 
-					case NPCGoalType.GoToilet:
-						m_needs.ConsumeNeed(NPCNeedType.Toilet, 35f);
-						break;
+				if (transactionSuccess)
+				{
+					switch (m_currentGoal)
+					{
+						case NPCGoalType.GoEat:
+							m_needs.ConsumeNeed(NPCNeedType.Hunger, 100f);
+							break;
 
-					case NPCGoalType.GoWork:
-						m_needs.ConsumeNeed(NPCNeedType.Work, 20f);
-						break;
+						case NPCGoalType.GoDrink:
+							m_needs.ConsumeNeed(NPCNeedType.Thirst, 20f);
+							break;
 
-					case NPCGoalType.GoHome:
-						m_needs.ConsumeNeed(NPCNeedType.Energy, 15f);
-						break;
+						case NPCGoalType.GoToilet:
+							m_needs.ConsumeNeed(NPCNeedType.Toilet, 35f);
+							break;
+
+						case NPCGoalType.GoWork:
+							m_needs.ConsumeNeed(NPCNeedType.Work, 20f);
+							break;
+
+						case NPCGoalType.GoHome:
+							m_needs.ConsumeNeed(NPCNeedType.Energy, 15f);
+							break;
+					}
 				}
 
 				m_currentTargetBusiness = null;
 				m_currentTargetBusinessName = null;
+
+				SetGoal(NPCGoalType.Wander);
+			}
+
+			private static NPCServiceType MapGoalToService(NPCGoalType goal)
+			{
+				switch (goal)
+				{
+					case NPCGoalType.GoEat: return NPCServiceType.Food;
+					case NPCGoalType.GoDrink: return NPCServiceType.Drink;
+					case NPCGoalType.GoToilet: return NPCServiceType.Toilet;
+					case NPCGoalType.GoWork: return NPCServiceType.Work;
+					case NPCGoalType.GoHome: return NPCServiceType.Sleep;
+					default: return NPCServiceType.Fun;
+				}
 			}
 
 			private void DoWander()
@@ -269,6 +326,28 @@
 					m_currentTargetBusinessName = null;
 					m_movement.MoveTo(point);
 				}
+			}
+
+			private bool HasReachedCurrentTarget()
+			{
+				float sqr = (transform.position - m_currentDestination).sqrMagnitude;
+				if (sqr <= interactionDistance * interactionDistance)
+				{
+					return true;
+				}
+
+				return m_movement.HasReachedDestination();
+			}
+
+			private Vector3 GetEntranceDestination(Vector3 entrancePoint)
+			{
+				if (entranceSpreadRadius <= 0.01f)
+				{
+					return entrancePoint;
+				}
+
+				Vector2 offset2d = Random.insideUnitCircle * entranceSpreadRadius;
+				return entrancePoint + new Vector3(offset2d.x, 0f, offset2d.y);
 			}
 		}
 	}

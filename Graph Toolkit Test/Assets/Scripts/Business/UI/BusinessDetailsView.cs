@@ -382,11 +382,9 @@ namespace Prototype.Business.UI
 			SetExpenses(expenses);
 			SetProfit(profit);
 
-			int safeStock = simulation != null
-				? Mathf.Max(0, Mathf.RoundToInt(simulation.storageStock))
-				: business != null
-					? Mathf.Max(0, business.storageStock)
-					: 0;
+			int safeStock = business != null
+				? Mathf.Max(0, business.storageStock)
+				: 0;
 			int safeCapacity = Mathf.Max(0, storageCapacity);
 			SetWarehouseStock(safeStock, safeCapacity);
 

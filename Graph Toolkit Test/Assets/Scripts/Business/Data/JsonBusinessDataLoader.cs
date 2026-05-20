@@ -77,7 +77,9 @@ namespace Prototype.Business.Data
 					id = person.contactId,
 					displayName = string.IsNullOrWhiteSpace(person.displayName) ? person.contactId : person.displayName,
 					salaryPerDay = person.salaryPerDay,
-					throughputPerHour = person.throughputPerHour
+					throughputPerHour = person.throughputPerHour,
+					carryCapacity = person.carryCapacity,
+					checkoutSecondsPerItem = person.checkoutSecondsPerItem
 				});
 			}
 

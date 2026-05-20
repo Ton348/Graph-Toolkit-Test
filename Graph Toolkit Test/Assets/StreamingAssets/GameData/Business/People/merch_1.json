@@ -2,5 +2,7 @@
   "contactId": "merch_1",
   "displayName": "Мерчендайзер Игорь",
   "salaryPerDay": 90,
-  "throughputPerHour": 80
+  "throughputPerHour": 80,
+  "carryCapacity": 50,
+  "checkoutSecondsPerItem": 2
 }

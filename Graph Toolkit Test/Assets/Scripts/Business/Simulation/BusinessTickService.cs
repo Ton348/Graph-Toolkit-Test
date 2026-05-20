@@ -28,9 +28,6 @@ namespace Prototype.Business.Simulation
 			int target = Mathf.Max(0, instance.autoDeliveryPerDay);
 			int maxByLogist = m_calculation.GetDeliveryPerDay(instance);
 			int orderedByLogist = Mathf.Min(target, maxByLogist);
-			int dailyDemand = m_definitions != null
-				? Mathf.Max(0, m_definitions.GetDailyDemandForPrice(instance.businessTypeId, instance.markupPercent))
-				: 0;
 
 			int storageStock = Mathf.Max(0, instance.storageStock);
 			int shelfStock = Mathf.Max(0, instance.shelfStock);
@@ -55,14 +52,7 @@ namespace Prototype.Business.Simulation
 				storageStock -= toShelf;
 			}
 
-			int sold = 0;
-			if (instance.isOpen && dailyDemand > 0 && !string.IsNullOrWhiteSpace(instance.hiredCashierContactId))
-			{
-				sold = Mathf.Min(shelfStock, dailyDemand);
-				shelfStock -= sold;
-			}
-
-			int revenue = m_calculation.GetRevenueForSoldAmount(instance, sold);
+			int revenue = 0;
 			int expenses = m_calculation.GetExpensesPerDay(instance);
 			SupplierDefinitionData supplier = m_definitions?.GetSupplier(instance.hiredLogistContactId);
 			if (supplier != null)

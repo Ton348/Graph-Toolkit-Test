@@ -2,5 +2,7 @@
   "contactId": "cashier_1",
   "displayName": "Кассир Анна",
   "salaryPerDay": 120,
-  "throughputPerHour": 60
+  "throughputPerHour": 60,
+  "carryCapacity": 1,
+  "checkoutSecondsPerItem": 2
 }

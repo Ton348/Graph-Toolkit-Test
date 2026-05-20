@@ -70,6 +70,8 @@ namespace Prototype.Business.Data
 		public string displayName;
 		public int salaryPerDay;
 		public int throughputPerHour;
+		public int carryCapacity;
+		public float checkoutSecondsPerItem;
 	}
 
 	[Serializable]
@@ -79,6 +81,8 @@ namespace Prototype.Business.Data
 		public string displayName;
 		public int salaryPerDay;
 		public int throughputPerHour;
+		public int carryCapacity;
+		public float checkoutSecondsPerItem;
 		public SupplierConfigData supplierConfig;
 	}
 

@@ -7215,7 +7215,7 @@ Transform:
   m_GameObject: {fileID: 229244333}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -26560,7 +26560,7 @@ Transform:
   m_GameObject: {fileID: 696530878}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -29710,7 +29710,7 @@ Transform:
   m_GameObject: {fileID: 777950239}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -3.11, y: 1, z: -3.47}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -59175,7 +59175,7 @@ Transform:
   m_GameObject: {fileID: 1468242540}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 208.6, y: 0, z: 87}
+  m_LocalPosition: {x: 208.6, y: -0.4, z: 87}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -62186,8 +62186,8 @@ Transform:
   m_GameObject: {fileID: 1534954544}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.63, y: 0.57, z: 2.43}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0.5, y: 1, z: 2.43}
+  m_LocalScale: {x: 2, y: 2, z: 2}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1468242542}
@@ -66017,6 +66017,7 @@ GameObject:
   - component: {fileID: 1614953995}
   - component: {fileID: 1614953998}
   - component: {fileID: 1614953997}
+  - component: {fileID: 1614953999}
   m_Layer: 0
   m_Name: GameBootstrap
   m_TagString: Untagged
@@ -66091,6 +66092,21 @@ MonoBehaviour:
   m_entries:
   - visualId: Building_Pizza
     prefab: {fileID: 8550590959036425789, guid: ce589a75cfb314133b420c239af457a5, type: 3}
+--- !u!114 &1614953999
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1614953994}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 621c86e8465344018a554f98d699602e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Workers.WorkerNPCManager
+  merchandiserPrefab: {fileID: 3443139078624027616, guid: 3c2b163abe54545b38d4e364c7ffc48b, type: 3}
+  cashierPrefab: {fileID: 3443139078624027616, guid: 41896ff1391a646348f79f42f4f1beba, type: 3}
+  refreshSeconds: 1
 --- !u!1 &1615760424 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 79ef5961b86276943ab5da38ae9f2e4b, type: 3}
@@ -66211,7 +66227,7 @@ Transform:
   m_GameObject: {fileID: 1619309498}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.019470215, y: 0.13146, z: -0.50024414}
+  m_LocalPosition: {x: 4.5, y: 1, z: 1.5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -70184,7 +70200,7 @@ Transform:
   m_GameObject: {fileID: 1707422257}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -5, y: 1, z: 2}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -75016,7 +75032,7 @@ Transform:
   m_GameObject: {fileID: 1817727212}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

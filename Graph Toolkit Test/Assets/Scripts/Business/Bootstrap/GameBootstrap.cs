@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Prototype.Business.Compass;
 using Prototype.Business.Data;
 using Prototype.Business.NPC.Registry;
+using Prototype.Business.NPC.Workers;
 using Prototype.Business.GameData;
 using Prototype.Business.Runtime;
 using Prototype.Business.Services;
@@ -59,6 +60,7 @@ namespace Prototype.Business.Bootstrap
 		public BusinessVisualRegistry BusinessVisualRegistry { get; private set; }
 		public BusinessVisualSpawner BusinessVisualSpawner { get; private set; }
 		public BusinessRegistry BusinessRegistry { get; private set; }
+		public WorkerNPCManager WorkerNPCManager { get; private set; }
 
 
 		private void Awake()
@@ -256,6 +258,12 @@ namespace Prototype.Business.Bootstrap
 			if (BusinessRegistry == null)
 			{
 				BusinessRegistry = gameObject.AddComponent<BusinessRegistry>();
+			}
+
+			WorkerNPCManager = GetComponent<WorkerNPCManager>();
+			if (WorkerNPCManager == null)
+			{
+				WorkerNPCManager = gameObject.AddComponent<WorkerNPCManager>();
 			}
 
 			SeedInitialSnapshot();

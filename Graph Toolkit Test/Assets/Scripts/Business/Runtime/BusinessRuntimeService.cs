@@ -8,11 +8,15 @@ namespace Prototype.Business.Runtime
 	{
 		private readonly BusinessDefinitionsRepository m_definitions;
 		private readonly BusinessStateSyncService m_stateSync;
+		private readonly IBusinessDemandSource m_npcDemandSource;
+		private readonly BusinessCalculationService m_calculation;
 
 		public BusinessRuntimeService(BusinessDefinitionsRepository definitions, BusinessStateSyncService stateSync)
 		{
 			m_definitions = definitions;
 			m_stateSync = stateSync;
+			m_calculation = new BusinessCalculationService(definitions, null);
+			m_npcDemandSource = new NpcBusinessDemandSource(m_calculation);
 		}
 
 		public IEnumerable<BusinessInstanceSnapshot> GetBusinesses()
@@ -82,6 +86,23 @@ namespace Prototype.Business.Runtime
 		public IEnumerable<string> GetMissingRequiredModules(BusinessInstanceSnapshot business)
 		{
 			return Enumerable.Empty<string>();
+		}
+
+		public bool TryConsumeService(string lotId, NPC.Registry.NPCServiceType service, out int price)
+		{
+			price = 0;
+			if (string.IsNullOrWhiteSpace(lotId) || m_stateSync == null || m_npcDemandSource == null)
+			{
+				return false;
+			}
+
+			BusinessInstanceSnapshot business = m_stateSync.GetBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return false;
+			}
+
+			return m_npcDemandSource.TryConsumeService(business, service, out price);
 		}
 	}
 }

@@ -18,44 +18,11 @@ namespace Prototype.Business.Simulation
 				return;
 			}
 
-			float safeDaySeconds = secondsPerGameDay > 0f ? secondsPerGameDay : s_secondsPerDayDefault;
-
 			state.ResetTick();
-
-			bool hasStorageItem = !string.IsNullOrWhiteSpace(state.storageItemId);
-			bool hasCashDeskItem = !string.IsNullOrWhiteSpace(state.cashDeskItemId);
-			bool hasShelfItem = !string.IsNullOrWhiteSpace(state.shelfItemId);
-			bool requiresMerch = definitions.RequiresMerchandiser(state.businessTypeId);
-
-			var tickIncome = 0f;
-			var tickExpenses = 0f;
-
-			if (state.isOpen
-			    && hasStorageItem
-			    && hasCashDeskItem
-			    && hasShelfItem
-			    && !string.IsNullOrWhiteSpace(state.hiredCashierContactId)
-			    && (!requiresMerch || !string.IsNullOrWhiteSpace(state.hiredMerchContactId))
-			    && state.storageStock > 0f)
-			{
-				float demand = CalculateDemand(state, definitions, deltaSeconds, safeDaySeconds);
-				state.lastDemand = demand;
-
-				float sold = Mathf.Min(demand, state.storageStock);
-				if (sold > 0f)
-				{
-					state.storageStock -= sold;
-					state.lastSold = sold;
-
-					float sellPrice = Mathf.Max(0f, state.markupPercent);
-					tickIncome += sold * sellPrice;
-				}
-			}
-
-			state.lastIncome = tickIncome;
-			state.lastExpenses = tickExpenses;
-			state.accumulatedIncome += tickIncome;
-			state.accumulatedExpenses += tickExpenses;
+			state.lastDemand = 0f;
+			state.lastSold = 0f;
+			state.lastIncome = 0f;
+			state.lastExpenses = 0f;
 
 			if (state.storageCapacity > 0)
 			{
@@ -67,21 +34,6 @@ namespace Prototype.Business.Simulation
 			}
 
 			state.shelfStock = Mathf.Max(0f, state.shelfStock);
-		}
-
-		private static float CalculateDemand(
-			BusinessSimulationState state,
-			BusinessDefinitionsRepository definitions,
-			float deltaSeconds,
-			float secondsPerGameDay)
-		{
-			int dailyDemand = definitions.GetDailyDemandForPrice(state.businessTypeId, state.markupPercent);
-			if (dailyDemand <= 0 || secondsPerGameDay <= 0f)
-			{
-				return 0f;
-			}
-
-			return dailyDemand / secondsPerGameDay * deltaSeconds;
 		}
 	}
 }
