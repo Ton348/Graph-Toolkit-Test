@@ -38,9 +38,6 @@ namespace Prototype.Business.Services
 			m_playerStateSync?.ApplySnapshot(snapshot);
 			m_businessStateSync?.ApplySnapshot(snapshot);
 
-			Debug.Log(
-				$"[ProfileSync] Applied snapshot: money={snapshot.money}, active={snapshot.activeQuestIds?.Count ?? 0}, completed={snapshot.completedQuestIds?.Count ?? 0}, businesses={snapshot.businesses?.Count ?? 0}");
-
 			if (synced == null)
 			{
 				return;

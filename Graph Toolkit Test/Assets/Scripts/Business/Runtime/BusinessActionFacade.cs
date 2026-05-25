@@ -96,6 +96,12 @@ namespace Prototype.Business.Runtime
 			return ExecuteAsync("CollectBusinessProfit", () => m_gameServer.TryCollectBusinessProfitAsync(lotId));
 		}
 
+		public Task<ServerActionResult> ApplyBusinessDelivery(string lotId, int requestedAmount)
+		{
+			return ExecuteAsync("ApplyBusinessDelivery",
+				() => m_gameServer.TryApplyBusinessDeliveryAsync(lotId, requestedAmount));
+		}
+
 		public Task<ServerActionResult> UnlockContact(string contactId)
 		{
 			return ExecuteAsync("UnlockContact", () => m_gameServer.TryUnlockContactAsync(contactId));
@@ -111,19 +117,9 @@ namespace Prototype.Business.Runtime
 			return m_gameServer.TryGetTraderItemsAsync(traderId);
 		}
 
-		public Task<ServerActionResult> AddBusinessStock(string lotId, int amount)
+		public Task<ServerActionResult> MoveBusinessStockToShelf(string lotId, int amount)
 		{
-			return ExecuteAsync("AddBusinessStock", () => m_gameServer.TryAddBusinessStockAsync(lotId, amount));
-		}
-
-		public Task<ServerActionResult> AddBusinessShelfStock(string lotId, int amount)
-		{
-			return ExecuteAsync("AddBusinessShelfStock", () => m_gameServer.TryAddBusinessShelfStockAsync(lotId, amount));
-		}
-
-		public Task<ServerActionResult> ClearBusinessStock(string lotId)
-		{
-			return ExecuteAsync("ClearBusinessStock", () => m_gameServer.TryClearBusinessStockAsync(lotId));
+			return ExecuteAsync("MoveBusinessStockToShelf", () => m_gameServer.TryMoveBusinessStockToShelfAsync(lotId, amount));
 		}
 
 		public Task<ServerActionResult> ResetBusinesses()

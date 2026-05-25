@@ -755,6 +755,14 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
+    case 'apply_business_delivery': {
+      console.log('[BusinessServer] action=apply_business_delivery');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.applyBusinessDelivery(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
     case 'collect_business_profit': {
       console.log('[BusinessServer] action=collect_business_profit');
       const profile = loadPlayerProfile(payload.playerId || 'player');
@@ -779,26 +787,10 @@ function handleAction(req, res, payload) {
       savePlayerProfile(profile);
       return success(res, result.message, profile);
     }
-    case 'add_business_stock': {
-      console.log('[BusinessServer] action=add_business_stock');
+    case 'move_business_stock_to_shelf': {
+      console.log('[BusinessServer] action=move_business_stock_to_shelf');
       const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.addBusinessStock(profile, payload.data, businessDefs);
-      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
-      savePlayerProfile(profile);
-      return success(res, result.message, profile);
-    }
-    case 'add_business_shelf_stock': {
-      console.log('[BusinessServer] action=add_business_shelf_stock');
-      const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.addBusinessShelfStock(profile, payload.data, businessDefs);
-      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
-      savePlayerProfile(profile);
-      return success(res, result.message, profile);
-    }
-    case 'clear_business_stock': {
-      console.log('[BusinessServer] action=clear_business_stock');
-      const profile = loadPlayerProfile(payload.playerId || 'player');
-      const result = businessActions.clearBusinessStock(profile, payload.data);
+      const result = businessActions.moveBusinessStockToShelf(profile, payload.data, businessDefs);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);

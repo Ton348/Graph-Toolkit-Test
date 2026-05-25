@@ -63,5 +63,15 @@ namespace Prototype.Business.NPC.Workers
 
 			return m_agent.remainingDistance <= Mathf.Max(0.05f, tolerance);
 		}
+
+		public bool HasPath()
+		{
+			if (m_agent == null || !m_agent.isOnNavMesh)
+			{
+				return false;
+			}
+
+			return m_agent.pathPending || m_agent.hasPath;
+		}
 	}
 }

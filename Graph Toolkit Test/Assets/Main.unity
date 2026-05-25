@@ -1663,8 +1663,6 @@ MonoBehaviour:
   listView: {fileID: 0}
   detailsView: {fileID: 43712916}
   statusText: {fileID: 0}
-  secondsPerBusinessDay: 10
-  autoSimulateServerBusinessDay: 1
   uiRefreshIntervalSeconds: 1
 --- !u!1 &45431163 stripped
 GameObject:
@@ -7198,7 +7196,6 @@ GameObject:
   m_Component:
   - component: {fileID: 229244334}
   - component: {fileID: 229244336}
-  - component: {fileID: 229244335}
   m_Layer: 0
   m_Name: DeliveryZone
   m_TagString: Untagged
@@ -7221,24 +7218,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1468242542}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &229244335
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 229244333}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: df49f54f675c94737988bb8c463fb6df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BusinessDeliveryZone
-  worldRuntime: {fileID: 1468242541}
-  deliveryAmount: 100
-  deliveryItemId: goods
-  requireItem: 1
-  interactKey: 101
-  playerTag: Player
 --- !u!65 &229244336
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -29710,7 +29689,7 @@ Transform:
   m_GameObject: {fileID: 777950239}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.11, y: 1, z: -3.47}
+  m_LocalPosition: {x: -3.75, y: 1, z: -4.35}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -66042,7 +66021,7 @@ MonoBehaviour:
   remoteBaseUrl: http://127.0.0.1:3000
   remotePlayerId: player
   remoteTimeoutSeconds: 5
-  remoteDebugLog: 1
+  remoteDebugLog: 0
   refreshProfileOnGameStart: 1
   localMinDelayMs: 100
   localMaxDelayMs: 500

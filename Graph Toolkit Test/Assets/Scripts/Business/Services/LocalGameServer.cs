@@ -160,6 +160,57 @@ namespace Prototype.Business.Services
 			return Task.FromResult(TryConsumeNpcServiceSync(lotId, service, requestedAmount));
 		}
 
+		public async Task<ServerActionResult> TryApplyBusinessDeliveryAsync(string lotId, int requestedAmount)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			if (requestedAmount <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "AmountInvalid",
+					"requestedAmount must be > 0.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			int storageCapacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
+			int freeStorage = Mathf.Max(0, storageCapacity - Mathf.Max(0, business.storageStock));
+			int logistLimit = m_calculationService != null ? m_calculationService.GetDeliveryPerDay(business) : 0;
+			int orderedByLogist = Mathf.Min(Mathf.Max(0, requestedAmount), Mathf.Max(0, logistLimit));
+			int addedToStorage = Mathf.Min(orderedByLogist, freeStorage);
+			if (addedToStorage > 0)
+			{
+				business.storageStock += addedToStorage;
+			}
+
+			SupplierDefinitionData supplier = m_businessRepository?.GetSupplier(business.hiredLogistContactId);
+			int unitBuyPrice = supplier != null ? Mathf.Max(0, supplier.unitBuyPrice) : 0;
+			int deliveryCost = orderedByLogist * unitBuyPrice;
+			if (deliveryCost > 0)
+			{
+				business.dayExpenses += deliveryCost;
+			}
+
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Business delivery applied.");
+		}
+
 		public async Task<ServerActionResult> TryBuyBuildingAsync(
 			string buildingId,
 			QuestActionType questAction = QuestActionType.None,
@@ -1400,56 +1451,6 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Unlock contact success.");
 		}
 
-		public async Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount)
-		{
-			int delayMs = NextDelayMs();
-			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
-			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
-			await Task.Delay(delayMs);
-
-			if (networkIssue != ServerActionResult.ErrorType.None)
-			{
-				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
-			}
-
-			if (string.IsNullOrWhiteSpace(lotId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
-					"lotId is required.");
-			}
-
-			if (amount <= 0)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "AmountInvalid",
-					"amount must be positive.");
-			}
-
-			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
-			if (business == null)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
-					"Business not found.");
-			}
-
-			if (string.IsNullOrWhiteSpace(business.storageItemId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StorageMissing",
-					"Storage equipment not installed.");
-			}
-
-			int capacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
-			int space = capacity > 0 ? capacity - business.storageStock : 0;
-			if (space <= 0)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "StorageFull",
-					"Storage is full.");
-			}
-
-			int added = amount > space ? space : amount;
-			business.storageStock += added;
-			return ServerActionResult.SuccessResult(BuildSnapshot(), $"Added stock: {added}.");
-		}
-
 		private int ResolveCashCapacity(BusinessInstanceSnapshot business)
 		{
 			if (business == null || string.IsNullOrWhiteSpace(business.cashDeskItemId))
@@ -1461,7 +1462,8 @@ namespace Prototype.Business.Services
 			return cashDeskItem != null ? Mathf.Max(0, cashDeskItem.cashCapacity) : 0;
 		}
 
-		public async Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount)
+
+		public async Task<ServerActionResult> TryMoveBusinessStockToShelfAsync(string lotId, int amount)
 		{
 			int delayMs = NextDelayMs();
 			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
@@ -1492,53 +1494,18 @@ namespace Prototype.Business.Services
 					"Business not found.");
 			}
 
-			if (string.IsNullOrWhiteSpace(business.shelfItemId))
+			int shelfCapacity = m_calculationService != null ? m_calculationService.GetShelfCapacity(business) : 0;
+			int freeShelf = Mathf.Max(0, shelfCapacity - Mathf.Max(0, business.shelfStock));
+			int availableStorage = Mathf.Max(0, business.storageStock);
+			int moved = Mathf.Min(amount, Mathf.Min(freeShelf, availableStorage));
+			if (moved <= 0)
 			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ShelvesMissing",
-					"Shelves equipment not installed.");
+				return ServerActionResult.SuccessResult(BuildSnapshot(), "Moved stock: 0.");
 			}
 
-			int capacity = m_calculationService != null ? m_calculationService.GetShelfCapacity(business) : 0;
-			int space = capacity > 0 ? capacity - business.shelfStock : 0;
-			if (space <= 0)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ShelvesFull",
-					"Shelves are full.");
-			}
-
-			int added = amount > space ? space : amount;
-			business.shelfStock += added;
-			return ServerActionResult.SuccessResult(BuildSnapshot(), $"Added shelf stock: {added}.");
-		}
-
-		public async Task<ServerActionResult> TryClearBusinessStockAsync(string lotId)
-		{
-			int delayMs = NextDelayMs();
-			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
-			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
-			await Task.Delay(delayMs);
-
-			if (networkIssue != ServerActionResult.ErrorType.None)
-			{
-				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
-			}
-
-			if (string.IsNullOrWhiteSpace(lotId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
-					"lotId is required.");
-			}
-
-			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
-			if (business == null)
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
-					"Business not found.");
-			}
-
-			business.storageStock = 0;
-			business.shelfStock = 0;
-			return ServerActionResult.SuccessResult(BuildSnapshot(), "Cleared business stock.");
+			business.storageStock -= moved;
+			business.shelfStock += moved;
+			return ServerActionResult.SuccessResult(BuildSnapshot(), $"Moved stock: {moved}.");
 		}
 
 		public async Task<ServerActionResult> TryResetBusinessesAsync()

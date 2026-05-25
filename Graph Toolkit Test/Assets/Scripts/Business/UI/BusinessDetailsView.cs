@@ -374,7 +374,7 @@ namespace Prototype.Business.UI
 			}
 
 			float income = business != null ? Mathf.Max(0, business.dayRevenue) : 0f;
-			float expenses = business != null ? Mathf.Max(0, business.dayExpenses) : expensesPerDay;
+			float expenses = Mathf.Max(0f, expensesPerDay);
 			float profit = business != null ? business.profit : income - expenses;
 			SetIncome(income);
 			SetExpenses(expenses);

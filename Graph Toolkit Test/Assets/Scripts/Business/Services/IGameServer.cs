@@ -36,10 +36,9 @@ namespace Prototype.Business.Services
 		Task<ServerActionResult> TrySimulateBusinessDayAsync(string lotId);
 		Task<ServerActionResult> TryCollectBusinessProfitAsync(string lotId);
 		Task<ServerActionResult> TryConsumeNpcServiceAsync(string lotId, string serviceId, int requestedAmount);
+		Task<ServerActionResult> TryApplyBusinessDeliveryAsync(string lotId, int requestedAmount);
 		Task<ServerActionResult> TryUnlockContactAsync(string contactId);
-		Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount);
-		Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount);
-		Task<ServerActionResult> TryClearBusinessStockAsync(string lotId);
+		Task<ServerActionResult> TryMoveBusinessStockToShelfAsync(string lotId, int amount);
 		Task<ServerActionResult> TryResetBusinessesAsync();
 		Task<ServerActionResult> TryConstructSiteVisualAsync(string siteId, string visualId);
 		Task<ServerActionResult> TryRemoveSiteVisualAsync(string siteId);

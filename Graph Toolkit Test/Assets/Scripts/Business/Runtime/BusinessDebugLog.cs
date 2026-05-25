@@ -18,6 +18,11 @@ namespace Prototype.Business.Runtime
 
 		public static void Warn(string message)
 		{
+			if (!enabled)
+			{
+				return;
+			}
+
 			Debug.LogWarning(message);
 		}
 

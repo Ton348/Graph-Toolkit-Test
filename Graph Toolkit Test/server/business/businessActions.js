@@ -298,14 +298,6 @@ function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
   const currentPrice = Number.isFinite(business.markupPercent) ? Math.max(0, Math.floor(business.markupPercent)) : 0;
-  const stock = Number.isFinite(business.storageStock) ? Math.max(0, Math.floor(business.storageStock)) : 0;
-  const storageCapacity = resolveStorageCapacity(business, businessDefs);
-  const dailyOrderAmount = resolveDeliveryPerDay(business, businessDefs);
-
-  const supplier = businessDefs?.supplierById && business.hiredLogistContactId
-    ? businessDefs.supplierById.get(business.hiredLogistContactId)
-    : null;
-  const unitCost = supplier && Number.isFinite(supplier.unitBuyPrice) ? Math.max(0, supplier.unitBuyPrice) : 0;
   const rentPerDay = resolveRentPerDay(business, lotDefs);
   const staffById = businessDefs?.staffContactById || null;
   const businessType = businessDefs?.businessTypeById && business.businessTypeId
@@ -326,19 +318,15 @@ function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
     ? businessDefs.traderItemById.get(business.cashDeskItemId)
     : null;
   const cashCapacity = cashDeskItem && Number.isFinite(cashDeskItem.cashCapacity) ? Math.max(0, cashDeskItem.cashCapacity) : 0;
-  const canDeliver = hasStorageItem && supplier && dailyOrderAmount > 0;
   const hasRequiredStaff = cashier && (!requiresMerch || merch);
   const canSell = business.isOpen && hasCashDeskItem && hasShelfItem && hasRequiredStaff;
-
-  const storageFreeSpace = Math.max(0, storageCapacity - stock);
-  const delivered = canDeliver ? Math.min(dailyOrderAmount, storageFreeSpace) : 0;
-  const stockAfterDelivery = stock + delivered;
   const sold = 0;
   const revenue = Number.isFinite(business.dayRevenue) ? Math.max(0, Math.floor(business.dayRevenue)) : 0;
-  const deliveryCost = canDeliver ? delivered * unitCost : 0;
-  const totalExpenses = deliveryCost + rentPerDay + cashierSalary + (requiresMerch ? merchSalary : 0) + logistSalary;
-  const dayProfitDelta = revenue - totalExpenses;
-  business.storageStock = Math.max(0, stockAfterDelivery);
+  const dayExpensesBase = rentPerDay + cashierSalary + (requiresMerch ? merchSalary : 0) + logistSalary;
+  const deliveryExpenses = Number.isFinite(business.dayExpenses) ? Math.max(0, Math.floor(business.dayExpenses)) : 0;
+  const dayExpenses = dayExpensesBase + deliveryExpenses;
+  const dayProfitDelta = revenue - dayExpenses;
+  business.dayExpenses = dayExpenses;
   business.profit = (Number.isFinite(business.profit) ? business.profit : 0) + dayProfitDelta;
   business.dayRevenue = 0;
   business.dayExpenses = 0;
@@ -347,6 +335,36 @@ function simulateBusinessDay(profile, data, businessDefs, lotDefs) {
   }
 
   return ok('Simulate business day success.');
+}
+
+function applyBusinessDelivery(profile, data, businessDefs) {
+  const lotId = data && data.lotId;
+  const requestedAmount = data && data.requestedAmount;
+  const lotCheck = requireLotId(lotId);
+  if (lotCheck) return lotCheck;
+  if (!Number.isFinite(requestedAmount) || requestedAmount <= 0) {
+    return fail('AmountInvalid', 'requestedAmount must be > 0.');
+  }
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) return fail('BusinessNotFound', 'Business not found.');
+  if (!business.isOpen) return fail('BusinessClosed', 'Business is closed.');
+
+  const storageCapacity = resolveStorageCapacity(business, businessDefs);
+  const storageStock = Number.isFinite(business.storageStock) ? Math.max(0, Math.floor(business.storageStock)) : 0;
+  const freeStorage = Math.max(0, storageCapacity - storageStock);
+  const deliveryLimit = resolveDeliveryPerDay(business, businessDefs);
+  const orderedByLogist = Math.min(Math.max(0, Math.floor(requestedAmount)), deliveryLimit);
+  const addedToStorage = Math.min(orderedByLogist, freeStorage);
+  const supplier = businessDefs?.supplierById && business.hiredLogistContactId
+    ? businessDefs.supplierById.get(business.hiredLogistContactId)
+    : null;
+  const unitCost = supplier && Number.isFinite(supplier.unitBuyPrice) ? Math.max(0, supplier.unitBuyPrice) : 0;
+  const deliveryCost = orderedByLogist * unitCost;
+
+  business.storageStock = storageStock + addedToStorage;
+  business.dayExpenses = (Number.isFinite(business.dayExpenses) ? Math.max(0, Math.floor(business.dayExpenses)) : 0) + deliveryCost;
+  return ok('Business delivery applied.');
 }
 
 function collectBusinessProfit(profile, data, businessDefs) {
@@ -428,12 +446,12 @@ function unlockContact(profile, data) {
   return ok('Unlock contact success.');
 }
 
-function addBusinessStock(profile, data, businessDefs) {
+
+function moveBusinessStockToShelf(profile, data, businessDefs) {
   const lotId = data && data.lotId;
   const amount = data && data.amount;
   const lotCheck = requireLotId(lotId);
   if (lotCheck) return lotCheck;
-
   if (!Number.isFinite(amount) || amount <= 0) {
     return fail('AmountInvalid', 'amount must be positive.');
   }
@@ -441,62 +459,18 @@ function addBusinessStock(profile, data, businessDefs) {
   const business = findBusinessByLotId(profile, lotId);
   if (!business) return fail('BusinessNotFound', 'Business not found.');
 
-  if (!business.storageItemId) {
-    return fail('StorageMissing', 'Storage equipment not installed.');
+  const shelfCapacity = resolveShelfCapacity(business, businessDefs);
+  const shelfStock = Number.isFinite(business.shelfStock) ? Math.max(0, business.shelfStock) : 0;
+  const storageStock = Number.isFinite(business.storageStock) ? Math.max(0, business.storageStock) : 0;
+  const freeShelf = Math.max(0, shelfCapacity - shelfStock);
+  const moved = Math.min(Math.floor(amount), Math.min(freeShelf, storageStock));
+  if (moved <= 0) {
+    return ok('Move stock success.');
   }
 
-  const capacity = resolveStorageCapacity(business, businessDefs);
-  const current = Number.isFinite(business.storageStock) ? business.storageStock : 0;
-  const space = capacity - current;
-  if (space <= 0) {
-    return fail('StorageFull', 'Storage is full.');
-  }
-
-  const added = amount > space ? space : amount;
-  business.storageStock = current + added;
-  return ok(`Added stock: ${added}.`);
-}
-
-function addBusinessShelfStock(profile, data, businessDefs) {
-  const lotId = data && data.lotId;
-  const amount = data && data.amount;
-  const lotCheck = requireLotId(lotId);
-  if (lotCheck) return lotCheck;
-
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return fail('AmountInvalid', 'amount must be positive.');
-  }
-
-  const business = findBusinessByLotId(profile, lotId);
-  if (!business) return fail('BusinessNotFound', 'Business not found.');
-
-  if (!business.shelfItemId) {
-    return fail('ShelvesMissing', 'Shelves equipment not installed.');
-  }
-
-  const capacity = resolveShelfCapacity(business, businessDefs);
-  const current = Number.isFinite(business.shelfStock) ? business.shelfStock : 0;
-  const space = capacity - current;
-  if (space <= 0) {
-    return fail('ShelvesFull', 'Shelves are full.');
-  }
-
-  const added = amount > space ? space : amount;
-  business.shelfStock = current + added;
-  return ok(`Added shelf stock: ${added}.`);
-}
-
-function clearBusinessStock(profile, data) {
-  const lotId = data && data.lotId;
-  const lotCheck = requireLotId(lotId);
-  if (lotCheck) return lotCheck;
-
-  const business = findBusinessByLotId(profile, lotId);
-  if (!business) return fail('BusinessNotFound', 'Business not found.');
-
-  business.storageStock = 0;
-  business.shelfStock = 0;
-  return ok('Cleared business stock.');
+  business.storageStock = storageStock - moved;
+  business.shelfStock = shelfStock + moved;
+  return ok('Move stock success.');
 }
 
 function validateEquipmentItem(profile, businessDefs, itemId, requiredCategory) {
@@ -708,10 +682,9 @@ module.exports = {
   setBusinessMarkup,
   setBusinessAutoDelivery,
   simulateBusinessDay,
+  applyBusinessDelivery,
   unlockContact,
-  addBusinessStock,
-  addBusinessShelfStock,
-  clearBusinessStock,
+  moveBusinessStockToShelf,
   collectBusinessProfit,
   consumeNpcService,
   resetBusinesses,

@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 50,
+  "money": 5050,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -25,13 +25,13 @@
       "lotId": "lot_market_01",
       "businessTypeId": "grocery_store",
       "isOpen": true,
-      "storageStock": 500,
-      "shelfStock": 100,
-      "autoDeliveryPerDay": 100,
-      "markupPercent": 20,
-      "dayRevenue": 60,
+      "storageStock": 463,
+      "shelfStock": 95,
+      "autoDeliveryPerDay": 0,
+      "markupPercent": 49,
+      "dayRevenue": 1764,
       "dayExpenses": 0,
-      "profit": 2922,
+      "profit": -562416,
       "storageItemId": "storage_basic",
       "cashDeskItemId": "cashdesk_basic",
       "shelfItemId": "shelf_basic",
@@ -50,7 +50,7 @@
       "markupPercent": 0,
       "dayRevenue": 0,
       "dayExpenses": 0,
-      "profit": -12000
+      "profit": -232500
     }
   ],
   "knownContacts": [],

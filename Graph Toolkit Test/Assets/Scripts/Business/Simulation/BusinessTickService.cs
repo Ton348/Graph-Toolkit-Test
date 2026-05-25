@@ -25,20 +25,9 @@ namespace Prototype.Business.Simulation
 
 			int storageCapacity = m_calculation.GetStorageCapacity(instance);
 			int shelfCapacity = m_calculation.GetShelfCapacity(instance);
-			int target = Mathf.Max(0, instance.autoDeliveryPerDay);
-			int maxByLogist = m_calculation.GetDeliveryPerDay(instance);
-			int orderedByLogist = Mathf.Min(target, maxByLogist);
 
 			int storageStock = Mathf.Max(0, instance.storageStock);
 			int shelfStock = Mathf.Max(0, instance.shelfStock);
-
-			int addedToStorage = 0;
-			if (orderedByLogist > 0 && storageCapacity > 0 && !string.IsNullOrWhiteSpace(instance.storageItemId))
-			{
-				int freeStorage = Mathf.Max(0, storageCapacity - storageStock);
-				addedToStorage = Mathf.Min(orderedByLogist, freeStorage);
-				storageStock += addedToStorage;
-			}
 
 			if (shelfCapacity > 0 && !string.IsNullOrWhiteSpace(instance.shelfItemId))
 			{
@@ -52,23 +41,12 @@ namespace Prototype.Business.Simulation
 				storageStock -= toShelf;
 			}
 
-			int dayExpenses = 0;
-			SupplierDefinitionData supplier = m_definitions?.GetSupplier(instance.hiredLogistContactId);
-			if (supplier != null)
-			{
-				int unitBuyPrice = Mathf.Max(0, supplier.unitBuyPrice);
-				int baseDeliveryCost = m_calculation.GetOrderedDeliveryPerDay(instance) * unitBuyPrice;
-				int actualDeliveryCost = orderedByLogist * unitBuyPrice;
-				dayExpenses = actualDeliveryCost - baseDeliveryCost;
-			}
-			if (dayExpenses > 0)
-			{
-				instance.dayExpenses += dayExpenses;
-				instance.profit -= dayExpenses;
-			}
-
+			int dayExpenses = Mathf.Max(0, instance.dayExpenses);
 			instance.storageStock = Mathf.Max(0, storageStock);
 			instance.shelfStock = Mathf.Max(0, shelfStock);
+			int dayRevenue = Mathf.Max(0, instance.dayRevenue);
+			instance.dayExpenses = dayExpenses;
+			instance.profit += dayRevenue - instance.dayExpenses;
 			instance.dayRevenue = 0;
 			instance.dayExpenses = 0;
 			instance.dayIndex = Mathf.Max(0, instance.dayIndex) + 1;

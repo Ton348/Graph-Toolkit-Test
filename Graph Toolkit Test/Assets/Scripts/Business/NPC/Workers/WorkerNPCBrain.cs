@@ -13,6 +13,7 @@ namespace Prototype.Business.NPC.Workers
 	{
 		[SerializeField] private WorkerNPCType workerType;
 		[SerializeField] private float waitAtStockSeconds = 2f;
+		[SerializeField] private float despawnTravelTimeoutSeconds = 45f;
 
 		private WorkerNPCMovement m_movement;
 		private GameBootstrap m_bootstrap;
@@ -28,6 +29,9 @@ namespace Prototype.Business.NPC.Workers
 		private bool m_stockSyncInProgress;
 		private bool m_deliveryApplied;
 		private Transform m_currentTargetTransform;
+		private bool m_isDespawning;
+		private float m_despawnStartTime;
+		private Vector3 m_despawnTargetPosition;
 
 		public WorkerNPCType WorkerType => workerType;
 		public WorkerNPCState CurrentState => m_state;
@@ -66,6 +70,32 @@ namespace Prototype.Business.NPC.Workers
 				return;
 			}
 
+			if (m_isDespawning)
+			{
+				if (HasReachedTarget())
+				{
+					Destroy(gameObject);
+					return;
+				}
+
+				if (!m_movement.HasPath() && m_currentTargetTransform != null)
+				{
+					m_movement.MoveTo(m_currentTargetTransform.position);
+					return;
+				}
+
+				if (UnityEngine.Time.time - m_despawnStartTime >= Mathf.Max(5f, despawnTravelTimeoutSeconds))
+				{
+					transform.position = m_currentTargetTransform != null
+						? m_currentTargetTransform.position
+						: m_despawnTargetPosition;
+					Destroy(gameObject);
+					return;
+				}
+
+				return;
+			}
+
 			switch (workerType)
 			{
 				case WorkerNPCType.Merchandiser:
@@ -90,8 +120,15 @@ namespace Prototype.Business.NPC.Workers
 
 			if (m_state == WorkerNPCState.MovingToStorage && HasReachedTarget())
 			{
+				m_state = WorkerNPCState.WaitingStock;
 				ApplyDailyDelivery();
+				return;
+			}
+
+			if (m_state == WorkerNPCState.WaitingStock && m_deliveryApplied)
+			{
 				BeginDespawn();
+				return;
 			}
 		}
 
@@ -199,7 +236,6 @@ namespace Prototype.Business.NPC.Workers
 			m_carrying = Mathf.Min(available, transferCap);
 			if (m_carrying > 0)
 			{
-				business.storageStock -= m_carrying;
 				m_state = WorkerNPCState.CarryingGoods;
 			}
 		}
@@ -225,27 +261,17 @@ namespace Prototype.Business.NPC.Workers
 			int add = Mathf.Min(m_carrying, free);
 			if (add > 0)
 			{
-				business.shelfStock += add;
-			}
-
-			int notPlaced = Mathf.Max(0, m_carrying - add);
-			if (notPlaced > 0)
-			{
-				business.storageStock += notPlaced;
-			}
-
-			if (add > 0 || notPlaced > 0)
-			{
-				SyncBusinessStockAsync();
+				MoveStockToShelvesAsync(add);
 			}
 
 			m_carrying = 0;
 			m_state = add > 0 ? WorkerNPCState.RestockingShelves : WorkerNPCState.WaitingStock;
 		}
 
-		private async void SyncBusinessStockAsync()
+		private async void MoveStockToShelvesAsync(int amount)
 		{
-			if (m_stockSyncInProgress || m_world == null || m_bootstrap == null || m_bootstrap.BusinessActionFacade == null)
+			if (amount <= 0 || m_stockSyncInProgress || m_world == null || m_bootstrap == null ||
+			    m_bootstrap.BusinessActionFacade == null)
 			{
 				return;
 			}
@@ -259,19 +285,7 @@ namespace Prototype.Business.NPC.Workers
 			m_stockSyncInProgress = true;
 			try
 			{
-				int targetStorage = Mathf.Max(0, business.storageStock);
-				int targetShelves = Mathf.Max(0, business.shelfStock);
-
-				await m_bootstrap.BusinessActionFacade.ClearBusinessStock(business.lotId);
-				if (targetStorage > 0)
-				{
-					await m_bootstrap.BusinessActionFacade.AddBusinessStock(business.lotId, targetStorage);
-				}
-
-				if (targetShelves > 0)
-				{
-					await m_bootstrap.BusinessActionFacade.AddBusinessShelfStock(business.lotId, targetShelves);
-				}
+				await m_bootstrap.BusinessActionFacade.MoveBusinessStockToShelf(business.lotId, amount);
 			}
 			finally
 			{
@@ -346,6 +360,11 @@ namespace Prototype.Business.NPC.Workers
 
 		private bool ShouldDespawn()
 		{
+			if (m_isDespawning)
+			{
+				return false;
+			}
+
 			BusinessInstanceSnapshot business = m_world.GetBusiness();
 			if (business == null || !business.isOpen)
 			{
@@ -358,13 +377,23 @@ namespace Prototype.Business.NPC.Workers
 			}
 			if (workerType == WorkerNPCType.Logist)
 			{
-				return string.IsNullOrWhiteSpace(business.hiredLogistContactId) || m_world.storagePoint == null || m_deliveryApplied;
+				if (string.IsNullOrWhiteSpace(business.hiredLogistContactId))
+				{
+					return true;
+				}
+
+				return m_deliveryApplied;
 			}
 			return string.IsNullOrWhiteSpace(business.hiredCashierContactId) || m_world.cashierPoint == null;
 		}
 
 		private void BeginDespawn()
 		{
+			if (m_isDespawning)
+			{
+				return;
+			}
+
 			if (m_registeredCashier && workerType == WorkerNPCType.Cashier && !string.IsNullOrWhiteSpace(m_world.lotId))
 			{
 				WorkerNPCRegistry.SetCashierActive(m_world.lotId, false, this);
@@ -389,12 +418,15 @@ namespace Prototype.Business.NPC.Workers
 			if (best != null)
 			{
 				m_state = WorkerNPCState.Despawning;
+				m_isDespawning = true;
+				m_despawnStartTime = UnityEngine.Time.time;
+				m_despawnTargetPosition = best.position;
+				m_currentTargetTransform = best;
 				m_movement.MoveTo(best.position);
-				Destroy(gameObject, 2f);
 			}
 			else
 			{
-				Destroy(gameObject, 1f);
+				UnityEngine.Debug.LogError($"[WorkerNPCBrain] No NPCDespawnPoint found for {workerType}.");
 			}
 		}
 
@@ -449,16 +481,22 @@ namespace Prototype.Business.NPC.Workers
 			}
 
 			int ordered = Mathf.Max(0, business.autoDeliveryPerDay);
-			int limit = m_throughputPerHour > 0 ? m_throughputPerHour * 24 : 0;
-			int amount = limit > 0 ? Mathf.Min(ordered, limit) : 0;
-			if (amount <= 0)
+			if (ordered <= 0)
 			{
 				m_deliveryApplied = true;
 				return;
 			}
 
-			m_deliveryApplied = true;
-			await m_bootstrap.BusinessActionFacade.AddBusinessStock(business.lotId, amount);
+			try
+			{
+				await m_bootstrap.BusinessActionFacade.ApplyBusinessDelivery(business.lotId, ordered);
+				m_deliveryApplied = true;
+			}
+			catch (System.Exception ex)
+			{
+				UnityEngine.Debug.LogError($"[WorkerNPCBrain] ApplyDailyDelivery failed: {ex}");
+				m_deliveryApplied = false;
+			}
 		}
 
 		private void OnDestroy()

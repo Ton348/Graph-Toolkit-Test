@@ -502,6 +502,28 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TryApplyBusinessDeliveryAsync(string lotId, int requestedAmount)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log(
+					$"[RemoteGameServer] action=apply_business_delivery lotId='{lotId}' requestedAmount={requestedAmount}");
+			}
+
+			var request = new RemoteApplyBusinessDeliveryRequest
+			{
+				action = "apply_business_delivery",
+				playerId = m_playerId,
+				data = new RemoteApplyBusinessDeliveryData
+				{
+					lotId = lotId,
+					requestedAmount = requestedAmount
+				}
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		Task<ServerActionResult> IGameServer.TryCollectBusinessProfitAsync(string lotId)
 		{
 			return TryCollectBusinessProfitAsync(lotId);
@@ -524,52 +546,19 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
-		public Task<ServerActionResult> TryAddBusinessStockAsync(string lotId, int amount)
+
+		public Task<ServerActionResult> TryMoveBusinessStockToShelfAsync(string lotId, int amount)
 		{
 			if (m_debugLog)
 			{
-				Debug.Log($"[RemoteGameServer] action=add_business_stock lotId='{lotId}' amount={amount}");
+				Debug.Log($"[RemoteGameServer] action=move_business_stock_to_shelf lotId='{lotId}' amount={amount}");
 			}
 
-			var request = new RemoteAddBusinessStockRequest
+			var request = new RemoteMoveBusinessStockToShelfRequest
 			{
-				action = "add_business_stock",
+				action = "move_business_stock_to_shelf",
 				playerId = m_playerId,
-				data = new RemoteAddBusinessStockData { lotId = lotId, amount = amount }
-			};
-
-			return SendRequestAsync(request);
-		}
-
-		public Task<ServerActionResult> TryAddBusinessShelfStockAsync(string lotId, int amount)
-		{
-			if (m_debugLog)
-			{
-				Debug.Log($"[RemoteGameServer] action=add_business_shelf_stock lotId='{lotId}' amount={amount}");
-			}
-
-			var request = new RemoteAddBusinessShelfStockRequest
-			{
-				action = "add_business_shelf_stock",
-				playerId = m_playerId,
-				data = new RemoteAddBusinessShelfStockData { lotId = lotId, amount = amount }
-			};
-
-			return SendRequestAsync(request);
-		}
-
-		public Task<ServerActionResult> TryClearBusinessStockAsync(string lotId)
-		{
-			if (m_debugLog)
-			{
-				Debug.Log($"[RemoteGameServer] action=clear_business_stock lotId='{lotId}'");
-			}
-
-			var request = new RemoteClearBusinessStockRequest
-			{
-				action = "clear_business_stock",
-				playerId = m_playerId,
-				data = new RemoteClearBusinessStockData { lotId = lotId }
+				data = new RemoteMoveBusinessStockToShelfData { lotId = lotId, amount = amount }
 			};
 
 			return SendRequestAsync(request);
@@ -1310,47 +1299,18 @@ namespace Prototype.Business.Services
 		}
 
 		[Serializable]
-		private class RemoteAddBusinessStockRequest
+		private class RemoteMoveBusinessStockToShelfRequest
 		{
 			public string action;
 			public string playerId;
-			public RemoteAddBusinessStockData data;
+			public RemoteMoveBusinessStockToShelfData data;
 		}
 
 		[Serializable]
-		private class RemoteAddBusinessStockData
+		private class RemoteMoveBusinessStockToShelfData
 		{
 			public string lotId;
 			public int amount;
-		}
-
-		[Serializable]
-		private class RemoteAddBusinessShelfStockRequest
-		{
-			public string action;
-			public string playerId;
-			public RemoteAddBusinessShelfStockData data;
-		}
-
-		[Serializable]
-		private class RemoteAddBusinessShelfStockData
-		{
-			public string lotId;
-			public int amount;
-		}
-
-		[Serializable]
-		private class RemoteClearBusinessStockRequest
-		{
-			public string action;
-			public string playerId;
-			public RemoteClearBusinessStockData data;
-		}
-
-		[Serializable]
-		private class RemoteClearBusinessStockData
-		{
-			public string lotId;
 		}
 
 		[Serializable]
@@ -1366,6 +1326,21 @@ namespace Prototype.Business.Services
 		{
 			public string lotId;
 			public string serviceId;
+			public int requestedAmount;
+		}
+
+		[Serializable]
+		private class RemoteApplyBusinessDeliveryRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteApplyBusinessDeliveryData data;
+		}
+
+		[Serializable]
+		private class RemoteApplyBusinessDeliveryData
+		{
+			public string lotId;
 			public int requestedAmount;
 		}
 

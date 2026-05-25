@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Prototype.Business.Bootstrap;
 using Prototype.Business.NPC.Spawning;
 using Prototype.Business.Runtime;
+using Prototype.Business.Time;
 using Prototype.Business.World;
 using UnityEngine;
 
@@ -20,10 +21,33 @@ namespace Prototype.Business.NPC.Workers
 		private readonly Dictionary<string, int> m_logistSpawnedDayByLotId = new();
 		private GameBootstrap m_bootstrap;
 		private float m_timer;
+		private int m_currentWorldDay = 1;
 
 		private void Awake()
 		{
 			m_bootstrap = FindFirstObjectByType<GameBootstrap>(FindObjectsInactive.Include);
+			m_currentWorldDay = WorldTimeSystem.Instance != null ? Mathf.Max(1, WorldTimeSystem.Instance.CurrentDay) : 1;
+		}
+
+		private void OnEnable()
+		{
+			if (WorldTimeSystem.Instance != null)
+			{
+				WorldTimeSystem.Instance.OnDayChanged += OnWorldDayChanged;
+			}
+		}
+
+		private void OnDisable()
+		{
+			if (WorldTimeSystem.Instance != null)
+			{
+				WorldTimeSystem.Instance.OnDayChanged -= OnWorldDayChanged;
+			}
+		}
+
+		private void OnWorldDayChanged(int day)
+		{
+			m_currentWorldDay = Mathf.Max(1, day);
 		}
 
 		private void Update()
@@ -63,12 +87,11 @@ namespace Prototype.Business.NPC.Workers
 
 				bool needMerch = !string.IsNullOrWhiteSpace(business.hiredMerchContactId) && business.isOpen;
 				bool needCashier = !string.IsNullOrWhiteSpace(business.hiredCashierContactId) && business.isOpen;
-				int currentDay = Mathf.Max(0, business.dayIndex);
 				int lastSpawnedDay = -1;
 				m_logistSpawnedDayByLotId.TryGetValue(world.lotId, out lastSpawnedDay);
 				bool needLogist = !string.IsNullOrWhiteSpace(business.hiredLogistContactId) &&
 				                  business.isOpen &&
-				                  currentDay > lastSpawnedDay;
+				                  m_currentWorldDay > lastSpawnedDay;
 				EnsureWorker(world, WorkerNPCType.Merchandiser, needMerch);
 				EnsureWorker(world, WorkerNPCType.Cashier, needCashier);
 				EnsureWorker(world, WorkerNPCType.Logist, needLogist);
@@ -88,9 +111,15 @@ namespace Prototype.Business.NPC.Workers
 			{
 				if (existing != null)
 				{
-					Destroy(existing.gameObject, 1.5f);
+					if (type != WorkerNPCType.Logist)
+					{
+						Destroy(existing.gameObject, 1.5f);
+					}
 				}
-				map.Remove(world.lotId);
+				if (type != WorkerNPCType.Logist)
+				{
+					map.Remove(world.lotId);
+				}
 				return;
 			}
 
@@ -135,8 +164,7 @@ namespace Prototype.Business.NPC.Workers
 			map[world.lotId] = brain;
 			if (type == WorkerNPCType.Logist)
 			{
-				BusinessInstanceSnapshot business = world.GetBusiness();
-				m_logistSpawnedDayByLotId[world.lotId] = business != null ? Mathf.Max(0, business.dayIndex) : 0;
+				m_logistSpawnedDayByLotId[world.lotId] = m_currentWorldDay;
 			}
 		}
 
@@ -224,9 +252,12 @@ namespace Prototype.Business.NPC.Workers
 
 			if (m_logistByLotId.TryGetValue(lotId, out WorkerNPCBrain logist) && logist != null)
 			{
-				Destroy(logist.gameObject, 1.5f);
+				// Logist must finish despawn path via WorkerNPCBrain to avoid disappearing mid-route.
 			}
-			m_logistByLotId.Remove(lotId);
+			if (m_logistByLotId.TryGetValue(lotId, out WorkerNPCBrain existingLogist) && existingLogist == null)
+			{
+				m_logistByLotId.Remove(lotId);
+			}
 			m_logistSpawnedDayByLotId.Remove(lotId);
 		}
 	}
