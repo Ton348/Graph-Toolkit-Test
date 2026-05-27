@@ -6,6 +6,7 @@ using Prototype.Business.Runtime;
 using Prototype.Business.World;
 using System.Threading.Tasks;
 using UnityEngine;
+using System;
 
 namespace Prototype.Business.NPC.AI
 {
@@ -13,6 +14,8 @@ namespace Prototype.Business.NPC.AI
 	[RequireComponent(typeof(NPCMovementController))]
 	public sealed class NPCBrain : MonoBehaviour
 	{
+		public event Action OnTargetReached;
+		public event Action<bool> OnServiceFlowCompleted;
 		private enum ShoppingState
 		{
 			None,
@@ -30,6 +33,7 @@ namespace Prototype.Business.NPC.AI
 		[SerializeField] private float minimumGoalDurationSeconds = 5f;
 		[SerializeField] private float interactionDistance = 1.2f;
 		[SerializeField] private float entranceSpreadRadius = 0.8f;
+		[SerializeField] private bool graphDrivenOnly = true;
 
 		private NPCNeedsComponent m_needs;
 		private NPCMovementController m_movement;
@@ -57,6 +61,7 @@ namespace Prototype.Business.NPC.AI
 		public NPCGoalType CurrentGoal => m_currentGoal;
 		public string CurrentTargetBusinessName => m_currentTargetBusinessName;
 		public string CurrentActionLabel => GetActionLabel();
+		public NPCNeedsComponent Needs => m_needs;
 
 		private void Awake()
 		{
@@ -88,7 +93,7 @@ namespace Prototype.Business.NPC.AI
 				return;
 			}
 
-			if (m_decisionTimer >= Mathf.Max(0.2f, decisionTickSeconds))
+			if (!graphDrivenOnly && m_decisionTimer >= Mathf.Max(0.2f, decisionTickSeconds))
 			{
 				m_decisionTimer = 0f;
 				TickBrain();
@@ -202,6 +207,7 @@ namespace Prototype.Business.NPC.AI
 
 		private void OnDestinationReached()
 		{
+			OnTargetReached?.Invoke();
 			switch (m_shoppingState)
 			{
 				case ShoppingState.GoingToEntrance:
@@ -214,12 +220,58 @@ namespace Prototype.Business.NPC.AI
 					BeginPayment();
 					break;
 				case ShoppingState.LeavingStore:
+					OnServiceFlowCompleted?.Invoke(true);
 					CompleteWithWander();
 					break;
 				default:
 					m_hasTarget = false;
 					break;
 			}
+		}
+
+		public bool MoveToPoint(Vector3 destination)
+		{
+			m_currentTargetBusiness = null;
+			m_currentTargetBusinessName = null;
+			m_currentService = NPCServiceType.Fun;
+			m_currentTargetTransform = null;
+			m_currentDestination = destination;
+			m_hasTarget = true;
+			m_waitingAtTarget = false;
+			m_idleTimer = 0f;
+			m_shoppingState = ShoppingState.None;
+			m_movement.MoveTo(destination);
+			return true;
+		}
+
+		public bool StartServiceFlow(NPCServiceType service)
+		{
+			m_currentGoal = service switch
+			{
+				NPCServiceType.Food => NPCGoalType.GoEat,
+				NPCServiceType.Drink => NPCGoalType.GoDrink,
+				NPCServiceType.Toilet => NPCGoalType.GoToilet,
+				NPCServiceType.Work => NPCGoalType.GoWork,
+				NPCServiceType.Sleep => NPCGoalType.GoHome,
+				_ => NPCGoalType.Wander
+			};
+			m_goalTimer = 0f;
+			m_currentTargetBusiness = null;
+			m_currentTargetBusinessName = null;
+			m_currentTargetTransform = null;
+			m_cartItemCount = 0;
+			m_shoppingState = ShoppingState.None;
+			m_waitingAtTarget = false;
+			m_idleTimer = 0f;
+			m_hasTarget = false;
+			TryMoveToService(service);
+			return m_hasTarget || m_currentTargetBusiness != null;
+		}
+
+		public void StopMovement()
+		{
+			m_hasTarget = false;
+			m_movement.Stop();
 		}
 
 		private void MoveToShelves()
@@ -248,7 +300,7 @@ namespace Prototype.Business.NPC.AI
 				return;
 			}
 
-			int desired = Random.Range(1, 10);
+			int desired = UnityEngine.Random.Range(1, 10);
 			m_cartItemCount = desired < business.shelfStock ? desired : business.shelfStock;
 			if (m_cartItemCount <= 0)
 			{
@@ -325,10 +377,23 @@ namespace Prototype.Business.NPC.AI
 			}
 			else
 			{
-				CompleteWithWander();
+				ResetCurrentServiceFlow();
+				OnServiceFlowCompleted?.Invoke(false);
 			}
 
 			m_paymentInProgress = false;
+		}
+
+		private void ResetCurrentServiceFlow()
+		{
+			m_waitingAtTarget = false;
+			m_idleTimer = 0f;
+			m_hasTarget = false;
+			m_cartItemCount = 0;
+			m_currentTargetBusiness = null;
+			m_currentTargetBusinessName = null;
+			m_currentTargetTransform = null;
+			m_shoppingState = ShoppingState.None;
 		}
 
 		private void LeaveStore()
@@ -336,6 +401,7 @@ namespace Prototype.Business.NPC.AI
 			if (m_currentTargetBusiness == null || m_currentTargetBusiness.EntrancePoint == null)
 			{
 				CompleteWithWander();
+				OnServiceFlowCompleted?.Invoke(false);
 				return;
 			}
 
@@ -348,15 +414,7 @@ namespace Prototype.Business.NPC.AI
 
 		private void CompleteWithWander()
 		{
-			m_waitingAtTarget = false;
-			m_idleTimer = 0f;
-			m_hasTarget = false;
-			m_cartItemCount = 0;
-			m_currentTargetBusiness = null;
-			m_currentTargetBusinessName = null;
-			m_currentTargetTransform = null;
-			m_shoppingState = ShoppingState.None;
-			SetGoal(NPCGoalType.Wander);
+			ResetCurrentServiceFlow();
 		}
 
 		private void DoWander()
@@ -397,7 +455,7 @@ namespace Prototype.Business.NPC.AI
 		private Vector3 GetEntranceDestination(Vector3 entrancePoint)
 		{
 			if (entranceSpreadRadius <= 0.01f) return entrancePoint;
-			Vector2 offset2d = Random.insideUnitCircle * entranceSpreadRadius;
+			Vector2 offset2d = UnityEngine.Random.insideUnitCircle * entranceSpreadRadius;
 			return entrancePoint + new Vector3(offset2d.x, 0f, offset2d.y);
 		}
 

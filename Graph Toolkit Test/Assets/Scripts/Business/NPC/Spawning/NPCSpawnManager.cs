@@ -1,6 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Graph.Core.Runtime;
+using Prototype.Business.Bootstrap;
 using Prototype.Business.NPC.AI;
+using Sample.Runtime.Services;
+using Sample.Runtime.UI;
 using Prototype.Business.Time;
 using UnityEngine;
 
@@ -13,6 +17,13 @@ namespace Prototype.Business.NPC.Spawning
 		[SerializeField] private int maxAlive = 20;
 		[SerializeField] private float spawnIntervalSeconds = 3f;
 		[SerializeField] private float despawnDelaySeconds = 2f;
+		[SerializeField] private GameBootstrap bootstrap;
+		[SerializeField] private DialogueService dialogueService;
+		[SerializeField] private ChoiceUiservice choiceUiService;
+		[SerializeField] private TradeOfferUiservice tradeOfferUiService;
+		[SerializeField] private MapMarkerService mapMarkerService;
+		[SerializeField] private CommonGraph behaviorGraph;
+		[SerializeField] private CommonGraph dialogueGraph;
 
 		private readonly List<NPCBrain> m_alive = new();
 		private NPCSpawnPoint[] m_spawnPoints;
@@ -87,6 +98,19 @@ namespace Prototype.Business.NPC.Spawning
 				}
 
 				GameObject go = Instantiate(npcPrefab, point.transform.position, point.transform.rotation);
+				Npcmanager npcManager = go.GetComponent<Npcmanager>();
+				if (npcManager != null)
+				{
+					npcManager.Initialize(
+						bootstrap,
+						dialogueService,
+						choiceUiService,
+						tradeOfferUiService,
+						mapMarkerService,
+						player,
+						behaviorGraph,
+						dialogueGraph);
+				}
 				NPCBrain brain = go.GetComponent<NPCBrain>();
 				if (brain != null)
 				{

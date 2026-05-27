@@ -14,6 +14,7 @@ namespace Prototype.Business.NPC.Debug
 		private NPCBrain m_brain;
 		private NPCNeedsComponent m_needs;
 		private NPCMovementController m_movement;
+		private NPCBehaviorRuntimeBridge m_behaviorBridge;
 		private TextMeshPro m_text;
 		private float m_timer;
 
@@ -24,6 +25,7 @@ namespace Prototype.Business.NPC.Debug
 			m_brain = GetComponentInParent<NPCBrain>();
 			m_needs = GetComponentInParent<NPCNeedsComponent>();
 			m_movement = GetComponentInParent<NPCMovementController>();
+			m_behaviorBridge = GetComponentInParent<NPCBehaviorRuntimeBridge>();
 			m_text = GetComponent<TextMeshPro>();
 			if (m_text == null)
 			{
@@ -83,6 +85,10 @@ namespace Prototype.Business.NPC.Debug
 			string target = m_brain != null && !string.IsNullOrWhiteSpace(m_brain.CurrentTargetBusinessName)
 				? m_brain.CurrentTargetBusinessName
 				: movement;
+			if (m_behaviorBridge != null && !string.IsNullOrWhiteSpace(m_behaviorBridge.DebugActiveBehaviorNode))
+			{
+				target = m_behaviorBridge.DebugActiveBehaviorNode;
+			}
 
 			float hunger = m_needs != null ? m_needs.Hunger : 0f;
 			float toilet = m_needs != null ? m_needs.Toilet : 0f;

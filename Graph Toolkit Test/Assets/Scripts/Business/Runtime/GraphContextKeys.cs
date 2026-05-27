@@ -1,5 +1,6 @@
 using Graph.Core.Runtime;
 using Prototype.Business.Bootstrap;
+using Prototype.Business.NPC.AI;
 using Prototype.Business.Services;
 using Sample.Runtime.Services;
 using UnityEngine;
@@ -11,6 +12,7 @@ namespace Prototype.Business.Runtime
 		public static readonly GraphContextKey<GameBootstrap> runtimeBootstrap = new("runtime.bootstrap");
 		public static readonly GraphContextKey<MapMarkerService> runtimeMapMarkerService = new("runtime.mapMarkerService");
 		public static readonly GraphContextKey<Transform> runtimePlayerTransform = new("runtime.playerTransform");
+		public static readonly GraphContextKey<NPCBehaviorRuntimeBridge> runtimeNpcBehaviorBridge = new("runtime.npcBehaviorBridge");
 		public static readonly GraphContextKey<int> choiceLastIndex = new("choice.lastIndex");
 		public static readonly GraphContextKey<string> choiceLastLabel = new("choice.lastLabel");
 		public static readonly GraphContextKey<bool> conditionLastResult = new("condition.lastResult");

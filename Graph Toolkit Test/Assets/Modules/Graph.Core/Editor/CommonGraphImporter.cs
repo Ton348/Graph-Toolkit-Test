@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Graph.Core.Editor.BaseNodes.Cinematics;
+using Graph.Core.Editor.BaseNodes.Behavior;
 using Graph.Core.Editor.BaseNodes.Flow;
 using Graph.Core.Editor.BaseNodes.Server;
 using Graph.Core.Editor.BaseNodes.UI;
@@ -9,6 +10,7 @@ using Graph.Core.Editor.BaseNodes.Utility;
 using Graph.Core.Editor.BaseNodes.World;
 using Graph.Core.Runtime;
 using Graph.Core.Runtime.Nodes.Cinematics;
+using Graph.Core.Runtime.Nodes.Behavior;
 using Graph.Core.Runtime.Nodes.Flow;
 using Graph.Core.Runtime.Nodes.Server;
 using Graph.Core.Runtime.Nodes.UI;
@@ -154,6 +156,36 @@ namespace Graph.Core.Editor
 				{
 					delaySeconds = GetOptionValue<float>(delayModel, "DelaySeconds")
 				},
+				HourReachedNodeModel hourReachedModel => new HourReachedNode
+				{
+					hour = GetOptionValue<int>(hourReachedModel, HourReachedNodeModel.HourOption)
+				},
+				HungerThresholdReachedNodeModel hungerThresholdModel => new HungerThresholdReachedNode
+				{
+					needType = GetOptionValue<BehaviorNeedType>(hungerThresholdModel, HungerThresholdReachedNodeModel.NeedTypeOption),
+					threshold = GetOptionValue<float>(hungerThresholdModel, HungerThresholdReachedNodeModel.ThresholdOption)
+				},
+				WaitForEventNodeModel waitForEventModel => new WaitForEventNode
+				{
+					eventName = GetOptionValue<string>(waitForEventModel, WaitForEventNodeModel.EventNameOption)
+				},
+				GoToTargetNodeModel goToTargetModel => new GoToTargetNode
+				{
+					targetType = GetOptionValue<BehaviorTargetType>(goToTargetModel, GoToTargetNodeModel.TargetTypeOption)
+				},
+				ModifyNeedNodeModel modifyNeedModel => new ModifyNeedNode
+				{
+					needType = GetOptionValue<BehaviorNeedType>(modifyNeedModel, ModifyNeedNodeModel.NeedTypeOption),
+					amount = GetOptionValue<float>(modifyNeedModel, ModifyNeedNodeModel.AmountOption),
+					increase = GetOptionValue<bool>(modifyNeedModel, ModifyNeedNodeModel.IncreaseOption)
+				},
+				SelectGoalNodeModel selectGoalModel => new SelectGoalNode
+				{
+					needType = GetOptionValue<BehaviorNeedType>(selectGoalModel, SelectGoalNodeModel.NeedTypeOption),
+					needThreshold = GetOptionValue<float>(selectGoalModel, SelectGoalNodeModel.NeedThresholdOption),
+					workHourFrom = GetOptionValue<int>(selectGoalModel, SelectGoalNodeModel.WorkHourFromOption),
+					workHourTo = GetOptionValue<int>(selectGoalModel, SelectGoalNodeModel.WorkHourToOption)
+				},
 				RandomNodeModel randomModel => BuildRandomNode(randomModel),
 				CheckpointNodeModel checkpointModel => new CheckpointNode
 				{
@@ -245,6 +277,19 @@ namespace Graph.Core.Editor
 					GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option3Port, idMap);
 				randomNode.options[3].nextNodeId =
 					GetConnectedNodeIdByOutputName(editorNode, RandomNodeModel.Option4Port, idMap);
+				return;
+			}
+
+			if (editorNode is SelectGoalNodeModel && runtimeNode is SelectGoalNode selectGoalNode)
+			{
+				selectGoalNode.goWorkNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, SelectGoalNodeModel.GoWorkPort, idMap);
+				selectGoalNode.goFoodNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, SelectGoalNodeModel.GoFoodPort, idMap);
+				selectGoalNode.goHomeNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, SelectGoalNodeModel.GoHomePort, idMap);
+				selectGoalNode.wanderNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, SelectGoalNodeModel.WanderPort, idMap);
 				return;
 			}
 

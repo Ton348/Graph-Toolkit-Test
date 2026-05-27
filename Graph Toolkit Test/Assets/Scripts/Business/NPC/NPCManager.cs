@@ -23,6 +23,7 @@ namespace Prototype.Business.NPC
 		[FormerlySerializedAs("questGraph")]
 		[FormerlySerializedAs("dialogueGraph")]
 		public CommonGraph baseDialogueGraph;
+		public CommonGraph behaviorGraph;
 
 		[FormerlySerializedAs("stealGraph")]
 		public CommonGraph baseStealGraph;
@@ -41,6 +42,40 @@ namespace Prototype.Business.NPC
 		public Transform playerTransform;
 		private CommonGraphRunner m_baseRunner;
 		private CommonGraph m_currentBaseGraph;
+		private CommonGraphRunner m_behaviorRunner;
+		private CommonGraph m_currentBehaviorGraph;
+
+		private void Start()
+		{
+			StartBehaviorGraph();
+		}
+
+		public void Initialize(
+			GameBootstrap bootstrapRef,
+			DialogueService dialogueServiceRef,
+			ChoiceUiservice choiceUiServiceRef,
+			TradeOfferUiservice tradeOfferUiServiceRef,
+			MapMarkerService mapMarkerServiceRef,
+			Transform playerTransformRef,
+			CommonGraph behaviorGraphRef,
+			CommonGraph dialogueGraphRef = null)
+		{
+			bootstrap = bootstrapRef;
+			dialogueService = dialogueServiceRef;
+			choiceUiservice = choiceUiServiceRef;
+			tradeOfferUiservice = tradeOfferUiServiceRef;
+			mapMarkerService = mapMarkerServiceRef;
+			playerTransform = playerTransformRef;
+			if (behaviorGraphRef != null)
+			{
+				behaviorGraph = behaviorGraphRef;
+			}
+
+			if (dialogueGraphRef != null)
+			{
+				baseDialogueGraph = dialogueGraphRef;
+			}
+		}
 
 		public override void Interact(Transform player)
 		{
@@ -122,10 +157,64 @@ namespace Prototype.Business.NPC
 			context.Set(GraphContextKeys.runtimeBootstrap, bootstrap);
 			context.Set(GraphContextKeys.runtimeMapMarkerService, mapMarkerService);
 			context.Set(GraphContextKeys.runtimePlayerTransform, playerTransform);
+			if (TryGetComponent(out NPC.AI.NPCBehaviorRuntimeBridge behaviorBridge) && behaviorBridge != null)
+			{
+				context.Set(GraphContextKeys.runtimeNpcBehaviorBridge, behaviorBridge);
+			}
 			context.ImmediateChoiceAfterDialogue = true;
 
 			string startNodeId = ResolveStartNodeId(graph);
 			_ = m_baseRunner.RunAsync(graph, context, startNodeId);
+		}
+
+		private void StartBehaviorGraph()
+		{
+			if (behaviorGraph == null)
+			{
+				return;
+			}
+
+			if (!HasGraphContent(behaviorGraph))
+			{
+				UnityEngine.Debug.LogError($"[NPCManager] Behavior graph '{behaviorGraph.name}' does not contain runtime nodes on '{name}'.",
+					this);
+				return;
+			}
+
+			if (m_behaviorRunner != null && m_behaviorRunner.IsRunning)
+			{
+				return;
+			}
+
+			if (m_behaviorRunner == null || m_currentBehaviorGraph != behaviorGraph)
+			{
+				m_behaviorRunner = new CommonGraphRunner(GameGraphRuntimeRegistryFactory.Create());
+				m_currentBehaviorGraph = behaviorGraph;
+			}
+
+			var context = new GraphExecutionContext(
+				new GraphRuntimeServices(
+					dialogueService,
+					choiceUiservice,
+					null,
+					null,
+					null,
+					null));
+			context.Set(GraphContextKeys.runtimeBootstrap, bootstrap);
+			context.Set(GraphContextKeys.runtimeMapMarkerService, mapMarkerService);
+			context.Set(GraphContextKeys.runtimePlayerTransform, playerTransform);
+			NPC.AI.NPCBehaviorRuntimeBridge behaviorBridge = GetComponent<NPC.AI.NPCBehaviorRuntimeBridge>();
+			if (behaviorBridge == null)
+			{
+				behaviorBridge = gameObject.AddComponent<NPC.AI.NPCBehaviorRuntimeBridge>();
+			}
+
+			if (behaviorBridge != null)
+			{
+				context.Set(GraphContextKeys.runtimeNpcBehaviorBridge, behaviorBridge);
+			}
+
+			_ = m_behaviorRunner.RunAsync(behaviorGraph, context, null);
 		}
 
 		private static bool HasGraphContent(CommonGraph graph)

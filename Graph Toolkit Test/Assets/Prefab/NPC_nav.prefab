@@ -672,6 +672,7 @@ GameObject:
   - component: {fileID: 7759409009521141902}
   - component: {fileID: 2659683067189053587}
   - component: {fileID: -592007422357879419}
+  - component: {fileID: -9019777761875082458}
   m_Layer: 0
   m_Name: NPC_nav
   m_TagString: Untagged
@@ -817,6 +818,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Sample.Runtime::NPCAnimationController
   animator: {fileID: 6452399246587631519}
+--- !u!114 &-9019777761875082458
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3443139078624027616}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97b14f704cbea4b6aa93a41157969d41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Npcmanager
+  interactionDistance: 2
+  baseDialogueGraph: {fileID: 0}
+  baseStealGraph: {fileID: 0}
+  allowSteal: 1
+  lookForwardReference: {fileID: 0}
+  stealDistance: 1.5
+  stealBackAngle: 120
+  stealMinBackAngle: 40
+  ownerId: 
+  bootstrap: {fileID: 0}
+  dialogueService: {fileID: 0}
+  choiceUiservice: {fileID: 0}
+  tradeOfferUiservice: {fileID: 0}
+  mapMarkerService: {fileID: 0}
+  playerTransform: {fileID: 0}
 --- !u!1 &4635895658037201885
 GameObject:
   m_ObjectHideFlags: 0

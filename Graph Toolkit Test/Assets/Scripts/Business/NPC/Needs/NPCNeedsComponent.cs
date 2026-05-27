@@ -1,9 +1,11 @@
 using UnityEngine;
+using System;
 
 namespace Prototype.Business.NPC.Needs
 {
 	public sealed class NPCNeedsComponent : MonoBehaviour
 	{
+		public event Action<NPCNeedType, float> OnNeedThresholdReached;
 		[System.Serializable]
 		public struct NeedDecay
 		{
@@ -56,6 +58,11 @@ namespace Prototype.Business.NPC.Needs
 		};
 
 		private float m_timer;
+		private bool m_hungerThresholdRaised;
+		private bool m_thirstThresholdRaised;
+		private bool m_toiletThresholdRaised;
+		private bool m_funThresholdRaised;
+		private bool m_energyThresholdRaised;
 
 		public float Hunger => hunger;
 		public float Thirst => thirst;
@@ -86,6 +93,7 @@ namespace Prototype.Business.NPC.Needs
 			work = Clamp01x100(work + decay.workPerTick);
 			fun = Clamp01x100(fun + decay.funPerTick);
 			energy = Clamp01x100(energy - decay.energyPerTick);
+			EvaluateThresholdEvents();
 		}
 
 		public void SetSafety(float value)
@@ -104,6 +112,80 @@ namespace Prototype.Business.NPC.Needs
 				case NPCNeedType.Work: work = Clamp01x100(work - delta); break;
 				case NPCNeedType.Fun: fun = Clamp01x100(fun - delta); break;
 				case NPCNeedType.Toilet: toilet = Clamp01x100(toilet - delta); break;
+			}
+			EvaluateThresholdEvents();
+		}
+
+		public void AddNeed(NPCNeedType needType, float amount)
+		{
+			float delta = Mathf.Max(0f, amount);
+			switch (needType)
+			{
+				case NPCNeedType.Hunger: hunger = Clamp01x100(hunger + delta); break;
+				case NPCNeedType.Thirst: thirst = Clamp01x100(thirst + delta); break;
+				case NPCNeedType.Energy: energy = Clamp01x100(energy - delta); break;
+				case NPCNeedType.Work: work = Clamp01x100(work + delta); break;
+				case NPCNeedType.Fun: fun = Clamp01x100(fun + delta); break;
+				case NPCNeedType.Toilet: toilet = Clamp01x100(toilet + delta); break;
+			}
+			EvaluateThresholdEvents();
+		}
+
+		private void EvaluateThresholdEvents()
+		{
+			float hungerCritical = thresholds.hungerCritical;
+			if (!m_hungerThresholdRaised && hunger >= hungerCritical)
+			{
+				m_hungerThresholdRaised = true;
+				OnNeedThresholdReached?.Invoke(NPCNeedType.Hunger, hunger);
+			}
+			else if (m_hungerThresholdRaised && hunger < hungerCritical)
+			{
+				m_hungerThresholdRaised = false;
+			}
+
+			float thirstCritical = thresholds.thirstCritical;
+			if (!m_thirstThresholdRaised && thirst >= thirstCritical)
+			{
+				m_thirstThresholdRaised = true;
+				OnNeedThresholdReached?.Invoke(NPCNeedType.Thirst, thirst);
+			}
+			else if (m_thirstThresholdRaised && thirst < thirstCritical)
+			{
+				m_thirstThresholdRaised = false;
+			}
+
+			float toiletCritical = thresholds.toiletCritical;
+			if (!m_toiletThresholdRaised && toilet >= toiletCritical)
+			{
+				m_toiletThresholdRaised = true;
+				OnNeedThresholdReached?.Invoke(NPCNeedType.Toilet, toilet);
+			}
+			else if (m_toiletThresholdRaised && toilet < toiletCritical)
+			{
+				m_toiletThresholdRaised = false;
+			}
+
+			float funLow = thresholds.funLow;
+			if (!m_funThresholdRaised && fun >= funLow)
+			{
+				m_funThresholdRaised = true;
+				OnNeedThresholdReached?.Invoke(NPCNeedType.Fun, fun);
+			}
+			else if (m_funThresholdRaised && fun < funLow)
+			{
+				m_funThresholdRaised = false;
+			}
+
+			float energyLow = thresholds.energyLow;
+			if (!m_energyThresholdRaised && energy >= energyLow)
+			{
+				m_energyThresholdRaised = true;
+				OnNeedThresholdReached?.Invoke(NPCNeedType.Energy, energy);
+			}
+			else if (m_energyThresholdRaised && energy < energyLow)
+			{
+				m_energyThresholdRaised = false;
 			}
 		}
 
