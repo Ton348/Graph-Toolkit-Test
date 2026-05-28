@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System;
 
 namespace Prototype.Business.NPC.Movement
 {
@@ -15,12 +16,15 @@ namespace Prototype.Business.NPC.Movement
 
 		private NavMeshAgent m_agent;
 		private MovementState m_state = MovementState.Idle;
+		private System.Random m_random;
 
 		public MovementState CurrentState => m_state;
 
 		private void Awake()
 		{
 			m_agent = GetComponent<NavMeshAgent>();
+			int seed = gameObject.GetInstanceID() ^ Environment.TickCount;
+			m_random = new System.Random(seed);
 		}
 
 		public void MoveTo(Vector3 point)
@@ -75,7 +79,10 @@ namespace Prototype.Business.NPC.Movement
 		{
 			for (int i = 0; i < 8; i++)
 			{
-				Vector2 random = Random.insideUnitCircle * Mathf.Max(1f, radius);
+				float angle = (float)(m_random != null ? m_random.NextDouble() : UnityEngine.Random.value) * Mathf.PI * 2f;
+				float distance01 = (float)(m_random != null ? m_random.NextDouble() : UnityEngine.Random.value);
+				float distance = Mathf.Sqrt(distance01) * Mathf.Max(1f, radius);
+				Vector2 random = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * distance;
 				Vector3 candidate = origin + new Vector3(random.x, 0f, random.y);
 				if (NavMesh.SamplePosition(candidate, out NavMeshHit hit, 2f, NavMesh.AllAreas))
 				{

@@ -12,7 +12,7 @@ namespace Prototype.Business.NPC.Spawning
 {
 	public sealed class NPCSpawnManager : MonoBehaviour
 	{
-		[SerializeField] private GameObject npcPrefab;
+		[SerializeField] private List<GameObject> npcPrefabs = new();
 		[SerializeField] private Transform player;
 		[SerializeField] private int maxAlive = 20;
 		[SerializeField] private float spawnIntervalSeconds = 3f;
@@ -84,7 +84,8 @@ namespace Prototype.Business.NPC.Spawning
 
 		private void TrySpawn()
 		{
-			if (npcPrefab == null || m_spawnPoints == null || m_spawnPoints.Length == 0 || m_alive.Count >= maxAlive)
+			GameObject prefabToSpawn = GetRandomPrefab();
+			if (prefabToSpawn == null || m_spawnPoints == null || m_spawnPoints.Length == 0 || m_alive.Count >= maxAlive)
 			{
 				return;
 			}
@@ -97,7 +98,7 @@ namespace Prototype.Business.NPC.Spawning
 					continue;
 				}
 
-				GameObject go = Instantiate(npcPrefab, point.transform.position, point.transform.rotation);
+				GameObject go = Instantiate(prefabToSpawn, point.transform.position, point.transform.rotation);
 				Npcmanager npcManager = go.GetComponent<Npcmanager>();
 				if (npcManager != null)
 				{
@@ -119,6 +120,43 @@ namespace Prototype.Business.NPC.Spawning
 
 				break;
 			}
+		}
+
+		private GameObject GetRandomPrefab()
+		{
+			if (npcPrefabs != null)
+			{
+				int validCount = 0;
+				for (int i = 0; i < npcPrefabs.Count; i++)
+				{
+					if (npcPrefabs[i] != null)
+					{
+						validCount++;
+					}
+				}
+
+				if (validCount > 0)
+				{
+					int pick = UnityEngine.Random.Range(0, validCount);
+					for (int i = 0; i < npcPrefabs.Count; i++)
+					{
+						GameObject candidate = npcPrefabs[i];
+						if (candidate == null)
+						{
+							continue;
+						}
+
+						if (pick == 0)
+						{
+							return candidate;
+						}
+
+						pick--;
+					}
+				}
+			}
+
+			return null;
 		}
 
 		private IEnumerator DespawnRoutine(NPCBrain brain)

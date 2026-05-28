@@ -9,9 +9,11 @@ namespace Graph.Core.Editor.BaseNodes.Behavior
 	{
 		public const string NeedTypeOption = "NeedType";
 		public const string ThresholdOption = "Threshold";
+		public const string TruePort = "True";
+		public const string FalsePort = "False";
 
-		protected override string defaultTitle => "Проверка потребности";
-		protected override string defaultDescription => "Проверяет, достигла ли выбранная потребность заданного порога.";
+		protected override string defaultTitle => "Проверка характеристики";
+		protected override string defaultDescription => "Проверяет, достигла ли выбранная характеристика заданного порога.";
 
 		protected override void OnDefineOptions(IOptionDefinitionContext context)
 		{
@@ -24,7 +26,8 @@ namespace Graph.Core.Editor.BaseNodes.Behavior
 		protected override void OnDefinePorts(IPortDefinitionContext context)
 		{
 			AddInputExecutionPort(context);
-			AddOutputExecutionPort(context);
+			context.AddOutputPort(TruePort).WithDisplayName("True").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
+			context.AddOutputPort(FalsePort).WithDisplayName("False").WithConnectorUI(PortConnectorUI.Arrowhead).Build();
 		}
 	}
 }

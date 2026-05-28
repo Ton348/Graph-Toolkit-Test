@@ -340,7 +340,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 5451311424095430359, guid: fba7f43569532a64fa22cf51a342963d, type: 3}
+  m_Mesh: {fileID: -1719732492130724269, guid: e135098a3d2506c47b77c212f14da368, type: 3}
   m_Bones:
   - {fileID: 5350054662293768736}
   - {fileID: 5380428710725545048}
@@ -674,7 +674,7 @@ GameObject:
   - component: {fileID: -592007422357879419}
   - component: {fileID: -9019777761875082458}
   m_Layer: 0
-  m_Name: NPC_nav
+  m_Name: NPC_nav 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -752,34 +752,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebad2b81e3fdd41049062042aa52055f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Needs.NPCNeedsComponent
-  hunger: 0
-  thirst: 0
-  energy: 0
-  work: 0
+  hunger: 20
+  thirst: 20
+  energy: 80
+  work: 20
   safety: 100
   fun: 50
-  toilet: 0
-  cityNeed: 0
-  natureNeed: 10
+  toilet: 10
+  cityNeed: 20
+  natureNeed: 0
   foodNeed: 20
   energyNeed: 20
   funNeed: 40
   tickSeconds: 1
   decay:
-    hungerPerTick: 1
+    hungerPerTick: 2
     thirstPerTick: 1.2
     toiletPerTick: 1
     workPerTick: 0.7
     funPerTick: 0.5
     energyPerTick: 1
-  thresholds:
-    hungerCritical: 75
-    thirstCritical: 75
-    toiletCritical: 80
-    workCritical: 70
-    energyLow: 30
-    safetyCritical: 35
-    funLow: 30
 --- !u!114 &7759409009521141902
 MonoBehaviour:
   m_ObjectHideFlags: 0

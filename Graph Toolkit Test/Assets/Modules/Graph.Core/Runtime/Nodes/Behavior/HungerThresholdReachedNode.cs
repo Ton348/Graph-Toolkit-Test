@@ -7,12 +7,13 @@ namespace Graph.Core.Runtime.Nodes.Behavior
 	{
 		public BehaviorNeedType needType = BehaviorNeedType.Hunger;
 		public float threshold = 75f;
-		public string nextNodeId;
+		public string trueNodeId;
+		public string falseNodeId;
 
 		public HungerThresholdReachedNode()
 		{
-			Title = "Проверка потребности";
-			Description = "Проверяет, достигла ли выбранная потребность заданного порога.";
+			Title = "Проверка характеристики";
+			Description = "Проверяет, достигла ли выбранная характеристика заданного порога.";
 		}
 	}
 }

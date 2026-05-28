@@ -11,14 +11,13 @@ namespace Prototype.Business.NPC.AI
 				return NPCGoalType.Idle;
 			}
 
-			var t = needs.Thresholds;
-			if (needs.Safety <= t.safetyCritical) return NPCGoalType.Flee;
-			if (needs.Toilet >= t.toiletCritical) return NPCGoalType.GoToilet;
-			if (needs.Hunger >= t.hungerCritical) return NPCGoalType.GoEat;
-			if (needs.Thirst >= t.thirstCritical) return NPCGoalType.GoDrink;
-			if (needs.Work >= t.workCritical) return NPCGoalType.GoWork;
-			if (needs.Energy <= t.energyLow) return NPCGoalType.GoHome;
-			if (needs.Fun <= t.funLow) return NPCGoalType.Wander;
+			if (needs.Safety <= 35f) return NPCGoalType.Flee;
+			if (needs.Toilet >= 80f) return NPCGoalType.GoToilet;
+			if (needs.Hunger >= 75f) return NPCGoalType.GoEat;
+			if (needs.Thirst >= 75f) return NPCGoalType.GoDrink;
+			if (needs.Work >= 70f) return NPCGoalType.GoWork;
+			if (needs.Energy <= 30f) return NPCGoalType.GoHome;
+			if (needs.Fun <= 30f) return NPCGoalType.Wander;
 			return NPCGoalType.Wander;
 		}
 	}

@@ -12,31 +12,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: behaviorNPC.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: dba67d1b-8749-4af4-ac3c-311b589db58a
+  startNodeId: 5ecad359-b299-4f30-8c29-e74688a92caa
   nodes:
-  - rid: 8489120973374620035
-  - rid: 8489120973374620036
-  - rid: 8489120973374620037
-  - rid: 8489120973374620038
-  - rid: 8489120973374620039
-  - rid: 8489120973374620040
-  - rid: 8489120973374620041
-  - rid: 8489120973374620042
+  - rid: 8489121011510805012
+  - rid: 8489121011510805013
+  - rid: 8489121011510805014
+  - rid: 8489121011510805015
+  - rid: 8489121011510805016
+  - rid: 8489121011510805017
+  - rid: 8489121011510805018
+  - rid: 8489121011510805019
+  - rid: 8489121011510805020
+  - rid: 8489121011510805021
+  - rid: 8489121011510805022
+  - rid: 8489121011510805023
+  - rid: 8489121011510805024
+  - rid: 8489121011510805025
+  - rid: 8489121011510805026
+  - rid: 8489121011510805027
+  - rid: 8489121011510805028
+  - rid: 8489121011510805029
+  - rid: 8489121011510805030
+  - rid: 8489121011510805031
+  - rid: 8489121011510805032
+  - rid: 8489121011510805033
+  - rid: 8489121011510805034
+  - rid: 8489121011510805035
   references:
     version: 2
     RefIds:
-    - rid: 8489120973374620035
+    - rid: 8489121011510805012
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: dba67d1b-8749-4af4-ac3c-311b589db58a
+        nodeId: 5ecad359-b299-4f30-8c29-e74688a92caa
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: 1270f2e6-3fd8-4120-9387-e1f58d2a1e94
-    - rid: 8489120973374620036
+        nextNodeId: 5bf800ab-f9db-492f-9658-8801eacbf82f
+    - rid: 8489121011510805013
       type: {class: GoToTargetNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: de80669f-6cbf-4a2b-aba9-fbf0261d4a6e
+        nodeId: eb35a8ab-3b75-4c62-a79c-4645d49e5dc4
         title: GoToTargetNode
         description: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442
           NPC \u043A \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u0442\u043E\u0447\u043A\u0435,
@@ -44,30 +60,30 @@ MonoBehaviour:
           \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u043C\u0443 \u0442\u0438\u043F\u0443
           \u0446\u0435\u043B\u0438."
         targetType: 2
-        nextNodeId: 00051f6d-3799-49da-9ed0-f30ac5c66b9a
-    - rid: 8489120973374620037
+        nextNodeId: fcba34f7-578d-44c1-baa4-1607abb968a7
+    - rid: 8489121011510805014
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: c46a67bc-0860-4f35-94b0-398568073f5e
+        nodeId: c9553dc3-0670-47eb-9c08-91f62f342515
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-    - rid: 8489120973374620038
+    - rid: 8489121011510805015
       type: {class: GoToTargetNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 52b268ed-5eb5-44ee-9ca1-b6bde62fd86b
+        nodeId: 09ab3ab4-6b60-47ec-8876-10532071fae4
         title: GoToTargetNode
         description: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442
           NPC \u043A \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u0442\u043E\u0447\u043A\u0435,
           \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044E\u0449\u0435\u0439
           \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u043C\u0443 \u0442\u0438\u043F\u0443
           \u0446\u0435\u043B\u0438."
-        targetType: 4
-        nextNodeId: 00051f6d-3799-49da-9ed0-f30ac5c66b9a
-    - rid: 8489120973374620039
+        targetType: 5
+        nextNodeId: 3d079e04-6012-4d35-9dfc-8b87edd5d6dc
+    - rid: 8489121011510805016
       type: {class: SelectGoalNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 1270f2e6-3fd8-4120-9387-e1f58d2a1e94
+        nodeId: 5bf800ab-f9db-492f-9658-8801eacbf82f
         title: SelectGoalNode
         description: "\u0410\u043D\u0430\u043B\u0438\u0437\u0438\u0440\u0443\u0435\u0442
           \u0442\u0435\u043A\u0443\u0449\u0435\u0435 \u0441\u043E\u0441\u0442\u043E\u044F\u043D\u0438\u0435
@@ -76,17 +92,17 @@ MonoBehaviour:
           \u0440\u0430\u0431\u043E\u0442\u0430, \u0435\u0434\u0430, \u043E\u0442\u0434\u044B\u0445
           \u0438 \u0442.\u0434."
         needType: 0
-        needThreshold: 75
+        needThreshold: 50
         workHourFrom: 9
         workHourTo: 21
-        goWorkNodeId: 9e4378e1-72b2-439b-a5ea-4ae39bb3fa0c
-        goFoodNodeId: de80669f-6cbf-4a2b-aba9-fbf0261d4a6e
-        goHomeNodeId: f4627426-112b-48f9-8db6-2006b67d2de0
-        wanderNodeId: 52b268ed-5eb5-44ee-9ca1-b6bde62fd86b
-    - rid: 8489120973374620040
+        goWorkNodeId: 3972a4eb-c633-41ff-8dbb-c65ec78f2a07
+        goFoodNodeId: eb35a8ab-3b75-4c62-a79c-4645d49e5dc4
+        goHomeNodeId: 05cfc0e1-2a1c-406c-86bd-f27a21a528f5
+        wanderNodeId: 3972a4eb-c633-41ff-8dbb-c65ec78f2a07
+    - rid: 8489121011510805017
       type: {class: GoToTargetNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: f4627426-112b-48f9-8db6-2006b67d2de0
+        nodeId: 05cfc0e1-2a1c-406c-86bd-f27a21a528f5
         title: GoToTargetNode
         description: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442
           NPC \u043A \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u0442\u043E\u0447\u043A\u0435,
@@ -94,26 +110,245 @@ MonoBehaviour:
           \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u043C\u0443 \u0442\u0438\u043F\u0443
           \u0446\u0435\u043B\u0438."
         targetType: 3
-        nextNodeId: c46a67bc-0860-4f35-94b0-398568073f5e
-    - rid: 8489120973374620041
+        nextNodeId: c9553dc3-0670-47eb-9c08-91f62f342515
+    - rid: 8489121011510805018
       type: {class: GoToTargetNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9e4378e1-72b2-439b-a5ea-4ae39bb3fa0c
+        nodeId: b4d926de-8b88-4d10-9ff9-ef4e31e037cc
         title: GoToTargetNode
         description: "\u041E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442
           NPC \u043A \u0446\u0435\u043B\u0435\u0432\u043E\u0439 \u0442\u043E\u0447\u043A\u0435,
           \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044E\u0449\u0435\u0439
           \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u043C\u0443 \u0442\u0438\u043F\u0443
           \u0446\u0435\u043B\u0438."
-        targetType: 0
-        nextNodeId: 00051f6d-3799-49da-9ed0-f30ac5c66b9a
-    - rid: 8489120973374620042
+        targetType: 6
+        nextNodeId: fd6044d0-497a-4372-9c6f-36e329ebdc8f
+    - rid: 8489121011510805019
       type: {class: DelayNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 00051f6d-3799-49da-9ed0-f30ac5c66b9a
+        nodeId: fcba34f7-578d-44c1-baa4-1607abb968a7
         title: DelayNode
         description: "\u041E\u0441\u0442\u0430\u043D\u0430\u0432\u043B\u0438\u0432\u0430\u0435\u0442
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435 \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0445
           \u043D\u043E\u0434 \u043D\u0430 \u0432\u0440\u0435\u043C\u044F"
-        nextNodeId: 1270f2e6-3fd8-4120-9387-e1f58d2a1e94
+        nextNodeId: 5bf800ab-f9db-492f-9658-8801eacbf82f
         delaySeconds: 1
+    - rid: 8489121011510805020
+      type: {class: RandomNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 64690b67-465a-44fb-b490-ced0322688ff
+        title: RandomNode
+        description: "\u0412\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u0443\u044E
+          \u0432\u0435\u0442\u043A\u0443"
+        options:
+        - weight: 50
+          nextNodeId: b4d926de-8b88-4d10-9ff9-ef4e31e037cc
+        - weight: 50
+          nextNodeId: 09ab3ab4-6b60-47ec-8876-10532071fae4
+        - weight: 0
+          nextNodeId: 
+        - weight: 0
+          nextNodeId: 
+    - rid: 8489121011510805021
+      type: {class: HungerThresholdReachedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 3972a4eb-c633-41ff-8dbb-c65ec78f2a07
+        title: HungerThresholdReachedNode
+        description: "\u041F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442, \u0434\u043E\u0441\u0442\u0438\u0433\u043B\u0430
+          \u043B\u0438 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u0430\u044F \u0445\u0430\u0440\u0430\u043A\u0442\u0435\u0440\u0438\u0441\u0442\u0438\u043A\u0430
+          \u0437\u0430\u0434\u0430\u043D\u043D\u043E\u0433\u043E \u043F\u043E\u0440\u043E\u0433\u0430."
+        needType: 8
+        threshold: 10
+        trueNodeId: 00aa3250-3af4-4b82-8e62-2a132c2c2642
+        falseNodeId: 64690b67-465a-44fb-b490-ced0322688ff
+    - rid: 8489121011510805022
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 18a29adf-3946-4af3-b05a-ff580f608737
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 8
+        amount: 1
+        increase: 1
+        nextNodeId: d9e5501c-169b-4067-a568-5b4152e919a7
+    - rid: 8489121011510805023
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 1beddf58-40c7-4047-9a82-87022f0d1009
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 7
+        amount: 1
+        increase: 1
+        nextNodeId: d9e5501c-169b-4067-a568-5b4152e919a7
+    - rid: 8489121011510805024
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: fd6044d0-497a-4372-9c6f-36e329ebdc8f
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 7
+        amount: 1
+        increase: 0
+        nextNodeId: 18a29adf-3946-4af3-b05a-ff580f608737
+    - rid: 8489121011510805025
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 8eff96a7-7041-4770-ab1d-4c856619e265
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 8
+        amount: 1
+        increase: 0
+        nextNodeId: 51187429-831f-4eb7-a1d0-03fcd753e5e7
+    - rid: 8489121011510805026
+      type: {class: RandomNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 00aa3250-3af4-4b82-8e62-2a132c2c2642
+        title: RandomNode
+        description: "\u0412\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u0443\u044E
+          \u0432\u0435\u0442\u043A\u0443"
+        options:
+        - weight: 10
+          nextNodeId: b4d926de-8b88-4d10-9ff9-ef4e31e037cc
+        - weight: 80
+          nextNodeId: 09ab3ab4-6b60-47ec-8876-10532071fae4
+        - weight: 0
+          nextNodeId: 
+        - weight: 0
+          nextNodeId: 
+    - rid: 8489121011510805027
+      type: {class: RandomNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 3d079e04-6012-4d35-9dfc-8b87edd5d6dc
+        title: RandomNode
+        description: "\u0412\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u0443\u044E
+          \u0432\u0435\u0442\u043A\u0443"
+        options:
+        - weight: 10
+          nextNodeId: fa6a8232-728e-414d-babc-e286ceaae652
+        - weight: 20
+          nextNodeId: f9bc5175-7405-4e42-9597-c3b9803c260b
+        - weight: 30
+          nextNodeId: 11aada42-03aa-4a7c-9eea-e8b2545e32ba
+        - weight: 40
+          nextNodeId: 8eff96a7-7041-4770-ab1d-4c856619e265
+    - rid: 8489121011510805028
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: c941d2d4-628e-4009-88a5-9fa8686c175d
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 7
+        amount: 2
+        increase: 1
+        nextNodeId: d9e5501c-169b-4067-a568-5b4152e919a7
+    - rid: 8489121011510805029
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 4c8ef9e9-2af3-40ca-bf49-54546f2eb9a3
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 7
+        amount: 3
+        increase: 1
+        nextNodeId: d9e5501c-169b-4067-a568-5b4152e919a7
+    - rid: 8489121011510805030
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 33a1470d-38f5-40d3-8ece-9990c01534e4
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 7
+        amount: 4
+        increase: 1
+        nextNodeId: d9e5501c-169b-4067-a568-5b4152e919a7
+    - rid: 8489121011510805031
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 11aada42-03aa-4a7c-9eea-e8b2545e32ba
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 8
+        amount: 2
+        increase: 0
+        nextNodeId: 51187429-831f-4eb7-a1d0-03fcd753e5e7
+    - rid: 8489121011510805032
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: f9bc5175-7405-4e42-9597-c3b9803c260b
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 8
+        amount: 3
+        increase: 0
+        nextNodeId: 51187429-831f-4eb7-a1d0-03fcd753e5e7
+    - rid: 8489121011510805033
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: fa6a8232-728e-414d-babc-e286ceaae652
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 8
+        amount: 4
+        increase: 0
+        nextNodeId: 51187429-831f-4eb7-a1d0-03fcd753e5e7
+    - rid: 8489121011510805034
+      type: {class: RandomNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 51187429-831f-4eb7-a1d0-03fcd753e5e7
+        title: RandomNode
+        description: "\u0412\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u0443\u044E
+          \u0432\u0435\u0442\u043A\u0443"
+        options:
+        - weight: 10
+          nextNodeId: 33a1470d-38f5-40d3-8ece-9990c01534e4
+        - weight: 20
+          nextNodeId: 4c8ef9e9-2af3-40ca-bf49-54546f2eb9a3
+        - weight: 30
+          nextNodeId: c941d2d4-628e-4009-88a5-9fa8686c175d
+        - weight: 40
+          nextNodeId: 1beddf58-40c7-4047-9a82-87022f0d1009
+    - rid: 8489121011510805035
+      type: {class: ModifyNeedNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: d9e5501c-169b-4067-a568-5b4152e919a7
+        title: ModifyNeedNode
+        description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
+          \u0438\u043B\u0438 \u0443\u043C\u0435\u043D\u044C\u0448\u0430\u0435\u0442
+          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u0435 \u0432\u044B\u0431\u0440\u0430\u043D\u043D\u043E\u0439
+          \u043F\u043E\u0442\u0440\u0435\u0431\u043D\u043E\u0441\u0442\u0438 NPC."
+        needType: 0
+        amount: 10
+        increase: 1
+        nextNodeId: fcba34f7-578d-44c1-baa4-1607abb968a7

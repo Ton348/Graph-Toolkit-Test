@@ -292,6 +292,15 @@ namespace Graph.Core.Editor
 					GetConnectedNodeIdByOutputName(editorNode, SelectGoalNodeModel.WanderPort, idMap);
 				return;
 			}
+			
+			if (editorNode is HungerThresholdReachedNodeModel && runtimeNode is HungerThresholdReachedNode thresholdNode)
+			{
+				thresholdNode.trueNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, HungerThresholdReachedNodeModel.TruePort, idMap);
+				thresholdNode.falseNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, HungerThresholdReachedNodeModel.FalsePort, idMap);
+				return;
+			}
 
 			if (editorNode is CheckpointNodeModel && runtimeNode is CheckpointNode checkpointNode)
 			{
