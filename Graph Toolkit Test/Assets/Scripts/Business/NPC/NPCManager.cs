@@ -24,6 +24,7 @@ namespace Prototype.Business.NPC
 		[FormerlySerializedAs("dialogueGraph")]
 		public CommonGraph baseDialogueGraph;
 		public CommonGraph behaviorGraph;
+		public CommonGraph dangerGraph;
 
 		[FormerlySerializedAs("stealGraph")]
 		public CommonGraph baseStealGraph;
@@ -44,10 +45,31 @@ namespace Prototype.Business.NPC
 		private CommonGraph m_currentBaseGraph;
 		private CommonGraphRunner m_behaviorRunner;
 		private CommonGraph m_currentBehaviorGraph;
+		private CommonGraphRunner m_dangerRunner;
+		private CommonGraph m_currentDangerGraph;
+		private NPC.AI.NPCBrain m_npcBrain;
+		private NPC.AI.NPCBehaviorRuntimeBridge m_behaviorBridge;
+		private int m_lastHandledDangerVersion;
 
 		private void Start()
 		{
+			m_npcBrain = GetComponent<NPC.AI.NPCBrain>();
+			m_behaviorBridge = GetOrCreateBehaviorBridge();
+			if (m_behaviorBridge != null)
+			{
+				m_behaviorBridge.OnDangerEventReceived += HandleDangerEvent;
+				TryHandlePendingDanger();
+			}
+
 			StartBehaviorGraph();
+		}
+
+		private void OnDestroy()
+		{
+			if (m_behaviorBridge != null)
+			{
+				m_behaviorBridge.OnDangerEventReceived -= HandleDangerEvent;
+			}
 		}
 
 		public void Initialize(
@@ -58,7 +80,8 @@ namespace Prototype.Business.NPC
 			MapMarkerService mapMarkerServiceRef,
 			Transform playerTransformRef,
 			CommonGraph behaviorGraphRef,
-			CommonGraph dialogueGraphRef = null)
+			CommonGraph dialogueGraphRef = null,
+			CommonGraph dangerGraphRef = null)
 		{
 			bootstrap = bootstrapRef;
 			dialogueService = dialogueServiceRef;
@@ -74,6 +97,11 @@ namespace Prototype.Business.NPC
 			if (dialogueGraphRef != null)
 			{
 				baseDialogueGraph = dialogueGraphRef;
+			}
+
+			if (dangerGraphRef != null)
+			{
+				dangerGraph = dangerGraphRef;
 			}
 		}
 
@@ -164,7 +192,21 @@ namespace Prototype.Business.NPC
 			context.ImmediateChoiceAfterDialogue = true;
 
 			string startNodeId = ResolveStartNodeId(graph);
-			_ = m_baseRunner.RunAsync(graph, context, startNodeId);
+			_ = RunBaseGraphAsync(graph, context, startNodeId);
+		}
+
+		private async UniTaskVoid RunBaseGraphAsync(CommonGraph graph, GraphExecutionContext context, string startNodeId)
+		{
+			m_npcBrain ??= GetComponent<NPC.AI.NPCBrain>();
+			m_npcBrain?.PauseForDialogue();
+			try
+			{
+				await m_baseRunner.RunAsync(graph, context, startNodeId);
+			}
+			finally
+			{
+				m_npcBrain?.ResumeAfterDialogue();
+			}
 		}
 
 		private void StartBehaviorGraph()
@@ -203,11 +245,7 @@ namespace Prototype.Business.NPC
 			context.Set(GraphContextKeys.runtimeBootstrap, bootstrap);
 			context.Set(GraphContextKeys.runtimeMapMarkerService, mapMarkerService);
 			context.Set(GraphContextKeys.runtimePlayerTransform, playerTransform);
-			NPC.AI.NPCBehaviorRuntimeBridge behaviorBridge = GetComponent<NPC.AI.NPCBehaviorRuntimeBridge>();
-			if (behaviorBridge == null)
-			{
-				behaviorBridge = gameObject.AddComponent<NPC.AI.NPCBehaviorRuntimeBridge>();
-			}
+			NPC.AI.NPCBehaviorRuntimeBridge behaviorBridge = GetOrCreateBehaviorBridge();
 
 			if (behaviorBridge != null)
 			{
@@ -215,6 +253,102 @@ namespace Prototype.Business.NPC
 			}
 
 			_ = m_behaviorRunner.RunAsync(behaviorGraph, context, null);
+		}
+
+		private void HandleDangerEvent()
+		{
+			UnityEngine.Debug.Log($"[NPCManager] Danger event received by {name}. dangerGraph={(dangerGraph != null ? dangerGraph.name : "null")}");
+			if (dangerGraph == null || !HasGraphContent(dangerGraph))
+			{
+				UnityEngine.Debug.LogError($"[NPCManager] dangerGraph is missing or empty on {name}.");
+				return;
+			}
+
+			if (m_dangerRunner != null && m_dangerRunner.IsRunning)
+			{
+				UnityEngine.Debug.Log($"[NPCManager] dangerGraph already running on {name}.");
+				return;
+			}
+
+			_ = RunDangerGraphAsync();
+			m_lastHandledDangerVersion = m_behaviorBridge != null ? m_behaviorBridge.DangerEventVersion : m_lastHandledDangerVersion;
+		}
+
+		private void TryHandlePendingDanger()
+		{
+			if (m_behaviorBridge == null)
+			{
+				return;
+			}
+
+			if (m_behaviorBridge.DangerEventVersion <= m_lastHandledDangerVersion)
+			{
+				return;
+			}
+
+			HandleDangerEvent();
+		}
+
+		private async UniTaskVoid RunDangerGraphAsync()
+		{
+			if (dangerGraph == null || !HasGraphContent(dangerGraph))
+			{
+				UnityEngine.Debug.LogError($"[NPCManager] RunDangerGraphAsync aborted: graph missing/empty on {name}.");
+				return;
+			}
+
+			if (m_dangerRunner == null || m_currentDangerGraph != dangerGraph)
+			{
+				m_dangerRunner = new CommonGraphRunner(GameGraphRuntimeRegistryFactory.Create());
+				m_currentDangerGraph = dangerGraph;
+			}
+
+			if (m_behaviorRunner != null && m_behaviorRunner.IsRunning)
+			{
+				m_behaviorRunner.Stop();
+			}
+
+			try
+			{
+				UnityEngine.Debug.Log($"[NPCManager] Starting dangerGraph '{dangerGraph.name}' on {name}.");
+				var context = new GraphExecutionContext(
+					new GraphRuntimeServices(
+						dialogueService,
+						choiceUiservice,
+						null,
+						null,
+						null,
+						null));
+				context.Set(GraphContextKeys.runtimeBootstrap, bootstrap);
+				context.Set(GraphContextKeys.runtimeMapMarkerService, mapMarkerService);
+				context.Set(GraphContextKeys.runtimePlayerTransform, playerTransform);
+				NPC.AI.NPCBehaviorRuntimeBridge behaviorBridge = GetOrCreateBehaviorBridge();
+				if (behaviorBridge != null)
+				{
+					context.Set(GraphContextKeys.runtimeNpcBehaviorBridge, behaviorBridge);
+				}
+
+				await m_dangerRunner.RunAsync(dangerGraph, context, null);
+				UnityEngine.Debug.Log($"[NPCManager] dangerGraph finished on {name}.");
+			}
+			finally
+			{
+				if (behaviorGraph != null)
+				{
+					StartBehaviorGraph();
+				}
+			}
+		}
+
+		private NPC.AI.NPCBehaviorRuntimeBridge GetOrCreateBehaviorBridge()
+		{
+			NPC.AI.NPCBehaviorRuntimeBridge behaviorBridge = GetComponent<NPC.AI.NPCBehaviorRuntimeBridge>();
+			if (behaviorBridge == null)
+			{
+				behaviorBridge = gameObject.AddComponent<NPC.AI.NPCBehaviorRuntimeBridge>();
+			}
+
+			return behaviorBridge;
 		}
 
 		private static bool HasGraphContent(CommonGraph graph)

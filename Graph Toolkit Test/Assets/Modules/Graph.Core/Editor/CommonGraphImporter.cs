@@ -165,6 +165,23 @@ namespace Graph.Core.Editor
 					needType = GetOptionValue<BehaviorNeedType>(hungerThresholdModel, HungerThresholdReachedNodeModel.NeedTypeOption),
 					threshold = GetOptionValue<float>(hungerThresholdModel, HungerThresholdReachedNodeModel.ThresholdOption)
 				},
+				CheckThreatScoreNodeModel checkThreatModel => new CheckThreatScoreNode
+				{
+					compareType = GetOptionValue<DangerCompareType>(checkThreatModel, CheckThreatScoreNodeModel.CompareTypeOption),
+					valueA = GetOptionValue<int>(checkThreatModel, CheckThreatScoreNodeModel.ValueAOption),
+					valueB = GetOptionValue<int>(checkThreatModel, CheckThreatScoreNodeModel.ValueBOption)
+				},
+				ModifyDangerNodeModel modifyDangerModel => new ModifyDangerNode
+				{
+					mode = GetOptionValue<DangerModifyMode>(modifyDangerModel, ModifyDangerNodeModel.ModeOption),
+					value = GetOptionValue<float>(modifyDangerModel, ModifyDangerNodeModel.ValueOption)
+				},
+				DangerActionNodeModel dangerActionModel => new DangerActionNode
+				{
+					actionType = GetOptionValue<DangerActionType>(dangerActionModel, DangerActionNodeModel.ActionTypeOption),
+					value = GetOptionValue<float>(dangerActionModel, DangerActionNodeModel.ValueOption),
+					speedDelta = GetOptionValue<float>(dangerActionModel, DangerActionNodeModel.SpeedDeltaOption)
+				},
 				WaitForEventNodeModel waitForEventModel => new WaitForEventNode
 				{
 					eventName = GetOptionValue<string>(waitForEventModel, WaitForEventNodeModel.EventNameOption)
@@ -299,6 +316,22 @@ namespace Graph.Core.Editor
 					GetConnectedNodeIdByOutputName(editorNode, HungerThresholdReachedNodeModel.TruePort, idMap);
 				thresholdNode.falseNodeId =
 					GetConnectedNodeIdByOutputName(editorNode, HungerThresholdReachedNodeModel.FalsePort, idMap);
+				return;
+			}
+
+			if (editorNode is CheckThreatScoreNodeModel && runtimeNode is CheckThreatScoreNode checkThreatNode)
+			{
+				checkThreatNode.trueNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CheckThreatScoreNodeModel.TruePort, idMap);
+				checkThreatNode.falseNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CheckThreatScoreNodeModel.FalsePort, idMap);
+				return;
+			}
+
+			if (editorNode is DangerActionNodeModel && runtimeNode is DangerActionNode dangerActionNode)
+			{
+				dangerActionNode.successNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, DangerActionNodeModel.SuccessPort, idMap);
 				return;
 			}
 

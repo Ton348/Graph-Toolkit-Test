@@ -17,14 +17,39 @@ namespace Prototype.Business.NPC.Movement
 		private NavMeshAgent m_agent;
 		private MovementState m_state = MovementState.Idle;
 		private System.Random m_random;
+		private float m_baseSpeed;
 
 		public MovementState CurrentState => m_state;
 
 		private void Awake()
 		{
 			m_agent = GetComponent<NavMeshAgent>();
+			m_baseSpeed = m_agent != null ? m_agent.speed : 0f;
 			int seed = gameObject.GetInstanceID() ^ Environment.TickCount;
 			m_random = new System.Random(seed);
+		}
+
+		public float BaseSpeed => m_baseSpeed;
+		public float CurrentSpeed => m_agent != null ? m_agent.speed : 0f;
+
+		public void SetSpeedByDelta(float delta)
+		{
+			if (m_agent == null)
+			{
+				return;
+			}
+
+			m_agent.speed = Mathf.Max(0f, m_baseSpeed + delta);
+		}
+
+		public void ResetSpeedToBase()
+		{
+			if (m_agent == null)
+			{
+				return;
+			}
+
+			m_agent.speed = Mathf.Max(0f, m_baseSpeed);
 		}
 
 		public void MoveTo(Vector3 point)

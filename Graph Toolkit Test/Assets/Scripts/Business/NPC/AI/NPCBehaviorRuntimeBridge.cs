@@ -4,6 +4,7 @@ using Prototype.Business.NPC.Locations;
 using Prototype.Business.NPC.Needs;
 using Prototype.Business.NPC.Registry;
 using Prototype.Business.NPC.Spawning;
+using Prototype.Business.NPC.Danger;
 using Prototype.Business.Time;
 using Graph.Core.Runtime.Nodes.Behavior;
 using System;
@@ -15,7 +16,7 @@ namespace Prototype.Business.NPC.AI
 {
 	[RequireComponent(typeof(NPCBrain))]
 	[RequireComponent(typeof(NPCNeedsComponent))]
-	public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
+public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 	{
 		private NPCBrain m_brain;
 		private NPCNeedsComponent m_needs;
@@ -28,6 +29,13 @@ namespace Prototype.Business.NPC.AI
 		private readonly List<NPCLocationPoint> m_routeBuffer = new List<NPCLocationPoint>(16);
 		[SerializeField] private float locationMinRepathDistance = 5f;
 		[SerializeField] private float locationRepeatCooldownSeconds = 12f;
+		private Vector3 m_dangerPosition;
+		private float m_dangerRadius;
+		private int m_threatScore;
+		private float m_dangerTimer;
+		private DangerSourceType m_dangerSource = DangerSourceType.Unknown;
+		private int m_dangerEventVersion;
+		public event Action OnDangerEventReceived;
 
 		private void Awake()
 		{
@@ -38,6 +46,12 @@ namespace Prototype.Business.NPC.AI
 		public NPCBrain Brain => m_brain;
 		public NPCNeedsComponent Needs => m_needs;
 		public string DebugActiveBehaviorNode { get; set; }
+		public Vector3 DangerPosition => m_dangerPosition;
+		public float DangerRadius => m_dangerRadius;
+		public int ThreatScore => m_threatScore;
+		public float DangerTimer => m_dangerTimer;
+		public DangerSourceType DangerSource => m_dangerSource;
+		public int DangerEventVersion => m_dangerEventVersion;
 
 		public float GetNeedValue(BehaviorNeedType needType)
 		{
@@ -102,6 +116,164 @@ namespace Prototype.Business.NPC.AI
 				case BehaviorNeedType.Food:
 					if (increase) { m_needs.AddNeed(NPCNeedType.Hunger, delta); } else { m_needs.ConsumeNeed(NPCNeedType.Hunger, delta); }
 					return;
+			}
+		}
+
+		public void ReceiveDanger(in DangerEvent dangerEvent)
+		{
+			UnityEngine.Debug.Log($"[DangerNPC] ReceiveDanger npc={name} pos={dangerEvent.dangerPosition} threat+={dangerEvent.threatScore} timer={dangerEvent.dangerTimer}");
+			m_dangerPosition = dangerEvent.dangerPosition;
+			m_dangerRadius = Mathf.Max(0f, dangerEvent.dangerRadius);
+			m_threatScore += dangerEvent.threatScore;
+			m_dangerTimer = dangerEvent.dangerTimer;
+			m_dangerSource = dangerEvent.dangerSource;
+			m_dangerEventVersion++;
+			OnDangerEventReceived?.Invoke();
+		}
+
+		public void ModifyDangerRadius(float delta)
+		{
+			m_dangerRadius = Mathf.Max(0f, m_dangerRadius + delta);
+		}
+
+		public void ModifyDangerTimer(float delta)
+		{
+			m_dangerTimer = Mathf.Max(0f, m_dangerTimer + delta);
+		}
+
+		public void ModifyThreatScore(int delta)
+		{
+			m_threatScore += delta;
+		}
+
+		public void SpreadDangerIfEnabled(float enableValue)
+		{
+			if (enableValue <= 0f)
+			{
+				return;
+			}
+
+			DangerManager manager = DangerManager.Instance;
+			if (manager == null)
+			{
+				return;
+			}
+
+			manager.RaiseDangerEvent(transform.position, m_dangerRadius, m_threatScore, m_dangerTimer, m_dangerSource);
+		}
+
+		public bool IsThreatMatch(int valueA, int valueB, DangerCompareType compareType)
+		{
+			switch (compareType)
+			{
+				case DangerCompareType.Greater:
+					return m_threatScore >= valueA;
+				case DangerCompareType.Less:
+					return m_threatScore <= valueA;
+				case DangerCompareType.Equal:
+					return m_threatScore == valueA;
+				case DangerCompareType.Between:
+				{
+					int min = Mathf.Min(valueA, valueB);
+					int max = Mathf.Max(valueA, valueB);
+					return m_threatScore >= min && m_threatScore <= max;
+				}
+				default:
+					return false;
+			}
+		}
+
+		public async UniTask<bool> ExecuteDangerActionAsync(DangerActionType actionType, float value, float speedDelta, CancellationToken cancellationToken)
+		{
+			if (m_brain == null)
+			{
+				return false;
+			}
+
+			NPCMovementController movement = m_brain.GetComponent<NPCMovementController>();
+			if (movement != null)
+			{
+				movement.SetSpeedByDelta(speedDelta);
+			}
+
+			try
+			{
+				switch (actionType)
+				{
+					case DangerActionType.Freeze:
+					{
+						float wait = Mathf.Max(0f, value);
+						if (wait > 0f)
+						{
+							await UniTask.Delay(TimeSpan.FromSeconds(wait), cancellationToken: cancellationToken);
+						}
+						return true;
+					}
+					case DangerActionType.RunFromDanger:
+					{
+						Vector3 away = transform.position - m_dangerPosition;
+						away.y = 0f;
+						if (away.sqrMagnitude < 0.0001f)
+						{
+							away = transform.forward;
+						}
+						away.Normalize();
+						Vector3 target = transform.position + away * Mathf.Max(0f, value);
+						bool ok = m_brain.MoveToPoint(target);
+						if (!ok)
+						{
+							return false;
+						}
+						await WaitForBrainReachedAsync(cancellationToken);
+						return true;
+					}
+					case DangerActionType.MoveToDanger:
+					{
+						Vector3 dir = transform.position - m_dangerPosition;
+						dir.y = 0f;
+						if (dir.sqrMagnitude < 0.0001f)
+						{
+							dir = transform.forward;
+						}
+						dir.Normalize();
+						Vector3 target = m_dangerPosition + dir * Mathf.Max(0f, value);
+						bool ok = m_brain.MoveToPoint(target);
+						if (!ok)
+						{
+							return false;
+						}
+						await WaitForBrainReachedAsync(cancellationToken);
+						return true;
+					}
+					default:
+						return false;
+				}
+			}
+			finally
+			{
+				movement?.ResetSpeedToBase();
+			}
+		}
+
+		private async UniTask WaitForBrainReachedAsync(CancellationToken cancellationToken)
+		{
+			var tcs = new UniTaskCompletionSource();
+			void Handler()
+			{
+				tcs.TrySetResult();
+			}
+
+			m_brain.OnTargetReached += Handler;
+			try
+			{
+				using (cancellationToken.Register(() => tcs.TrySetCanceled()))
+				{
+					await tcs.Task;
+				}
+			}
+			finally
+			{
+				m_brain.OnTargetReached -= Handler;
 			}
 		}
 

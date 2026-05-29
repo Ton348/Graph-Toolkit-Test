@@ -48,6 +48,8 @@ namespace Prototype.Business.NPC.AI
 		private bool m_waitingAtTarget;
 		private bool m_despawning;
 		private bool m_hasTarget;
+		private bool m_pausedByDialogue;
+		private bool m_resumeMovementAfterDialogue;
 
 		private BusinessWorldRuntime m_currentTargetBusiness;
 		private string m_currentTargetBusinessName;
@@ -75,6 +77,11 @@ namespace Prototype.Business.NPC.AI
 
 		private void Update()
 		{
+			if (m_pausedByDialogue)
+			{
+				return;
+			}
+
 			if (m_despawning)
 			{
 				return;
@@ -272,6 +279,34 @@ namespace Prototype.Business.NPC.AI
 		{
 			m_hasTarget = false;
 			m_movement.Stop();
+		}
+
+		public void PauseForDialogue()
+		{
+			if (m_pausedByDialogue)
+			{
+				return;
+			}
+
+			m_pausedByDialogue = true;
+			m_resumeMovementAfterDialogue = m_hasTarget;
+			m_movement.Stop();
+		}
+
+		public void ResumeAfterDialogue()
+		{
+			if (!m_pausedByDialogue)
+			{
+				return;
+			}
+
+			m_pausedByDialogue = false;
+			if (m_resumeMovementAfterDialogue && m_hasTarget)
+			{
+				m_movement.MoveTo(m_currentDestination);
+			}
+
+			m_resumeMovementAfterDialogue = false;
 		}
 
 		private void MoveToShelves()
