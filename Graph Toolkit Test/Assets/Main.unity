@@ -7337,6 +7337,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!4 &225718050 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: b8ee657c6800ab849bb30b4375d02323, type: 3}
@@ -15139,6 +15140,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1 &419773274
 GameObject:
   m_ObjectHideFlags: 0
@@ -16513,6 +16515,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!4 &459283183 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: d34e8533c8de8ec45869f9144584d929, type: 3}
@@ -34891,6 +34894,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1001 &873262994
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -40040,6 +40044,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1001 &1004086786
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42944,6 +42949,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1001 &1070303048
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -45339,6 +45345,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1001 &1122146276
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -59645,6 +59652,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1 &1443392035
 GameObject:
   m_ObjectHideFlags: 0
@@ -61496,6 +61504,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!4 &1475706824 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: 31bbda51eeab02f44a8e92a7da2f5ff8, type: 3}
@@ -68050,9 +68059,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 432e79f2d1c454d99ba238d46728922c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Danger.DangerManager
-  npcLayerMask:
-    serializedVersion: 2
-    m_Bits: 8
+  defaultRadius: 5
+  defaultThreatScore: 1
+  defaultLifetimeSeconds: 10
+  defaultSourceType: 1
 --- !u!1 &1615760424 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 79ef5961b86276943ab5da38ae9f2e4b, type: 3}
@@ -69304,6 +69314,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1001 &1634692722
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -85757,6 +85768,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1001 &1995988554
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -87628,6 +87640,7 @@ MonoBehaviour:
   openHour: 0
   closeHour: 24
   targetPoint: {fileID: 0}
+  arrivalRadius: 2
 --- !u!1 &2039028712 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: b82e76f4092b7d24aaeecddf36fe8d3b, type: 3}
@@ -94347,11 +94360,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5728203473785260687, guid: 1fcb6ea0a03584c4aaec92162b798dc7, type: 3}
       propertyPath: dangerRadius
-      value: 50
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 5728203473785260687, guid: 1fcb6ea0a03584c4aaec92162b798dc7, type: 3}
       propertyPath: dangerTimerSeconds
-      value: 30
+      value: 60
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

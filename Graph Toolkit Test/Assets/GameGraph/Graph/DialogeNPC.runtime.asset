@@ -12,66 +12,66 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: DialogeNPC.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: 9e37ac0d-5169-4656-aef7-4cac196203b0
+  startNodeId: dd0d1709-e8cd-4eb7-bd72-570895e44135
   nodes:
-  - rid: 8489121034373694301
-  - rid: 8489121034373694302
-  - rid: 8489121034373694303
-  - rid: 8489121034373694304
-  - rid: 8489121034373694305
+  - rid: 4432080826228277535
+  - rid: 4432080826228277536
+  - rid: 4432080826228277537
+  - rid: 4432080826228277538
+  - rid: 4432080826228277539
   references:
     version: 2
     RefIds:
-    - rid: 8489121034373694301
+    - rid: 4432080826228277535
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9e37ac0d-5169-4656-aef7-4cac196203b0
+        nodeId: dd0d1709-e8cd-4eb7-bd72-570895e44135
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: 22f86f64-c148-44ec-a2ea-07735e129d39
-    - rid: 8489121034373694302
+        nextNodeId: b7836927-5244-44e6-ae36-3288f319baaa
+    - rid: 4432080826228277536
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 22f86f64-c148-44ec-a2ea-07735e129d39
+        nodeId: b7836927-5244-44e6-ae36-3288f319baaa
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: ba158ad0-87a7-49e3-8599-59f7cf6f1ecb
+        nextNodeId: 49668628-6aa8-4c4c-9297-1bd8e1a67895
         dialogueTitle: NPC
         body: "\u0421\u043B\u0443\u0448\u0430\u044E."
-    - rid: 8489121034373694303
+    - rid: 4432080826228277537
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: ba158ad0-87a7-49e3-8599-59f7cf6f1ecb
+        nodeId: 49668628-6aa8-4c4c-9297-1bd8e1a67895
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
           \u0438\u0433\u0440\u043E\u043A\u0430"
         options:
         - label: "\u041A\u0443\u0434\u0430 \u0438\u0434\u0435\u0448\u044C?"
-          nextNodeId: 4be7e5c5-759e-453e-8246-d9e415b07b59
+          nextNodeId: 030a2d22-545a-4c27-972b-a439265a81e8
         - label: "\u041F\u043E\u043A\u0430."
-          nextNodeId: 627c7383-c21f-4e94-ac59-291d10eafbe9
+          nextNodeId: c9423563-0310-4d3d-857c-c36cd5559742
         - label: 
           nextNodeId: 
         - label: 
           nextNodeId: 
-    - rid: 8489121034373694304
+    - rid: 4432080826228277538
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 4be7e5c5-759e-453e-8246-d9e415b07b59
+        nodeId: 030a2d22-545a-4c27-972b-a439265a81e8
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 627c7383-c21f-4e94-ac59-291d10eafbe9
+        nextNodeId: c9423563-0310-4d3d-857c-c36cd5559742
         dialogueTitle: NPC
         body: "\u0418\u0434\u0443 \u043A\u0443\u0434\u0430  \u0433\u043B\u0430\u0437\u0430
           \u0433\u043B\u044F\u0434\u044F\u0442."
-    - rid: 8489121034373694305
+    - rid: 4432080826228277539
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 627c7383-c21f-4e94-ac59-291d10eafbe9
+        nodeId: c9423563-0310-4d3d-857c-c36cd5559742
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"

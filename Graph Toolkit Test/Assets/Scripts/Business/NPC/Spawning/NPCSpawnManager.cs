@@ -32,6 +32,7 @@ namespace Prototype.Business.NPC.Spawning
 		private Camera m_mainCamera;
 		private float m_timer;
 		private bool m_canSpawnByPhase = true;
+		private int m_nextSpawnPointIndex;
 
 		private void Awake()
 		{
@@ -91,9 +92,11 @@ namespace Prototype.Business.NPC.Spawning
 				return;
 			}
 
+			int startIndex = m_nextSpawnPointIndex;
 			for (int i = 0; i < m_spawnPoints.Length; i++)
 			{
-				NPCSpawnPoint point = m_spawnPoints[i];
+				int idx = (startIndex + i) % m_spawnPoints.Length;
+				NPCSpawnPoint point = m_spawnPoints[idx];
 				if (point == null || !point.CanSpawn(player, m_mainCamera))
 				{
 					continue;
@@ -120,6 +123,7 @@ namespace Prototype.Business.NPC.Spawning
 					m_alive.Add(brain);
 				}
 
+				m_nextSpawnPointIndex = (idx + 1) % m_spawnPoints.Length;
 				break;
 			}
 		}

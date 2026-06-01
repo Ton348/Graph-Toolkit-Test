@@ -290,8 +290,8 @@ MonoBehaviour:
   pistolObject: {fileID: 4691490409500003872}
   muzzlePoint: {fileID: 7084968329698399912}
   bulletPrefab: {fileID: 8583922532214704813, guid: 587a425b493584224b443aa65c51a7d7, type: 3}
-  dangerRadius: 50
-  dangerTimerSeconds: 30
+  dangerRadius: 10
+  dangerTimerSeconds: 60
 --- !u!1 &4993208594068157224
 GameObject:
   m_ObjectHideFlags: 0

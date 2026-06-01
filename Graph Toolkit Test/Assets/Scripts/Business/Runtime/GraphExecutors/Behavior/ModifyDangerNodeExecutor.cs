@@ -12,17 +12,17 @@ namespace Prototype.Business.Runtime.GraphExecutors.Behavior
 	[GameGraphNodeExecutor]
 	public sealed class ModifyDangerNodeExecutor : BaseGraphNodeExecutor<ModifyDangerNode>
 	{
-		protected override UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(ModifyDangerNode node, GraphExecutionContext context, CancellationToken cancellationToken)
+		protected override async UniTask<GraphNodeExecutionResult> ExecuteTypedAsync(ModifyDangerNode node, GraphExecutionContext context, CancellationToken cancellationToken)
 		{
 			if (context == null || !context.TryGet(GraphContextKeys.runtimeNpcBehaviorBridge, out var bridge) || bridge == null)
 			{
-				return UniTask.FromResult(GraphNodeExecutionResult.Fault("NPCBehaviorRuntimeBridge missing in graph context.", GraphNodeExecutionErrorType.ServiceFailure));
+				return GraphNodeExecutionResult.Fault("NPCBehaviorRuntimeBridge missing in graph context.", GraphNodeExecutionErrorType.ServiceFailure);
 			}
 
 			switch (node.mode)
 			{
 				case DangerModifyMode.EnableSpreadDanger:
-					bridge.SpreadDangerIfEnabled(node.value);
+					await bridge.SpreadDangerBurstsAsync(node.value, cancellationToken);
 					break;
 				case DangerModifyMode.SetDangerRadius:
 					bridge.ModifyDangerRadius(node.value);
@@ -35,7 +35,7 @@ namespace Prototype.Business.Runtime.GraphExecutors.Behavior
 					break;
 			}
 
-			return UniTask.FromResult(GraphNodeExecutionResult.ContinueTo(node.nextNodeId));
+			return GraphNodeExecutionResult.ContinueTo(node.nextNodeId);
 		}
 	}
 }

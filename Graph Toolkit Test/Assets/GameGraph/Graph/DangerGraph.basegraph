@@ -429,14 +429,14 @@ MonoBehaviour:
           m_EnumType:
             m_Identification: Graph.Core.Runtime.Nodes.Behavior.DangerModifyMode,
               Graph.Core.Runtime, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
-          m_Value: 1
+          m_Value: 0
         m_EnumType:
           m_Identification: Graph.Core.Runtime.Nodes.Behavior.DangerModifyMode, Graph.Core.Runtime,
             Version=0.0.0.0, Culture=neutral, PublicKeyToken=null
     - rid: 8489121011510805117
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 30
+        m_Value: 5
     - rid: 8489121011510805118
       type: {class: ModifyDangerNodeModel, ns: Graph.Core.Editor.BaseNodes.Behavior, asm: Graph.Core.Editor}
       data: 
@@ -740,7 +740,7 @@ MonoBehaviour:
     - rid: 8489121034373694078
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 100
+        m_Value: 1
     - rid: 8489121034373694079
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -1006,7 +1006,7 @@ MonoBehaviour:
     - rid: 8489121034373694145
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 30
+        m_Value: 15
     - rid: 8489121034373694146
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:

@@ -58,6 +58,7 @@ namespace Prototype.Business.NPC
 			if (m_behaviorBridge != null)
 			{
 				m_behaviorBridge.OnDangerEventReceived += HandleDangerEvent;
+				m_behaviorBridge.OnDangerCleared += HandleDangerCleared;
 				TryHandlePendingDanger();
 			}
 
@@ -69,6 +70,7 @@ namespace Prototype.Business.NPC
 			if (m_behaviorBridge != null)
 			{
 				m_behaviorBridge.OnDangerEventReceived -= HandleDangerEvent;
+				m_behaviorBridge.OnDangerCleared -= HandleDangerCleared;
 			}
 		}
 
@@ -257,16 +259,13 @@ namespace Prototype.Business.NPC
 
 		private void HandleDangerEvent()
 		{
-			UnityEngine.Debug.Log($"[NPCManager] Danger event received by {name}. dangerGraph={(dangerGraph != null ? dangerGraph.name : "null")}");
 			if (dangerGraph == null || !HasGraphContent(dangerGraph))
 			{
-				UnityEngine.Debug.LogError($"[NPCManager] dangerGraph is missing or empty on {name}.");
 				return;
 			}
 
 			if (m_dangerRunner != null && m_dangerRunner.IsRunning)
 			{
-				UnityEngine.Debug.Log($"[NPCManager] dangerGraph already running on {name}.");
 				return;
 			}
 
@@ -293,7 +292,6 @@ namespace Prototype.Business.NPC
 		{
 			if (dangerGraph == null || !HasGraphContent(dangerGraph))
 			{
-				UnityEngine.Debug.LogError($"[NPCManager] RunDangerGraphAsync aborted: graph missing/empty on {name}.");
 				return;
 			}
 
@@ -310,7 +308,6 @@ namespace Prototype.Business.NPC
 
 			try
 			{
-				UnityEngine.Debug.Log($"[NPCManager] Starting dangerGraph '{dangerGraph.name}' on {name}.");
 				var context = new GraphExecutionContext(
 					new GraphRuntimeServices(
 						dialogueService,
@@ -329,14 +326,26 @@ namespace Prototype.Business.NPC
 				}
 
 				await m_dangerRunner.RunAsync(dangerGraph, context, null);
-				UnityEngine.Debug.Log($"[NPCManager] dangerGraph finished on {name}.");
 			}
 			finally
 			{
-				if (behaviorGraph != null)
+				if (behaviorGraph != null && (m_behaviorBridge == null || m_behaviorBridge.DangerExpireAt <= UnityEngine.Time.time))
 				{
 					StartBehaviorGraph();
 				}
+			}
+		}
+
+		private void HandleDangerCleared()
+		{
+			if (m_dangerRunner != null && m_dangerRunner.IsRunning)
+			{
+				m_dangerRunner.Stop();
+			}
+
+			if (behaviorGraph != null)
+			{
+				StartBehaviorGraph();
 			}
 		}
 

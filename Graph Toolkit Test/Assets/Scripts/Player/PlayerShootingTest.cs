@@ -10,8 +10,6 @@ namespace Prototype.Player
 		[SerializeField] private GameObject pistolObject;
 		[SerializeField] private Transform muzzlePoint;
 		[SerializeField] private GameObject bulletPrefab;
-		[SerializeField] private float dangerRadius = 30f;
-		[SerializeField] private float dangerTimerSeconds = 8f;
 
 		private bool m_weaponActive;
 
@@ -85,29 +83,17 @@ namespace Prototype.Player
 			}
 
 			Type managerType = manager.GetType();
-			Type sourceEnumType = Type.GetType("Prototype.Business.NPC.Danger.DangerSourceType, Prototype.Business");
-			if (sourceEnumType == null)
-			{
-				Debug.LogError("[ShootTest] DangerSourceType not found.");
-				return;
-			}
-
-			object gunshotSource = Enum.ToObject(sourceEnumType, 1);
-			MethodInfo raiseMethod = managerType.GetMethod("RaiseDangerEvent", BindingFlags.Public | BindingFlags.Instance);
+			MethodInfo raiseMethod = managerType.GetMethod("RaiseDefaultDangerAt", BindingFlags.Public | BindingFlags.Instance);
 			if (raiseMethod == null)
 			{
-				Debug.LogError("[ShootTest] RaiseDangerEvent method not found.");
+				Debug.LogError("[ShootTest] RaiseDefaultDangerAt method not found.");
 				return;
 			}
 
-			Debug.Log($"[ShootTest] Sending danger event. pos={muzzlePoint.position}, radius={dangerRadius}, timer={dangerTimerSeconds}, threat=1");
+			Debug.Log($"[ShootTest] Sending default danger event. pos={muzzlePoint.position}");
 			raiseMethod.Invoke(manager, new object[]
 			{
-				muzzlePoint.position,
-				dangerRadius,
-				1,
-				dangerTimerSeconds,
-				gunshotSource
+				muzzlePoint.position
 			});
 		}
 

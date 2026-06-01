@@ -16,7 +16,7 @@ namespace Prototype.Business.NPC.AI
 {
 	[RequireComponent(typeof(NPCBrain))]
 	[RequireComponent(typeof(NPCNeedsComponent))]
-public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
+public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 	{
 		private NPCBrain m_brain;
 		private NPCNeedsComponent m_needs;
@@ -33,14 +33,32 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 		private float m_dangerRadius;
 		private int m_threatScore;
 		private float m_dangerTimer;
+		private float m_dangerExpireAt;
+		private int m_dangerSourceId;
+		private int m_dangerRootSourceId;
 		private DangerSourceType m_dangerSource = DangerSourceType.Unknown;
 		private int m_dangerEventVersion;
+		private DangerSource m_activeDangerSource;
+		private float m_dangerScanTimer;
+		[SerializeField] private float dangerScanInterval = 0.5f;
 		public event Action OnDangerEventReceived;
+		public event Action OnDangerCleared;
 
 		private void Awake()
 		{
 			m_brain = GetComponent<NPCBrain>();
 			m_needs = GetComponent<NPCNeedsComponent>();
+		}
+
+		private void Update()
+		{
+			m_dangerScanTimer += UnityEngine.Time.deltaTime;
+			if (m_dangerScanTimer < Mathf.Max(0.1f, dangerScanInterval))
+			{
+				return;
+			}
+			m_dangerScanTimer = 0f;
+			ScanDangerSources();
 		}
 
 		public NPCBrain Brain => m_brain;
@@ -50,6 +68,9 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 		public float DangerRadius => m_dangerRadius;
 		public int ThreatScore => m_threatScore;
 		public float DangerTimer => m_dangerTimer;
+		public float DangerExpireAt => m_dangerExpireAt;
+		public int DangerSourceId => m_dangerSourceId;
+		public int DangerRootSourceId => m_dangerRootSourceId;
 		public DangerSourceType DangerSource => m_dangerSource;
 		public int DangerEventVersion => m_dangerEventVersion;
 
@@ -119,16 +140,61 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 			}
 		}
 
-		public void ReceiveDanger(in DangerEvent dangerEvent)
+		private void ScanDangerSources()
 		{
-			UnityEngine.Debug.Log($"[DangerNPC] ReceiveDanger npc={name} pos={dangerEvent.dangerPosition} threat+={dangerEvent.threatScore} timer={dangerEvent.dangerTimer}");
-			m_dangerPosition = dangerEvent.dangerPosition;
-			m_dangerRadius = Mathf.Max(0f, dangerEvent.dangerRadius);
-			m_threatScore += dangerEvent.threatScore;
-			m_dangerTimer = dangerEvent.dangerTimer;
-			m_dangerSource = dangerEvent.dangerSource;
-			m_dangerEventVersion++;
-			OnDangerEventReceived?.Invoke();
+			DangerManager manager = DangerManager.Instance;
+			if (manager == null)
+			{
+				if (m_activeDangerSource != null)
+				{
+					m_activeDangerSource = null;
+					OnDangerCleared?.Invoke();
+				}
+				return;
+			}
+
+			if (manager.TryGetNearestActiveSource(transform.position, out DangerSource source))
+			{
+				if (!ReferenceEquals(m_activeDangerSource, source))
+				{
+					m_activeDangerSource = source;
+					ApplyDangerSource(source, true);
+				}
+				else
+				{
+					ApplyDangerSource(source, false);
+				}
+			}
+			else
+			{
+				if (m_activeDangerSource != null)
+				{
+					m_activeDangerSource = null;
+					OnDangerCleared?.Invoke();
+				}
+			}
+		}
+
+		private void ApplyDangerSource(DangerSource source, bool triggerEvent)
+		{
+			if (source == null)
+			{
+				return;
+			}
+
+			m_dangerPosition = source.Position;
+			m_dangerRadius = Mathf.Max(0f, source.Radius);
+			m_threatScore = source.ThreatScore;
+			m_dangerTimer = source.Lifetime;
+			m_dangerExpireAt = source.ExpireAt;
+			m_dangerSourceId = source.SourceId;
+			m_dangerRootSourceId = source.RootSourceId > 0 ? source.RootSourceId : source.SourceId;
+			m_dangerSource = source.SourceType;
+			if (triggerEvent)
+			{
+				m_dangerEventVersion++;
+				OnDangerEventReceived?.Invoke();
+			}
 		}
 
 		public void ModifyDangerRadius(float delta)
@@ -160,6 +226,39 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 			}
 
 			manager.RaiseDangerEvent(transform.position, m_dangerRadius, m_threatScore, m_dangerTimer, m_dangerSource);
+		}
+
+		public async UniTask SpreadDangerBurstsAsync(float burstCountValue, CancellationToken cancellationToken)
+		{
+			bool enabled = burstCountValue > 0f;
+			if (!enabled && burstCountValue <= 0f)
+			{
+				DangerManager disableManager = DangerManager.Instance;
+				if (disableManager != null)
+				{
+					disableManager.SetNpcContagionSource(gameObject.GetInstanceID(), transform, m_dangerRadius, m_dangerRootSourceId, false);
+				}
+				return;
+			}
+
+			DangerManager manager = DangerManager.Instance;
+			if (manager == null)
+			{
+				return;
+			}
+
+			manager.SetNpcContagionSource(
+				gameObject.GetInstanceID(),
+				transform,
+				m_dangerRadius,
+				m_dangerRootSourceId,
+				IsDangerActive());
+			await UniTask.CompletedTask;
+		}
+
+		private bool IsDangerActive()
+		{
+			return UnityEngine.Time.time < m_dangerExpireAt;
 		}
 
 		public bool IsThreatMatch(int valueA, int valueB, DangerCompareType compareType)
@@ -202,6 +301,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 				{
 					case DangerActionType.Freeze:
 					{
+						m_brain.StopMovement();
 						float wait = Mathf.Max(0f, value);
 						if (wait > 0f)
 						{
@@ -473,7 +573,10 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour, IDangerReceiver
 				}
 
 				m_reservedLocation = point;
-				target = point.TargetPoint.position;
+				if (!point.TryGetArrivalPoint(out target))
+				{
+					target = point.TargetPoint.position;
+				}
 			}
 
 			var tcs = new UniTaskCompletionSource();
