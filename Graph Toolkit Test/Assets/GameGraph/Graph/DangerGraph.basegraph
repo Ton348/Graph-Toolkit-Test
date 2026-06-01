@@ -684,7 +684,7 @@ MonoBehaviour:
           serializedVersion: 2
           Hash: 904285d700e693a682bf0df93de24cb0
         m_Version: 2
-        m_Position: {x: 620.8255, y: -58.272266}
+        m_Position: {x: 620.8255, y: -56.29019}
         m_Title: 
         m_Tooltip: 
         m_NodePreviewModel:
@@ -732,15 +732,15 @@ MonoBehaviour:
     - rid: 8489121034373694076
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 1
+        m_Value: 75
     - rid: 8489121034373694077
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 1
+        m_Value: 20
     - rid: 8489121034373694078
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 1
+        m_Value: 5
     - rid: 8489121034373694079
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
@@ -850,7 +850,7 @@ MonoBehaviour:
     - rid: 8489121034373694119
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:
-        m_Value: 30
+        m_Value: 50
     - rid: 8489121034373694120
       type: {class: 'Constant`1[[System.Single, mscorlib]]', ns: Unity.GraphToolkit.Editor, asm: Unity.GraphToolkit.Internal.Editor}
       data:

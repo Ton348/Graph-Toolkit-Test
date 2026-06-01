@@ -50,6 +50,7 @@ namespace Prototype.Business.NPC
 		private NPC.AI.NPCBrain m_npcBrain;
 		private NPC.AI.NPCBehaviorRuntimeBridge m_behaviorBridge;
 		private int m_lastHandledDangerVersion;
+		private bool m_dangerPending;
 
 		private void Start()
 		{
@@ -266,6 +267,7 @@ namespace Prototype.Business.NPC
 
 			if (m_dangerRunner != null && m_dangerRunner.IsRunning)
 			{
+				m_dangerPending = true;
 				return;
 			}
 
@@ -329,6 +331,15 @@ namespace Prototype.Business.NPC
 			}
 			finally
 			{
+				if (m_dangerPending)
+				{
+					m_dangerPending = false;
+					if (m_behaviorBridge != null && m_behaviorBridge.DangerExpireAt > UnityEngine.Time.time)
+					{
+						HandleDangerEvent();
+					}
+				}
+
 				if (behaviorGraph != null && (m_behaviorBridge == null || m_behaviorBridge.DangerExpireAt <= UnityEngine.Time.time))
 				{
 					StartBehaviorGraph();
