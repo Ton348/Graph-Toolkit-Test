@@ -43,20 +43,21 @@ namespace Prototype.Business.NPC.Danger
 					src.Position = src.FollowTarget.position;
 				}
 
-				if (src.IsContagion)
-				{
-					DangerSource root = FindActiveSourceById(src.RootSourceId, now);
+					if (src.IsContagion)
+					{
+						DangerSource root = FindActiveSourceById(src.RootSourceId, now);
 					if (root == null)
 					{
 						m_sources.RemoveAt(i);
 						continue;
 					}
 
-					src.ThreatScore = root.ThreatScore;
-					src.SourceType = root.SourceType;
-					src.ExpireAt = root.ExpireAt;
-					src.Lifetime = Mathf.Max(0f, root.ExpireAt - now);
-				}
+						src.ThreatScore = root.ThreatScore;
+						src.SourceType = root.SourceType;
+						src.OriginPosition = root.OriginPosition;
+						src.ExpireAt = root.ExpireAt;
+						src.Lifetime = Mathf.Max(0f, root.ExpireAt - now);
+					}
 
 				if (src.FollowTarget == null && src.IsContagion)
 				{
@@ -73,11 +74,12 @@ namespace Prototype.Business.NPC.Danger
 
 		public void RaiseDangerEvent(Vector3 dangerPosition, float dangerRadius, int threatScore, float dangerTimer, DangerSourceType dangerSource)
 		{
-			DangerSource source = new DangerSource
-			{
-				SourceId = m_nextSourceId++,
-				RootSourceId = 0,
-				Position = dangerPosition,
+				DangerSource source = new DangerSource
+				{
+					SourceId = m_nextSourceId++,
+					RootSourceId = 0,
+					OriginPosition = dangerPosition,
+					Position = dangerPosition,
 				Radius = Mathf.Max(0f, dangerRadius),
 				ThreatScore = threatScore,
 				Lifetime = Mathf.Max(0f, dangerTimer),
@@ -145,10 +147,11 @@ namespace Prototype.Business.NPC.Danger
 				}
 
 				src.FollowTarget = followTarget;
-				src.Position = followTarget.position;
-				src.Radius = Mathf.Max(0f, radius);
-				src.RootSourceId = root.SourceId;
-				src.Lifetime = Mathf.Max(0f, root.ExpireAt - now);
+					src.Position = followTarget.position;
+					src.Radius = Mathf.Max(0f, radius);
+					src.RootSourceId = root.SourceId;
+					src.OriginPosition = root.OriginPosition;
+					src.Lifetime = Mathf.Max(0f, root.ExpireAt - now);
 				src.ExpireAt = root.ExpireAt;
 				src.SourceType = root.SourceType;
 				src.ThreatScore = root.ThreatScore;
@@ -160,11 +163,12 @@ namespace Prototype.Business.NPC.Danger
 				return;
 			}
 
-			m_sources.Add(new DangerSource
-			{
-				SourceId = m_nextSourceId++,
-				RootSourceId = root.SourceId,
-				Position = followTarget.position,
+				m_sources.Add(new DangerSource
+				{
+					SourceId = m_nextSourceId++,
+					RootSourceId = root.SourceId,
+					OriginPosition = root.OriginPosition,
+					Position = followTarget.position,
 				Radius = Mathf.Max(0f, radius),
 				ThreatScore = root.ThreatScore,
 				Lifetime = Mathf.Max(0f, root.ExpireAt - now),
@@ -230,6 +234,32 @@ namespace Prototype.Business.NPC.Danger
 			}
 
 			return source != null;
+		}
+
+		public bool TryUpdateSourceRadius(int sourceId, float radius)
+		{
+			float now = UnityEngine.Time.time;
+			DangerSource source = FindActiveSourceById(sourceId, now);
+			if (source == null)
+			{
+				return false;
+			}
+
+			float clamped = Mathf.Max(0f, radius);
+			source.Radius = clamped;
+
+			for (int i = 0; i < m_sources.Count; i++)
+			{
+				DangerSource contagion = m_sources[i];
+				if (contagion == null || !contagion.IsContagion || contagion.RootSourceId != source.SourceId)
+				{
+					continue;
+				}
+
+				contagion.Radius = clamped;
+			}
+
+			return true;
 		}
 
 		private void OnDrawGizmosSelected()

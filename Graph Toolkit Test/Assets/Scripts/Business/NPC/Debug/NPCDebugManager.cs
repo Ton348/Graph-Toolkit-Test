@@ -6,6 +6,7 @@ namespace Prototype.Business.NPC.Debug
 {
 	public sealed class NPCDebugManager : MonoBehaviour
 	{
+		[SerializeField] private bool debugEnabled = false;
 		[SerializeField] private float cullDistance = 30f;
 		[SerializeField] private float updateInterval = 0.25f;
 
@@ -20,6 +21,11 @@ namespace Prototype.Business.NPC.Debug
 
 		private void Update()
 		{
+			if (!debugEnabled)
+			{
+				return;
+			}
+
 			m_timer += UnityEngine.Time.deltaTime;
 			if (m_timer < Mathf.Max(0.05f, updateInterval))
 			{

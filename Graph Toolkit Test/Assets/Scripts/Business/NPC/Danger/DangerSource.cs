@@ -6,6 +6,7 @@ namespace Prototype.Business.NPC.Danger
 	{
 		public int SourceId;
 		public int RootSourceId;
+		public Vector3 OriginPosition;
 		public Vector3 Position;
 		public float Radius;
 		public int ThreatScore;

@@ -182,7 +182,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 				return;
 			}
 
-			m_dangerPosition = source.Position;
+			m_dangerPosition = source.OriginPosition;
 			m_dangerRadius = Mathf.Max(0f, source.Radius);
 			m_threatScore = source.ThreatScore;
 			m_dangerTimer = source.Lifetime;
@@ -200,6 +200,11 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 		public void ModifyDangerRadius(float delta)
 		{
 			m_dangerRadius = Mathf.Max(0f, m_dangerRadius + delta);
+			DangerManager manager = DangerManager.Instance;
+			if (manager != null && m_dangerSourceId > 0)
+			{
+				manager.TryUpdateSourceRadius(m_dangerSourceId, m_dangerRadius);
+			}
 		}
 
 		public void ModifyDangerTimer(float delta)

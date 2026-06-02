@@ -57,11 +57,9 @@ namespace Prototype.Player
 
 		private void Fire()
 		{
-			Debug.Log("[ShootTest] Fire() called.");
 			if (bulletPrefab != null && muzzlePoint != null)
 			{
 				Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
-				Debug.Log("[ShootTest] Bullet spawned.");
 			}
 
 			TryRaiseDangerEvent();
@@ -90,7 +88,6 @@ namespace Prototype.Player
 				return;
 			}
 
-			Debug.Log($"[ShootTest] Sending default danger event. pos={muzzlePoint.position}");
 			raiseMethod.Invoke(manager, new object[]
 			{
 				muzzlePoint.position
