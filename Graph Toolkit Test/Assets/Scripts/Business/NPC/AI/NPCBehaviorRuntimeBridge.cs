@@ -73,6 +73,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 		public int DangerRootSourceId => m_dangerRootSourceId;
 		public DangerSourceType DangerSource => m_dangerSource;
 		public int DangerEventVersion => m_dangerEventVersion;
+		public DangerSource ActiveDangerSource => m_activeDangerSource;
 
 		public float GetNeedValue(BehaviorNeedType needType)
 		{

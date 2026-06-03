@@ -25,6 +25,7 @@ namespace Prototype.Business.NPC.Spawning
 		[SerializeField] private CommonGraph behaviorGraph;
 		[SerializeField] private CommonGraph dialogueGraph;
 		[SerializeField] private CommonGraph dangerGraph;
+		[SerializeField] private CommonGraph combatGraph;
 
 		private readonly List<NPCBrain> m_alive = new();
 		private NPCSpawnPoint[] m_spawnPoints;
@@ -115,7 +116,8 @@ namespace Prototype.Business.NPC.Spawning
 						player,
 						behaviorGraph,
 						dialogueGraph,
-						dangerGraph);
+						dangerGraph,
+						combatGraph);
 				}
 				NPCBrain brain = go.GetComponent<NPCBrain>();
 				if (brain != null)

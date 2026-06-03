@@ -1,6 +1,7 @@
-using UnityEngine;
 using System;
 using System.Reflection;
+using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace Prototype.Player
 {
@@ -10,11 +11,17 @@ namespace Prototype.Player
 		[SerializeField] private GameObject pistolObject;
 		[SerializeField] private Transform muzzlePoint;
 		[SerializeField] private GameObject bulletPrefab;
+		[SerializeField] private MonoBehaviour bootstrapBehaviour;
 
 		private bool m_weaponActive;
 
 		private void Update()
 		{
+			if (IsBlockedByUi())
+			{
+				return;
+			}
+
 			if (Input.GetMouseButtonDown(1))
 			{
 				HideWeapon();
@@ -59,7 +66,13 @@ namespace Prototype.Player
 		{
 			if (bulletPrefab != null && muzzlePoint != null)
 			{
-				Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
+				GameObject bullet = Instantiate(bulletPrefab, muzzlePoint.position, muzzlePoint.rotation);
+				BulletTest bulletTest = bullet.GetComponent<BulletTest>();
+				if (bulletTest != null)
+				{
+					int damage = GetPlayerDamage();
+					bulletTest.Initialize(damage, BulletOwnerType.Player, transform);
+				}
 			}
 
 			TryRaiseDangerEvent();
@@ -92,6 +105,96 @@ namespace Prototype.Player
 			{
 				muzzlePoint.position
 			});
+		}
+
+		private void Awake()
+		{
+			if (bootstrapBehaviour == null)
+			{
+				bootstrapBehaviour = FindBootstrapInstance();
+			}
+		}
+
+		private int GetPlayerDamage()
+		{
+			object bootstrap = bootstrapBehaviour;
+			if (bootstrap == null)
+			{
+				return 1;
+			}
+
+			object playerStateSync = bootstrap.GetType().GetProperty("PlayerStateSync", BindingFlags.Public | BindingFlags.Instance)?.GetValue(bootstrap);
+			if (playerStateSync == null)
+			{
+				return 1;
+			}
+
+			PropertyInfo damageProperty = playerStateSync.GetType().GetProperty("Damage", BindingFlags.Public | BindingFlags.Instance);
+			if (damageProperty == null)
+			{
+				return 1;
+			}
+
+			object value = damageProperty.GetValue(playerStateSync);
+			return value is int damage ? damage : 1;
+		}
+
+		private static MonoBehaviour FindBootstrapInstance()
+		{
+			MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+			for (int i = 0; i < behaviours.Length; i++)
+			{
+				MonoBehaviour behaviour = behaviours[i];
+				if (behaviour != null && behaviour.GetType().FullName == "Prototype.Business.Bootstrap.GameBootstrap")
+				{
+					return behaviour;
+				}
+			}
+
+			return null;
+		}
+
+		private static bool IsBlockedByUi()
+		{
+			if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+			{
+				return true;
+			}
+
+			MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+			for (int i = 0; i < behaviours.Length; i++)
+			{
+				MonoBehaviour behaviour = behaviours[i];
+				if (behaviour == null || !behaviour.gameObject.activeInHierarchy)
+				{
+					continue;
+				}
+
+				string fullName = behaviour.GetType().FullName;
+				if (fullName == "Sample.Runtime.UI.DialogueUiservice" ||
+				    fullName == "Sample.Runtime.UI.TradeOfferUiservice" ||
+				    fullName == "Sample.Runtime.UI.TraderShopUIService")
+				{
+					PropertyInfo isOpen = behaviour.GetType().GetProperty("IsOpen", BindingFlags.Public | BindingFlags.Instance);
+					if (isOpen != null && isOpen.PropertyType == typeof(bool))
+					{
+						object value = isOpen.GetValue(behaviour);
+						if (value is bool open && open)
+						{
+							return true;
+						}
+					}
+
+					FieldInfo panelField = behaviour.GetType().GetField("panel", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+					if (panelField != null && panelField.GetValue(behaviour) is GameObject panel && panel.activeSelf)
+					{
+						return true;
+					}
+				}
+
+			}
+
+			return false;
 		}
 
 		private static object FindDangerManagerInstance()

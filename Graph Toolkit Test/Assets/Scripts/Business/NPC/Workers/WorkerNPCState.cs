@@ -3,6 +3,7 @@ namespace Prototype.Business.NPC.Workers
 	public enum WorkerNPCState
 	{
 		Spawning,
+		Dead,
 		MovingToEntrance,
 		MovingToStorage,
 		MovingToShelves,

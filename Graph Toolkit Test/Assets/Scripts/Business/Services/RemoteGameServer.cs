@@ -161,6 +161,23 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TryApplyPlayerDamageAsync(int amount)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log($"[RemoteGameServer] action=apply_player_damage amount={amount}");
+			}
+
+			var request = new RemotePlayerDamageRequest
+			{
+				action = "apply_player_damage",
+				playerId = m_playerId,
+				data = new RemotePlayerDamageData { amount = amount }
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		public Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance)
 		{
 			if (m_debugLog)
@@ -1069,6 +1086,20 @@ namespace Prototype.Business.Services
 
 		[Serializable]
 		private class RemoteMoneyData
+		{
+			public int amount;
+		}
+
+		[Serializable]
+		private class RemotePlayerDamageRequest
+		{
+			public string action;
+			public string playerId;
+			public RemotePlayerDamageData data;
+		}
+
+		[Serializable]
+		private class RemotePlayerDamageData
 		{
 			public int amount;
 		}

@@ -313,7 +313,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: f050b687c59d0c0499bdd4231def29e9, type: 2}
+  - {fileID: 2100000, guid: 64aa29e5478aa4645b59bf62f2c55b3c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -340,7 +340,7 @@ SkinnedMeshRenderer:
   m_Quality: 0
   m_UpdateWhenOffscreen: 0
   m_SkinnedMotionVectors: 1
-  m_Mesh: {fileID: 5451311424095430359, guid: fba7f43569532a64fa22cf51a342963d, type: 3}
+  m_Mesh: {fileID: 4011855729142578783, guid: 2165616b63aca644c8983f129c8a6fc6, type: 3}
   m_Bones:
   - {fileID: 5350054662293768736}
   - {fileID: 5380428710725545048}
@@ -673,10 +673,10 @@ GameObject:
   - component: {fileID: 2659683067189053587}
   - component: {fileID: -592007422357879419}
   - component: {fileID: -9019777761875082458}
-  - component: {fileID: 397068039371807600}
-  - component: {fileID: 7627803819764270530}
+  - component: {fileID: 5061139708511126140}
+  - component: {fileID: 7208504185155626412}
   m_Layer: 3
-  m_Name: NPC_nav
+  m_Name: NPC_police
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -691,7 +691,7 @@ Transform:
   m_GameObject: {fileID: 3443139078624027616}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -6.49, y: -0.118, z: 0}
+  m_LocalPosition: {x: -6.49, y: -0.166, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -754,15 +754,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebad2b81e3fdd41049062042aa52055f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Needs.NPCNeedsComponent
-  hunger: 0
-  thirst: 0
-  energy: 0
-  work: 0
+  hunger: 20
+  thirst: 20
+  energy: 80
+  work: 20
   safety: 100
   fun: 50
-  toilet: 0
-  cityNeed: 0
-  natureNeed: 10
+  toilet: 10
+  cityNeed: 20
+  natureNeed: 0
   foodNeed: 20
   energyNeed: 20
   funNeed: 40
@@ -827,9 +827,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Npcmanager
   interactionDistance: 2
   baseDialogueGraph: {fileID: 11400000, guid: fb7a1aa34efb04944a74a0796de3a18c, type: 2}
-  behaviorGraph: {fileID: 11400000, guid: 0c9419af1ad224ce7a1d3f4aa0170af0, type: 2}
-  dangerGraph: {fileID: 11400000, guid: 6570cc29f873e4ba78c410163903f19b, type: 2}
-  combatGraph: {fileID: 0}
+  behaviorGraph: {fileID: 0}
+  dangerGraph: {fileID: 0}
+  combatGraph: {fileID: 11400000, guid: 5e26a84770fb24a5097d3aba9329e712, type: 2}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 0}
@@ -843,7 +843,7 @@ MonoBehaviour:
   tradeOfferUiservice: {fileID: 0}
   mapMarkerService: {fileID: 0}
   playerTransform: {fileID: 0}
---- !u!114 &397068039371807600
+--- !u!114 &5061139708511126140
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -855,10 +855,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d368d719281484b3f9b2600d1148bfeb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.AI.NPCBehaviorRuntimeBridge
-  locationMinRepathDistance: 10
+  locationMinRepathDistance: 5
   locationRepeatCooldownSeconds: 30
   dangerScanInterval: 0.5
---- !u!136 &7627803819764270530
+--- !u!136 &7208504185155626412
 CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -878,9 +878,9 @@ CapsuleCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5
-  m_Height: 2
+  m_Height: 2.26
   m_Direction: 1
-  m_Center: {x: 0, y: 1, z: 0}
+  m_Center: {x: 0, y: 0.72, z: 0}
 --- !u!1 &4635895658037201885
 GameObject:
   m_ObjectHideFlags: 0

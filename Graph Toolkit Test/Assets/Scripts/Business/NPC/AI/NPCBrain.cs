@@ -50,6 +50,7 @@ namespace Prototype.Business.NPC.AI
 		private bool m_hasTarget;
 		private bool m_pausedByDialogue;
 		private bool m_resumeMovementAfterDialogue;
+		private bool m_isDead;
 
 		private BusinessWorldRuntime m_currentTargetBusiness;
 		private string m_currentTargetBusinessName;
@@ -73,10 +74,28 @@ namespace Prototype.Business.NPC.AI
 			m_registry = FindFirstObjectByType<BusinessRegistry>(FindObjectsInactive.Include);
 			var bootstrap = FindFirstObjectByType<Bootstrap.GameBootstrap>(FindObjectsInactive.Include);
 			m_businessRuntime = bootstrap != null ? bootstrap.BusinessRuntimeService : null;
+			if (m_needs != null)
+			{
+				m_needs.Died -= HandleDeath;
+				m_needs.Died += HandleDeath;
+			}
+		}
+
+		private void OnDestroy()
+		{
+			if (m_needs != null)
+			{
+				m_needs.Died -= HandleDeath;
+			}
 		}
 
 		private void Update()
 		{
+			if (m_isDead)
+			{
+				return;
+			}
+
 			if (m_pausedByDialogue)
 			{
 				return;
@@ -278,6 +297,14 @@ namespace Prototype.Business.NPC.AI
 		public void StopMovement()
 		{
 			m_hasTarget = false;
+			m_movement.Stop();
+		}
+
+		public void HandleDeath()
+		{
+			m_isDead = true;
+			m_hasTarget = false;
+			m_waitingAtTarget = false;
 			m_movement.Stop();
 		}
 

@@ -18,6 +18,7 @@ namespace Prototype.Business.Services
 		Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance);
 		Task<ServerActionResult> TryAddMoneyAsync(int amount);
 		Task<ServerActionResult> TrySpendMoneyAsync(int amount);
+		Task<ServerActionResult> TryApplyPlayerDamageAsync(int amount);
 		Task<ServerActionResult> TrySaveCheckpointAsync(string graphId, string checkpointId);
 		Task<ServerActionResult> TrySubmitTradeOfferAsync(string buildingId, int offeredAmount);
 		Task<ServerActionResult> TryRentBusinessAsync(string lotId);

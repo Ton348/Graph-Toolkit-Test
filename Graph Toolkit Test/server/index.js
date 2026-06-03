@@ -494,6 +494,21 @@ function handleSpendMoney(req, res, payload) {
   return success(res, 'Spend money success.', profile);
 }
 
+function handleApplyPlayerDamage(req, res, payload) {
+  const playerId = payload.playerId || 'player';
+  const amount = payload.data && Number(payload.data.amount);
+  console.log(`[server] action=apply_player_damage playerId=${playerId} amount=${amount}`);
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return fail(res, 'InvalidAmount', 'amount must be > 0.');
+  }
+
+  const profile = loadPlayerProfile(playerId);
+  profile.health = Math.max(0, (Number(profile.health) || 0) - amount);
+  savePlayerProfile(profile);
+  return success(res, 'Apply player damage success.', profile);
+}
+
 function getBaseTradeChance(percent) {
   const ranges = defs.tradeConfig && Array.isArray(defs.tradeConfig.ranges) ? defs.tradeConfig.ranges : [];
   for (const range of ranges) {
@@ -628,6 +643,8 @@ function handleAction(req, res, payload) {
       return handleAddMoney(req, res, payload);
     case 'spend_money':
       return handleSpendMoney(req, res, payload);
+    case 'apply_player_damage':
+      return handleApplyPlayerDamage(req, res, payload);
     case 'steal':
       return handleSteal(req, res, payload);
     case 'get_profile':

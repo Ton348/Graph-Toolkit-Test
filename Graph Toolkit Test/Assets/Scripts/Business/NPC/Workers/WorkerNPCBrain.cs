@@ -1,7 +1,9 @@
 using Prototype.Business.Data;
 using Prototype.Business.Bootstrap;
+using Prototype.Business.NPC.Needs;
 using Prototype.Business.NPC.Spawning;
 using Prototype.Business.Runtime;
+using Prototype.Business.NPC.Danger;
 using Prototype.Business.World;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -32,6 +34,7 @@ namespace Prototype.Business.NPC.Workers
 		private bool m_isDespawning;
 		private float m_despawnStartTime;
 		private Vector3 m_despawnTargetPosition;
+		private NPCNeedsComponent m_needs;
 
 		public WorkerNPCType WorkerType => workerType;
 		public WorkerNPCState CurrentState => m_state;
@@ -43,6 +46,7 @@ namespace Prototype.Business.NPC.Workers
 			WorkerNPCState.WaitingStock => "WAITING STOCK",
 			WorkerNPCState.WaitingCustomer => "WAITING CUSTOMER",
 			WorkerNPCState.ServingCustomer => "SERVING CUSTOMER",
+			WorkerNPCState.Dead => "DEAD",
 			_ => m_state.ToString().ToUpperInvariant()
 		};
 
@@ -52,13 +56,32 @@ namespace Prototype.Business.NPC.Workers
 			m_bootstrap = bootstrap;
 			workerType = type;
 			m_movement = GetComponent<WorkerNPCMovement>();
+			m_needs = GetComponent<NPCNeedsComponent>();
+			if (m_needs != null)
+			{
+				m_needs.Died -= HandleDeath;
+				m_needs.Died += HandleDeath;
+			}
 			m_state = WorkerNPCState.Spawning;
 			ResolveThroughput();
 			MoveToEntrance();
 		}
 
+		private void OnDestroy()
+		{
+			if (m_needs != null)
+			{
+				m_needs.Died -= HandleDeath;
+			}
+		}
+
 		private void Update()
 		{
+			if (m_state == WorkerNPCState.Dead)
+			{
+				return;
+			}
+
 			if (m_world == null || m_bootstrap == null || m_movement == null)
 			{
 				return;
@@ -107,6 +130,18 @@ namespace Prototype.Business.NPC.Workers
 				case WorkerNPCType.Logist:
 					UpdateLogist();
 					break;
+			}
+		}
+
+		public void HandleDeath()
+		{
+			m_state = WorkerNPCState.Dead;
+			m_movement?.Stop();
+
+			DangerManager manager = DangerManager.Instance;
+			if (manager != null)
+			{
+				manager.RaiseMurderAt(transform.position);
 			}
 		}
 
@@ -499,12 +534,5 @@ namespace Prototype.Business.NPC.Workers
 			}
 		}
 
-		private void OnDestroy()
-		{
-			if (m_registeredCashier && workerType == WorkerNPCType.Cashier && m_world != null && !string.IsNullOrWhiteSpace(m_world.lotId))
-			{
-				WorkerNPCRegistry.SetCashierActive(m_world.lotId, false, this);
-			}
-		}
 	}
 }

@@ -486,6 +486,34 @@ namespace Prototype.Business.Services
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Spend money success.");
 		}
 
+		public async Task<ServerActionResult> TryApplyPlayerDamageAsync(int amount)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			Debug.Log($"[LocalGameServer] Delay: {delayMs}ms");
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (m_runtime == null || m_runtime.player == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing",
+					"Runtime state is not available.");
+			}
+
+			if (amount <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "InvalidAmount",
+					"Amount must be > 0.");
+			}
+
+			m_runtime.player.health = Math.Max(0, m_runtime.player.health - amount);
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Player damage applied.");
+		}
+
 		public async Task<ServerActionResult> TryStealAsync(int amount, bool canFail, int successChance)
 		{
 			int delayMs = NextDelayMs();

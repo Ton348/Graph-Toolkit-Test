@@ -766,6 +766,8 @@ MonoBehaviour:
   foodNeed: 20
   energyNeed: 20
   funNeed: 40
+  maxHealth: 100
+  currentHealth: 100
   tickSeconds: 1
 --- !u!114 &7759409009521141902
 MonoBehaviour:
@@ -824,9 +826,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.Npcmanager
   interactionDistance: 2
-  baseDialogueGraph: {fileID: 0}
-  behaviorGraph: {fileID: 0}
-  dangerGraph: {fileID: 0}
+  baseDialogueGraph: {fileID: 11400000, guid: fb7a1aa34efb04944a74a0796de3a18c, type: 2}
+  behaviorGraph: {fileID: 11400000, guid: 0c9419af1ad224ce7a1d3f4aa0170af0, type: 2}
+  dangerGraph: {fileID: 11400000, guid: 6570cc29f873e4ba78c410163903f19b, type: 2}
+  combatGraph: {fileID: 0}
   baseStealGraph: {fileID: 0}
   allowSteal: 1
   lookForwardReference: {fileID: 0}
@@ -854,6 +857,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Prototype.Business::Prototype.Business.NPC.AI.NPCBehaviorRuntimeBridge
   locationMinRepathDistance: 5
   locationRepeatCooldownSeconds: 30
+  dangerScanInterval: 0.5
 --- !u!136 &7208504185155626412
 CapsuleCollider:
   m_ObjectHideFlags: 0

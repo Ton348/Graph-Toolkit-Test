@@ -122,6 +122,16 @@ namespace Prototype.Business.NPC.Danger
 				defaultSourceType);
 		}
 
+		public void RaiseMurderAt(Vector3 dangerPosition)
+		{
+			RaiseDangerEvent(
+				dangerPosition,
+				defaultRadius,
+				5,
+				defaultLifetimeSeconds,
+				DangerSourceType.Murder);
+		}
+
 		public void SetNpcContagionSource(int ownerId, Transform followTarget, float radius, int rootSourceId, bool enabled)
 		{
 			float now = UnityEngine.Time.time;

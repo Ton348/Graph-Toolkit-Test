@@ -7,6 +7,7 @@ using Game1.Graph.Runtime.Infrastructure;
 using Graph.Core.Runtime;
 using Graph.Core.Runtime.Nodes.Server;
 using Prototype.Business.Bootstrap;
+using Prototype.Business.NPC.Danger;
 using Prototype.Business.Runtime;
 using Prototype.Business.Services;
 using Sample.Runtime;
@@ -25,6 +26,7 @@ namespace Prototype.Business.NPC
 		public CommonGraph baseDialogueGraph;
 		public CommonGraph behaviorGraph;
 		public CommonGraph dangerGraph;
+		public CommonGraph combatGraph;
 
 		[FormerlySerializedAs("stealGraph")]
 		public CommonGraph baseStealGraph;
@@ -49,12 +51,20 @@ namespace Prototype.Business.NPC
 		private CommonGraph m_currentDangerGraph;
 		private NPC.AI.NPCBrain m_npcBrain;
 		private NPC.AI.NPCBehaviorRuntimeBridge m_behaviorBridge;
+		private Prototype.Business.NPC.Needs.NPCNeedsComponent m_npcNeeds;
 		private int m_lastHandledDangerVersion;
 		private bool m_dangerPending;
+		private bool m_isDead;
 
 		private void Start()
 		{
 			m_npcBrain = GetComponent<NPC.AI.NPCBrain>();
+			m_npcNeeds = GetComponent<Prototype.Business.NPC.Needs.NPCNeedsComponent>();
+			if (m_npcNeeds != null)
+			{
+				m_npcNeeds.Died -= HandleNpcDied;
+				m_npcNeeds.Died += HandleNpcDied;
+			}
 			m_behaviorBridge = GetOrCreateBehaviorBridge();
 			if (m_behaviorBridge != null)
 			{
@@ -68,10 +78,50 @@ namespace Prototype.Business.NPC
 
 		private void OnDestroy()
 		{
+			if (m_npcNeeds != null)
+			{
+				m_npcNeeds.Died -= HandleNpcDied;
+			}
 			if (m_behaviorBridge != null)
 			{
 				m_behaviorBridge.OnDangerEventReceived -= HandleDangerEvent;
 				m_behaviorBridge.OnDangerCleared -= HandleDangerCleared;
+			}
+		}
+
+		public void HandleNpcDied()
+		{
+			if (m_isDead)
+			{
+				return;
+			}
+
+			m_isDead = true;
+
+			if (m_baseRunner != null && m_baseRunner.IsRunning)
+			{
+				m_baseRunner.Stop();
+			}
+
+			if (m_behaviorRunner != null && m_behaviorRunner.IsRunning)
+			{
+				m_behaviorRunner.Stop();
+			}
+
+			if (m_dangerRunner != null && m_dangerRunner.IsRunning)
+			{
+				m_dangerRunner.Stop();
+			}
+
+			if (m_npcBrain != null)
+			{
+				m_npcBrain.StopMovement();
+			}
+
+			DangerManager manager = DangerManager.Instance;
+			if (manager != null)
+			{
+				manager.RaiseMurderAt(transform.position);
 			}
 		}
 
@@ -84,7 +134,8 @@ namespace Prototype.Business.NPC
 			Transform playerTransformRef,
 			CommonGraph behaviorGraphRef,
 			CommonGraph dialogueGraphRef = null,
-			CommonGraph dangerGraphRef = null)
+			CommonGraph dangerGraphRef = null,
+			CommonGraph combatGraphRef = null)
 		{
 			bootstrap = bootstrapRef;
 			dialogueService = dialogueServiceRef;
@@ -106,10 +157,20 @@ namespace Prototype.Business.NPC
 			{
 				dangerGraph = dangerGraphRef;
 			}
+
+			if (combatGraphRef != null)
+			{
+				combatGraph = combatGraphRef;
+			}
 		}
 
 		public override void Interact(Transform player)
 		{
+			if (m_isDead)
+			{
+				return;
+			}
+
 			CommonGraph selectedBaseGraph = SelectBaseGraph(player);
 			if (selectedBaseGraph == null)
 			{
@@ -147,7 +208,7 @@ namespace Prototype.Business.NPC
 
 		private void StartBaseGraph(CommonGraph graph)
 		{
-			if (graph == null)
+			if (m_isDead || graph == null)
 			{
 				return;
 			}
@@ -214,7 +275,7 @@ namespace Prototype.Business.NPC
 
 		private void StartBehaviorGraph()
 		{
-			if (behaviorGraph == null)
+			if (m_isDead || behaviorGraph == null)
 			{
 				return;
 			}
@@ -253,6 +314,10 @@ namespace Prototype.Business.NPC
 			if (behaviorBridge != null)
 			{
 				context.Set(GraphContextKeys.runtimeNpcBehaviorBridge, behaviorBridge);
+				if (behaviorBridge.ActiveDangerSource != null)
+				{
+					context.Set(GraphContextKeys.runtimeDangerSource, behaviorBridge.ActiveDangerSource);
+				}
 			}
 
 			_ = m_behaviorRunner.RunAsync(behaviorGraph, context, null);
@@ -260,7 +325,13 @@ namespace Prototype.Business.NPC
 
 		private void HandleDangerEvent()
 		{
-			if (dangerGraph == null || !HasGraphContent(dangerGraph))
+			if (m_isDead)
+			{
+				return;
+			}
+
+			CommonGraph reactiveGraph = GetReactiveGraph();
+			if (reactiveGraph == null || !HasGraphContent(reactiveGraph))
 			{
 				return;
 			}
@@ -271,7 +342,7 @@ namespace Prototype.Business.NPC
 				return;
 			}
 
-			_ = RunDangerGraphAsync();
+			_ = RunDangerGraphAsync(reactiveGraph);
 			m_lastHandledDangerVersion = m_behaviorBridge != null ? m_behaviorBridge.DangerEventVersion : m_lastHandledDangerVersion;
 		}
 
@@ -290,17 +361,17 @@ namespace Prototype.Business.NPC
 			HandleDangerEvent();
 		}
 
-		private async UniTaskVoid RunDangerGraphAsync()
+		private async UniTaskVoid RunDangerGraphAsync(CommonGraph reactiveGraph)
 		{
-			if (dangerGraph == null || !HasGraphContent(dangerGraph))
+			if (reactiveGraph == null || !HasGraphContent(reactiveGraph))
 			{
 				return;
 			}
 
-			if (m_dangerRunner == null || m_currentDangerGraph != dangerGraph)
+			if (m_dangerRunner == null || m_currentDangerGraph != reactiveGraph)
 			{
 				m_dangerRunner = new CommonGraphRunner(GameGraphRuntimeRegistryFactory.Create());
-				m_currentDangerGraph = dangerGraph;
+				m_currentDangerGraph = reactiveGraph;
 			}
 
 			if (m_behaviorRunner != null && m_behaviorRunner.IsRunning)
@@ -325,9 +396,13 @@ namespace Prototype.Business.NPC
 				if (behaviorBridge != null)
 				{
 					context.Set(GraphContextKeys.runtimeNpcBehaviorBridge, behaviorBridge);
+					if (behaviorBridge.ActiveDangerSource != null)
+					{
+						context.Set(GraphContextKeys.runtimeDangerSource, behaviorBridge.ActiveDangerSource);
+					}
 				}
 
-				await m_dangerRunner.RunAsync(dangerGraph, context, null);
+				await m_dangerRunner.RunAsync(reactiveGraph, context, null);
 			}
 			finally
 			{
@@ -349,6 +424,11 @@ namespace Prototype.Business.NPC
 
 		private void HandleDangerCleared()
 		{
+			if (m_isDead)
+			{
+				return;
+			}
+
 			if (m_dangerRunner != null && m_dangerRunner.IsRunning)
 			{
 				m_dangerRunner.Stop();
@@ -358,6 +438,21 @@ namespace Prototype.Business.NPC
 			{
 				StartBehaviorGraph();
 			}
+		}
+
+		private CommonGraph GetReactiveGraph()
+		{
+			if (combatGraph != null && HasGraphContent(combatGraph))
+			{
+				return combatGraph;
+			}
+
+			if (dangerGraph != null && HasGraphContent(dangerGraph))
+			{
+				return dangerGraph;
+			}
+
+			return null;
 		}
 
 		private NPC.AI.NPCBehaviorRuntimeBridge GetOrCreateBehaviorBridge()
@@ -997,6 +1092,7 @@ namespace Prototype.Business.NPC
 					this.profileSnapshot = profileSnapshot;
 				}
 			}
+
 		}
 
 		private sealed class GraphCheckpointServiceAdapter : IGraphCheckpointService

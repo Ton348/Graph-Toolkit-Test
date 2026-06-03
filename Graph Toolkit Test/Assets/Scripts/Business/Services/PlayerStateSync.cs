@@ -20,6 +20,7 @@ namespace Prototype.Business.Services
 		public int Speed { get; private set; }
 		public int Damage { get; private set; }
 		public int Health { get; private set; }
+		public int MaxHealth { get; private set; } = 100;
 		public IReadOnlyCollection<string> ActiveQuests => m_activeQuests;
 		public IReadOnlyCollection<string> CompletedQuests => m_completedQuests;
 		public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
@@ -28,6 +29,7 @@ namespace Prototype.Business.Services
 
 		public event Action<ProfileSnapshot> snapshotApplied;
 		public event Action refreshRequested;
+		public event Action<int, int> healthChanged;
 
 		public void ApplySnapshot(ProfileSnapshot snapshot)
 		{
@@ -43,6 +45,10 @@ namespace Prototype.Business.Services
 			Speed = snapshot.speed;
 			Damage = snapshot.damage;
 			Health = snapshot.health;
+			if (MaxHealth <= 0 || snapshot.health > MaxHealth)
+			{
+				MaxHealth = snapshot.health > 0 ? snapshot.health : 100;
+			}
 
 			m_activeQuests.Clear();
 			if (snapshot.activeQuestIds != null)
@@ -117,6 +123,7 @@ namespace Prototype.Business.Services
 			}
 
 			snapshotApplied?.Invoke(snapshot);
+			healthChanged?.Invoke(Health, MaxHealth);
 		}
 
 		public void Reset()
@@ -128,12 +135,52 @@ namespace Prototype.Business.Services
 			Speed = 0;
 			Damage = 0;
 			Health = 0;
+			MaxHealth = 100;
 			m_activeQuests.Clear();
 			m_completedQuests.Clear();
 			m_graphCheckpoints.Clear();
 			m_constructedSites.Clear();
 			m_items.Clear();
 			snapshotApplied?.Invoke(null);
+			healthChanged?.Invoke(Health, MaxHealth);
+		}
+
+		public bool TryApplyDamage(int amount)
+		{
+			int delta = Math.Max(0, amount);
+			if (delta <= 0)
+			{
+				return false;
+			}
+
+			int previous = Health;
+			Health = Math.Max(0, Health - delta);
+			if (Health == previous)
+			{
+				return false;
+			}
+
+			healthChanged?.Invoke(Health, MaxHealth);
+			return true;
+		}
+
+		public bool TryHeal(int amount)
+		{
+			int delta = Math.Max(0, amount);
+			if (delta <= 0)
+			{
+				return false;
+			}
+
+			int previous = Health;
+			Health = Math.Min(MaxHealth, Health + delta);
+			if (Health == previous)
+			{
+				return false;
+			}
+
+			healthChanged?.Invoke(Health, MaxHealth);
+			return true;
 		}
 
 		public bool HasItem(string itemId)

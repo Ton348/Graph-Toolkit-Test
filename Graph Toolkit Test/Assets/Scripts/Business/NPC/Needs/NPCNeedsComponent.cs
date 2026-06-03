@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 namespace Prototype.Business.NPC.Needs
 {
@@ -15,8 +16,14 @@ namespace Prototype.Business.NPC.Needs
 		[SerializeField] private float foodNeed = 20f;
 		[SerializeField] private float energyNeed = 20f;
 		[SerializeField] private float funNeed = 40f;
+		[SerializeField] private float maxHealth = 100f;
+		[SerializeField] private float currentHealth = 100f;
 		[SerializeField] private float tickSeconds = 1f;
 		private float m_timer;
+		private bool m_isDead;
+
+		public event Action<float, float> HealthChanged;
+		public event Action Died;
 
 		public float Hunger => hunger;
 		public float Thirst => thirst;
@@ -30,6 +37,9 @@ namespace Prototype.Business.NPC.Needs
 		public float FoodNeed => foodNeed;
 		public float EnergyNeed => energyNeed;
 		public float FunNeed => funNeed;
+		public float MaxHealth => maxHealth;
+		public float CurrentHealth => currentHealth;
+		public bool IsDead => m_isDead;
 
 		private void Update()
 		{
@@ -63,6 +73,65 @@ namespace Prototype.Business.NPC.Needs
 		public void SetNatureNeed(float value)
 		{
 			natureNeed = Clamp01x100(value);
+		}
+
+		public void SetHealth(float value)
+		{
+			float clamped = Clamp01x100(value);
+			if (Mathf.Approximately(currentHealth, clamped))
+			{
+				return;
+			}
+
+			currentHealth = clamped;
+			HealthChanged?.Invoke(currentHealth, maxHealth);
+
+			if (!m_isDead && currentHealth <= 0f)
+			{
+				m_isDead = true;
+				Died?.Invoke();
+			}
+		}
+
+		public bool TakeDamage(float amount)
+		{
+			if (m_isDead)
+			{
+				return false;
+			}
+
+			float delta = Mathf.Max(0f, amount);
+			if (delta <= 0f)
+			{
+				return false;
+			}
+
+			SetHealth(currentHealth - delta);
+			return true;
+		}
+
+		public void Heal(float amount)
+		{
+			if (m_isDead)
+			{
+				return;
+			}
+
+			float delta = Mathf.Max(0f, amount);
+			if (delta <= 0f)
+			{
+				return;
+			}
+
+			SetHealth(currentHealth + delta);
+		}
+
+		public void Revive(float health = 100f)
+		{
+			maxHealth = Clamp01x100(Mathf.Max(maxHealth, health));
+			currentHealth = Clamp01x100(health);
+			m_isDead = false;
+			HealthChanged?.Invoke(currentHealth, maxHealth);
 		}
 
 		public void ConsumeNeed(NPCNeedType needType, float amount)
