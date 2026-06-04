@@ -1,7 +1,9 @@
 using Cysharp.Threading.Tasks;
+using Prototype.Business.Bootstrap;
 using Prototype.Business.NPC.Movement;
 using Prototype.Business.NPC.Locations;
 using Prototype.Business.NPC.Needs;
+using Prototype.Business.NPC.Combat;
 using Prototype.Business.NPC.Registry;
 using Prototype.Business.NPC.Spawning;
 using Prototype.Business.NPC.Danger;
@@ -20,6 +22,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 	{
 		private NPCBrain m_brain;
 		private NPCNeedsComponent m_needs;
+		private GameBootstrap m_bootstrap;
 		private NPCLocationPoint m_reservedLocation;
 		private NPCLocationPoint m_lastVisitedLocation;
 		private float m_lastVisitedAt;
@@ -39,6 +42,9 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 		private DangerSourceType m_dangerSource = DangerSourceType.Unknown;
 		private int m_dangerEventVersion;
 		private DangerSource m_activeDangerSource;
+		private Transform m_currentCombatTarget;
+		private Transform m_runtimePlayerTransform;
+		private NPCWeaponTest m_weapon;
 		private float m_dangerScanTimer;
 		[SerializeField] private float dangerScanInterval = 0.5f;
 		public event Action OnDangerEventReceived;
@@ -48,6 +54,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 		{
 			m_brain = GetComponent<NPCBrain>();
 			m_needs = GetComponent<NPCNeedsComponent>();
+			m_bootstrap = FindFirstObjectByType<GameBootstrap>(FindObjectsInactive.Include);
 		}
 
 		private void Update()
@@ -74,6 +81,12 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 		public DangerSourceType DangerSource => m_dangerSource;
 		public int DangerEventVersion => m_dangerEventVersion;
 		public DangerSource ActiveDangerSource => m_activeDangerSource;
+		public Transform CurrentCombatTarget => m_currentCombatTarget;
+
+		public void SetCombatContext(Transform playerTransform)
+		{
+			m_runtimePlayerTransform = playerTransform;
+		}
 
 		public float GetNeedValue(BehaviorNeedType needType)
 		{
@@ -149,6 +162,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 				if (m_activeDangerSource != null)
 				{
 					m_activeDangerSource = null;
+					m_currentCombatTarget = null;
 					OnDangerCleared?.Invoke();
 				}
 				return;
@@ -171,6 +185,7 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 				if (m_activeDangerSource != null)
 				{
 					m_activeDangerSource = null;
+					m_currentCombatTarget = null;
 					OnDangerCleared?.Invoke();
 				}
 			}
@@ -216,6 +231,240 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 		public void ModifyThreatScore(int delta)
 		{
 			m_threatScore += delta;
+		}
+
+		public bool IsCombatValueMatch(CombatValueType valueType, CombatComparisonType comparisonType, float value)
+		{
+			float current = GetCombatValue(valueType);
+			return comparisonType switch
+			{
+				CombatComparisonType.Greater => current > value,
+				CombatComparisonType.Less => current < value,
+				_ => false
+			};
+		}
+
+		public float GetCombatValue(CombatValueType valueType)
+		{
+			switch (valueType)
+			{
+				case CombatValueType.ThreatScore:
+					return m_threatScore;
+				case CombatValueType.DistanceToDanger:
+					return Vector3.Distance(transform.position, m_dangerPosition);
+				case CombatValueType.DistanceToTarget:
+					return m_currentCombatTarget != null ? Vector3.Distance(transform.position, m_currentCombatTarget.position) : 0f;
+				case CombatValueType.NpcHealth:
+					return m_needs != null ? m_needs.CurrentHealth : 0f;
+				case CombatValueType.TargetHealth:
+					return ResolveTargetHealth();
+				default:
+					return 0f;
+			}
+		}
+
+		public bool TryFindThreatSource()
+		{
+			if (m_activeDangerSource == null)
+			{
+				m_currentCombatTarget = null;
+				UnityEngine.Debug.Log($"[Combat] '{name}' target not found: no active danger source.");
+				return false;
+			}
+
+			m_currentCombatTarget = null;
+			m_currentCombatTarget = ResolveCombatTargetTransform();
+			if (m_currentCombatTarget != null)
+			{
+				UnityEngine.Debug.Log($"[Combat] '{name}' target acquired: {m_currentCombatTarget.name}");
+			}
+			else
+			{
+				UnityEngine.Debug.Log($"[Combat] '{name}' target not found.");
+			}
+			return true;
+		}
+
+		public void ClearCombatTarget()
+		{
+			m_currentCombatTarget = null;
+		}
+
+		public async UniTask<bool> ExecuteCombatActionAsync(CombatActionType actionType, float value, CancellationToken cancellationToken)
+		{
+			if (m_brain == null)
+			{
+				return false;
+			}
+
+			switch (actionType)
+			{
+				case CombatActionType.FindThreatSource:
+					return TryFindThreatSource();
+				case CombatActionType.MoveToDanger:
+				{
+					if (m_activeDangerSource == null)
+					{
+						return false;
+					}
+
+					Vector3 away = transform.position - m_dangerPosition;
+					away.y = 0f;
+					if (away.sqrMagnitude < 0.0001f)
+					{
+						away = transform.forward;
+					}
+					away.Normalize();
+					Vector3 target = m_dangerPosition + away * Mathf.Max(0f, value);
+					if (!m_brain.MoveToPoint(target))
+					{
+						return false;
+					}
+					await WaitForBrainReachedAsync(cancellationToken);
+					return true;
+				}
+				case CombatActionType.MoveToTarget:
+				{
+					Transform targetTransform = ResolveCombatTargetTransform();
+					if (targetTransform == null)
+					{
+						return false;
+					}
+
+					Vector3 away = targetTransform.position - transform.position;
+					away.y = 0f;
+					if (away.sqrMagnitude < 0.0001f)
+					{
+						away = transform.forward;
+					}
+					away.Normalize();
+					Vector3 target = targetTransform.position - away * Mathf.Max(0f, value);
+					if (!m_brain.MoveToPoint(target))
+					{
+						return false;
+					}
+					await WaitForBrainReachedAsync(cancellationToken);
+					return true;
+				}
+				case CombatActionType.ShootTarget:
+				{
+					Transform targetTransform = ResolveCombatTargetTransform();
+					if (targetTransform == null)
+					{
+						UnityEngine.Debug.Log($"[Combat] '{name}' shoot failed: no target.");
+						return false;
+					}
+
+					NPCWeaponTest weapon = GetWeapon();
+					if (weapon == null)
+					{
+						UnityEngine.Debug.Log($"[Combat] '{name}' shoot failed: weapon missing.");
+						return false;
+					}
+
+					UnityEngine.Debug.Log($"[Combat] '{name}' fired at {targetTransform.name}");
+					return await weapon.FireAndWaitAsync(cancellationToken);
+				}
+				case CombatActionType.StopFire:
+				{
+					NPCWeaponTest weapon = GetWeapon();
+					weapon?.StopFire();
+					return true;
+				}
+				case CombatActionType.Retreat:
+				{
+					Transform targetTransform = ResolveCombatTargetTransform();
+					if (targetTransform == null)
+					{
+						return false;
+					}
+
+					Vector3 away = transform.position - targetTransform.position;
+					away.y = 0f;
+					if (away.sqrMagnitude < 0.0001f)
+					{
+						away = transform.forward;
+					}
+					away.Normalize();
+					Vector3 target = transform.position + away * Mathf.Max(0f, value);
+					if (!m_brain.MoveToPoint(target))
+					{
+						return false;
+					}
+					await WaitForBrainReachedAsync(cancellationToken);
+					return true;
+				}
+				case CombatActionType.Wait:
+				{
+					m_brain.StopMovement();
+					float wait = Mathf.Max(0f, value);
+					if (wait > 0f)
+					{
+						await UniTask.Delay(TimeSpan.FromSeconds(wait), cancellationToken: cancellationToken);
+					}
+					return true;
+				}
+				default:
+					return false;
+			}
+		}
+
+		private float ResolveTargetHealth()
+		{
+			Transform targetTransform = ResolveCombatTargetTransform();
+			if (targetTransform == null)
+			{
+				return 0f;
+			}
+
+			NPCNeedsComponent targetNeeds = targetTransform.GetComponentInParent<NPCNeedsComponent>();
+			if (targetNeeds != null)
+			{
+				return targetNeeds.CurrentHealth;
+			}
+
+			if (m_bootstrap != null && m_runtimePlayerTransform != null && targetTransform == m_runtimePlayerTransform)
+			{
+				return m_bootstrap.PlayerStateSync != null ? m_bootstrap.PlayerStateSync.Health : 0f;
+			}
+
+			return 0f;
+		}
+
+		private Transform ResolveCombatTargetTransform()
+		{
+			if (m_currentCombatTarget != null)
+			{
+				return m_currentCombatTarget;
+			}
+
+			if (m_activeDangerSource != null && m_activeDangerSource.FollowTarget != null)
+			{
+				m_currentCombatTarget = m_activeDangerSource.FollowTarget;
+				return m_currentCombatTarget;
+			}
+
+			if (m_activeDangerSource != null &&
+			    (m_activeDangerSource.SourceType == DangerSourceType.Gunshot ||
+			     m_activeDangerSource.SourceType == DangerSourceType.Murder) &&
+			    m_runtimePlayerTransform != null)
+			{
+				m_currentCombatTarget = m_runtimePlayerTransform;
+				return m_currentCombatTarget;
+			}
+
+			return null;
+		}
+
+		private NPCWeaponTest GetWeapon()
+		{
+			if (m_weapon != null)
+			{
+				return m_weapon;
+			}
+
+			m_weapon = GetComponentInChildren<NPCWeaponTest>(true);
+			return m_weapon;
 		}
 
 		public void SpreadDangerIfEnabled(float enableValue)

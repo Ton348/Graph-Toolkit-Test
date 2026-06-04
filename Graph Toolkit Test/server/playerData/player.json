@@ -1,6 +1,6 @@
 {
   "playerId": "player",
-  "money": 46,
+  "money": 200,
   "bargaining": 1,
   "speech": 1,
   "trading": 0,
@@ -21,27 +21,8 @@
   ],
   "businesses": [
     {
-      "instanceId": "biz_1780398851015_2974",
+      "instanceId": "biz_1780574569893_933",
       "lotId": "lot_market_01",
-      "businessTypeId": "grocery_store",
-      "isOpen": true,
-      "storageStock": 374,
-      "shelfStock": 99,
-      "autoDeliveryPerDay": 401,
-      "markupPercent": 55,
-      "dayRevenue": 7425,
-      "dayExpenses": 14436,
-      "profit": 7425,
-      "storageItemId": "storage_basic",
-      "cashDeskItemId": "cashdesk_basic2",
-      "shelfItemId": "shelf_basic",
-      "hiredCashierContactId": "cashier_1",
-      "hiredMerchContactId": "merch_1",
-      "hiredLogistContactId": "logist_1"
-    },
-    {
-      "instanceId": "biz_1780398870432_9018",
-      "lotId": "lot_road_01",
       "businessTypeId": "",
       "isOpen": false,
       "storageStock": 0,

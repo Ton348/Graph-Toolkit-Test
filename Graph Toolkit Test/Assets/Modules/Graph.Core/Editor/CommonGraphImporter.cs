@@ -171,10 +171,21 @@ namespace Graph.Core.Editor
 					valueA = GetOptionValue<int>(checkThreatModel, CheckThreatScoreNodeModel.ValueAOption),
 					valueB = GetOptionValue<int>(checkThreatModel, CheckThreatScoreNodeModel.ValueBOption)
 				},
+				CheckCombatValueNodeModel checkCombatModel => new CheckCombatValueNode
+				{
+					valueType = GetOptionValue<CombatValueType>(checkCombatModel, CheckCombatValueNodeModel.ValueTypeOption),
+					comparisonType = GetOptionValue<CombatComparisonType>(checkCombatModel, CheckCombatValueNodeModel.ComparisonTypeOption),
+					value = GetOptionValue<float>(checkCombatModel, CheckCombatValueNodeModel.ValueOption)
+				},
 				ModifyDangerNodeModel modifyDangerModel => new ModifyDangerNode
 				{
 					mode = GetOptionValue<DangerModifyMode>(modifyDangerModel, ModifyDangerNodeModel.ModeOption),
 					value = GetOptionValue<float>(modifyDangerModel, ModifyDangerNodeModel.ValueOption)
+				},
+				CombatActionNodeModel combatActionModel => new CombatActionNode
+				{
+					actionType = GetOptionValue<CombatActionType>(combatActionModel, CombatActionNodeModel.ActionTypeOption),
+					value = GetOptionValue<float>(combatActionModel, CombatActionNodeModel.ValueOption)
 				},
 				DangerActionNodeModel dangerActionModel => new DangerActionNode
 				{
@@ -328,10 +339,28 @@ namespace Graph.Core.Editor
 				return;
 			}
 
+			if (editorNode is CheckCombatValueNodeModel && runtimeNode is CheckCombatValueNode checkCombatNode)
+			{
+				checkCombatNode.trueNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CheckCombatValueNodeModel.TruePort, idMap);
+				checkCombatNode.falseNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CheckCombatValueNodeModel.FalsePort, idMap);
+				return;
+			}
+
 			if (editorNode is DangerActionNodeModel && runtimeNode is DangerActionNode dangerActionNode)
 			{
 				dangerActionNode.successNodeId =
 					GetConnectedNodeIdByOutputName(editorNode, DangerActionNodeModel.SuccessPort, idMap);
+				return;
+			}
+
+			if (editorNode is CombatActionNodeModel && runtimeNode is CombatActionNode combatActionNode)
+			{
+				combatActionNode.successNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CombatActionNodeModel.SuccessPort, idMap);
+				combatActionNode.failNodeId =
+					GetConnectedNodeIdByOutputName(editorNode, CombatActionNodeModel.FailPort, idMap);
 				return;
 			}
 

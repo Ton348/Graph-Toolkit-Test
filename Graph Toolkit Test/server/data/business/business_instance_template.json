@@ -3,6 +3,7 @@
   "isOpen": false,
   "storageStock": 0,
   "shelfStock": 0,
+  "autoDeliveryPerDay": 0,
   "markupPercent": 0,
   "dayRevenue": 0,
   "dayExpenses": 0,

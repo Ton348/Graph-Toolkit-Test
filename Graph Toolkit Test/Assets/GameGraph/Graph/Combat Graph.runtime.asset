@@ -12,53 +12,92 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: Combat Graph.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: e072d9b9-0670-4cfd-b0b2-72209150f5e4
+  startNodeId: 680051cb-1481-4686-a17b-8ae5d1a6f89f
   nodes:
-  - rid: 4432080868946477703
-  - rid: 4432080868946477704
-  - rid: 4432080868946477705
-  - rid: 4432080868946477706
+  - rid: 4432080890982040512
+  - rid: 4432080890982040513
+  - rid: 4432080890982040514
+  - rid: 4432080890982040515
+  - rid: 4432080890982040516
+  - rid: 4432080890982040517
+  - rid: 4432080890982040518
   references:
     version: 2
     RefIds:
-    - rid: 4432080868946477703
+    - rid: 4432080890982040512
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: e072d9b9-0670-4cfd-b0b2-72209150f5e4
+        nodeId: 680051cb-1481-4686-a17b-8ae5d1a6f89f
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: e705fd2e-1509-403e-88d4-a2fd12e2a3eb
-    - rid: 4432080868946477704
-      type: {class: CheckThreatScoreNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+        nextNodeId: f360a0cf-c43a-401a-94f5-571fa479ad7b
+    - rid: 4432080890982040513
+      type: {class: CombatActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: e705fd2e-1509-403e-88d4-a2fd12e2a3eb
-        title: CheckThreatScoreNode
-        description: "\u0421\u0440\u0430\u0432\u043D\u0438\u0432\u0430\u0435\u0442
-          \u0442\u0435\u043A\u0443\u0449\u0438\u0439 threatScore \u0441 \u0437\u0430\u0434\u0430\u043D\u043D\u044B\u043C\u0438
-          \u0437\u043D\u0430\u0447\u0435\u043D\u0438\u044F\u043C\u0438."
-        compareType: 0
-        valueA: 0
-        valueB: 20
-        trueNodeId: 02b9e9bb-ed11-4948-ad01-3486d99d4d9e
-        falseNodeId: 02b9e9bb-ed11-4948-ad01-3486d99d4d9e
-    - rid: 4432080868946477705
-      type: {class: DangerActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+        nodeId: c44f586a-7619-43ea-a242-d27c60d956e5
+        title: CombatActionNode
+        description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0431\u043E\u0435\u0432\u043E\u0435
+          \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 NPC \u0447\u0435\u0440\u0435\u0437
+          \u0442\u0435\u043A\u0443\u0449\u0438\u0439 combat context."
+        actionType: 0
+        value: 1
+        successNodeId: f5f0b2f5-b847-4cb5-ad22-c748123b1ac0
+        failNodeId: f5f0b2f5-b847-4cb5-ad22-c748123b1ac0
+    - rid: 4432080890982040514
+      type: {class: CombatActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 02b9e9bb-ed11-4948-ad01-3486d99d4d9e
-        title: DangerActionNode
-        description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0434\u0432\u0438\u0436\u0435\u043D\u0438\u0435
-          \u0438\u043B\u0438 freeze \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435
-          \u0434\u043B\u044F danger \u043F\u043E\u0432\u0435\u0434\u0435\u043D\u0438\u044F
-          NPC."
+        nodeId: f5f0b2f5-b847-4cb5-ad22-c748123b1ac0
+        title: CombatActionNode
+        description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0431\u043E\u0435\u0432\u043E\u0435
+          \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 NPC \u0447\u0435\u0440\u0435\u0437
+          \u0442\u0435\u043A\u0443\u0449\u0438\u0439 combat context."
+        actionType: 3
+        value: 10
+        successNodeId: ad7402f5-ec65-498e-85f1-f823c0096f15
+        failNodeId: ad7402f5-ec65-498e-85f1-f823c0096f15
+    - rid: 4432080890982040515
+      type: {class: CombatActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: f360a0cf-c43a-401a-94f5-571fa479ad7b
+        title: CombatActionNode
+        description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0431\u043E\u0435\u0432\u043E\u0435
+          \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 NPC \u0447\u0435\u0440\u0435\u0437
+          \u0442\u0435\u043A\u0443\u0449\u0438\u0439 combat context."
         actionType: 1
-        value: 30
-        speedDelta: 6
-        successNodeId: 4601dff1-ac5b-43b3-802f-cd7ede303b85
-    - rid: 4432080868946477706
+        value: 10
+        successNodeId: c44f586a-7619-43ea-a242-d27c60d956e5
+        failNodeId: c44f586a-7619-43ea-a242-d27c60d956e5
+    - rid: 4432080890982040516
+      type: {class: CheckCombatValueNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: ad7402f5-ec65-498e-85f1-f823c0096f15
+        title: CheckCombatValueNode
+        description: "\u041F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442 \u0431\u043E\u0435\u0432\u043E\u0439
+          \u043F\u0430\u0440\u0430\u043C\u0435\u0442\u0440 NPC \u0438 \u0432\u044B\u0431\u0438\u0440\u0430\u0435\u0442
+          \u0441\u043B\u0435\u0434\u0443\u044E\u0449\u0443\u044E \u0432\u0435\u0442\u043A\u0443
+          \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F."
+        valueType: 4
+        comparisonType: 0
+        value: 50
+        trueNodeId: 275b819e-042e-4bc0-a2f0-a818055d7ef1
+        falseNodeId: 027d2314-c6cb-4632-8d39-88a38e654df1
+    - rid: 4432080890982040517
+      type: {class: CombatActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
+      data:
+        nodeId: 275b819e-042e-4bc0-a2f0-a818055d7ef1
+        title: CombatActionNode
+        description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0431\u043E\u0435\u0432\u043E\u0435
+          \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435 NPC \u0447\u0435\u0440\u0435\u0437
+          \u0442\u0435\u043A\u0443\u0449\u0438\u0439 combat context."
+        actionType: 3
+        value: 10
+        successNodeId: ad7402f5-ec65-498e-85f1-f823c0096f15
+        failNodeId: ad7402f5-ec65-498e-85f1-f823c0096f15
+    - rid: 4432080890982040518
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 4601dff1-ac5b-43b3-802f-cd7ede303b85
+        nodeId: 027d2314-c6cb-4632-8d39-88a38e654df1
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"

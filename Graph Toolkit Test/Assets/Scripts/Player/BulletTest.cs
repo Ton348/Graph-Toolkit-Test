@@ -13,6 +13,7 @@ namespace Prototype.Player
 		[SerializeField] private BulletOwnerType ownerType = BulletOwnerType.Player;
 		[SerializeField] private int damage = 1;
 		[SerializeField] private Transform ownerRoot;
+		private Action m_completed;
 
 		private Vector3 m_startPosition;
 		private float m_lifetime;
@@ -24,6 +25,11 @@ namespace Prototype.Player
 			damage = Mathf.Max(0, bulletDamage);
 			ownerType = owner;
 			ownerRoot = ownerTransform;
+		}
+
+		public void SetCompletionCallback(Action completed)
+		{
+			m_completed = completed;
 		}
 
 		private void Awake()
@@ -55,14 +61,21 @@ namespace Prototype.Player
 
 			if (m_lifetime >= maxLifetimeSeconds)
 			{
+				Complete();
 				Destroy(gameObject);
 				return;
 			}
 
 			if ((transform.position - m_startPosition).sqrMagnitude >= maxDistance * maxDistance)
 			{
+				Complete();
 				Destroy(gameObject);
 			}
+		}
+
+		private void OnDestroy()
+		{
+			Complete();
 		}
 
 		private void OnTriggerEnter(Collider other)
@@ -113,6 +126,7 @@ namespace Prototype.Player
 					}
 				}
 
+				Complete();
 				Destroy(gameObject);
 				return;
 			}
@@ -137,8 +151,16 @@ namespace Prototype.Player
 					}
 				}
 
+				Complete();
 				Destroy(gameObject);
 			}
+		}
+
+		private void Complete()
+		{
+			Action completed = m_completed;
+			m_completed = null;
+			completed?.Invoke();
 		}
 
 		private static async System.Threading.Tasks.Task ApplyPlayerDamageAsync(object bootstrap, int amount)
