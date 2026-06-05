@@ -240,6 +240,22 @@ namespace Prototype.Business.Runtime
 					}
 				}
 			}
+
+			if ((business.services == null || business.services.Count == 0) &&
+			    m_definitions != null &&
+			    !string.IsNullOrWhiteSpace(business.businessTypeId))
+			{
+				IReadOnlyList<Prototype.Business.NPC.Registry.NPCServiceType> services =
+					m_definitions.GetServicesForBusinessType(business.businessTypeId);
+				if (services != null && services.Count > 0)
+				{
+					business.services = new List<string>(services.Count);
+					for (int i = 0; i < services.Count; i++)
+					{
+						business.services.Add(services[i].ToString());
+					}
+				}
+			}
 		}
 	}
 }

@@ -1,5 +1,7 @@
 using Prototype.Business.Data;
+using Prototype.Business.NPC.Registry;
 using Sample.Runtime.GameData;
+using System.Collections.Generic;
 
 namespace Prototype.Business.Runtime
 {
@@ -46,10 +48,27 @@ namespace Prototype.Business.Runtime
 			business.storageItemId = template != null ? template.storageItemId : null;
 			business.cashDeskItemId = template != null ? template.cashDeskItemId : null;
 			business.shelfItemId = template != null ? template.shelfItemId : null;
+			business.services = BuildServices(typeDef);
 			business.hiredCashierContactId = template != null ? template.hiredCashierContactId : null;
 			business.hiredMerchContactId = template != null ? template.hiredMerchContactId : null;
 			business.hiredLogistContactId = template != null ? template.hiredLogistContactId : null;
 			return business;
+		}
+
+		private static List<string> BuildServices(BusinessTypeDefinitionData typeDef)
+		{
+			var services = new List<string>();
+			if (typeDef?.services == null)
+			{
+				return services;
+			}
+
+			for (int i = 0; i < typeDef.services.Count; i++)
+			{
+				services.Add(typeDef.services[i].ToString());
+			}
+
+			return services;
 		}
 	}
 }

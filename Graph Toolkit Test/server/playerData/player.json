@@ -21,17 +21,27 @@
   ],
   "businesses": [
     {
-      "instanceId": "biz_1780574569893_933",
+      "instanceId": "biz_1780577546545_1039",
       "lotId": "lot_market_01",
-      "businessTypeId": "",
+      "businessTypeId": "grocery_store",
       "isOpen": false,
       "storageStock": 0,
       "shelfStock": 0,
+      "services": [
+        "Food",
+        "Drink"
+      ],
       "autoDeliveryPerDay": 0,
       "markupPercent": 0,
       "dayRevenue": 0,
       "dayExpenses": 0,
-      "profit": 0
+      "profit": 0,
+      "storageItemId": null,
+      "cashDeskItemId": null,
+      "shelfItemId": null,
+      "hiredCashierContactId": null,
+      "hiredMerchContactId": null,
+      "hiredLogistContactId": null
     }
   ],
   "knownContacts": [],

@@ -6,9 +6,11 @@ function getTypeDefaults(businessTypeId, businessDefs) {
   const typeId = typeof businessTypeId === 'string' ? businessTypeId.trim() : '';
   const type = typeId && businessDefs?.businessTypeById ? businessDefs.businessTypeById.get(typeId) : null;
   const instanceTemplate = cloneTemplate(type?.instanceTemplate);
+  const services = Array.isArray(type?.services) ? [...type.services] : [];
 
   return {
     businessTypeId: typeId,
+    services,
     ...instanceTemplate
   };
 }

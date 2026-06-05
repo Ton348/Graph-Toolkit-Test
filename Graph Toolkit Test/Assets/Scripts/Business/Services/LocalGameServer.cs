@@ -818,6 +818,14 @@ namespace Prototype.Business.Services
 			}
 
 			business.ApplyBusinessTypeTemplate(businessTypeId, m_businessRepository);
+			business.services = new List<string>();
+			if (typeDef.services != null)
+			{
+				for (int i = 0; i < typeDef.services.Count; i++)
+				{
+					business.services.Add(typeDef.services[i].ToString());
+				}
+			}
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Assign business type success.");
 		}
 
@@ -1723,6 +1731,7 @@ namespace Prototype.Business.Services
 						storageItemId = business.storageItemId,
 						cashDeskItemId = business.cashDeskItemId,
 						shelfItemId = business.shelfItemId,
+						services = business.services != null ? new List<string>(business.services) : new List<string>(),
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
 						dayRevenue = business.dayRevenue,

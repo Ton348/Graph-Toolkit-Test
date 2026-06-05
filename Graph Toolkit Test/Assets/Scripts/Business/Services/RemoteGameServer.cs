@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
@@ -1002,6 +1003,7 @@ namespace Prototype.Business.Services
 						storageItemId = business.storageItemId,
 						cashDeskItemId = business.cashDeskItemId,
 						shelfItemId = business.shelfItemId,
+						services = business.services != null ? new List<string>(business.services) : new List<string>(),
 						autoDeliveryPerDay = business.autoDeliveryPerDay,
 						markupPercent = business.markupPercent,
 						dayRevenue = business.dayRevenue,
@@ -1480,6 +1482,7 @@ namespace Prototype.Business.Services
 			public string storageItemId;
 			public string cashDeskItemId;
 			public string shelfItemId;
+			public string[] services;
 			public int autoDeliveryPerDay;
 			public int markupPercent;
 			public int dayRevenue;

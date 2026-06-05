@@ -15,6 +15,9 @@ function normalizeBusinessInstance(business) {
     isOpen: Boolean(business?.isOpen),
     storageStock: Number.isFinite(business?.storageStock) ? business.storageStock : 0,
     shelfStock: Number.isFinite(business?.shelfStock) ? business.shelfStock : 0,
+    services: Array.isArray(business?.services)
+      ? business.services.map(service => typeof service === 'string' ? service.trim() : '').filter(Boolean)
+      : [],
     autoDeliveryPerDay: Number.isFinite(business?.autoDeliveryPerDay) ? business.autoDeliveryPerDay : 0,
     markupPercent: Number.isFinite(business?.markupPercent) ? business.markupPercent : 0,
     dayRevenue: Number.isFinite(business?.dayRevenue) ? business.dayRevenue : 0,

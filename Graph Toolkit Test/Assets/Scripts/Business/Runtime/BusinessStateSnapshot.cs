@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Prototype.Business.Time;
 namespace Prototype.Business.Runtime
 {
@@ -14,6 +15,7 @@ namespace Prototype.Business.Runtime
 		public string storageItemId;
 		public string cashDeskItemId;
 		public string shelfItemId;
+		public List<string> services = new();
 		public int autoDeliveryPerDay;
 		public int markupPercent;
 		public int dayRevenue;

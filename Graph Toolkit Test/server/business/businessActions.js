@@ -125,6 +125,8 @@ function assignBusinessType(profile, data, businessDefs, lotDefs) {
   }
 
   applyBusinessTypeTemplate(business, businessDefs?.businessInstanceTemplate, businessTypeId, businessDefs);
+  const typeDef = businessDefs && businessDefs.businessTypeById ? businessDefs.businessTypeById.get(businessTypeId) : null;
+  business.services = Array.isArray(typeDef?.services) ? typeDef.services.map(service => String(service)) : [];
   return ok('Assign business type success.');
 }
 

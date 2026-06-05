@@ -17,6 +17,8 @@ namespace Prototype.Business.NPC.Spawning
 		[SerializeField] private int maxAlive = 20;
 		[SerializeField] private float spawnIntervalSeconds = 3f;
 		[SerializeField] private float despawnDelaySeconds = 2f;
+		[SerializeField, Range(0f, 24f)] private float spawnFromHour = 6f;
+		[SerializeField, Range(0f, 24f)] private float spawnToHour = 22f;
 		[SerializeField] private GameBootstrap bootstrap;
 		[SerializeField] private DialogueService dialogueService;
 		[SerializeField] private ChoiceUiservice choiceUiService;
@@ -62,7 +64,7 @@ namespace Prototype.Business.NPC.Spawning
 		private void Update()
 		{
 			CleanupDead();
-			if (!m_canSpawnByPhase)
+			if (!CanSpawnNow())
 			{
 				return;
 			}
@@ -198,6 +200,21 @@ namespace Prototype.Business.NPC.Spawning
 		private void OnPhaseChanged(DayPhase phase)
 		{
 			m_canSpawnByPhase = phase != DayPhase.Night;
+		}
+
+		private bool CanSpawnNow()
+		{
+			if (!m_canSpawnByPhase)
+			{
+				return false;
+			}
+
+			if (WorldTimeSystem.Instance == null)
+			{
+				return true;
+			}
+
+			return WorldTimeSystem.Instance.IsBusinessHours(spawnFromHour, spawnToHour);
 		}
 	}
 }
