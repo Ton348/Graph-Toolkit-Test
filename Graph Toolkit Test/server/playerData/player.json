@@ -6,7 +6,7 @@
   "trading": 0,
   "speed": 1,
   "damage": 1,
-  "health": 100,
+  "health": 0,
   "activeQuests": [],
   "completedQuests": [
     "buy_building"
@@ -25,7 +25,7 @@
       "lotId": "lot_market_01",
       "businessTypeId": "grocery_store",
       "isOpen": true,
-      "storageStock": 120,
+      "storageStock": 296,
       "shelfStock": 100,
       "services": [
         "Food",
@@ -33,9 +33,9 @@
       ],
       "autoDeliveryPerDay": 110,
       "markupPercent": 39,
-      "dayRevenue": 34008,
-      "dayExpenses": 6996,
-      "profit": 39008,
+      "dayRevenue": 35724,
+      "dayExpenses": 7876,
+      "profit": 40724,
       "storageItemId": "storage_basic",
       "cashDeskItemId": "cashdesk_basic",
       "shelfItemId": "shelf_basic",

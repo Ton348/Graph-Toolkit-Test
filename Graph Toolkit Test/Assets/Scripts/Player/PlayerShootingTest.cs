@@ -1,5 +1,7 @@
-using System;
-using System.Reflection;
+using Prototype.Business.Bootstrap;
+using Prototype.Business.NPC.Danger;
+using Prototype.Business.Services;
+using Sample.Runtime.UI;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -11,8 +13,12 @@ namespace Prototype.Player
 		[SerializeField] private GameObject pistolObject;
 		[SerializeField] private Transform muzzlePoint;
 		[SerializeField] private GameObject bulletPrefab;
-		[SerializeField] private MonoBehaviour bootstrapBehaviour;
 
+		private GameBootstrap m_bootstrap;
+		private DialogueUiservice m_dialogueUiService;
+		private TradeOfferUiservice m_tradeOfferUiService;
+		private TraderShopUIService m_traderShopUiService;
+		private DangerManager m_dangerManager;
 		private bool m_weaponActive;
 
 		private void Update()
@@ -86,136 +92,61 @@ namespace Prototype.Player
 				return;
 			}
 
-			object manager = FindDangerManagerInstance();
-			if (manager == null)
+			if (m_dangerManager == null)
 			{
 				Debug.LogError("[ShootTest] DangerManager instance not found in scene.");
 				return;
 			}
 
-			Type managerType = manager.GetType();
-			MethodInfo raiseMethod = managerType.GetMethod("RaiseDefaultDangerAt", BindingFlags.Public | BindingFlags.Instance);
-			if (raiseMethod == null)
-			{
-				Debug.LogError("[ShootTest] RaiseDefaultDangerAt method not found.");
-				return;
-			}
-
-			raiseMethod.Invoke(manager, new object[]
-			{
-				muzzlePoint.position
-			});
+			m_dangerManager.RaiseDefaultDangerAt(muzzlePoint.position);
 		}
 
 		private void Awake()
 		{
-			if (bootstrapBehaviour == null)
-			{
-				bootstrapBehaviour = FindBootstrapInstance();
-			}
+			m_bootstrap = FindAnyObjectByType<GameBootstrap>(FindObjectsInactive.Include);
+			m_dialogueUiService = FindAnyObjectByType<DialogueUiservice>(FindObjectsInactive.Include);
+			m_tradeOfferUiService = FindAnyObjectByType<TradeOfferUiservice>(FindObjectsInactive.Include);
+			m_traderShopUiService = FindAnyObjectByType<TraderShopUIService>(FindObjectsInactive.Include);
+			m_dangerManager = FindAnyObjectByType<DangerManager>(FindObjectsInactive.Include);
 		}
 
 		private int GetPlayerDamage()
 		{
-			object bootstrap = bootstrapBehaviour;
-			if (bootstrap == null)
+			if (m_bootstrap == null || m_bootstrap.PlayerStateSync == null)
 			{
 				return 1;
 			}
 
-			object playerStateSync = bootstrap.GetType().GetProperty("PlayerStateSync", BindingFlags.Public | BindingFlags.Instance)?.GetValue(bootstrap);
-			if (playerStateSync == null)
-			{
-				return 1;
-			}
-
-			PropertyInfo damageProperty = playerStateSync.GetType().GetProperty("Damage", BindingFlags.Public | BindingFlags.Instance);
-			if (damageProperty == null)
-			{
-				return 1;
-			}
-
-			object value = damageProperty.GetValue(playerStateSync);
-			return value is int damage ? damage : 1;
+			return Mathf.Max(1, m_bootstrap.PlayerStateSync.Damage);
 		}
 
-		private static MonoBehaviour FindBootstrapInstance()
-		{
-			MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-			for (int i = 0; i < behaviours.Length; i++)
-			{
-				MonoBehaviour behaviour = behaviours[i];
-				if (behaviour != null && behaviour.GetType().FullName == "Prototype.Business.Bootstrap.GameBootstrap")
-				{
-					return behaviour;
-				}
-			}
-
-			return null;
-		}
-
-		private static bool IsBlockedByUi()
+		private bool IsBlockedByUi()
 		{
 			if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
 			{
 				return true;
 			}
 
-			MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-			for (int i = 0; i < behaviours.Length; i++)
+			if (m_dialogueUiService != null)
 			{
-				MonoBehaviour behaviour = behaviours[i];
-				if (behaviour == null || !behaviour.gameObject.activeInHierarchy)
+				if ((m_dialogueUiService.panel != null && m_dialogueUiService.panel.activeSelf) ||
+				    gameObject.activeInHierarchy && m_dialogueUiService.gameObject.activeInHierarchy)
 				{
-					continue;
+					return true;
 				}
+			}
 
-				string fullName = behaviour.GetType().FullName;
-				if (fullName == "Sample.Runtime.UI.DialogueUiservice" ||
-				    fullName == "Sample.Runtime.UI.TradeOfferUiservice" ||
-				    fullName == "Sample.Runtime.UI.TraderShopUIService")
-				{
-					PropertyInfo isOpen = behaviour.GetType().GetProperty("IsOpen", BindingFlags.Public | BindingFlags.Instance);
-					if (isOpen != null && isOpen.PropertyType == typeof(bool))
-					{
-						object value = isOpen.GetValue(behaviour);
-						if (value is bool open && open)
-						{
-							return true;
-						}
-					}
+			if (m_tradeOfferUiService != null && m_tradeOfferUiService.IsOpen)
+			{
+				return true;
+			}
 
-					FieldInfo panelField = behaviour.GetType().GetField("panel", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-					if (panelField != null && panelField.GetValue(behaviour) is GameObject panel && panel.activeSelf)
-					{
-						return true;
-					}
-				}
-
+			if (m_traderShopUiService != null && m_traderShopUiService.IsOpen)
+			{
+				return true;
 			}
 
 			return false;
-		}
-
-		private static object FindDangerManagerInstance()
-		{
-			MonoBehaviour[] behaviours = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-			for (int i = 0; i < behaviours.Length; i++)
-			{
-				MonoBehaviour behaviour = behaviours[i];
-				if (behaviour == null)
-				{
-					continue;
-				}
-
-				Type type = behaviour.GetType();
-				if (type.FullName == "Prototype.Business.NPC.Danger.DangerManager")
-				{
-					return behaviour;
-				}
-			}
-
-			return null;
 		}
 
 		private void ShowWeapon()
