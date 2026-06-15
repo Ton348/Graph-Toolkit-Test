@@ -30662,6 +30662,7 @@ GameObject:
   - component: {fileID: 777950240}
   - component: {fileID: 777950242}
   - component: {fileID: 777950241}
+  - component: {fileID: 777950243}
   m_Layer: 0
   m_Name: StorageSlot
   m_TagString: Untagged
@@ -30722,6 +30723,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &777950243
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 777950239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d2449d54247c441597cbd6aa28f6310, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Prototype.Business::Prototype.Business.World.StorageSlot
+  requiredItemId: goods_basic
+  defaultAmount: 1
+  interactKey: 101
+  playerTag: Player
+  worldRuntime: {fileID: 1468242541}
 --- !u!1 &777971090 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: ce2dd4bb67fdc684dac928dc2cfb7a0f, type: 3}
@@ -64663,6 +64681,8 @@ MonoBehaviour:
   maxAlive: 50
   spawnIntervalSeconds: 2
   despawnDelaySeconds: 0.2
+  spawnFromHour: 6
+  spawnToHour: 22
   bootstrap: {fileID: 1614953995}
   dialogueService: {fileID: 1233045968}
   choiceUiService: {fileID: 1668601430}

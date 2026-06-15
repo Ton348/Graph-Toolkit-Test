@@ -112,6 +112,11 @@ namespace Prototype.Business.Runtime
 			return ExecuteAsync("BuyItem", () => m_gameServer.TryBuyItemAsync(traderId, itemId));
 		}
 
+		public Task<ServerActionResult> StoreBusinessItem(string lotId, string itemId, int amount)
+		{
+			return ExecuteAsync("StoreBusinessItem", () => m_gameServer.TryStoreBusinessItemAsync(lotId, itemId, amount));
+		}
+
 		public Task<TraderItemsResponse> GetTraderItems(string traderId)
 		{
 			return m_gameServer.TryGetTraderItemsAsync(traderId);

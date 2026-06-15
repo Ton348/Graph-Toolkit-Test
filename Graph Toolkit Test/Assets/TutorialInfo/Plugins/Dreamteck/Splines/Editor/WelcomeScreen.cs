@@ -37,7 +37,7 @@ namespace Dreamteck.Splines.Editor
                         mainDataReq.result == UnityWebRequest.Result.DataProcessingError ||
                         mainDataReq.result == UnityWebRequest.Result.ConnectionError)
                     {
-                        Debug.LogError("An error occured while fetching the banners data.");
+                        // Silent fallback when remote banners are unavailable.
                     }
                     else if(!showInfo)
                     {

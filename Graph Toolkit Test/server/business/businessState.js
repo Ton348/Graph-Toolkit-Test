@@ -65,7 +65,22 @@ function normalizeBusinessProfile(profile) {
     profile.knownContacts = [];
   }
 
+  if (!Array.isArray(profile.itemStacks)) {
+    profile.itemStacks = [];
+  }
+
   profile.knownContacts = profile.knownContacts.filter(id => typeof id === 'string' && id.trim().length > 0);
+
+  if ((!Array.isArray(profile.itemStacks) || profile.itemStacks.length === 0) && Array.isArray(profile.items) && profile.items.length > 0) {
+    const counts = new Map();
+    for (const itemId of profile.items) {
+      if (typeof itemId !== 'string') continue;
+      const normalizedId = itemId.trim();
+      if (!normalizedId) continue;
+      counts.set(normalizedId, (counts.get(normalizedId) || 0) + 1);
+    }
+    profile.itemStacks = Array.from(counts.entries()).map(([itemId, count]) => ({ itemId, count }));
+  }
 
   profile.businesses = profile.businesses
     .map(normalizeBusinessInstance)
@@ -193,6 +208,16 @@ function sanitizeBusinessProfile(profile, businessDefs) {
     typeof itemId === 'string' &&
     itemId.trim().length > 0 &&
     !equippedItems.has(itemId));
+
+  if (!Array.isArray(profile.itemStacks)) {
+    profile.itemStacks = [];
+  }
+  profile.itemStacks = profile.itemStacks
+    .filter(stack => stack && typeof stack.itemId === 'string' && stack.itemId.trim().length > 0 && Number.isFinite(stack.count) && stack.count > 0)
+    .map(stack => ({
+      itemId: stack.itemId.trim(),
+      count: Math.max(1, Math.floor(stack.count))
+    }));
   return profile;
 }
 

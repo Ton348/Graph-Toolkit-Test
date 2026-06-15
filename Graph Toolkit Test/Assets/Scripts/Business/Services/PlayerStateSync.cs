@@ -12,6 +12,7 @@ namespace Prototype.Business.Services
 		private readonly Dictionary<string, ConstructedSiteSnapshot> m_constructedSites = new();
 		private readonly Dictionary<string, string> m_graphCheckpoints = new();
 		private readonly HashSet<string> m_items = new();
+		private readonly Dictionary<string, int> m_itemStacks = new();
 
 		public int Money { get; private set; }
 		public int Bargaining { get; private set; }
@@ -26,6 +27,7 @@ namespace Prototype.Business.Services
 		public IReadOnlyDictionary<string, string> GraphCheckpoints => m_graphCheckpoints;
 		public IReadOnlyDictionary<string, ConstructedSiteSnapshot> ConstructedSites => m_constructedSites;
 		public IReadOnlyCollection<string> Items => m_items;
+		public IReadOnlyDictionary<string, int> ItemStacks => m_itemStacks;
 
 		public event Action<ProfileSnapshot> snapshotApplied;
 		public event Action refreshRequested;
@@ -111,13 +113,39 @@ namespace Prototype.Business.Services
 			}
 
 			m_items.Clear();
+			m_itemStacks.Clear();
+			if (snapshot.itemStacks != null)
+			{
+				foreach (ItemStackSnapshot stack in snapshot.itemStacks)
+				{
+					if (stack == null || string.IsNullOrWhiteSpace(stack.itemId))
+					{
+						continue;
+					}
+
+					string itemId = stack.itemId.Trim();
+					int count = Math.Max(0, stack.count);
+					if (count <= 0)
+					{
+						continue;
+					}
+
+					m_itemStacks[itemId] = count;
+					m_items.Add(itemId);
+				}
+			}
 			if (snapshot.items != null)
 			{
 				foreach (string itemId in snapshot.items)
 				{
 					if (!string.IsNullOrWhiteSpace(itemId))
 					{
-						m_items.Add(itemId.Trim());
+						string normalized = itemId.Trim();
+						m_items.Add(normalized);
+						if (!m_itemStacks.ContainsKey(normalized))
+						{
+							m_itemStacks[normalized] = 1;
+						}
 					}
 				}
 			}
@@ -141,6 +169,7 @@ namespace Prototype.Business.Services
 			m_graphCheckpoints.Clear();
 			m_constructedSites.Clear();
 			m_items.Clear();
+			m_itemStacks.Clear();
 			snapshotApplied?.Invoke(null);
 			healthChanged?.Invoke(Health, MaxHealth);
 		}
@@ -185,7 +214,23 @@ namespace Prototype.Business.Services
 
 		public bool HasItem(string itemId)
 		{
-			return !string.IsNullOrWhiteSpace(itemId) && m_items.Contains(itemId.Trim());
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return false;
+			}
+
+			string normalized = itemId.Trim();
+			return m_itemStacks.TryGetValue(normalized, out int count) && count > 0;
+		}
+
+		public int GetItemCount(string itemId)
+		{
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return 0;
+			}
+
+			return m_itemStacks.TryGetValue(itemId.Trim(), out int count) ? Math.Max(0, count) : 0;
 		}
 
 		public bool IsQuestActive(string questId)

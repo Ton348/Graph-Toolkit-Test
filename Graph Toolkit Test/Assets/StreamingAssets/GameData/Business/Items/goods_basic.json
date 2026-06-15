@@ -1,0 +1,10 @@
+{
+  "id": "goods_basic",
+  "category": "goods",
+  "name": "Товар для склада",
+  "description": "Базовый товар, который можно купить и принести в бизнес на склад.",
+  "price": 4,
+  "storageCapacity": 0,
+  "cashCapacity": 0,
+  "shelfCapacity": 0
+}

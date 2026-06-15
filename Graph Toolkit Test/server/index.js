@@ -195,7 +195,8 @@ function loadPlayerProfile(playerId) {
       constructedSites: [],
       businesses: [],
       knownContacts: [],
-      items: []
+      items: [],
+      itemStacks: []
     };
     normalizeBusinessProfile(profile);
     sanitizeBusinessProfile(profile, businessDefs);
@@ -213,6 +214,7 @@ function loadPlayerProfile(playerId) {
   if (!profile.businesses) profile.businesses = [];
   if (!profile.knownContacts) profile.knownContacts = [];
   if (!profile.items) profile.items = [];
+  if (!profile.itemStacks) profile.itemStacks = [];
   if (!Number.isFinite(profile.bargaining)) profile.bargaining = defs.economy?.baseBargaining ?? 0;
   if (!Number.isFinite(profile.speech)) profile.speech = defs.economy?.baseSpeech ?? 0;
   if (!Number.isFinite(profile.trading)) profile.trading = defs.economy?.baseTrading ?? 0;
@@ -268,7 +270,8 @@ function toResponseProfile(profile) {
     constructedSites: profile.constructedSites || [],
     businesses: profile.businesses || [],
     knownContacts: profile.knownContacts || [],
-    items: profile.items || []
+    items: profile.items || [],
+    itemStacks: profile.itemStacks || []
   };
 }
 
@@ -705,6 +708,14 @@ function handleAction(req, res, payload) {
       console.log('[BusinessServer] action=buy_item');
       const profile = loadPlayerProfile(payload.playerId || 'player');
       const result = businessActions.buyItem(profile, payload.data, businessDefs);
+      if (!result.ok) return fail(res, result.errorCode, result.message, profile);
+      savePlayerProfile(profile);
+      return success(res, result.message, profile);
+    }
+    case 'store_business_item': {
+      console.log('[BusinessServer] action=store_business_item');
+      const profile = loadPlayerProfile(payload.playerId || 'player');
+      const result = businessActions.storeBusinessItem(profile, payload.data, businessDefs);
       if (!result.ok) return fail(res, result.errorCode, result.message, profile);
       savePlayerProfile(profile);
       return success(res, result.message, profile);

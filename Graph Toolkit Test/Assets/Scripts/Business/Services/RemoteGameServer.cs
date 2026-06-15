@@ -355,6 +355,24 @@ namespace Prototype.Business.Services
 			return SendRequestAsync(request);
 		}
 
+		public Task<ServerActionResult> TryStoreBusinessItemAsync(string lotId, string itemId, int amount)
+		{
+			if (m_debugLog)
+			{
+				Debug.Log(
+					$"[RemoteGameServer] action=store_business_item lotId='{lotId}' itemId='{itemId}' amount={amount}");
+			}
+
+			var request = new RemoteStoreBusinessItemRequest
+			{
+				action = "store_business_item",
+				playerId = m_playerId,
+				data = new RemoteStoreBusinessItemData { lotId = lotId, itemId = itemId, amount = amount }
+			};
+
+			return SendRequestAsync(request);
+		}
+
 		public async Task<TraderItemsResponse> TryGetTraderItemsAsync(string traderId)
 		{
 			if (m_debugLog)
@@ -1028,6 +1046,24 @@ namespace Prototype.Business.Services
 				snapshot.items.AddRange(profile.items);
 			}
 
+			if (profile.itemStacks != null)
+			{
+				for (int i = 0; i < profile.itemStacks.Length; i++)
+				{
+					RemoteItemStackDto stack = profile.itemStacks[i];
+					if (stack == null || string.IsNullOrWhiteSpace(stack.itemId))
+					{
+						continue;
+					}
+
+					snapshot.itemStacks.Add(new ItemStackSnapshot
+					{
+						itemId = stack.itemId,
+						count = stack.count
+					});
+				}
+			}
+
 			return snapshot;
 		}
 
@@ -1260,6 +1296,22 @@ namespace Prototype.Business.Services
 		}
 
 		[Serializable]
+		private class RemoteStoreBusinessItemRequest
+		{
+			public string action;
+			public string playerId;
+			public RemoteStoreBusinessItemData data;
+		}
+
+		[Serializable]
+		private class RemoteStoreBusinessItemData
+		{
+			public string lotId;
+			public string itemId;
+			public int amount;
+		}
+
+		[Serializable]
 		private class RemoteGetTraderItemsRequest
 		{
 			public string action;
@@ -1453,6 +1505,7 @@ namespace Prototype.Business.Services
 			public RemoteBusinessStateDto[] businesses;
 			public string[] knownContacts;
 			public string[] items;
+			public RemoteItemStackDto[] itemStacks;
 		}
 
 		[Serializable]
@@ -1515,6 +1568,13 @@ namespace Prototype.Business.Services
 			public int storageCapacity;
 			public int cashCapacity;
 			public int shelfCapacity;
+		}
+
+		[Serializable]
+		private class RemoteItemStackDto
+		{
+			public string itemId;
+			public int count;
 		}
 	}
 }

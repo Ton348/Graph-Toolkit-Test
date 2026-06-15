@@ -23,6 +23,7 @@ namespace Prototype.Business.Services
 		private readonly GameDataRepository m_dataRepository;
 		private readonly Dictionary<string, string> m_graphCheckpoints = new();
 		private readonly HashSet<string> m_items = new();
+		private readonly Dictionary<string, int> m_itemStacks = new();
 		private readonly HashSet<string> m_knownContacts = new();
 		private readonly int m_maxDelayMs;
 		private readonly int m_minDelayMs;
@@ -1153,12 +1154,6 @@ namespace Prototype.Business.Services
 					"Item is not sold by this trader.");
 			}
 
-			if (m_items.Contains(itemId))
-			{
-				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemAlreadyOwned",
-					"Item already owned.");
-			}
-
 			if (m_runtime == null || m_runtime.player == null)
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "RuntimeMissing",
@@ -1172,8 +1167,72 @@ namespace Prototype.Business.Services
 			}
 
 			m_runtime.player.money -= item.price;
-			m_items.Add(item.id);
+			AddItem(item.id, 1);
 			return ServerActionResult.SuccessResult(BuildSnapshot(), "Buy item success.");
+		}
+
+		public async Task<ServerActionResult> TryStoreBusinessItemAsync(string lotId, string itemId, int amount)
+		{
+			int delayMs = NextDelayMs();
+			ServerActionResult.ErrorType networkIssue = SampleNetworkIssue();
+			await Task.Delay(delayMs);
+
+			if (networkIssue != ServerActionResult.ErrorType.None)
+			{
+				return ServerActionResult.FailResult(networkIssue, networkIssue.ToString(), "Network error.");
+			}
+
+			if (string.IsNullOrWhiteSpace(lotId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "LotIdEmpty",
+					"lotId is required.");
+			}
+
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemIdEmpty",
+					"itemId is required.");
+			}
+
+			if (amount <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "AmountInvalid",
+					"amount must be greater than 0.");
+			}
+
+			BusinessInstanceSnapshot business = FindBusinessByLotId(lotId);
+			if (business == null)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "BusinessNotFound",
+					"Business not found.");
+			}
+
+			if (!HasItem(itemId))
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemNotOwned",
+					$"Item '{itemId}' is not owned.");
+			}
+
+			int owned = GetItemCount(itemId);
+			int moved = Mathf.Min(Mathf.Max(0, amount), owned);
+			if (moved <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoItem",
+					"Nothing to store.");
+			}
+
+			int storageCapacity = m_calculationService != null ? m_calculationService.GetStorageCapacity(business) : 0;
+			int freeStorage = Mathf.Max(0, storageCapacity - Mathf.Max(0, business.storageStock));
+			int added = Mathf.Min(moved, freeStorage);
+			if (added <= 0)
+			{
+				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "NoStorageSpace",
+					"Storage is full.");
+			}
+
+			business.storageStock += added;
+			RemoveItem(itemId, added);
+			return ServerActionResult.SuccessResult(BuildSnapshot(), "Store item success.");
 		}
 
 		public async Task<TraderItemsResponse> TryGetTraderItemsAsync(string traderId)
@@ -1756,6 +1815,23 @@ namespace Prototype.Business.Services
 				snapshot.items.AddRange(m_items);
 			}
 
+			if (m_itemStacks.Count > 0)
+			{
+				foreach (KeyValuePair<string, int> pair in m_itemStacks)
+				{
+					if (string.IsNullOrWhiteSpace(pair.Key) || pair.Value <= 0)
+					{
+						continue;
+					}
+
+					snapshot.itemStacks.Add(new ItemStackSnapshot
+					{
+						itemId = pair.Key,
+						count = pair.Value
+					});
+				}
+			}
+
 			return snapshot;
 		}
 
@@ -1766,7 +1842,7 @@ namespace Prototype.Business.Services
 				return ServerActionResult.SuccessResult(null, "Skipped.");
 			}
 
-			if (!m_items.Contains(itemId))
+			if (!HasItem(itemId))
 			{
 				return ServerActionResult.FailResult(ServerActionResult.ErrorType.GameLogicError, "ItemNotOwned",
 					$"Item '{itemId}' is not owned.");
@@ -1797,6 +1873,74 @@ namespace Prototype.Business.Services
 			}
 
 			return value.Trim();
+		}
+
+		private bool HasItem(string itemId)
+		{
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return false;
+			}
+
+			string normalized = itemId.Trim();
+			if (m_items.Contains(normalized))
+			{
+				return true;
+			}
+
+			return m_itemStacks.TryGetValue(normalized, out int count) && count > 0;
+		}
+
+		private int GetItemCount(string itemId)
+		{
+			if (string.IsNullOrWhiteSpace(itemId))
+			{
+				return 0;
+			}
+
+			string normalized = itemId.Trim();
+			if (m_itemStacks.TryGetValue(normalized, out int count))
+			{
+				return Mathf.Max(0, count);
+			}
+
+			return m_items.Contains(normalized) ? 1 : 0;
+		}
+
+		private void AddItem(string itemId, int amount)
+		{
+			if (string.IsNullOrWhiteSpace(itemId) || amount <= 0)
+			{
+				return;
+			}
+
+			string normalized = itemId.Trim();
+			m_items.Add(normalized);
+			m_itemStacks[normalized] = m_itemStacks.TryGetValue(normalized, out int count) ? count + amount : amount;
+		}
+
+		private void RemoveItem(string itemId, int amount)
+		{
+			if (string.IsNullOrWhiteSpace(itemId) || amount <= 0)
+			{
+				return;
+			}
+
+			string normalized = itemId.Trim();
+			if (!m_itemStacks.TryGetValue(normalized, out int count))
+			{
+				return;
+			}
+
+			count -= amount;
+			if (count <= 0)
+			{
+				m_itemStacks.Remove(normalized);
+				m_items.Remove(normalized);
+				return;
+			}
+
+			m_itemStacks[normalized] = count;
 		}
 
 		private static string NormalizeEquipmentCategory(string category)

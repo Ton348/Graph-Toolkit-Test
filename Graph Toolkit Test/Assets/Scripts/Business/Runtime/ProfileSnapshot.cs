@@ -20,6 +20,14 @@ namespace Prototype.Business.Runtime
 		public List<BusinessInstanceSnapshot> businesses = new();
 		public List<string> knownContacts = new();
 		public List<string> items = new();
+		public List<ItemStackSnapshot> itemStacks = new();
+	}
+
+	[Serializable]
+	public class ItemStackSnapshot
+	{
+		public string itemId;
+		public int count;
 	}
 
 	[Serializable]

@@ -12,95 +12,104 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: Base Graph.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: 9ab6b978-5c28-4195-a5ba-043ac01baf9d
+  startNodeId: b5f006f0-4aa2-4b60-8da0-fe759996567f
   nodes:
-  - rid: 7634389151303860897
-  - rid: 7634389151303860898
-  - rid: 7634389151303860899
-  - rid: 7634389151303860900
-  - rid: 7634389151303860901
-  - rid: 7634389151303860902
-  - rid: 7634389151303860903
-  - rid: 7634389151303860904
+  - rid: 4432081140677345442
+  - rid: 4432081140677345443
+  - rid: 4432081140677345444
+  - rid: 4432081140677345445
+  - rid: 4432081140677345446
+  - rid: 4432081140677345447
+  - rid: 4432081140677345448
+  - rid: 4432081140677345449
   references:
     version: 2
     RefIds:
-    - rid: 7634389151303860897
+    - rid: 4432081140677345442
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 9ab6b978-5c28-4195-a5ba-043ac01baf9d
+        nodeId: b5f006f0-4aa2-4b60-8da0-fe759996567f
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: bca24878-8cc5-41e2-a957-77f5c2824b25
-    - rid: 7634389151303860898
+        nextNodeId: 0bbbee86-4256-4ada-b384-af3fc64ac620
+    - rid: 4432081140677345443
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: bca24878-8cc5-41e2-a957-77f5c2824b25
+        nodeId: 0bbbee86-4256-4ada-b384-af3fc64ac620
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 7131ac7b-adef-400e-9c53-92deecca171b
+        nextNodeId: 111193e0-bb70-41a0-8bba-55b37decc587
         dialogueTitle: "\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440"
         body: "\u041F\u0440\u0438\u0432\u0435\u0442"
-    - rid: 7634389151303860899
+    - rid: 4432081140677345444
       type: {class: ChoiceNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 7131ac7b-adef-400e-9c53-92deecca171b
+        nodeId: 111193e0-bb70-41a0-8bba-55b37decc587
         title: ChoiceNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0432\u0430\u0440\u0438\u0430\u043D\u0442\u044B \u043E\u0442\u0432\u0435\u0442\u0430
           \u0438\u0433\u0440\u043E\u043A\u0430"
         options:
         - label: "\u041A\u0430\u043A \u0434\u0435\u043B\u0430!"
-          nextNodeId: 1b55b694-3544-4908-8e4a-fe3ae834d7b2
+          nextNodeId: 13f999fb-a5b0-4e4f-8783-59ae90d50ed9
         - label: "\u0427\u0442\u043E \u043D\u0430\u0434\u043E ?"
-          nextNodeId: 76f08f4d-aba6-4529-a28f-dbdf51fda1f7
+          nextNodeId: 0e1e085c-6947-4ba7-9ab4-8cc9d7c396b8
         - label: "\u041F\u043E\u043A\u0430"
-          nextNodeId: 76f08f4d-aba6-4529-a28f-dbdf51fda1f7
+          nextNodeId: 0e1e085c-6947-4ba7-9ab4-8cc9d7c396b8
         - label: 
           nextNodeId: 
-    - rid: 7634389151303860900
+    - rid: 4432081140677345445
       type: {class: RandomNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 1b55b694-3544-4908-8e4a-fe3ae834d7b2
+        nodeId: 13f999fb-a5b0-4e4f-8783-59ae90d50ed9
         title: RandomNode
         description: "\u0412\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u0443\u044E
           \u0432\u0435\u0442\u043A\u0443"
-    - rid: 7634389151303860901
+        options:
+        - weight: 1
+          nextNodeId: b0b8bce7-9dcb-4528-ab5b-5d326748fe3d
+        - weight: 1
+          nextNodeId: 4c086820-78bc-48c1-a2dd-e221a97acc41
+        - weight: 1
+          nextNodeId: 1755e625-852d-4571-8744-05f7d759a405
+        - weight: 0
+          nextNodeId: 4c086820-78bc-48c1-a2dd-e221a97acc41
+    - rid: 4432081140677345446
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: 55e5b909-833a-4dc7-9448-7c62912e01d4
+        nodeId: b0b8bce7-9dcb-4528-ab5b-5d326748fe3d
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 76f08f4d-aba6-4529-a28f-dbdf51fda1f7
+        nextNodeId: 0e1e085c-6947-4ba7-9ab4-8cc9d7c396b8
         dialogueTitle: "\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440"
         body: "\u0445\u043E\u0440\u043E\u0448\u043E"
-    - rid: 7634389151303860902
+    - rid: 4432081140677345447
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: dbdce04e-32cd-4a64-aa1d-fa3371caebbd
+        nodeId: 4c086820-78bc-48c1-a2dd-e221a97acc41
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 76f08f4d-aba6-4529-a28f-dbdf51fda1f7
+        nextNodeId: 0e1e085c-6947-4ba7-9ab4-8cc9d7c396b8
         dialogueTitle: "\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440"
         body: "\u043F\u043B\u043E\u0445\u043E"
-    - rid: 7634389151303860903
+    - rid: 4432081140677345448
       type: {class: DialogueNode, ns: Graph.Core.Runtime.Nodes.UI, asm: Graph.Core.Runtime}
       data:
-        nodeId: d0f281ce-4e74-479e-9246-d47ab0f67b81
+        nodeId: 1755e625-852d-4571-8744-05f7d759a405
         title: DialogueNode
         description: "\u041F\u043E\u043A\u0430\u0437\u044B\u0432\u0430\u0435\u0442
           \u0434\u0438\u0430\u043B\u043E\u0433 NPC"
-        nextNodeId: 76f08f4d-aba6-4529-a28f-dbdf51fda1f7
+        nextNodeId: 0e1e085c-6947-4ba7-9ab4-8cc9d7c396b8
         dialogueTitle: "\u041C\u0435\u043D\u0435\u0434\u0436\u0435\u0440"
         body: "\u043B\u0443\u0447\u0448\u0435 \u0432\u0441\u0435\u0445"
-    - rid: 7634389151303860904
+    - rid: 4432081140677345449
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 76f08f4d-aba6-4529-a28f-dbdf51fda1f7
+        nodeId: 0e1e085c-6947-4ba7-9ab4-8cc9d7c396b8
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"

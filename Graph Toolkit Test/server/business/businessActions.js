@@ -481,7 +481,11 @@ function validateEquipmentItem(profile, businessDefs, itemId, requiredCategory) 
   }
 
   const ownedItems = Array.isArray(profile.items) ? profile.items : [];
-  if (!ownedItems.includes(itemId)) {
+  const ownedStacks = Array.isArray(profile.itemStacks) ? profile.itemStacks : [];
+  const hasOwnedItem =
+    ownedItems.includes(itemId) ||
+    ownedStacks.some(stack => stack && stack.itemId === itemId && Number.isFinite(stack.count) && stack.count > 0);
+  if (!hasOwnedItem) {
     return fail('ItemNotOwned', `Item '${itemId}' is not owned.`);
   }
 
@@ -626,9 +630,7 @@ function buyItem(profile, data, businessDefs) {
   }
 
   profile.items = Array.isArray(profile.items) ? profile.items : [];
-  if (profile.items.includes(itemId)) {
-    return fail('ItemAlreadyOwned', 'Item already owned.');
-  }
+  profile.itemStacks = Array.isArray(profile.itemStacks) ? profile.itemStacks : [];
 
   const price = Number.isFinite(item.price) ? item.price : 0;
   if (!Number.isFinite(profile.money) || profile.money < price) {
@@ -638,7 +640,70 @@ function buyItem(profile, data, businessDefs) {
   profile.money -= price;
   profile.items.push(itemId);
 
+  const stack = profile.itemStacks.find(entry => entry && entry.itemId === itemId);
+  if (stack) {
+    stack.count = Number.isFinite(stack.count) ? Math.max(0, Math.floor(stack.count)) + 1 : 1;
+  } else {
+    profile.itemStacks.push({ itemId, count: 1 });
+  }
+
   return ok('Buy item success.');
+}
+
+function storeBusinessItem(profile, data, businessDefs) {
+  const lotId = data && data.lotId;
+  const itemId = data && data.itemId;
+  const amount = Math.max(0, Math.floor(Number(data && data.amount) || 0));
+
+  if (!lotId || !String(lotId).trim()) {
+    return fail('LotIdEmpty', 'lotId is required.');
+  }
+  if (!itemId || !String(itemId).trim()) {
+    return fail('ItemIdEmpty', 'itemId is required.');
+  }
+  if (amount <= 0) {
+    return fail('AmountInvalid', 'amount must be greater than 0.');
+  }
+
+  const business = findBusinessByLotId(profile, lotId);
+  if (!business) {
+    return fail('BusinessNotFound', 'Business not found.');
+  }
+
+  profile.items = Array.isArray(profile.items) ? profile.items : [];
+  profile.itemStacks = Array.isArray(profile.itemStacks) ? profile.itemStacks : [];
+
+  const stack = profile.itemStacks.find(entry => entry && entry.itemId === itemId);
+  const owned = stack && Number.isFinite(stack.count) ? Math.max(0, Math.floor(stack.count)) : 0;
+  if (owned <= 0) {
+    return fail('ItemNotOwned', `Item '${itemId}' is not owned.`);
+  }
+
+  const moved = Math.min(amount, owned);
+  if (moved <= 0) {
+    return fail('NoItem', 'Nothing to store.');
+  }
+
+  const storageCapacity = resolveStorageCapacity(business, businessDefs);
+  const freeStorage = Math.max(0, storageCapacity - Math.max(0, business.storageStock));
+  const added = Math.min(moved, freeStorage);
+  if (added <= 0) {
+    return fail('NoStorageSpace', 'Storage is full.');
+  }
+
+  business.storageStock += added;
+  stack.count -= added;
+  for (let i = 0; i < added; i++) {
+    const index = profile.items.indexOf(itemId);
+    if (index >= 0) {
+      profile.items.splice(index, 1);
+    }
+  }
+  if (stack.count <= 0) {
+    profile.itemStacks = profile.itemStacks.filter(entry => entry && entry.itemId !== itemId);
+  }
+
+  return ok('Store item success.');
 }
 
 function getTraderItems(data, businessDefs) {
@@ -677,6 +742,7 @@ module.exports = {
   assignSupplier,
   setBusinessEquipment,
   buyItem,
+  storeBusinessItem,
   getTraderItems,
   hireBusinessWorker,
   openBusiness,
