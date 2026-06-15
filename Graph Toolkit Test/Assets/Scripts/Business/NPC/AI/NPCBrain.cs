@@ -497,6 +497,18 @@ namespace Prototype.Business.NPC.AI
 		{
 			if (m_currentTargetTransform != null)
 			{
+				Prototype.Business.NPC.Locations.NPCLocationPoint locationPoint =
+					m_currentTargetTransform.GetComponent<Prototype.Business.NPC.Locations.NPCLocationPoint>();
+				if (locationPoint != null)
+				{
+					float radius = Mathf.Max(interactionDistance, locationPoint.ArrivalRadius);
+					float sqrDistance = (transform.position - m_currentDestination).sqrMagnitude;
+					if (sqrDistance <= radius * radius)
+					{
+						return true;
+					}
+				}
+
 				Collider c = m_currentTargetTransform.GetComponent<Collider>();
 				if (c != null)
 				{

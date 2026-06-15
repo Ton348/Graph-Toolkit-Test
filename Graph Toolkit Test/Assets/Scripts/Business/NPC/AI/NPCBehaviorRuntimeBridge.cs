@@ -880,6 +880,13 @@ public sealed class NPCBehaviorRuntimeBridge : MonoBehaviour
 			}
 		}
 
+		public bool IsLocationTargetReached(Vector3 target, float arrivalRadius)
+		{
+			float radius = Mathf.Max(0.35f, arrivalRadius);
+			float sqr = (transform.position - target).sqrMagnitude;
+			return sqr <= radius * radius;
+		}
+
 		private void ReleaseReservedLocation()
 		{
 			if (m_reservedLocation != null)
