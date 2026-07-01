@@ -12,31 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e2a32bd2eb3477ab15b9952f831368, type: 3}
   m_Name: DangerGraph.runtime
   m_EditorClassIdentifier: Graph.Core.Runtime::Graph.Core.Runtime.CommonGraph
-  startNodeId: a8807f42-2891-4e7d-ba06-725ce3af0918
+  startNodeId: a76f049a-7836-44e6-9667-9eedd01385a2
   nodes:
-  - rid: 4432081485924401702
-  - rid: 4432081485924401703
-  - rid: 4432081485924401704
-  - rid: 4432081485924401705
-  - rid: 4432081485924401706
-  - rid: 4432081485924401707
-  - rid: 4432081485924401708
-  - rid: 4432081485924401709
+  - rid: 6298894339574858105
+  - rid: 6298894339574858106
+  - rid: 6298894339574858107
+  - rid: 6298894339574858108
+  - rid: 6298894339574858109
+  - rid: 6298894339574858110
+  - rid: 6298894339574858111
+  - rid: 6298894339574858112
   references:
     version: 2
     RefIds:
-    - rid: 4432081485924401702
+    - rid: 6298894339574858105
       type: {class: StartNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: a8807f42-2891-4e7d-ba06-725ce3af0918
+        nodeId: a76f049a-7836-44e6-9667-9eedd01385a2
         title: StartNode
         description: "\u0421\u0442\u0430\u0440\u0442\u043E\u0432\u0430\u044F \u0442\u043E\u0447\u043A\u0430
           \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-        nextNodeId: 6c395769-4b0a-4d39-8bd2-f8dfb4159ac5
-    - rid: 4432081485924401703
+        nextNodeId: fe41d9e0-60d9-4617-9f80-330791d116be
+    - rid: 6298894339574858106
       type: {class: CheckThreatScoreNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 6c395769-4b0a-4d39-8bd2-f8dfb4159ac5
+        nodeId: fe41d9e0-60d9-4617-9f80-330791d116be
         title: CheckThreatScoreNode
         description: "\u0421\u0440\u0430\u0432\u043D\u0438\u0432\u0430\u0435\u0442
           \u0442\u0435\u043A\u0443\u0449\u0438\u0439 threatScore \u0441 \u0437\u0430\u0434\u0430\u043D\u043D\u044B\u043C\u0438
@@ -44,35 +44,35 @@ MonoBehaviour:
         compareType: 0
         valueA: 0
         valueB: 20
-        trueNodeId: a3080260-49d9-46b1-b397-fed7c96c1026
-        falseNodeId: a3080260-49d9-46b1-b397-fed7c96c1026
-    - rid: 4432081485924401704
+        trueNodeId: e7a570ed-a182-40c5-b8d1-76b7a2561447
+        falseNodeId: e7a570ed-a182-40c5-b8d1-76b7a2561447
+    - rid: 6298894339574858107
       type: {class: FinishNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: e9ddb094-687d-428c-9c12-da7fe391af4d
+        nodeId: d29f107b-8178-41f8-9523-b085597abfb1
         title: FinishNode
         description: "\u0417\u0430\u0432\u0435\u0440\u0448\u0430\u0435\u0442 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u0435
           \u0441\u0446\u0435\u043D\u0430\u0440\u0438\u044F"
-    - rid: 4432081485924401705
+    - rid: 6298894339574858108
       type: {class: RandomNode, ns: Graph.Core.Runtime.Nodes.Flow, asm: Graph.Core.Runtime}
       data:
-        nodeId: 3f8dffa0-1c82-4608-8adf-f2f5ad92c687
+        nodeId: f0adca55-c3c5-4019-adbc-558fa3907f15
         title: RandomNode
         description: "\u0412\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u0441\u043B\u0443\u0447\u0430\u0439\u043D\u0443\u044E
           \u0432\u0435\u0442\u043A\u0443"
         options:
         - weight: 75
-          nextNodeId: 192e1ef8-51ea-447d-8d63-15cf0e8ae202
+          nextNodeId: 265a002b-939a-49d2-89d3-91e82d4cf509
         - weight: 20
-          nextNodeId: c20f9353-21bf-4844-a63e-51b2ae9e309d
+          nextNodeId: 61c94462-f736-438e-94d3-b1e4aa5b6de2
         - weight: 5
-          nextNodeId: 6010963d-2104-4cba-a3a9-42a3bc75c302
+          nextNodeId: 5162a5b3-a307-4b30-aed0-a2d36568c55e
         - weight: 0
           nextNodeId: 
-    - rid: 4432081485924401706
+    - rid: 6298894339574858109
       type: {class: DangerActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 192e1ef8-51ea-447d-8d63-15cf0e8ae202
+        nodeId: 265a002b-939a-49d2-89d3-91e82d4cf509
         title: DangerActionNode
         description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0434\u0432\u0438\u0436\u0435\u043D\u0438\u0435
           \u0438\u043B\u0438 freeze \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435
@@ -81,11 +81,11 @@ MonoBehaviour:
         actionType: 0
         value: 50
         speedDelta: 4
-        successNodeId: e9ddb094-687d-428c-9c12-da7fe391af4d
-    - rid: 4432081485924401707
+        successNodeId: d29f107b-8178-41f8-9523-b085597abfb1
+    - rid: 6298894339574858110
       type: {class: DangerActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: c20f9353-21bf-4844-a63e-51b2ae9e309d
+        nodeId: 61c94462-f736-438e-94d3-b1e4aa5b6de2
         title: DangerActionNode
         description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0434\u0432\u0438\u0436\u0435\u043D\u0438\u0435
           \u0438\u043B\u0438 freeze \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435
@@ -94,11 +94,11 @@ MonoBehaviour:
         actionType: 1
         value: 10
         speedDelta: 4
-        successNodeId: e9ddb094-687d-428c-9c12-da7fe391af4d
-    - rid: 4432081485924401708
+        successNodeId: d29f107b-8178-41f8-9523-b085597abfb1
+    - rid: 6298894339574858111
       type: {class: DangerActionNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: 6010963d-2104-4cba-a3a9-42a3bc75c302
+        nodeId: 5162a5b3-a307-4b30-aed0-a2d36568c55e
         title: DangerActionNode
         description: "\u0412\u044B\u043F\u043E\u043B\u043D\u044F\u0435\u0442 \u0434\u0432\u0438\u0436\u0435\u043D\u0438\u0435
           \u0438\u043B\u0438 freeze \u0434\u0435\u0439\u0441\u0442\u0432\u0438\u0435
@@ -107,11 +107,11 @@ MonoBehaviour:
         actionType: 2
         value: 15
         speedDelta: 3.5
-        successNodeId: e9ddb094-687d-428c-9c12-da7fe391af4d
-    - rid: 4432081485924401709
+        successNodeId: d29f107b-8178-41f8-9523-b085597abfb1
+    - rid: 6298894339574858112
       type: {class: ModifyDangerNode, ns: Graph.Core.Runtime.Nodes.Behavior, asm: Graph.Core.Runtime}
       data:
-        nodeId: a3080260-49d9-46b1-b397-fed7c96c1026
+        nodeId: e7a570ed-a182-40c5-b8d1-76b7a2561447
         title: ModifyDangerNode
         description: "Mode:\nEnableSpreadDanger \u2014 \u0435\u0441\u043B\u0438 Value
           > 0, \u043E\u0442\u043F\u0440\u0430\u0432\u043B\u044F\u0435\u0442 danger
@@ -123,4 +123,4 @@ MonoBehaviour:
           threat score NPC \u043D\u0430 Value."
         mode: 0
         value: 1
-        nextNodeId: 3f8dffa0-1c82-4608-8adf-f2f5ad92c687
+        nextNodeId: f0adca55-c3c5-4019-adbc-558fa3907f15

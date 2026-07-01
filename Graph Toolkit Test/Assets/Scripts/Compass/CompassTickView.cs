@@ -1,4 +1,3 @@
-using TMPro;
 using UnityEngine;
 
 namespace Sample.Runtime.Compass
@@ -8,19 +7,11 @@ namespace Sample.Runtime.Compass
 		[SerializeField]
 		private RectTransform m_rectTransform;
 
-		[SerializeField]
-		private TMP_Text m_label;
-
 		private void Awake()
 		{
 			if (m_rectTransform == null)
 			{
 				m_rectTransform = GetComponent<RectTransform>();
-			}
-
-			if (m_label == null)
-			{
-				m_label = GetComponentInChildren<TMP_Text>(true);
 			}
 		}
 
@@ -38,17 +29,10 @@ namespace Sample.Runtime.Compass
 
 		public void SetVisible(bool visible)
 		{
-			gameObject.SetActive(visible);
-		}
-
-		public void SetLabel(string text)
-		{
-			if (m_label == null)
+			if (gameObject.activeSelf != visible)
 			{
-				return;
+				gameObject.SetActive(visible);
 			}
-
-			m_label.text = text;
 		}
 	}
 }
